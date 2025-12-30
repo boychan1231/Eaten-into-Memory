@@ -23,14 +23,79 @@ function createMinuteCard(value) {
     return { type: 'minute', value, gear };
 }
 
+
 const DECK_MINUTE_CARDS = [];
 for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-function createHourCard(number, isPrecious = false) {
-    return { type: 'hour', number, isPrecious };
+// === 小時卡：少年 / 中年 / 老年 各 12 張（每種 1~12 各 1 張），總計 36 張 ===
+// 每局開局：隨機從 3 組配置中選 1 組，決定哪一組年齡版本是「珍貴(★)」。
+// 珍貴仍然是 12 張（每個數字 1~12 各 1 張是珍貴）。
+
+const HOUR_AGE_GROUPS = ['少年', '中年', '老年'];
+
+// 你指定的三組配置：決定 1-4 / 5-8 / 9-12 各區間的珍貴年齡版本
+const HOUR_PRECIOUS_CONFIGS = [
+    {
+        id: 'CFG_1',
+        label: '少年(1-4)／中年(5-8)／老年(9-12)',
+        mapping: { '1-4': '少年', '5-8': '中年', '9-12': '老年' }
+    },
+    {
+        id: 'CFG_2',
+        label: '中年(1-4)／老年(5-8)／少年(9-12)',
+        mapping: { '1-4': '中年', '5-8': '老年', '9-12': '少年' }
+    },
+    {
+        id: 'CFG_3',
+        label: '老年(1-4)／少年(5-8)／中年(9-12)',
+        mapping: { '1-4': '老年', '5-8': '少年', '9-12': '中年' }
+    }
+];
+
+function createHourCard(number, ageGroup, isPrecious = false) {
+    return { type: 'hour', number, ageGroup, isPrecious };
 }
+
+function pickRandomPreciousConfig() {
+    const idx = Math.floor(Math.random() * HOUR_PRECIOUS_CONFIGS.length);
+    return HOUR_PRECIOUS_CONFIGS[idx];
+}
+
+function getPreciousAgeGroupForNumber(config, number) {
+    if (number >= 1 && number <= 4) return config.mapping['1-4'];
+    if (number >= 5 && number <= 8) return config.mapping['5-8'];
+    return config.mapping['9-12']; // 9~12
+}
+
+/**
+ * buildHourDeckWithRandomPrecious()
+ * - 生成 36 張小時卡：少年/中年/老年 各 12 張（1~12）
+ * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true
+ * - 回傳：{ deck, config }
+ */
+function buildHourDeckWithRandomPrecious() {
+    const config = pickRandomPreciousConfig();
+    const deck = [];
+
+    for (const age of HOUR_AGE_GROUPS) {
+        for (let n = 1; n <= 12; n++) {
+            const preciousAge = getPreciousAgeGroupForNumber(config, n);
+            const isPrecious = (age === preciousAge);
+            deck.push(createHourCard(n, age, isPrecious));
+        }
+    }
+
+    // （保險檢查，可留可刪）
+    const preciousCount = deck.filter(c => c.isPrecious).length;
+    if (preciousCount !== 12) {
+        console.warn(`⚠️ 小時卡珍貴數量異常：${preciousCount}（預期 12）`);
+    }
+
+    return { deck, config };
+}
+
 
 const DECK_HOUR_CARDS = [];
 for (let i = 1; i <= 12; i++) {
@@ -71,7 +136,8 @@ class GameState {
         }));
         
         this.minuteDeck = [...DECK_MINUTE_CARDS];
-        this.hourDeck = [...DECK_HOUR_CARDS];
+        this.hourDeck = [];
+		this.hourPreciousConfig = null; // 新增：紀錄本局抽到的珍貴配置（CFG_1/2/3）
         this.minuteDiscard = [];
         this.clockFace = Array(12).fill(null).map((_, i) => ({
             position: i + 1,
@@ -123,14 +189,20 @@ function getCircularDistance(pos1, pos2) {
 
 function initializeGame(roles = PLAYER_ROLES) {
     const minuteDeckCopy = [...DECK_MINUTE_CARDS];
-    const hourDeckCopy = [...DECK_HOUR_CARDS];
-    
-    shuffle(minuteDeckCopy);
-    shuffle(hourDeckCopy);
+	shuffle(minuteDeckCopy);
 
-    const gameState = new GameState(roles);
-    gameState.minuteDeck = minuteDeckCopy;
-    gameState.hourDeck = hourDeckCopy;
+	// 生成「本局」小時牌庫（含隨機珍貴配置）
+	const { deck: hourDeckCopy, config: hourConfig } = buildHourDeckWithRandomPrecious();
+	shuffle(hourDeckCopy);
+
+	const gameState = new GameState(roles);
+	gameState.minuteDeck = minuteDeckCopy;
+	gameState.hourDeck = hourDeckCopy;
+
+	// 存起本局配置（方便日後 UI 顯示或除錯）
+	gameState.hourPreciousConfig = hourConfig;
+	console.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
+
 
     const numCards = 12;
     
