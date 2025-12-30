@@ -1,0 +1,1336 @@
+:root {
+    --bg-color: #1a1a2e;
+    --text-color: #e0e0e0;
+    --accent-color: #e94560;
+    --clock-bg: #16213e;
+    --card-bg: #0f3460;
+    --player-bg: #2a2a40;
+    --mirror-border: rgba(255, 255, 255, 0.3);
+    --mirror-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- 畫面大小 --- */
+.game-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 120%;
+    max-width: 1700px;
+    width: 98vw;         /* 盡量吃滿螢幕 */
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+	    /* 新增：整個介面縮小到 80% */
+    transform: scale(0.8);
+    transform-origin: top center;
+}
+
+/* --- 頂部區域 --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--clock-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--accent-color);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+header h1 { margin: 0; font-size: 1.5rem; text-shadow: 0 0 5px var(--accent-color); }
+
+/* style.css - Tab 導航樣式 */
+.tab-nav {
+    display: flex;
+    gap: 5px;
+    margin-bottom: -10px; /* 稍微與 header 重疊 */
+    padding-top: 5px;
+    z-index: 50;
+    position: relative;
+}
+
+.tab-btn {
+    background-color: var(--card-bg); 
+    color: var(--text-color);
+    border: 1px solid var(--clock-bg);
+    border-bottom: none;
+    padding: 8px 15px;
+    font-weight: normal;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: background-color 0.3s;
+}
+
+.tab-btn:hover { background-color: #1f4287; }
+
+.tab-btn.active {
+    background-color: var(--bg-color); /* 與主內容區背景匹配 */
+    color: var(--accent-color);
+    border-top: 2px solid var(--accent-color);
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+    font-weight: bold;
+    margin-top: -1px;
+}
+
+.tab-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.tab-content.active-tab {
+    display: block;
+    flex: 1;
+}
+
+/* 設定分頁內的樣式 */
+#settings-content {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    
+}
+.setting-item { margin-bottom: 15px; }
+
+/* 調整 Header 排版以容納 Tab Nav */
+header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: end;
+}
+
+.game-status {
+    grid-column: 3;
+    justify-self: end;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.tab-nav {
+    grid-column: 1 / span 2;
+    justify-self: start;
+    padding-left: 20px;
+}
+.header-left {
+    grid-column: 1 / span 3;
+    justify-self: center;
+    padding-bottom: 10px;
+}
+
+button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+button:hover:not(:disabled) { background-color: #ff6b81; }
+button:disabled { background-color: #555; cursor: not-allowed; }
+
+/* 設定開關樣式 */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #ccc;
+    user-select: none;
+}
+
+.toggle-switch input {
+    display: none; /* 隱藏原生 checkbox */
+}
+
+.slider {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background-color: #555;
+    border-radius: 20px;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* --- 規則分頁樣式 --- */
+#rules-content {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    color: var(--text-color);          /* 確保不是黑字 */
+    box-sizing: border-box;
+}
+
+.rules-wrapper {
+    max-height: calc(100vh - 180px);   /* 頂部 header + tab 高度後的可視區 */
+    overflow-y: auto;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.rules-wrapper h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--accent-color);
+}
+
+.rules-section {
+    margin-top: 18px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rules-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 1.05rem;
+    color: #ffd27f;
+}
+
+.rules-list,
+.rules-steps {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.rules-list li,
+.rules-steps li {
+    margin-bottom: 4px;
+}
+
+.rules-intro {
+    margin: 0 0 8px 0;
+    color: #cccccc;
+}
+
+.rules-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    margin-right: 4px;
+    border-radius: 4px;
+    background: rgba(233, 69, 96, 0.2);
+    color: #ffd27f;
+    font-size: 0.8rem;
+}
+
+.rules-note {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #aaaaaa;
+}
+
+
+/* --- 主區域 (鐘面 + 日誌) --- */
+.main-area {
+    display: grid;
+    grid-template-columns: 320px 520px 320px; /* 左/中/右 */
+    gap: 14px;
+    align-items: start;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+
+/* 鐘面區域 */
+.clock-section {
+    flex: 0 0 auto;
+    /* 設定固定尺寸 (確保 JS 座標對齊) */
+    width: 500px;
+    height: 500px;
+    
+    position: relative;
+    background: radial-gradient(circle, #2a2a40 0%, #16213e 70%);
+    border-radius: 50%;
+    
+/* 在剩餘空間中自動置中 */
+    margin: auto;
+    border: 8px solid #333;
+    box-shadow: inset 0 0 30px #000;
+}
+
+#clock-face {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* 鏡面圓形鐘格 */
+.clock-spot {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    /* 鏡面效果 */
+    background: #222;
+    background-image: var(--mirror-shine);
+    border: 2px solid var(--mirror-border);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s;
+    backdrop-filter: blur(2px);
+    z-index: 10;
+}
+
+/* 1. 修改被選中的圓格 (移除舊的光暈/放大，只保留邊框變色) */
+.clock-spot.active-round {
+    border-color: var(--accent-color); /* 只改變邊框顏色 */
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.4); /* 輕微的邊框光 */
+    transform: translate(-50%, -50%) scale(1.1);
+    z-index: 15; /* 確保在最上層 */
+}
+
+/* 2. 新增：回合指示箭頭 */
+.active-round-arrow {
+    position: absolute;
+    width: 0; 
+    height: 0; 
+    
+    /* 利用 CSS Border 繪製倒三角形 (箭頭) */
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid var(--accent-color); /* 箭頭顏色 */
+    
+    z-index: 20;
+    
+    /* 加入濾鏡讓它有點發光感 */
+    filter: drop-shadow(0 0 5px var(--accent-color));
+    
+    /* 加入浮動動畫，讓箭頭動起來 */
+    animation: arrowFloat 1s ease-in-out infinite alternate;
+    
+    /* 讓點擊事件穿透箭頭，避免擋住下方的按鈕或卡牌 */
+    pointer-events: none; 
+}
+
+/* 箭頭浮動動畫 */
+@keyframes arrowFloat {
+    from {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) rotate(var(--arrow-rotation)) translateY(0);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--arrow-rotation)) translateY(-10px);
+    }
+}
+
+.clock-spot .spot-num {
+    position: absolute;
+    top: -20px;
+    font-weight: bold;
+    color: #888;
+    font-size: 1rem;
+    text-shadow: 0 1px 2px black;
+}
+
+#drawn-cards-display {
+    flex: none; 
+    width: 150px; /* 固定寬度，與日誌區塊隔離 */
+    height: auto; 
+    min-height: 120px; /* 設定一個最小高度，避免沒卡時太扁 */
+    
+    display: flex;
+    flex-direction: column; /* 垂直堆疊卡牌 */
+    gap: 10px;
+    z-index: 15; 
+    
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #4CAF50;
+    
+    align-items: center;
+    justify-content: center; /* 讓內容垂直置中 (如果有最小高度) */
+}
+
+
+.drawn-hour-card.clickable {
+    cursor: pointer;
+    border: 2px solid #e94560;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.8);
+}
+
+.hour-choice-tip {
+    position: absolute;   /* 絕對定位，脫離 Flex 排版 */
+    top: 20%;             /* 距離頂部 20% (約在卡牌上方) */
+    left: 0;
+    width: 100%;          /* 寬度佔滿容器，以便置中 */
+    
+    text-align: center;   /* 文字水平置中 */
+    font-size: 1.1rem;    /* 字體稍微加大 */
+    font-weight: bold;
+    color: #ffd27f;       /* 金黃色文字 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* 增加陰影使其在深色背景更清楚 */
+    
+    z-index: 20;          /* 確保在最上層 */
+    pointer-events: none; /* 讓點擊穿透文字，不會擋住下面的東西 */
+    
+    animation: tipPulse 1s infinite alternate; /* 加入呼吸燈效果 */
+}
+
+@keyframes tipPulse {
+    from { opacity: 0.8; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(-3px); }
+}
+
+
+
+.drawn-hour-card {
+    width: 60px;
+    height: 90px;
+    background: linear-gradient(to bottom right, #f7f7f7, #ddd);
+    color: #000;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.drawn-hour-card.precious {
+    border: 3px solid gold;
+    box-shadow: 0 0 10px gold;
+}
+.drawn-hour-card .label {
+    font-size: 0.7rem;
+    font-weight: normal;
+    color: #666;
+    margin-top: 3px;
+}
+
+/* 卡牌在鏡面上的顯示 */
+.clock-spot .card-preview {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+/* 角色棋子 */
+.clock-spot .tokens {
+    position: absolute;
+    bottom: -5px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: -5px;
+}
+
+.token {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.8);
+    transition: transform 0.2s;
+}
+.token:hover { transform: scale(1.5); z-index: 20; }
+
+
+/* style.css - 確保鐘面中央層級最高 */
+
+.clock-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    width: 280px; 
+    height: 280px;
+    
+    border-radius: 50%;
+    background-color: var(--bg-color); 
+    box-shadow: 0 0 20px rgba(0,0,0,0.8); 
+    
+    /* 啟用 Flexbox */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; 
+    
+    /* 【關鍵修正】將 z-index 提高到 30，確保在箭頭(20)之上 */
+    z-index: 30; 
+}
+
+/* 小時卡庫：縮小外框 + 取消點擊 */
+#deck-info.log-side-info {
+    flex: none;
+    width: 120px;              /* 縮小外框 */
+    height: 90px;
+    background: rgba(15, 52, 96, 0.9);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;           /* 取消可點擊感 */
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+    user-select: none;
+    padding: 6px;
+}
+
+/* 取消 hover 強化（避免暗示可互動） */
+#deck-info.log-side-info:hover {
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+/* 你在 index.html 用到的 class：可直接讓它完全不吃點擊 */
+.no-click {
+    pointer-events: none;
+}
+
+
+/* 只縮小 deck-info 內的文字，不影響其他面板 */
+#deck-info .deck-title {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+    color: #bbb;
+}
+#deck-info .deck-count {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* 抽出的卡牌顯示容器 (現在只作為一個定位點，內容在 clock-center 內) */
+#drawn-cards-display {
+    /* 這裡不再需要側邊欄的寬度/背景/邊框/最小高度 */
+    display: none; /* 隱藏舊的容器 */
+}
+
+/* 抽出的 Hour Card 尺寸 (縮小並置中) */
+.clock-center .drawn-hour-card {
+    width: 50px;  /* 縮小寬度 */
+    height: 75px; /* 縮小高度 */
+    font-size: 1rem;
+    padding: 0;
+}
+.clock-center .drawn-hour-card .label {
+    font-size: 0.6rem;
+}
+.clock-center .drawn-hour-card.clickable {
+    cursor: pointer;
+    border: 3px solid #e94560;
+    box-shadow: 0 0 15px rgba(233, 69, 96, 1);
+    transform: scale(1.05);
+}
+
+.deck-title {
+    font-size: 0.8rem;
+    color: #bbb;
+    margin-bottom: 2px;
+}
+
+.deck-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.deck-detail-text {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    opacity: 0;
+    max-height: 0;
+    transition: opacity 0.3s;
+}
+
+#deck-info.expanded .deck-detail-text {
+    opacity: 1;
+    max-height: 20px;
+    margin-top: 5px;
+}
+
+/* 日誌區 */
+.log-section {
+    flex: none; 
+    width: 100%;
+    background-color: var(--player-bg);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    max-height: 550px;
+}
+
+.log-section h3 { padding: 10px; margin: 0; background: #222; border-radius: 8px 8px 0 0; }
+#game-log-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 0.9rem;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #222;
+}
+#log-list { list-style: none; padding: 0; margin: 0; }
+#log-list li { margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 4px; }
+
+/* --- 人類玩家區域 --- */
+.human-area {
+  padding: 15px;
+  background-color: #3e2a40;
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  margin-top: 10px;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+
+	flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+
+    min-height: auto;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+}
+
+/* 手牌列*/
+.human-play-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.human-play-row .hand-display {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+}
+
+.hand-controls {
+    flex: 0 0 220px;
+    width: 220px;
+}
+
+@media (max-width: 1100px) {
+    .human-play-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .hand-controls {
+        width: 100%;
+        flex-basis: auto;
+    }
+}
+
+
+.hand-display {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+/* 手牌本體*/
+.hand-display {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.minute-card {
+    flex-shrink: 0;
+    width: 50px;
+    height: 80px;
+    background-color: #f7f7f7;
+    color: #000;
+    border: 2px solid #888;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    user-select: none;
+}
+
+.minute-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+}
+
+.minute-card.selected {
+    border-color: #e94560;
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(233, 69, 96, 0.9);
+}
+
+.card-gear {
+    font-size: 0.7rem;
+    color: #555;
+    margin-top: 4px;
+}
+
+/* 玩家資訊統計列 */
+.human-stats-row {
+    display: flex;
+    gap: 15px;
+    margin: 8px 0;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+    color: #e0e0e0;
+}
+
+.human-stats-row div {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    white-space: nowrap;
+}
+
+.human-stats-row span {
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-left: 5px;
+}
+
+.instruction-text {
+    margin: 5px 0 0 0;
+    font-size: 0.85rem;
+    color: #aaa;
+    font-style: italic;
+}
+
+#human-controls {
+    display: flex;           /* 使用 Flexbox */
+    flex-direction: column;  /* 垂直堆疊 */
+    gap: 10px;               /* 按鈕之間的間距 */
+    text-align: center;
+    justify-content: center;
+}
+
+/* 確保下一回合按鈕樣式一致 */
+#next-step-btn {
+    padding: 10px 20px;
+    background-color: var(--accent-color); /* 保持原本強調色 */
+    width: 100%; /* 讓兩個按鈕等寬，比較美觀 (可選) */
+}
+
+/* 確認出牌按鈕樣式保持不變，或也可設為 100% 寬度 */
+#confirm-move-btn { 
+    padding: 10px 20px; 
+    background-color: #4CAF50; 
+    width: 100%; /* 讓兩個按鈕等寬 */
+}
+
+#confirm-move-btn:disabled, #next-step-btn:disabled { 
+    background-color: #555; 
+    cursor: not-allowed;
+}
+
+/* --- AI 玩家區 --- */
+.players-grid {
+    height: 180px;
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    overflow-x: auto;
+}
+
+.player-card {
+    flex: 1;
+    min-width: 180px;
+    background-color: var(--card-bg);
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.player-card.ejected { opacity: 0.5; border: 2px solid red; }
+.player-card h4 { margin: 0 0 5px 0; font-size: 1rem; color: #8ec5fc; }
+.player-stats { font-size: 0.85rem; line-height: 1.4; }
+.role-badge { 
+    position: absolute; top: 5px; right: 5px; 
+    font-size: 0.7rem; background: #444; padding: 2px 5px; border-radius: 4px; 
+}
+
+/* style.css - 區域 D - 進化進程顯示 */
+
+.progress-area {
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 5px;
+}
+
+.required-cards-list {
+    display: flex;
+    gap: 8px;
+}
+
+/* 收集目標小圓點 */
+.card-req-item {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: white;
+    background-color: #555; /* 未收集 */
+    transition: background-color 0.3s;
+}
+
+.card-req-item.collected {
+    background-color: #4CAF50; /* 綠色：已收集 */
+}
+
+.precious-status {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    background-color: #333;
+    color: white;
+}
+
+.precious-status.collected {
+    background-color: gold;
+    color: #333;
+    box-shadow: 0 0 5px gold;
+}
+
+/* style.css - 新增側邊欄群組與出牌列表樣式 */
+
+/* 讓側邊欄元素垂直排列 */
+.side-panel-group {
+	width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* 元素之間的間距 */
+    flex: none; /* 不佔用額外彈性空間 */
+}
+
+/* 修改 log-side-info 讓它更通用 */
+.log-side-info {
+    width: 100%;
+    background: rgba(15, 52, 96, 0.9);
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+    box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+}
+
+/* 小時卡庫專用高度 (維持原樣) */
+#deck-info {
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s;
+}
+
+/* 出牌列表專用樣式 */
+#played-cards-panel {
+    height: auto;
+    min-height: 220px;       /* 設定最小高度 */
+    padding: 15px;           /* 增加內距 */
+    
+    /* 確保它是置頂的 */
+    position: sticky;
+    top: 10px;
+    z-index: 2;
+}
+
+/* 讓窄版仍可讀 */
+#played-cards-panel .p-name { max-width: 55px; font-size: 0.78rem; }
+#played-cards-panel .p-val  { font-size: 0.78rem; padding: 1px 4px; }
+
+
+.played-placeholder {
+    opacity: 0.75;
+    font-size: 0.9rem;
+    padding: 6px 2px;
+    border-bottom: 1px dashed rgba(255,255,255,0.15);
+}
+
+.played-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    /* 加大每一行的上下間距 */
+    padding: 8px 6px;
+    margin-bottom: 5px;
+    
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    font-size: 1.1rem; /* 整體字體放大 */
+}
+
+.p-name {
+    /* 解除寬度限制 */
+    max-width: none;         /* 移除原本的 55px 或 90px 限制 */
+    flex: 1;                 /* 讓名字佔據剩餘的所有空間 */
+    
+    /* 文字設定 */
+    white-space: nowrap;     /* 保持不換行 */
+    overflow: visible;       /* 讓文字完整顯示 */
+    text-overflow: clip;     /* 移除 ... 省略號 */
+    
+    font-size: 1.1rem;       /* 字體放大 */
+    font-weight: bold;
+    margin-right: 10px;      /* 跟右邊的數字保持距離 */
+}
+
+.p-val {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    
+    /* 尺寸與字體放大 */
+    font-size: 1.3rem;       /* 數字改大 */
+    padding: 4px 12px;       /* 框框加大 */
+    border-radius: 6px;
+    border: 1px solid #777;
+    min-width: 40px;         /* 確保數字框寬度一致 */
+    text-align: center;
+}
+
+/* --- 時針能力面板 --- */
+.ability-panel {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+}
+
+.ability-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ability-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ability-actions button {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.ability-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.ability-result {
+    margin-top: 8px;
+    color: #ffd27f;
+    font-weight: 600;.hand-display
+}
+
+.ability-hint {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+
+/* 秒針能力控制區 */
+#seconds-ability-controls {
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#seconds-ability-controls button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  cursor: pointer;
+}
+
+#seconds-ability-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#seconds-ability-hint {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* 秒針二選一彈窗 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  width: min(420px, calc(100vw - 24px));
+  background: rgba(25, 25, 25, 0.98);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.modal-desc {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 12px;
+  color: #ddd;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.modal-actions button:hover {
+  background: rgba(255,255,255,0.10);
+}
+
+.modal-note {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  color: #bbb;
+}
+
+#player-status-list,
+#player-history-list {
+    width: 100%;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 玩家狀態：單行摘要 */
+.player-mini-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.player-mini-left {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 130px;
+    font-weight: 700;
+}
+
+.player-mini-right {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.mini-pill {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,0.35);
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid #666;
+}
+
+/* 出牌記錄：chip */
+.history-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.history-chip {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,0.35);
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #666;
+}
+
+/* 本回合出牌：空狀態提示 */
+.played-placeholder {
+    font-size: 1rem;
+    padding: 15px 5px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+/* 各角色出牌記錄 */
+.player-history-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+}
+
+#player-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 240px;
+    overflow: auto;
+    padding: 4px 2px;
+}
+
+.player-history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 2px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.player-history-name {
+    font-size: 0.85rem;
+    max-width: 92px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.side-panel-group{
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: flex-start;
+}
+
+#played-cards-list {
+    max-height: 400px;       /* 增加最大高度，避免出現卷軸 */
+    overflow: visible;       /* 除非真的爆框，否則不藏內容 */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;                /* 每一行之間的間距 */
+    margin-top: 10px;
+}
+
+.played-card-row {
+    display: flex;
+    justify-content: space-between; /* 名字靠左，數字靠右 */
+    align-items: center;
+    padding: 8px 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.played-empty{
+    padding: 10px 6px;
+    color: rgba(255,255,255,0.55);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+#player-history-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 6px;
+    max-height: 260px;
+    overflow: auto;
+}
+
+.player-history-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.player-history-name{
+    min-width: 92px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-history-cards {
+    display: grid;                      /* 改用 Grid 網格系統 */
+    grid-template-columns: repeat(4, 1fr); /* 強制分為 4 行 */
+    gap: 4px;                           /* 間距 */
+    width: 100%;
+    max-width: 140px;                   /* 限制寬度，確保不會太寬 */
+    margin-left: auto;                  /* 靠右對齊 */
+}
+
+.minute-chip {
+    width: auto;                        /* 寬度自動填滿網格 */
+    height: 24px;                       /* 稍微增高 */
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.9);
+    font-size: 0.85rem;                 /* 字體微調 */
+    font-weight: bold;
+}
+
+.minute-chip.empty{
+    opacity: 0.35;
+}
+
+/* --- 面板切換按鈕 --- */
+.panel-switcher {
+    display: flex;
+    gap: 5px;
+    margin-bottom: -5px; /* 讓按鈕稍微貼近面板 */
+}
+
+.switch-btn {
+    flex: 1;
+    background-color: rgba(15, 52, 96, 0.5);
+    border: 1px solid #444;
+    color: #aaa;
+    font-size: 0.85rem;
+    padding: 6px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.switch-btn:hover {
+    background-color: rgba(15, 52, 96, 0.8);
+    color: #fff;
+}
+
+.switch-btn.active {
+    background-color: var(--accent-color); /* 使用你的強調色 */
+    color: white;
+    border-color: var(--accent-color);
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+}
