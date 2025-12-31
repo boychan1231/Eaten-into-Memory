@@ -1379,3 +1379,4 @@ input:checked + .slider:before {
 .clock-spot .card-preview .cp-num { font-size: 0.72rem; font-weight: 800; }
 .clock-spot .card-preview .cp-age { font-size: 0.52rem; font-weight: 700; opacity: 0.9; }
 .clock-spot .card-preview .cp-star{ font-size: 0.65rem; font-weight: 900; }
+

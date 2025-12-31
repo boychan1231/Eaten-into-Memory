@@ -545,9 +545,8 @@ function updateUI(gameState) {
             }
         }
         
-		// ===============================
+
 		// ✅ 秒針能力 UI：顯示 / 隱藏
-		// ===============================
 		const secondsBtn = document.getElementById('seconds-ability-btn');
 		const secondsCancelBtn = document.getElementById('seconds-ability-cancel-btn');
 
@@ -737,6 +736,33 @@ function updateUI(gameState) {
 				clockCenterEl.appendChild(cardEl);
 			});
 		}
+
+            gameState.currentDrawnHourCards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'drawn-hour-card';
+                cardEl.innerHTML = `
+                    <div>${card.number}</div>
+                    <div class="label">${card.isPrecious ? '珍貴' : '小時'}</div>
+                `;
+
+                if (card.isPrecious) {
+                    cardEl.classList.add('precious');
+                }
+
+                if (isWaitingHourInput) {
+                    cardEl.classList.add('clickable');
+                    // 修正點擊事件參數
+                    cardEl.addEventListener('click', () => {
+                        handleHumanHourCardChoice(globalGameState, card.number);
+                        updateUI(globalGameState);
+                    });
+                } else {
+                    cardEl.style.cursor = 'default';
+                }
+
+                clockCenterEl.appendChild(cardEl);
+            });
+        }
     }
 
     // F. 繪製進化鑰匙進度
