@@ -545,8 +545,9 @@ function updateUI(gameState) {
             }
         }
         
-
+		// ===============================
 		// ✅ 秒針能力 UI：顯示 / 隱藏
+		// ===============================
 		const secondsBtn = document.getElementById('seconds-ability-btn');
 		const secondsCancelBtn = document.getElementById('seconds-ability-cancel-btn');
 
@@ -736,104 +737,111 @@ function updateUI(gameState) {
 				clockCenterEl.appendChild(cardEl);
 			});
 		}
-
-            gameState.currentDrawnHourCards.forEach(card => {
-                const cardEl = document.createElement('div');
-                cardEl.className = 'drawn-hour-card';
-                cardEl.innerHTML = `
-                    <div>${card.number}</div>
-                    <div class="label">${card.isPrecious ? '珍貴' : '小時'}</div>
-                `;
-
-                if (card.isPrecious) {
-                    cardEl.classList.add('precious');
-                }
-
-                if (isWaitingHourInput) {
-                    cardEl.classList.add('clickable');
-                    // 修正點擊事件參數
-                    cardEl.addEventListener('click', () => {
-                        handleHumanHourCardChoice(globalGameState, card.number);
-                        updateUI(globalGameState);
-                    });
-                } else {
-                    cardEl.style.cursor = 'default';
-                }
-
-                clockCenterEl.appendChild(cardEl);
-            });
-        }
     }
 
-    // F. 繪製進化鑰匙進度
-    if (humanPlayer && humanPlayer.type === '時魔' && humanPlayer.roleCard.includes('時魔')) {
-        const allReqs = (typeof ROLE_UPGRADE_REQUIREMENTS !== 'undefined') ? ROLE_UPGRADE_REQUIREMENTS : null;
-        const progressArea = document.getElementById('evolution-progress-area');
-        const collectedNumbers = humanPlayer.hourCards.map(c => c.number);
+    // F. 繪製進化鑰匙進度（容錯版：避免需求資料缺失時整個 UI 崩潰）
+    const progressArea = document.getElementById('evolution-progress-area');
+    const isTimeDemon =
+        humanPlayer &&
+        humanPlayer.type === '時魔' &&
+        typeof humanPlayer.roleCard === 'string' &&
+        humanPlayer.roleCard.includes('時魔') &&
+        !humanPlayer.isEjected;
 
-        if (allReqs && progressArea) {
-            let chosenRole = humanPlayer.targetRoleName && allReqs[humanPlayer.targetRoleName]
-                ? humanPlayer.targetRoleName
-                : '時針';
-            const targetReq = allReqs[chosenRole];
+    if (isTimeDemon && progressArea) {
+        const allReqs =
+            (typeof window !== 'undefined' && window.ROLE_UPGRADE_REQUIREMENTS)
+                ? window.ROLE_UPGRADE_REQUIREMENTS
+                : (typeof ROLE_UPGRADE_REQUIREMENTS !== 'undefined' ? ROLE_UPGRADE_REQUIREMENTS : null);
 
-            let cardsCollectedCount = 0;
+        // 若 abilities.js 未提供需求資料，直接清空，不讓 UI crash
+        if (!allReqs || typeof allReqs !== 'object') {
+            progressArea.innerHTML = '';
+        } else {
+            const hourCards = Array.isArray(humanPlayer.hourCards) ? humanPlayer.hourCards : [];
+            const collectedNumbers = hourCards.map(c => c.number);
 
-            let html = `<div class="progress-row">
-                            <label>目標身份：
-                                <select id="target-role-select">
-                                    <option value="時針" ${chosenRole === '時針' ? 'selected' : ''}>時針</option>
-                                    <option value="分針" ${chosenRole === '分針' ? 'selected' : ''}>分針</option>
-                                    <option value="秒針" ${chosenRole === '秒針' ? 'selected' : ''}>秒針</option>
-                                </select>
-                            </label>
-                        </div>`;
-
-            html += `<div class="progress-row">
-                        <span>目標數字 (${targetReq.cardName} 身份):</span>
-                        <div class="required-cards-list">`;
-
-            targetReq.requiredCards.forEach(requiredNum => {
-                const isCollected = collectedNumbers.includes(requiredNum);
-                if (isCollected) cardsCollectedCount++;
-                html += `<div class="card-req-item ${isCollected ? 'collected' : ''}">${requiredNum}</div>`;
-            });
-
-            html += `</div></div>`;
-
-            const hasPrecious = humanPlayer.hourCards.some(c => c.isPrecious);
-            const preciousStatusClass = hasPrecious ? 'collected' : '';
-            const upgradeReady = (cardsCollectedCount >= 4 && hasPrecious);
-
-            html += `<div class="progress-row">
-                        <span>珍貴回憶 (至少 1 張):</span>
-                        <span class="precious-status ${preciousStatusClass}">
-                            ${hasPrecious ? '✅ 已收集' : '❌ 尚未取得'}
-                        </span>
-                     </div>`;
-
-            if (upgradeReady) {
-                 html += `<div class="progress-row" style="color: gold; font-weight: bold;">
-                             可升級狀態：準備就緒！ (回合結束時嘗試升級)
-                         </div>`;
+            // 目標身份：預設時針；若資料不存在就退回第一個可用 key
+            let chosenRole =
+                humanPlayer.targetRoleName && allReqs[humanPlayer.targetRoleName]
+                    ? humanPlayer.targetRoleName
+                    : '時針';
+            if (!allReqs[chosenRole]) {
+                const keys = Object.keys(allReqs);
+                chosenRole = keys.length ? keys[0] : '時針';
             }
 
-            progressArea.innerHTML = html;
+            const targetReq = allReqs[chosenRole];
 
-            const selectEl = document.getElementById('target-role-select');
-            if (selectEl) {
-                selectEl.addEventListener('change', (e) => {
-                    const newRole = e.target.value;
-                    if (!allReqs[newRole]) return;
-                    humanPlayer.targetRoleName = newRole;
-                    updateUI(gameState);
+            // 需求結構不符合預期：顯示提示但不中斷遊戲
+            if (!targetReq || !Array.isArray(targetReq.requiredCards)) {
+                progressArea.innerHTML = `
+                    <div class="progress-row">
+                        進化需求資料缺失或格式不正確（找不到 ${chosenRole} 的 requiredCards）。
+                        <br>請確認 abilities.js 的 ROLE_UPGRADE_REQUIREMENTS 結構。
+                    </div>`;
+            } else {
+                let cardsCollectedCount = 0;
+
+                const cardName = targetReq.cardName || chosenRole;
+
+                let html = `<div class="progress-row">
+                                <label>目標身份：
+                                    <select id="target-role-select">
+                                        <option value="時針" ${chosenRole === '時針' ? 'selected' : ''}>時針</option>
+                                        <option value="分針" ${chosenRole === '分針' ? 'selected' : ''}>分針</option>
+                                        <option value="秒針" ${chosenRole === '秒針' ? 'selected' : ''}>秒針</option>
+                                    </select>
+                                </label>
+                            </div>`;
+
+                html += `<div class="progress-row">
+                            <span>目標數字 (${cardName} 身份):</span>
+                            <div class="required-cards-list">`;
+
+                targetReq.requiredCards.forEach(requiredNum => {
+                    const isCollected = collectedNumbers.includes(requiredNum);
+                    if (isCollected) cardsCollectedCount++;
+                    html += `<div class="card-req-item ${isCollected ? 'collected' : ''}">${requiredNum}</div>`;
                 });
+
+                html += `</div></div>`;
+
+                const hasPrecious = hourCards.some(c => c && c.isPrecious);
+                const preciousStatusClass = hasPrecious ? 'collected' : '';
+                const upgradeReady = (cardsCollectedCount >= 3 && hasPrecious);
+				// 3/5 + 珍貴
+
+                html += `<div class="progress-row">
+                            <span>珍貴回憶 (至少 1 張):</span>
+                            <span class="precious-status ${preciousStatusClass}">
+                                ${hasPrecious ? '✅ 已收集' : '❌ 尚未取得'}
+                            </span>
+                         </div>`;
+
+                if (upgradeReady) {
+                    html += `<div class="progress-row" style="color: gold; font-weight: bold;">
+                                可升級狀態：準備就緒！ (回合結束時嘗試升級)
+                             </div>`;
+                }
+
+                progressArea.innerHTML = html;
+
+                const selectEl = document.getElementById('target-role-select');
+                if (selectEl) {
+                    selectEl.addEventListener('change', (e) => {
+                        const newRole = e.target.value;
+                        if (!allReqs[newRole]) return;
+                        humanPlayer.targetRoleName = newRole;
+                        updateUI(gameState);
+                    });
+                }
             }
         }
     } else {
-        const progressArea = document.getElementById('evolution-progress-area');
         if (progressArea) progressArea.innerHTML = '';
     }
+
 }
 
 
@@ -903,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (success) {
 				document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
 				selectedCardValue = null;
-				confirmMoveBtn.textContent = '本回合出牌';
+				confirmMoveBtn.textContent = '出牌';
 				updateUI(globalGameState);
 			} else {
 				confirmMoveBtn.disabled = false;
