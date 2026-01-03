@@ -112,18 +112,7 @@ function buildHourDeckWithRandomPrecious() {
     return { deck, config };
 }
 
-
-const DECK_HOUR_CARDS = [];
-for (let i = 1; i <= 12; i++) {
-    DECK_HOUR_CARDS.push(createHourCard(i));
-    DECK_HOUR_CARDS.push(createHourCard(i));
-}
-for (let i = 1; i <= 12; i++) {
-    DECK_HOUR_CARDS.push(createHourCard(i, true));
-}
-
 // --- 2. 玩家/角色定義 ---
-
 const PLAYER_ROLES = [
     { id: 'SM_1', name: '時魔幼體 1', type: '時魔' },
     { id: 'SM_2', name: '時魔幼體 2 ', type: '時魔' },
