@@ -51,33 +51,10 @@ function _topHourDeckCard(gameState) {
   return gameState.hourDeck[gameState.hourDeck.length - 1];
 }
 
-// -------------------------------------------------------------
-// 時之惡：回合開始前能力（保留你現行行為：第 1 回合前有機率棄最小分鐘卡）
-// -------------------------------------------------------------
-function activateSeaPreRoundAbility(gameState) {
-  if (!_isAbilitiesEnabled()) return false;
-  if (!gameState || !Array.isArray(gameState.players)) return false;
-
-  const seaPlayer = gameState.players.find(p => p && p.type === '時之惡' && !p.isEjected);
-  if (!seaPlayer) return false;
-
-  if (gameState.roundMarker !== 1) return false;
-  if (seaPlayer.mana < 2) return false;
-  if (!Array.isArray(seaPlayer.hand) || seaPlayer.hand.length < 1) return false;
-
-  if (Math.random() >= 0.5) return false;
-
-  seaPlayer.mana -= 2;
-
-  const minVal = Math.min(...seaPlayer.hand.map(c => c.value));
-  const idx = seaPlayer.hand.findIndex(c => c.value === minVal);
-  const discarded = seaPlayer.hand.splice(idx, 1)[0];
-
-  if (!Array.isArray(gameState.minuteDiscard)) gameState.minuteDiscard = [];
-  gameState.minuteDiscard.push(discarded);
-
-  console.log(`【時之惡】耗用 2 Mana 並捨棄 ${discarded.value} 號分鐘卡，發動回合開始前能力。`);
-  return true;
+	function activateSeaPreRoundAbility(gameState) {
+    // 【已移除】舊設定：時之惡於每輪第 1 回合開始前自動耗用資源棄牌／干擾其他玩家手牌。
+    // 保留此空函式僅為相容舊呼叫點，避免破壞既有流程。
+	return;
 }
 
 // -------------------------------------------------------------

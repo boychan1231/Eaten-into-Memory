@@ -271,11 +271,39 @@ function initializeGame(roles = PLAYER_ROLES) {
 
 // --- 6. 遊戲流程控制 ---
 
+// 取得目前人類玩家 ID（支援未來的角色選擇：若外部提供 getHumanPlayerId() 會優先採用）
+function getEffectiveHumanPlayerId() {
+	let v = null;
+    try {
+        if (typeof window !== 'undefined' && typeof window.getHumanPlayerId === 'function') {
+            v = window.getHumanPlayerId();
+        }
+    } catch (_) {}
+    try {
+        if (!v && typeof getHumanPlayerId === 'function') {
+            v = getHumanPlayerId();
+        }
+    } catch (_) {}
+    try {
+        if (!v && typeof HUMAN_PLAYER_ID !== 'undefined') {
+            v = HUMAN_PLAYER_ID;}
+    } catch (_) {}
+    return v;
+}
+
+
 function activateSeaTargetingAbility(gameState) {
     if (!GAME_CONFIG.enableAbilities) return;
 
     const seaPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     if (!seaPlayer) return;
+	
+	// ✅ 若「時之惡」是人類玩家，則不自動發動；由 UI 按鈕決定
+	const humanId = getEffectiveHumanPlayerId();
+	if (humanId && seaPlayer.id === humanId) {
+		return;
+}
+
 
     if (seaPlayer.mana >= 2 && Math.random() < 0.5) {
         seaPlayer.mana -= 2;
@@ -287,8 +315,53 @@ function activateSeaTargetingAbility(gameState) {
     }
 }
 
+function handleHumanSeaTargetingChoice(gameState, useAbility) {
+    if (!gameState || !Array.isArray(gameState.players)) return false;
+    if (!GAME_CONFIG.enableAbilities) return false;
+
+    const humanId = getEffectiveHumanPlayerId();
+    if (!humanId) return false;
+
+    const seaPlayer = gameState.players.find(p => p.id === humanId);
+    if (!seaPlayer || seaPlayer.type !== '時之惡' || seaPlayer.isEjected) return false;
+
+    // 限定：出分鐘卡前（preMinute）
+    if (String(gameState.phase || '') !== 'preMinute') {
+        console.warn('【時之惡】特殊能力只能在「出分鐘卡前」使用。');
+        return false;
+    }
+
+    // 每回合最多一次（沿用 specialAbilityUsed）
+    if (seaPlayer.specialAbilityUsed) {
+        console.warn('【時之惡】本回合已使用過特殊能力。');
+        return false;
+    }
+
+    if (useAbility) {
+        if (seaPlayer.mana < 2) {
+            console.warn('【時之惡】Mana 不足（需要 2）。');
+            return false;
+        }
+        seaPlayer.mana -= 2;
+        seaPlayer.specialAbilityUsed = true;
+        gameState.seaTargetingMode = 'sea';
+        console.log('⚡【時之惡】耗用 2 Mana 發動能力！本回合扣取規則改為：距離「時之惡」最近者受罰。');
+    } else {
+        gameState.seaTargetingMode = 'default';
+        console.log('【時之惡】維持預設。本回合扣取規則：鐘面數值最大者受罰（接近12）。');
+    }
+
+    if (typeof updateUI === 'function') updateUI(gameState);
+    return true;
+}
+
+
 function startRound(gameState) {
     gameState.currentMinuteChoices = null;
+
+    // 每回合重置：時之惡本回合扣除規則（預設）
+    gameState.seaTargetingMode = 'default';
+
 	
 	// 每回合開始：重置「每回合一次」能力使用狀態（含時針頂牌放底）
 	gameState.players.forEach(p => { p.specialAbilityUsed = false; });
@@ -308,10 +381,6 @@ function startRound(gameState) {
 		p.pickedHourCardThisTurnNumber = null;
 		p.pickedMinHourThisTurn = false;
 	});
-
-    if (typeof activateSeaPreRoundAbility === 'function') {
-        activateSeaPreRoundAbility(gameState); 
-    }
     
     const drawnCards = [];
     if (gameState.hourDeck.length >= 2) {

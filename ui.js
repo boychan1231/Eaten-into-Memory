@@ -690,6 +690,41 @@ function updateUI(gameState) {
             }
         }
     }
+	
+	// --- 時之惡能力面板控制（新增） ---
+    const seaAbilityPanel = document.getElementById('sea-ability-panel');
+    if (seaAbilityPanel) {
+        const seaUseBtn = document.getElementById('sea-targeting-use-btn');
+        const seaSkipBtn = document.getElementById('sea-targeting-skip-btn');
+        const seaStatusEl = document.getElementById('sea-ability-status');
+
+        const isSea = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
+        const isPreMinute = (typeof gameState.phase === 'string')
+            ? (gameState.phase === 'preMinute')
+            : isWaitingMinuteInput;
+
+        const canShow = GAME_CONFIG.enableAbilities && isSea && !gameState.gameEnded;
+        seaAbilityPanel.style.display = canShow ? 'block' : 'none';
+
+        if (canShow) {
+            const disabledByPhase = !isPreMinute;
+            const mode = (gameState.seaTargetingMode === 'sea') ? 'sea' : 'default';
+
+            if (seaUseBtn) {
+                seaUseBtn.disabled = disabledByPhase || humanPlayer.mana < 2 || !!humanPlayer.specialAbilityUsed;
+            }
+            if (seaSkipBtn) {
+                // 允許在 preMinute 時手動回到 default；但若已用過能力則鎖定
+                seaSkipBtn.disabled = disabledByPhase || !!humanPlayer.specialAbilityUsed;
+            }
+
+            if (seaStatusEl) {
+                seaStatusEl.textContent =
+                    `本回合扣除規則：${mode === 'sea' ? '距離時之惡最近者受罰' : '接近 12 者受罰'}`;
+            }
+        }
+    }
+
     
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
@@ -948,6 +983,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 時之惡能力按鈕（新增）
+    const seaUseBtn = document.getElementById('sea-targeting-use-btn');
+    if (seaUseBtn) {
+        seaUseBtn.addEventListener('click', () => {
+            if (!globalGameState) return;
+            if (typeof handleHumanSeaTargetingChoice === 'function') {
+                handleHumanSeaTargetingChoice(globalGameState, true);
+                updateUI(globalGameState);
+            }
+        });
+    }
+
+    const seaSkipBtn = document.getElementById('sea-targeting-skip-btn');
+    if (seaSkipBtn) {
+        seaSkipBtn.addEventListener('click', () => {
+            if (!globalGameState) return;
+            if (typeof handleHumanSeaTargetingChoice === 'function') {
+                handleHumanSeaTargetingChoice(globalGameState, false);
+                updateUI(globalGameState);
+            }
+        });
+    }
+
 
     // 特殊能力選擇面板按鈕
     const abilityUseBtn = document.getElementById('ability-use-btn');
