@@ -1125,7 +1125,10 @@ function checkEjectionAndWinCondition(gameState) {
             player.isEjected = true;
             player.gearCards = 0;
             player.mana = 0;
+            // 遊戲結束時：時之惡／受詛者保留原位置；其他人照舊重置
+        if (!(willEndAfterThisRound && (player.type === '時之惡' || player.type === '受詛者'))) {
             player.currentClockPosition = null;
+        }
             if (typeof player.d6Die === 'number') player.d6Die = 0;
             anyEjectedThisRound = true;
 
@@ -1361,7 +1364,10 @@ function endGameRound(gameState) {
         console.log(`♻️ 回收了 ${cardsToReturnToDeck.length} 張鐘面卡片回牌庫。`);
     }
     
-    // 4. 傳遞狀態 (手牌/齒輪)
+        // ✅ 若下一輪會進入「遊戲結束」，保留時之惡／受詛者在鐘面上的位置（用於結束畫面顯示）
+    const willEndAfterThisRound = (gameState.gameRound + 1 > numPlayers);
+
+// 4. 傳遞狀態 (手牌/齒輪)
     gameState.players.forEach((player, index) => {
         const handSetIndex = (index - gameState.gameRound + numPlayers) % numPlayers; 
         const initialGear = gameState.originalGearSets[handSetIndex];
@@ -1370,7 +1376,11 @@ function endGameRound(gameState) {
         player.hand = gameState.originalHandSets[handSetIndex].map(c => ({ ...c }));
         
         player.specialAbilityUsed = false; 
-        player.currentClockPosition = null;
+		
+        // 遊戲結束時：時之惡／受詛者保留原位置；其他人照舊重置
+        if (player.type !== '時之惡' && player.type !== '受詛者') {
+			player.currentClockPosition = null;
+		}
         player.isEjected = false;
         player.hourCards = []; 
     });

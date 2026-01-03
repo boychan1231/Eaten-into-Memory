@@ -648,45 +648,64 @@ function updateUI(gameState) {
     }
 
     // --- 時針能力面板控制 ---
+    // --- 時針能力面板控制 ---
+    // 新規則：
+    // - 被動：時針玩家可隨時看見小時卡庫頂牌（不耗 Mana）
+    // - 主動：出分鐘卡前可耗 1 Mana 將頂牌移到牌庫底（每回合一次）
     const hourAbilityPanel = document.getElementById('ability-panel');
-	if (hourAbilityPanel) {
-        const peekBtn = document.getElementById('ability-peek-btn');
+    if (hourAbilityPanel) {
+        const peekBtn = document.getElementById('ability-peek-btn'); // 舊版按鈕（若仍存在，隱藏即可）
         const buryBtn = document.getElementById('ability-bury-btn');
         const peekResultEl = document.getElementById('ability-peek-result');
+        const hintEl = hourAbilityPanel.querySelector('.ability-hint');
 
         const isHourHand = humanPlayer && humanPlayer.roleCard === '時針' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string')
-            ? (gameState.phase === 'preMinute')
-            : isWaitingMinuteInput; 
+        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : false;
 
-        const canShow = GAME_CONFIG.enableAbilities && isHourHand && isPreMinute && !gameState.gameEnded;
-
+        // ✅ 面板顯示：只要啟用能力 + 人類是時針 + 未結束遊戲，就一直顯示（不再限制 preMinute）
+        const canShow = GAME_CONFIG.enableAbilities && isHourHand && !gameState.gameEnded;
         hourAbilityPanel.style.display = canShow ? 'block' : 'none';
 
         if (canShow) {
             const blocked = !!gameState.abilityMarker;
-            if (peekBtn) peekBtn.disabled = blocked;
-            if (buryBtn) {
-                buryBtn.disabled =
-                    blocked ||
-                    humanPlayer.mana < 2 ||
-                    humanPlayer.specialAbilityUsed ||
-                    !gameState.hourDeck ||
-                    gameState.hourDeck.length === 0;
+            const deckEmpty = !Array.isArray(gameState.hourDeck) || gameState.hourDeck.length === 0;
+            const top = (!deckEmpty) ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
+
+            // 舊版「查看頂牌」按鈕：新規則不再需要
+            if (peekBtn) {
+                peekBtn.style.display = 'none';
+                peekBtn.disabled = true;
             }
 
+            // 「頂牌放到底」：僅限 preMinute、每回合一次、耗 1 Mana
+            if (buryBtn) {
+                buryBtn.textContent = '1 Mana：頂牌放到底';
+
+                const reasons = [];
+                if (blocked) reasons.push('能力被封印');
+                if (!isPreMinute) reasons.push('僅限出分鐘卡前');
+                if (typeof humanPlayer.mana !== 'number' || humanPlayer.mana < 1) reasons.push('Mana 不足（需 1）');
+                if (humanPlayer.specialAbilityUsed) reasons.push('本回合已使用過');
+                if (deckEmpty) reasons.push('小時卡庫已空');
+
+                const canUse = reasons.length === 0;
+                buryBtn.disabled = !canUse;
+                buryBtn.title = canUse ? '' : reasons.join('、');
+            }
+
+            // 被動顯示頂牌
             if (peekResultEl) {
-                const peek = gameState.lastHourHandPeek;
-                if (
-                    peek &&
-                    peek.by === humanPlayer.id &&
-                    peek.gameRound === gameState.gameRound &&
-                    peek.roundMarker === gameState.roundMarker
-                ) {
-                    peekResultEl.textContent = `頂牌：${peek.number}${peek.isPrecious ? '★' : ''}`;
+                if (blocked) {
+                    peekResultEl.textContent = '頂牌：--（能力被封印）';
+                } else if (deckEmpty) {
+                    peekResultEl.textContent = '頂牌：--（牌庫已空）';
                 } else {
-                    peekResultEl.textContent = '頂牌：--';
+                    peekResultEl.textContent = `頂牌：${top.number}${top.isPrecious ? '★' : ''}`;
                 }
+            }
+
+            if (hintEl) {
+                hintEl.textContent = '頂牌會一直顯示；「頂牌放底」僅可在出分鐘卡前使用（每回合一次）。';
             }
         }
     }
@@ -975,7 +994,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContents = document.querySelectorAll('.tab-content');
 
     function switchTab(targetId) {
-        // 1) 切換 active 狀態
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active-tab'));
 
@@ -983,16 +1001,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetEl = document.getElementById(targetId);
 
         if (activeBtn) activeBtn.classList.add('active');
-        if (targetEl) {
-            targetEl.classList.add('active-tab');
-
-            // 2) 重置分頁內容捲動
-            try { targetEl.scrollTop = 0; } catch (e) {}
-
-            // 3) 同時把整個頁面捲回頂部，確保 Header 的 tab 按鈕仍在視窗內
-            try { document.documentElement.scrollTop = 0; } catch (e) {}
-            try { document.body.scrollTop = 0; } catch (e) {}
-        }
+        if (targetEl) targetEl.classList.add('active-tab');
     }
 
     tabButtons.forEach(btn => {
