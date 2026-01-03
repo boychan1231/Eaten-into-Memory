@@ -1095,6 +1095,14 @@ input:checked + .slider:before {
   gap: 10px;
 }
 
+/* 多按鈕堆疊版（用於角色選擇等三選一彈窗） */
+.modal-actions.stacked {
+  flex-direction: column;
+}
+.modal-actions.stacked button {
+  flex: none;
+}
+
 .modal-actions button {
   flex: 1;
   padding: 12px 0;

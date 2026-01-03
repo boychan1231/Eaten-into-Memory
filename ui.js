@@ -648,64 +648,45 @@ function updateUI(gameState) {
     }
 
     // --- 時針能力面板控制 ---
-    // --- 時針能力面板控制 ---
-    // 新規則：
-    // - 被動：時針玩家可隨時看見小時卡庫頂牌（不耗 Mana）
-    // - 主動：出分鐘卡前可耗 1 Mana 將頂牌移到牌庫底（每回合一次）
     const hourAbilityPanel = document.getElementById('ability-panel');
-    if (hourAbilityPanel) {
-        const peekBtn = document.getElementById('ability-peek-btn'); // 舊版按鈕（若仍存在，隱藏即可）
+	if (hourAbilityPanel) {
+        const peekBtn = document.getElementById('ability-peek-btn');
         const buryBtn = document.getElementById('ability-bury-btn');
         const peekResultEl = document.getElementById('ability-peek-result');
-        const hintEl = hourAbilityPanel.querySelector('.ability-hint');
 
         const isHourHand = humanPlayer && humanPlayer.roleCard === '時針' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : false;
+        const isPreMinute = (typeof gameState.phase === 'string')
+            ? (gameState.phase === 'preMinute')
+            : isWaitingMinuteInput; 
 
-        // ✅ 面板顯示：只要啟用能力 + 人類是時針 + 未結束遊戲，就一直顯示（不再限制 preMinute）
-        const canShow = GAME_CONFIG.enableAbilities && isHourHand && !gameState.gameEnded;
+        const canShow = GAME_CONFIG.enableAbilities && isHourHand && isPreMinute && !gameState.gameEnded;
+
         hourAbilityPanel.style.display = canShow ? 'block' : 'none';
 
         if (canShow) {
             const blocked = !!gameState.abilityMarker;
-            const deckEmpty = !Array.isArray(gameState.hourDeck) || gameState.hourDeck.length === 0;
-            const top = (!deckEmpty) ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
-
-            // 舊版「查看頂牌」按鈕：新規則不再需要
-            if (peekBtn) {
-                peekBtn.style.display = 'none';
-                peekBtn.disabled = true;
-            }
-
-            // 「頂牌放到底」：僅限 preMinute、每回合一次、耗 1 Mana
+            if (peekBtn) peekBtn.disabled = blocked;
             if (buryBtn) {
-                buryBtn.textContent = '1 Mana：頂牌放到底';
-
-                const reasons = [];
-                if (blocked) reasons.push('能力被封印');
-                if (!isPreMinute) reasons.push('僅限出分鐘卡前');
-                if (typeof humanPlayer.mana !== 'number' || humanPlayer.mana < 1) reasons.push('Mana 不足（需 1）');
-                if (humanPlayer.specialAbilityUsed) reasons.push('本回合已使用過');
-                if (deckEmpty) reasons.push('小時卡庫已空');
-
-                const canUse = reasons.length === 0;
-                buryBtn.disabled = !canUse;
-                buryBtn.title = canUse ? '' : reasons.join('、');
+                buryBtn.disabled =
+                    blocked ||
+                    humanPlayer.mana < 2 ||
+                    humanPlayer.specialAbilityUsed ||
+                    !gameState.hourDeck ||
+                    gameState.hourDeck.length === 0;
             }
 
-            // 被動顯示頂牌
             if (peekResultEl) {
-                if (blocked) {
-                    peekResultEl.textContent = '頂牌：--（能力被封印）';
-                } else if (deckEmpty) {
-                    peekResultEl.textContent = '頂牌：--（牌庫已空）';
+                const peek = gameState.lastHourHandPeek;
+                if (
+                    peek &&
+                    peek.by === humanPlayer.id &&
+                    peek.gameRound === gameState.gameRound &&
+                    peek.roundMarker === gameState.roundMarker
+                ) {
+                    peekResultEl.textContent = `頂牌：${peek.number}${peek.isPrecious ? '★' : ''}`;
                 } else {
-                    peekResultEl.textContent = `頂牌：${top.number}${top.isPrecious ? '★' : ''}`;
+                    peekResultEl.textContent = '頂牌：--';
                 }
-            }
-
-            if (hintEl) {
-                hintEl.textContent = '頂牌會一直顯示；「頂牌放底」僅可在出分鐘卡前使用（每回合一次）。';
             }
         }
     }
@@ -796,7 +777,7 @@ function updateUI(gameState) {
 
             const hasPrecious = humanPlayer.hourCards.some(c => c.isPrecious);
             const preciousStatusClass = hasPrecious ? 'collected' : '';
-            const upgradeReady = (cardsCollectedCount >= 3 && hasPrecious);
+            const upgradeReady = (cardsCollectedCount >= 4 && hasPrecious);
 
             html += `<div class="progress-row">
                         <span>珍貴回憶 (至少 1 張):</span>
@@ -994,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContents = document.querySelectorAll('.tab-content');
 
     function switchTab(targetId) {
+        // 1) 切換 active 狀態
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active-tab'));
 
@@ -1001,7 +983,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetEl = document.getElementById(targetId);
 
         if (activeBtn) activeBtn.classList.add('active');
-        if (targetEl) targetEl.classList.add('active-tab');
+        if (targetEl) {
+            targetEl.classList.add('active-tab');
+
+            // 2) 重置分頁內容捲動
+            try { targetEl.scrollTop = 0; } catch (e) {}
+
+            // 3) 同時把整個頁面捲回頂部，確保 Header 的 tab 按鈕仍在視窗內
+            try { document.documentElement.scrollTop = 0; } catch (e) {}
+            try { document.body.scrollTop = 0; } catch (e) {}
+        }
     }
 
     tabButtons.forEach(btn => {
@@ -1039,68 +1030,141 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 	
     // 4C. 開始遊戲
-    const startGameBtn = document.getElementById('start-game-btn');
-    if (startGameBtn) {
-        startGameBtn.addEventListener('click', () => {
-            try {
-                const abilityToggle = document.getElementById('ability-toggle');
-                GAME_CONFIG.enableAbilities = !!abilityToggle?.checked;
+    // 4C. 開始遊戲（先選擇角色）
+const startGameBtn = document.getElementById('start-game-btn');
+const roleOverlay = document.getElementById('role-choice-overlay');
+const roleBtnTimeDemon = document.getElementById('role-choice-time-demon');
+const roleBtnSea = document.getElementById('role-choice-sea');
+const roleBtnScz = document.getElementById('role-choice-scz');
 
-                const logListEl = document.getElementById('log-list');
-                if (logListEl) logListEl.innerHTML = '';
+function _hideRoleOverlay() {
+    if (!roleOverlay) return;
+    roleOverlay.style.display = 'none';
+}
 
-                const gameMessage = document.getElementById('game-message');
-                if (gameMessage) gameMessage.textContent = '';
+function _showRoleOverlay() {
+    if (!roleOverlay) return;
+    roleOverlay.style.display = 'flex';
+}
 
-                globalGameState = initializeGame();
-				
-				resetMinuteHistory(globalGameState);
+function _resolveHumanIdByChoice(choice) {
+    // choice: 'timeDemon' | 'sea' | 'scz'
+    if (choice === 'sea') return 'SEA';
+    if (choice === 'scz') return 'SCZ';
+    // 預設：時魔（使用 時魔幼體 1 作為人類玩家）
+    return 'SM_1';
+}
 
-				resetRightPanels(globalGameState);
-				
-				// ✅ 重置秒針 UI 狀態（避免上一局殘留）
-				selectedCardValue = null;
-				selectedCardValues = [];
-				isSecondHandSelectingTwo = false;
-
-                const humanPlayer = globalGameState.players.find(p => p.id === HUMAN_PLAYER_ID);
-                if (humanPlayer) {
-                    console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
-                }
-
-				resetMinuteHistory(globalGameState);
-                updateUI(globalGameState);
-
-                const nextBtn = document.getElementById('next-step-btn');
-                if (nextBtn) {
-                    nextBtn.disabled = false;
-                    nextBtn.textContent = "執行下一回合";
-                    nextBtn.onclick = () => {
-						if (!globalGameState) return;
-
-						const waitingSecondFinal =
-							!!globalGameState.waitingSecondHandFinalChoice &&
-							globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
-
-						if (waitingSecondFinal) {
-							console.log('請先完成「秒針二選一」，再進入下一回合。');
-							return;
-						}
-
-						if (!globalGameState.gameEnded) {
-							startRound(globalGameState);
-							updateUI(globalGameState);
-						} else {
-							console.log("遊戲已結束。");
-							nextBtn.disabled = true;
-						}
-					};
-                }
-            } catch (err) {
-                console.log('[UI] 開始遊戲時發生錯誤：', err);
-            }
-        });
-    } else {
-        try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
+function _setHumanId(newId) {
+    // game.js 提供的 setter（較穩）
+    if (typeof setHumanPlayerId === 'function') {
+        setHumanPlayerId(newId);
+        return;
     }
+    // fallback：若沒有 setter，嘗試直接改全域變數（需要 game.js 的 HUMAN_PLAYER_ID 是 let）
+    try { HUMAN_PLAYER_ID = newId; } catch (_) {}
+    try { window.HUMAN_PLAYER_ID = newId; } catch (_) {}
+}
+
+function _startNewGameCore() {
+    const abilityToggle = document.getElementById('ability-toggle');
+    GAME_CONFIG.enableAbilities = !!abilityToggle?.checked;
+
+    const logListEl = document.getElementById('log-list');
+    if (logListEl) logListEl.innerHTML = '';
+
+    const gameMessage = document.getElementById('game-message');
+    if (gameMessage) gameMessage.textContent = '';
+
+    globalGameState = initializeGame();
+
+    resetMinuteHistory(globalGameState);
+    resetRightPanels(globalGameState);
+
+    // ✅ 重置秒針 UI 狀態（避免上一局殘留）
+    selectedCardValue = null;
+    selectedCardValues = [];
+    isSecondHandSelectingTwo = false;
+
+    const humanId = (typeof getHumanPlayerId === 'function')
+        ? getHumanPlayerId()
+        : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
+
+    const humanPlayer = globalGameState.players.find(p => p.id === humanId);
+    if (humanPlayer) {
+        console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+    }
+
+    updateUI(globalGameState);
+
+    const nextBtn = document.getElementById('next-step-btn');
+    if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = "執行下一回合";
+        nextBtn.onclick = () => {
+            if (!globalGameState) return;
+
+            const hid = (typeof getHumanPlayerId === 'function')
+                ? getHumanPlayerId()
+                : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
+
+            const waitingSecondFinal =
+                !!globalGameState.waitingSecondHandFinalChoice &&
+                globalGameState.waitingSecondHandFinalChoicePlayerId === hid;
+
+            if (waitingSecondFinal) {
+                console.log('請先完成「秒針二選一」，再進入下一回合。');
+                return;
+            }
+
+            if (!globalGameState.gameEnded) {
+                startRound(globalGameState);
+                updateUI(globalGameState);
+            } else {
+                console.log("遊戲已結束。");
+                nextBtn.disabled = true;
+            }
+        };
+    }
+}
+
+function _bindRoleButtonsOnce() {
+    if (!roleBtnTimeDemon || roleBtnTimeDemon.dataset.bound === '1') return;
+
+    roleBtnTimeDemon.dataset.bound = '1';
+    roleBtnSea.dataset.bound = '1';
+    roleBtnScz.dataset.bound = '1';
+
+    roleBtnTimeDemon.addEventListener('click', () => {
+        _hideRoleOverlay();
+        _setHumanId(_resolveHumanIdByChoice('timeDemon'));
+        _startNewGameCore();
+    });
+
+    roleBtnSea.addEventListener('click', () => {
+        _hideRoleOverlay();
+        _setHumanId(_resolveHumanIdByChoice('sea'));
+        _startNewGameCore();
+    });
+
+    roleBtnScz.addEventListener('click', () => {
+        _hideRoleOverlay();
+        _setHumanId(_resolveHumanIdByChoice('scz'));
+        _startNewGameCore();
+    });
+}
+
+if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+        try {
+            // 開始新遊戲前：要求先選擇角色
+            _bindRoleButtonsOnce();
+            _showRoleOverlay();
+        } catch (err) {
+            console.log('[UI] 開始遊戲時發生錯誤：', err);
+        }
+    });
+} else {
+    try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
+}
 });

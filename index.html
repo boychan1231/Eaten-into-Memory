@@ -203,7 +203,7 @@
                             <li><strong>幼體時魔：從鐘面收集</strong>：若幼體站在某格，且該格牌堆至少 2 張，會從該格牌堆頂抽取 1 張加入持有區（同號不重複）。</li>
                             <li><strong>受詛者：保護珍貴（★）</strong>：若受詛者所在格有珍貴小時卡（★），會把該 ★ 移到該格牌堆底部（降低被抽走機率）。</li>
                             <li><strong>幼體時魔：嘗試進化</strong>：每回合結束會檢查是否符合進化條件（見第九節）。成功進化後，幼體不再持有小時卡，並把持有的小時卡全部放回鐘面。</li>
-                            <li><strong>幼體時魔：一次性護盾</strong>：當幼體本回合將被扣齒輪，且尚未使用護盾且 Mana 足夠時，會消耗 Mana 來抵擋本次扣除（依程式自動判定）。</li>
+                            <li><strong>幼體時魔：一次性護盾</strong>：當幼體本回合將被扣齒輪，如擁有 3 Mana以上，會消耗所有 Mana 來抵擋本次（每場遊戲只能發動一次）。</li>
                         </ul>
                     </section>
 
@@ -274,6 +274,19 @@
             </div>
         </div>
             
+			        <div id="role-choice-overlay" class="modal-overlay" style="display:none;">
+            <div class="modal">
+                <div class="modal-title">選擇你的角色</div>
+                <div class="modal-desc">請選擇本局由你操作的角色（其餘角色由 AI 操作）。</div>
+                <div class="modal-actions stacked">
+                    <button id="role-choice-time-demon" type="button">時魔（幼體）</button>
+                    <button id="role-choice-sea" type="button">時之惡</button>
+                    <button id="role-choice-scz" type="button">受詛者</button>
+                </div>
+                <div class="modal-note">提示：選擇「時魔」代表你操作「時魔幼體 1」。</div>
+            </div>
+        </div>
+			
 		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
 			<div class="modal">
 				<div class="modal-title">秒針能力：二選一</div>

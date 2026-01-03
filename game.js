@@ -1,6 +1,22 @@
 // game.js (整合修正版：保留您的邏輯調整 + 修復缺失流程)
-const HUMAN_PLAYER_ID = 'SM_1'; 
+let HUMAN_PLAYER_ID = 'SM_1'; 
+function setHumanPlayerId(newId) {
+    if (typeof newId !== 'string' || !newId.trim()) return;
+    HUMAN_PLAYER_ID = newId.trim();
+    // 同步到 window 方便除錯/跨檔案讀取（非必須，但更穩定）
+    try { if (typeof window !== 'undefined') window.HUMAN_PLAYER_ID = HUMAN_PLAYER_ID; } catch (_) {}
+}
+function getHumanPlayerId() { return HUMAN_PLAYER_ID; }
+try {
+    if (typeof window !== 'undefined') {
+        window.setHumanPlayerId = setHumanPlayerId;
+        window.getHumanPlayerId = getHumanPlayerId;
+        window.HUMAN_PLAYER_ID = HUMAN_PLAYER_ID;
+    }
+} catch (_) {}
+
 let humanChoiceCardValue = null; 
+
 
 // 遊戲設定
 const GAME_CONFIG = {
