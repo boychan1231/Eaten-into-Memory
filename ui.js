@@ -777,7 +777,7 @@ function updateUI(gameState) {
 
             const hasPrecious = humanPlayer.hourCards.some(c => c.isPrecious);
             const preciousStatusClass = hasPrecious ? 'collected' : '';
-            const upgradeReady = (cardsCollectedCount >= 4 && hasPrecious);
+            const upgradeReady = (cardsCollectedCount >= 3 && hasPrecious);
 
             html += `<div class="progress-row">
                         <span>珍貴回憶 (至少 1 張):</span>
@@ -975,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContents = document.querySelectorAll('.tab-content');
 
     function switchTab(targetId) {
+        // 1) 切換 active 狀態
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active-tab'));
 
@@ -984,8 +985,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeBtn) activeBtn.classList.add('active');
         if (targetEl) {
             targetEl.classList.add('active-tab');
-            // 切換分頁時，將該分頁的捲動位置重置到頂部，避免使用者誤以為內容消失
+
+            // 2) 重置分頁內容捲動
             try { targetEl.scrollTop = 0; } catch (e) {}
+
+            // 3) 同時把整個頁面捲回頂部，確保 Header 的 tab 按鈕仍在視窗內
+            try { document.documentElement.scrollTop = 0; } catch (e) {}
+            try { document.body.scrollTop = 0; } catch (e) {}
         }
     }
 
