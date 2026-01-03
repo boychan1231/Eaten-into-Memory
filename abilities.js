@@ -264,12 +264,17 @@ function attemptRoleUpgrade(player, gameState) {
 
   const timeDemonIndex = getTimeDemonIndex();
 
-  // 依 ROLE_UPGRADE_REQUIREMENTS 的順序掃描
-  for (const roleName of Object.keys(ROLE_UPGRADE_REQUIREMENTS)) {
+  // 依 ROLE_UPGRADE_REQUIREMENTS 的順序掃描（若玩家已在 UI 選定目標身份，優先檢查該身份）
+  let roleOrder = Object.keys(ROLE_UPGRADE_REQUIREMENTS);
+  if (player.targetRoleName && roleOrder.includes(player.targetRoleName)) {
+    roleOrder = [player.targetRoleName, ...roleOrder.filter(r => r !== player.targetRoleName)];
+  }
+  for (const roleName of roleOrder) {
     const req = ROLE_UPGRADE_REQUIREMENTS[roleName];
 
-    const hasAllRequired = req.requiredCards.every(n => collectedNumbers.includes(n));
-    if (!hasAllRequired) continue;
+    const matchedCount = req.requiredCards.filter(n => collectedNumbers.includes(n)).length;
+    // ✅ 升級規則：5 張目標數字中，命中至少 3 張即可（3/5）
+    if (matchedCount < 3) continue;
 
     // 規則：如果該身份已被其他「時魔」佔用，則不能再進化成該身份
     const alreadyTaken = (gameState.players || []).some(p =>
