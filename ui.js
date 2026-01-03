@@ -690,41 +690,45 @@ function updateUI(gameState) {
             }
         }
     }
-	
-	// --- 時之惡能力面板控制（新增） ---
-    const seaAbilityPanel = document.getElementById('sea-ability-panel');
-    if (seaAbilityPanel) {
-        const seaUseBtn = document.getElementById('sea-targeting-use-btn');
-        const seaSkipBtn = document.getElementById('sea-targeting-skip-btn');
-        const seaStatusEl = document.getElementById('sea-ability-status');
+		
+	    // --- 時之惡能力面板控制（人類玩家） ---
+    const sinAbilityPanel = document.getElementById('sin-ability-panel');
+    if (sinAbilityPanel) {
+        const sinUseBtn = document.getElementById('sin-targeting-use-btn');
+        const sinsinlBtn = document.getElementById('sin-sinl-all-btn');
+        const sinSkipBtn = document.getElementById('sin-targeting-skip-btn');
+        const sinStatusEl = document.getElementById('sin-ability-status');
+        const sinsinlStatusEl = document.getElementById('sin-sinl-status');
 
-        const isSea = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
+        const issin = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
         const isPreMinute = (typeof gameState.phase === 'string')
             ? (gameState.phase === 'preMinute')
             : isWaitingMinuteInput;
 
-        const canShow = GAME_CONFIG.enableAbilities && isSea && !gameState.gameEnded;
-        seaAbilityPanel.style.display = canShow ? 'block' : 'none';
+        const canShow = GAME_CONFIG.enableAbilities && issin && isPreMinute && !gameState.gameEnded;
+        sinAbilityPanel.style.display = canShow ? 'block' : 'none';
 
         if (canShow) {
-            const disabledByPhase = !isPreMinute;
-            const mode = (gameState.seaTargetingMode === 'sea') ? 'sea' : 'default';
+            const mode = (gameState.sinTargetingMode === 'sin') ? 'sin' : 'default';
+            const sinled = !!gameState.abilityMarker;
 
-            if (seaUseBtn) {
-                seaUseBtn.disabled = disabledByPhase || humanPlayer.mana < 2 || !!humanPlayer.specialAbilityUsed;
-            }
-            if (seaSkipBtn) {
-                // 允許在 preMinute 時手動回到 default；但若已用過能力則鎖定
-                seaSkipBtn.disabled = disabledByPhase || !!humanPlayer.specialAbilityUsed;
-            }
+            if (sinUseBtn) sinUseBtn.disabled = humanPlayer.mana < 2 || !!humanPlayer.specialAbilityUsed;
+            if (sinsinlBtn) sinsinlBtn.disabled = sinled || humanPlayer.mana < 4 || !!humanPlayer.specialAbilityUsed;
+            if (sinSkipBtn) sinSkipBtn.disabled = !!humanPlayer.specialAbilityUsed;
 
-            if (seaStatusEl) {
-                seaStatusEl.textContent =
-                    `本回合扣除規則：${mode === 'sea' ? '距離時之惡最近者受罰' : '接近 12 者受罰'}`;
+            if (sinStatusEl) {
+                sinStatusEl.textContent =
+                    `本回合扣除規則：${mode === 'sin' ? '距離時之惡最近者受罰' : '接近 12 者受罰'}`;
+            }
+            if (sinsinlStatusEl) {
+                sinsinlStatusEl.textContent =
+                    `封印狀態：${sinled ? '已封印（本回合）' : '未封印'}`;
             }
         }
     }
 
+	
+	
     
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
@@ -984,28 +988,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 時之惡能力按鈕（新增）
-    const seaUseBtn = document.getElementById('sea-targeting-use-btn');
-    if (seaUseBtn) {
-        seaUseBtn.addEventListener('click', () => {
+    // 時之惡能力按鈕（人類玩家）
+    const sinUseBtn = document.getElementById('sin-targeting-use-btn');
+    if (sinUseBtn) {
+        sinUseBtn.addEventListener('click', () => {
             if (!globalGameState) return;
-            if (typeof handleHumanSeaTargetingChoice === 'function') {
-                handleHumanSeaTargetingChoice(globalGameState, true);
+            if (typeof handleHumansinTargetingChoice === 'function') {
+                handleHumansinTargetingChoice(globalGameState, true);
                 updateUI(globalGameState);
             }
         });
     }
 
-    const seaSkipBtn = document.getElementById('sea-targeting-skip-btn');
-    if (seaSkipBtn) {
-        seaSkipBtn.addEventListener('click', () => {
+    const sinSkipBtn = document.getElementById('sin-targeting-skip-btn');
+    if (sinSkipBtn) {
+        sinSkipBtn.addEventListener('click', () => {
             if (!globalGameState) return;
-            if (typeof handleHumanSeaTargetingChoice === 'function') {
-                handleHumanSeaTargetingChoice(globalGameState, false);
+            if (typeof handleHumansinTargetingChoice === 'function') {
+                handleHumansinTargetingChoice(globalGameState, false);
                 updateUI(globalGameState);
             }
         });
     }
+
+    const sinsinlBtn = document.getElementById('sin-sinl-all-btn');
+    if (sinsinlBtn) {
+        sinsinlBtn.addEventListener('click', () => {
+            if (!globalGameState) return;
+            if (typeof handleHumansinsinlAll === 'function') {
+                handleHumansinsinlAll(globalGameState);
+                updateUI(globalGameState);
+            }
+        });
+    }
+
 
 
     // 特殊能力選擇面板按鈕
@@ -1093,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const startGameBtn = document.getElementById('start-game-btn');
 const roleOverlay = document.getElementById('role-choice-overlay');
 const roleBtnTimeDemon = document.getElementById('role-choice-time-demon');
-const roleBtnSea = document.getElementById('role-choice-sea');
+const roleBtnsin = document.getElementById('role-choice-sin');
 const roleBtnScz = document.getElementById('role-choice-scz');
 
 function _hideRoleOverlay() {
@@ -1107,8 +1123,8 @@ function _showRoleOverlay() {
 }
 
 function _resolveHumanIdByChoice(choice) {
-    // choice: 'timeDemon' | 'sea' | 'scz'
-    if (choice === 'sea') return 'SEA';
+    // choice: 'timeDemon' | 'sin' | 'scz'
+    if (choice === 'sin') return 'sin';
     if (choice === 'scz') return 'SCZ';
     // 預設：時魔（使用 時魔幼體 1 作為人類玩家）
     return 'SM_1';
@@ -1191,7 +1207,7 @@ function _bindRoleButtonsOnce() {
     if (!roleBtnTimeDemon || roleBtnTimeDemon.dataset.bound === '1') return;
 
     roleBtnTimeDemon.dataset.bound = '1';
-    roleBtnSea.dataset.bound = '1';
+    roleBtnsin.dataset.bound = '1';
     roleBtnScz.dataset.bound = '1';
 
     roleBtnTimeDemon.addEventListener('click', () => {
@@ -1200,9 +1216,9 @@ function _bindRoleButtonsOnce() {
         _startNewGameCore();
     });
 
-    roleBtnSea.addEventListener('click', () => {
+    roleBtnsin.addEventListener('click', () => {
         _hideRoleOverlay();
-        _setHumanId(_resolveHumanIdByChoice('sea'));
+        _setHumanId(_resolveHumanIdByChoice('sin'));
         _startNewGameCore();
     });
 

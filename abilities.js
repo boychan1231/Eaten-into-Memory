@@ -51,7 +51,7 @@ function _topHourDeckCard(gameState) {
   return gameState.hourDeck[gameState.hourDeck.length - 1];
 }
 
-	function activateSeaPreRoundAbility(gameState) {
+	function activatesinPreRoundAbility(gameState) {
     // 【已移除】舊設定：時之惡於每輪第 1 回合開始前自動耗用資源棄牌／干擾其他玩家手牌。
     // 保留此空函式僅為相容舊呼叫點，避免破壞既有流程。
 	return;
@@ -238,7 +238,7 @@ function attemptRoleUpgrade(player, gameState) {
 if (typeof window !== 'undefined') {
   window.ROLE_UPGRADE_REQUIREMENTS = ROLE_UPGRADE_REQUIREMENTS;
 
-  window.activateSeaPreRoundAbility = activateSeaPreRoundAbility;
+  window.activatesinPreRoundAbility = activatesinPreRoundAbility;
 
   window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
   window.hourHandPreMinuteAI = hourHandPreMinuteAI;

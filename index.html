@@ -85,14 +85,17 @@
 						</div>
 					</div>
 					
-					<!-- 時之惡能力面板（新增） -->
-					<div id="sea-ability-panel" class="ability-panel" style="display:none;">
+					
+					<!-- 時之惡能力面板（新增：人類玩家操作用） -->
+					<div id="sin-ability-panel" class="ability-panel" style="display:none;">
 						<div class="ability-title">特殊能力（時之惡）</div>
-						<div class="ability-actions">
-							<button id="sea-targeting-use-btn" type="button">2 Mana：改為「距離時之惡最近者受罰」（本回合）</button>
-							<button id="sea-targeting-skip-btn" type="button">維持預設（接近 12 者受罰）</button>
+						<div class="ability-actions" style="flex-wrap:wrap;">
+							<button id="sin-targeting-use-btn" type="button">2 Mana：改為「距離時之惡最近者受罰」（本回合）</button>
+							<button id="sin-sinl-all-btn" type="button">4 Mana：封印所有時魔特殊能力（本回合）</button>
+							<button id="sin-targeting-skip-btn" type="button">維持預設（接近 12 者受罰）</button>
 						</div>
-						<div id="sea-ability-status" class="ability-result">本回合扣除規則：--</div>
+						<div id="sin-ability-status" class="ability-result">本回合扣除規則：--</div>
+						<div id="sin-sinl-status" class="ability-result">封印狀態：--</div>
 						<div class="ability-hint">在「出分鐘卡前」使用；每回合最多一次。</div>
 					</div>
 
@@ -293,7 +296,7 @@
                 <div class="modal-desc">請選擇本局由你操作的角色（其餘角色由 AI 操作）。</div>
                 <div class="modal-actions stacked">
                     <button id="role-choice-time-demon" type="button">時魔（幼體）</button>
-                    <button id="role-choice-sea" type="button">時之惡</button>
+                    <button id="role-choice-sin" type="button">時之惡</button>
                     <button id="role-choice-scz" type="button">受詛者</button>
                 </div>
                 <div class="modal-note">提示：選擇「時魔」代表你操作「時魔幼體 1」。</div>
