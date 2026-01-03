@@ -226,6 +226,8 @@ function initializeGame(roles = PLAYER_ROLES) {
         const initialGear = gameState.originalGearSets[index];
         player.gearCards = initialGear; 
         player.mana = player.gearCards;
+		
+		//player.shieldUsed = false;//讓防禦能力每輪刷新
         
         if (player.type === '時之惡') {
             player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 6)); 

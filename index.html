@@ -89,10 +89,11 @@
 					<div id="ability-panel" class="ability-panel" style="display:none;">
 						<div class="ability-title">特殊能力（時針）</div>
 						<div class="ability-actions">
-							<button id="ability-bury-btn" type="button">1 Mana：頂牌放到底</button>
+							<button id="ability-peek-btn" type="button">查看小時卡庫頂牌</button>
+							<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
 						</div>
 						<div id="ability-peek-result" class="ability-result">頂牌：--</div>
-						<div class="ability-hint">頂牌會一直顯示；「頂牌放底」僅可在出分鐘卡前使用（每回合一次）。</div>
+						<div class="ability-hint">在「出分鐘卡前」使用；「頂牌放底」每回合一次。</div>
 					</div>
 
 					<!-- 分針能力二選一面板（保留） -->
@@ -132,43 +133,132 @@
             
             <div id="rules-content" class="tab-content">
                 <div class="rules-wrapper">
-                    <h3>📖 遊戲規則總覽</h3>
+                    <h3>📖 《時魔 2025》規則（依現行網頁版流程）</h3>
                     <p class="rules-intro">
-                        規則調整中，請以遊戲內呈現為準。
+                        本頁以遊戲內實際流程為準（回合推進、扣除規則、輪末清場與計分等）。若你在「設定」中關閉「啟用特殊能力」，能力相關條文不適用。
                     </p>
 
                     <section class="rules-section">
-                        <h4>一、遊戲目標</h4>
+                        <h4>一、遊戲目標與勝利</h4>
                         <ul class="rules-list">
-                            <li>時魔：透過收集小時卡與保留齒輪，達成自身勝利條件。</li>
-                            <li>時之惡：利用骰子與攻擊規則，逐步削弱其他玩家。</li>
-                            <li>受詛者：運用特殊骰子與能力，在混亂中尋找生路。</li>
+                            <li><span class="rules-tag">時魔陣營</span> 以分數競逐勝利；若<strong>時之惡</strong>被逐出，遊戲立即結束，時魔陣營勝利。</li>
+                            <li><span class="rules-tag">時之惡</span> 目標是<strong>逐出所有時魔</strong>；若所有時魔被逐出，遊戲立即結束，時之惡勝利。</li>
+                            <li><span class="rules-tag">受詛者</span> 與其他角色一樣會計分，但另有「第 5 輪任務」：第 5 輪輪末若鐘面上有<strong>至少 10 個位置存在珍貴小時卡（★）</strong>，任務達成；否則會受到嚴重扣分（依程式判定）。</li>
                         </ul>
                     </section>
 
                     <section class="rules-section">
-                        <h4>二、卡牌種類與資源</h4>
+                        <h4>二、組件與資源</h4>
                         <ul class="rules-list">
-                            <li><span class="rules-tag">分鐘卡</span>：1–60，決定行動順序與齒輪收益。</li>
-                            <li><span class="rules-tag">小時卡</span>：1–12，一般 x2 24 ，x1 珍貴小時卡；共36張。</li>
-                            <li><span class="rules-tag">齒輪卡</span>：代表玩家生命，並提供等量 Mana。</li>
+                            <li><span class="rules-tag">分鐘卡</span> 玩家手牌。每回合各玩家打出 1 張，用以決定「選小時卡」的先後。</li>
+                            <li><span class="rules-tag">齒輪</span> 代表生命值與資源上限；齒輪歸零即被逐出。</li>
+                            <li><span class="rules-tag">Mana</span> 用於支付特殊能力消耗；每輪開始時會依齒輪數重置（Mana 不會高於齒輪）。</li>
+                            <li><span class="rules-tag">小時卡</span> 1–12。現行版本共有 36 張：<strong>少年／中年／老年</strong>三種各 12 張（每種包含 1–12 各 1 張）。</li>
+                            <li><span class="rules-tag">珍貴小時卡（★）</span> 開局會隨機選定一種配置，使每個數字 1–12 中，三張同號小時卡裡<strong>恰有 1 張</strong>為珍貴（因此全牌庫共 12 張★）。</li>
+                            <li><span class="rules-tag">D6 骰子（時之惡／受詛者）</span> 兩者被扣除時優先扣 D6；D6 低於 1 時才改扣 1 齒輪並依角色規則重設 D6。</li>
                         </ul>
                     </section>
 
                     <section class="rules-section">
-                        <h4>三、基本回合流程（簡表）</h4>
+                        <h4>三、遊戲結構（輪 / 回合）</h4>
+                        <ul class="rules-list">
+                            <li>遊戲最多 <strong>5 輪</strong>（Game Round 1–5）。</li>
+                            <li>每輪包含 <strong>12 回合</strong>（回合標記 1–12）。</li>
+                            <li>每回合會抽出 <strong>2 張小時卡</strong>，因此通常只有<strong>前 2 名</strong>（分鐘卡最大者優先）能選取小時卡。</li>
+                        </ul>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>四、每回合流程</h4>
                         <ol class="rules-steps">
-                            <li>回合開始：觸發相關角色的回合前能力。</li>
-                            <li>揭示兩張小時卡，決定本回合時空環境。</li>
-                            <li>所有玩家選擇並打出分鐘卡。</li>
-                            <li>依分鐘卡數值，由大到小選取小時卡與站位。</li>
-                            <li>結算懲罰、齒輪與 Mana 變化、角色升級。</li>
-                            <li>檢查是否有人被逐出或達成勝利條件。</li>
+                            <li><strong>回合開始</strong>：重置本回合旗標；若啟用特殊能力，可能觸發回合前能力（例如時之惡的棄牌）。</li>
+                            <li><strong>翻開小時卡</strong>：從小時卡庫抽出 2 張，作為本回合可被選取的小時卡。</li>
+                            <li><strong>所有玩家出分鐘卡</strong>：每名玩家從手牌中選 1 張打出（秒針能力例外，見第七節）。</li>
+                            <li><strong>依分鐘卡排序</strong>：由大到小決定選小時卡順序。</li>
+                            <li><strong>選小時卡與站位</strong>：依序選取小時卡（通常前 2 名），並移動到該小時數字位置。</li>
+                            <li><strong>結算扣除</strong>：依「時之惡」的本回合鎖定模式，決定要扣除的目標（見第五節）。</li>
+                            <li><strong>回合結束事件</strong>：幼體時魔收集、受詛者保護珍貴、幼體時魔嘗試進化等（見第六節）。</li>
+                            <li><strong>進入下一回合</strong>：回合標記 +1；若回合標記超過 12，進入輪末結算（第八節）。</li>
                         </ol>
-                        <p class="rules-note">
-                            詳細條文（例如「最接近 12 的懲罰」「幼體時魔防禦」等），
-                            建議各自獨立成一小節，方便查詢。
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>五、扣除規則（核心對抗機制）</h4>
+                        <p class="rules-intro">
+                            每回合在小時卡選取後會進行扣除。現行程式有兩種鎖定模式（由時之惡決定／或依能力改寫）：
                         </p>
+                        <ul class="rules-list">
+                            <li><strong>模式 A：最接近 12 者受罰</strong>：找出所有仍在場且有站位的玩家，站在數字最大的玩家（可多人並列）成為受罰者。</li>
+                            <li><strong>模式 B：距離時之惡最近者受罰</strong>：在「時魔＋受詛者」中，找出與時之惡站位的圓環距離最小者（可多人並列）成為受罰者。</li>
+                        </ul>
+                        <ul class="rules-list">
+                            <li><span class="rules-tag">時魔</span> 受罰時通常扣 1 齒輪；幼體時魔有一次性防禦（見第六節）。</li>
+                            <li><span class="rules-tag">時之惡／受詛者</span> 受罰時優先扣 D6；D6 歸零後才扣 1 齒輪並重設 D6。</li>
+                        </ul>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>六、回合結束事件：收集、保護、進化</h4>
+                        <ul class="rules-list">
+                            <li><strong>幼體時魔：從鐘面收集</strong>：若幼體站在某格，且該格牌堆至少 2 張，會從該格牌堆頂抽取 1 張加入持有區（同號不重複）。</li>
+                            <li><strong>受詛者：保護珍貴（★）</strong>：若受詛者所在格有珍貴小時卡（★），會把該 ★ 移到該格牌堆底部（降低被抽走機率）。</li>
+                            <li><strong>幼體時魔：嘗試進化</strong>：每回合結束會檢查是否符合進化條件（見第九節）。成功進化後，幼體不再持有小時卡，並把持有的小時卡全部放回鐘面。</li>
+                            <li><strong>幼體時魔：一次性護盾</strong>：當幼體本回合將被扣齒輪，且尚未使用護盾且 Mana 足夠時，會消耗 Mana 來抵擋本次扣除（依程式自動判定）。</li>
+                        </ul>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>七、特殊能力（需在「設定」啟用）</h4>
+                        <ul class="rules-list">
+                            <li><span class="rules-tag">通用</span> 若被「能力封印」標記影響（遊戲內會提示），則該回合能力不可用。</li>
+                            <li><span class="rules-tag">時針</span>可查看頂牌，出分鐘卡前可消耗 Mana把移到牌庫底（每回合一次）。</li>
+                            <li><span class="rules-tag">分針</span> 在符合觸發條件時，可消耗 2 Mana 改變站位（UI 會提供「使用／略過」）。</li>
+                            <li><span class="rules-tag">秒針</span> 可消耗 3 Mana 先「蓋放」兩張分鐘卡，之後二選一作為本回合出牌，未選者回手。</li>
+                            <li><span class="rules-tag">時之惡</span> 可能在回合前消耗 Mana 並棄置手牌，或改寫本回合的扣除鎖定模式（依程式與隨機判定）。</li>
+                        </ul>
+                        <p class="rules-note">
+                            註：能力細節（觸發時機、消耗、每回合限制）以當前版本 UI 提示與日誌輸出為準；你後續若調整 abilities.js，請同步更新本頁文字。
+                        </p>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>八、輪末結算（第 12 回合後）</h4>
+                        <ol class="rules-steps">
+                            <li><strong>計分</strong>：每位玩家分數加上當前齒輪數（score += gearCards）。</li>
+                            <li><strong>時之惡懲罰</strong>：若連續兩輪沒有任何時魔被逐出，時之惡扣 1 齒輪（可能導致立即結束）。</li>
+                            <li><strong>幼體交還持有小時卡</strong>：所有幼體持有的小時卡洗回小時卡庫。</li>
+                            <li><strong>鐘面清場</strong>：各格若頂牌為 ★，該 ★ 留場，其下普通回收；若頂牌非 ★，該格全部回收。</li>
+                            <li><strong>輪轉</strong>：依程式配置更換手牌／齒輪配置，並重置 Mana、站位與輪內旗標，進入下一輪。</li>
+                            <li><strong>第 5 輪任務</strong>：第 5 輪輪末檢查「鐘面至少 10 格有 ★」。未達成則受詛者受罰。</li>
+                        </ol>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>九、進化條件（時魔幼體 → 時針／分針／秒針）</h4>
+                        <p class="rules-intro">
+                            進化只會在「回合結束」自動檢查；同一身份同局僅能被一名時魔佔用。
+                        </p>
+                        <ul class="rules-list">
+                            <li><strong>必要條件</strong>：持有至少 1 張珍貴小時卡（★）。</li>
+                            <li><strong>命中條件（4 選 3）</strong>：下列 4 個數字中持有至少 3 個即可進化。</li>
+                        </ul>
+                        <ul class="rules-list">
+                            <li><span class="rules-tag">時針</span> 1 / 4 / 9 / 10（至少命中 3 個）＋ 至少 1 張★</li>
+                            <li><span class="rules-tag">秒針</span> 2 / 6 / 8 / 11（至少命中 3 個）＋ 至少 1 張★</li>
+                            <li><span class="rules-tag">分針</span> 3 / 5 / 7 / 12（至少命中 3 個）＋ 至少 1 張★</li>
+                        </ul>
+                        <p class="rules-note">
+                            進化成功後：角色名稱會更新為「時魔 X（身份）」；並把持有的小時卡放回鐘面（珍貴放上層、普通放下層），持有區清空。
+                        </p>
+                    </section>
+
+                    <section class="rules-section">
+                        <h4>十、常見問題</h4>
+                        <ul class="rules-list">
+                            <li><strong>為何我這回合不能選小時卡？</strong> 每回合只翻開 2 張小時卡，通常只有分鐘卡排名前 2 的玩家能選取。</li>
+                            <li><strong>為何能力按鈕變成不可用？</strong> 可能是 Mana 不足、本回合已使用、能力封印、或不在可發動時機（例如時針能力只能在出分鐘卡前）。</li>
+                            <li><strong>為何我無法進化？</strong> 請確認：是否仍是幼體、是否至少有 1 張★、是否已命中對應身份的 4 選 3 數字、且該身份未被其他時魔佔用。</li>
+                        </ul>
                     </section>
                 </div>
             </div>
