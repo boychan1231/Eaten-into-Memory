@@ -25,7 +25,7 @@ const ROLE_UPGRADE_REQUIREMENTS = {
 
 // --- 特殊能力函式 ---
 
-function activateSeaPreRoundAbility(gameState) {
+function activatesinPreRoundAbility(gameState) {
     // 【已刪除】舊版「回合開始前能力」：
     // 先前曾讓「時之惡」在第 1 回合開始前消耗 Mana 並捨棄分鐘卡以觸發效果。
     // 依現行規則，此能力不再存在，故保留空實作避免舊流程報錯。

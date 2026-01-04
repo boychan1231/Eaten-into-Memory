@@ -206,13 +206,18 @@ function renderPlayerHistoryPanel(gameState) {
 function updateUI(gameState) {
     if (!gameState) return;
 
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanId =
+        (typeof getEffectiveHumanPlayerId === 'function')
+            ? getEffectiveHumanPlayerId()
+            : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
+
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
 
     // 定義等待狀態 (用於按鈕控制)
     const isWaitingMinuteInput = gameState.currentRoundAIChoices !== null;
-    const isWaitingHourInput = gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === HUMAN_PLAYER_ID;
-    const isWaitingAbilityChoice = !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === HUMAN_PLAYER_ID;
-    const isWaitingSecondFinalChoiceTop = !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
+    const isWaitingHourInput = gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId;
+    const isWaitingAbilityChoice = !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId;
+    const isWaitingSecondFinalChoiceTop = !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
     // ✅ 防呆：即使 humanPlayer 讀取失敗，也必須鎖住「下一回合」避免跳過出牌/選卡流程
     const nextStepBtnTop = document.getElementById('next-step-btn');
