@@ -168,7 +168,7 @@ function attemptRoleUpgrade(player, gameState) {
 
 // 綁定到 window 供其他模組呼叫
 if (typeof window !== 'undefined') {
-    window.activateSeaPreRoundAbility = activateSeaPreRoundAbility;
+    window.activatesinPreRoundAbility = activatesinPreRoundAbility;
     window.hourHandPeekTop = hourHandPeekTop;
     window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
     window.activateMinuteHandAbility = activateMinuteHandAbility;
