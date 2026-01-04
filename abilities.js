@@ -1,177 +1,168 @@
-// abilities.js (最終整合版：移除時之惡能力 + 自由升級 + UI 互動支援)
+// abilities.js (特殊能力定義檔 - 語法已清理)
 
-// =============================================================
-// 1. 角色升級需求設定 (自由選擇制)
-// =============================================================
+// ------------------------------------------------------------
+// 相容性保護：舊版曾引用 activatesinPreRoundAbility（已移除）。
+// 為避免舊快取/舊檔案導致載入時 ReferenceError，保留空實作。
+// ------------------------------------------------------------
+function activatesinPreRoundAbility() { return false; }
+function activateSinPreRoundAbility() { return false; }
+
+// 角色升級條件 (從 game.js 移動過來)
 const ROLE_UPGRADE_REQUIREMENTS = {
     '時針': { 
         id: '時針', cardName: '時針', 
-        requiredCards: [1, 4, 9, 10, 12], identityCard: true
+        requiredCards: [1, 4, 9, 10], identityCard: true
     },
     '秒針': { 
         id: '秒針', cardName: '秒針', 
-        requiredCards: [2, 6, 8, 11, 12], identityCard: true
+        requiredCards: [2, 6, 8, 11], identityCard: true
     },
     '分針': { 
         id: '分針', cardName: '分針', 
-        requiredCards: [3, 5, 7, 12, 10], identityCard: true
+        requiredCards: [3, 5, 7, 12], identityCard: true
     }
 };
 
+// --- 特殊能力函式 ---
 
-// =============================================================
-// 2. 時針能力 (UI 互動用)
-// =============================================================
-
-// 被動：查看頂牌 (UI 呼叫用，不耗 Mana)
-function hourHandPeekTop(gameState, playerId) {
-    if (!GAME_CONFIG.enableAbilities) return null;
-    if (!gameState || !Array.isArray(gameState.hourDeck)) return null;
-    if (gameState.abilityMarker) return null; // 被封印
-
-    const player = gameState.players?.find(p => p.id === playerId);
-    if (!player || player.isEjected || player.roleCard !== '時針') return null;
-
-    // 取得頂牌 (陣列最後一張)
-    const topCard = gameState.hourDeck[gameState.hourDeck.length - 1];
-    
-    // 記錄這回合已經看過了
-    gameState.lastHourHandPeek = {
-        by: playerId,
-        number: topCard.number,
-        isPrecious: topCard.isPrecious,
-        gameRound: gameState.gameRound,
-        roundMarker: gameState.roundMarker
-    };
-    
-    return topCard;
+function activateSeaPreRoundAbility(gameState) {
+    // 【已刪除】舊版「回合開始前能力」：
+    // 先前曾讓「時之惡」在第 1 回合開始前消耗 Mana 並捨棄分鐘卡以觸發效果。
+    // 依現行規則，此能力不再存在，故保留空實作避免舊流程報錯。
+    return false;
 }
 
-// 主動：將頂牌移到底部 (按鈕呼叫，耗 1 Mana)
-function hourHandMoveTopToBottom(gameState, playerId) {
-    if (!GAME_CONFIG.enableAbilities) return false;
-    const player = gameState.players?.find(p => p.id === playerId);
+function activateHourHandAbility(gameState) {
+    if (!GAME_CONFIG.enableAbilities) return;
+    const hourHandPlayer = gameState.players.find(p => p.roleCard === '時針' && !p.isEjected);
+    if (gameState.abilityMarker) return;
     
-    if (!player || player.roleCard !== '時針' || player.isEjected) return false;
-    if (gameState.abilityMarker) return false; // 被封印
-    if (player.specialAbilityUsed) return false; // 每回合限一次
-    if (player.mana < 1) return false;
-    if (!gameState.hourDeck || gameState.hourDeck.length < 2) return false;
+    if (hourHandPlayer && hourHandPlayer.mana >= 1) {
+        if (Math.random() < 0.5) { 
+            if (gameState.hourDeck.length < 2) return;
 
-    // 執行移動
-    player.mana -= 1;
-    player.specialAbilityUsed = true;
-    
-    const topCard = gameState.hourDeck.pop();
-    gameState.hourDeck.unshift(topCard); // 移到底部 (陣列開頭)
+            hourHandPlayer.mana--; 
+            console.log(`【時針】${hourHandPlayer.name} 耗用 1 Mana 觀看牌庫。`);
 
-    console.log(`🕒【時針】${player.name} 耗用 1 Mana，將小時卡庫頂牌移至底部。`);
-    
-    // 清除偷看紀錄，因為頂牌變了
-    gameState.lastHourHandPeek = null;
-    
-    return true;
-}
-
-// =============================================================
-// 3. 分針能力 (UI 互動用)
-// =============================================================
-
-// 主動：移動到 [當前數字 - 1] (按鈕呼叫，耗 2 Mana)
-function activateMinuteHandAbility(gameState, playerId) {
-    if (!GAME_CONFIG.enableAbilities) return false;
-    
-    const player = gameState.players.find(p => p.id === playerId);
-    if (!player || player.roleCard !== '分針' || player.isEjected) return false;
-    if (gameState.abilityMarker) return false;
-    if (player.specialAbilityUsed) return false;
-    if (player.mana < 2) return false;
-
-    // 取得原本打算移動的目標 (由 UI 傳入或從 gameState 讀取)
-    const base = gameState.waitingAbilityBaseNumber;
-    if (typeof base !== 'number' || base <= 1) return false; // 1 不能移到 0 (或 12)
-
-    // 執行移動
-    player.mana -= 2;
-    player.specialAbilityUsed = true;
-    player.currentClockPosition = base - 1; // 修正位置
-
-    console.log(`⏱️【分針】${player.name} 耗用 2 Mana，發動能力移動到 ${base - 1}。`);
-    return true;
-}
-
-// =============================================================
-// 4. 角色升級判定 (核心邏輯：自由選擇)
-// =============================================================
-function attemptRoleUpgrade(player, gameState) {
-    // 只有還沒升級過的玩家 (名字與 roleCard 相同，或者 roleCard 含 "幼") 可以嘗試
-    // 這裡使用更寬鬆的判斷：只要目前 roleCard 不是 '時針'/'分針'/'秒針' 就可
-    const currentRole = player.roleCard;
-    if (['時針', '分針', '秒針'].includes(currentRole)) return; 
-
-    // 如果玩家已經設定了「目標身份」(由 UI 下拉選單設定)，就優先檢查該身份
-    // 如果沒有，則遍歷所有可能 (AI 用)
-    let targetRolesToCheck = [];
-    if (player.targetRoleName && ROLE_UPGRADE_REQUIREMENTS[player.targetRoleName]) {
-        targetRolesToCheck.push(player.targetRoleName);
-    } else {
-        targetRolesToCheck = Object.keys(ROLE_UPGRADE_REQUIREMENTS);
-    }
-
-    const collectedNumbers = player.hourCards.map(c => c.number);
-    const hasPreciousCard = player.hourCards.some(c => c.isPrecious);
-
-    for (const roleName of targetRolesToCheck) {
-        const req = ROLE_UPGRADE_REQUIREMENTS[roleName];
-        
-        // 1. 檢查該身份是否已被佔用 (有人已經升級成這個了)
-        const isRoleTaken = gameState.players.some(p => 
-            !p.isEjected && p.id !== player.id && p.roleCard === roleName
-        );
-        if (isRoleTaken) continue;
-
-        // 2. 檢查卡牌需求
-        // 規則：指定 5 張數字中，收集到 >= 3 張，且必須持有至少 1 張珍貴卡
-        let matchCount = 0;
-        req.requiredCards.forEach(num => {
-            if (collectedNumbers.includes(num)) matchCount++;
-        });
-
-        if (matchCount >= 3 && hasPreciousCard) {
-            // --- 升級成功 ---
-            player.roleCard = req.cardName;
+            const card1 = gameState.hourDeck[gameState.hourDeck.length - 1]; 
+            const card2 = gameState.hourDeck[gameState.hourDeck.length - 2]; 
             
-            // 更新顯示名稱，保留識別度 (例如 "時魔幼體 1" -> "時魔 1 (時針)")
-            if (player.name.includes('幼體')) {
-                player.name = player.name.replace('幼體', `(${req.cardName})`);
-            } else {
-                player.name = `${player.name} (${req.cardName})`;
+            if (hourHandPlayer.mana >= 1 && Math.random() < 0.5) { 
+                hourHandPlayer.mana--;
+                const cardToMove = (card1.number < card2.number) ? card1 : card2;
+                let cardIndex = gameState.hourDeck.findIndex(c => c === cardToMove);
+                if (cardIndex === -1) cardIndex = gameState.hourDeck.length - 1; 
+                
+                const movedCard = gameState.hourDeck.splice(cardIndex, 1)[0];
+                gameState.hourDeck.unshift(movedCard); 
+                console.log(`【時針】將卡牌 [${movedCard.number}${movedCard.isPrecious ? 'P' : ''}] 移到牌庫底部。`);
             }
-
-            console.log(`🎉【進化】${player.id} 成功升級為：${req.cardName}！(命中 ${matchCount} 張指定卡 + 珍貴卡)`);
-
-            // 3. 繳回卡牌到鐘面
-            // 規則：珍貴卡放該格最上面 (push)，普通卡放最下面 (unshift)
-            player.hourCards.forEach(card => {
-                const spot = gameState.clockFace.find(s => s.position === card.number);
-                if (spot) {
-                    if (card.isPrecious) spot.cards.push(card);
-                    else spot.cards.unshift(card);
-                }
-            });
-            player.hourCards = []; // 清空手上的小時卡
-            
-            return; // 升級完成，跳出函式
         }
     }
 }
 
-// 綁定到 window 供其他模組呼叫
-if (typeof window !== 'undefined') {
-    window.activatesinPreRoundAbility = activatesinPreRoundAbility;
-    window.hourHandPeekTop = hourHandPeekTop;
-    window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
-    window.activateMinuteHandAbility = activateMinuteHandAbility;
-    window.attemptRoleUpgrade = attemptRoleUpgrade;
-    window.ROLE_UPGRADE_REQUIREMENTS = ROLE_UPGRADE_REQUIREMENTS;
+function activateMinuteHandAbility(gameState) {
+    if (!GAME_CONFIG.enableAbilities) return;
+    const minuteHandPlayer = gameState.players.find(p => p.roleCard === '分針' && !p.isEjected && p.currentClockPosition);
+    if (gameState.abilityMarker) return;
+    
+    if (minuteHandPlayer && minuteHandPlayer.mana >= 2) {
+        if (Math.random() < 0.5) { 
+            minuteHandPlayer.mana -= 2; 
+            console.log(`【分針】${minuteHandPlayer.name} 耗用 2 Mana 發動移動能力。`);
+
+            if (Math.random() < 0.5) {
+                minuteHandPlayer.currentClockPosition = minuteHandPlayer.currentClockPosition - 1;
+                if (minuteHandPlayer.currentClockPosition < 1) minuteHandPlayer.currentClockPosition = 12;
+                console.log(`【分針】將自己逆時針移動一步到 ${minuteHandPlayer.currentClockPosition}`);
+            } else {
+                const movableTargets = gameState.players.filter(p => 
+                    (p.type === '時魔' || p.type === '時之惡') && !p.isEjected && p.currentClockPosition
+                );
+                if (movableTargets.length > 0) {
+                    const target = movableTargets[Math.floor(Math.random() * movableTargets.length)];
+                    target.currentClockPosition = target.currentClockPosition % 12 + 1;
+                    console.log(`【分針】移動 ${target.name} 順時針一步到 ${target.currentClockPosition}`);
+                }
+            }
+        }
+    }
+}
+
+function attemptRoleUpgrade(player, gameState) {
+    if (!player || !gameState) return false;
+
+    // ✅ 只允許「幼體時魔」嘗試進化
+    if (player.type !== '時魔' || player.isEjected) return false;
+    const roleText = String(player.roleCard || '');
+    const isYoungTimeDemon = roleText.includes('幼體');
+    if (!isYoungTimeDemon) return false;
+
+    // 沒有收集小時卡就不用掃
+    if (!Array.isArray(player.hourCards) || player.hourCards.length === 0) return false;
+
+    const collectedNumbers = player.hourCards.map(c => c.number);
+    const hasPreciousCard = player.hourCards.some(c => c.isPrecious);
+
+    // 依你現行規則：必須至少有 1 張珍貴小時卡才可能進化
+    if (!hasPreciousCard) return false;
+
+    // 解析玩家序號：優先從名稱抓，抓不到再從 id (SM_1) 抓
+    const getTimeDemonIndex = () => {
+        const name = String(player.name || '').trim();
+        let m = name.match(/時魔\s*幼體\s*(\d+)/);
+        if (!m) m = name.match(/時魔\s*(\d+)/);
+        if (!m) m = String(player.id || '').match(/SM_(\d+)/);
+        return m ? parseInt(m[1], 10) : null;
+    };
+
+    const timeDemonIndex = getTimeDemonIndex();
+
+    // ✅ 三個身份一起掃（依 ROLE_UPGRADE_REQUIREMENTS 的順序）
+    for (const roleName of Object.keys(ROLE_UPGRADE_REQUIREMENTS)) {
+        const req = ROLE_UPGRADE_REQUIREMENTS[roleName];
+        const targetRole = req.cardName || roleName;
+
+        // ✅ 規則：如果該身份已被其他「時魔」佔用，則不能再進化成該身份
+        const isRoleTaken = gameState.players.some(p =>
+            p &&
+            p !== player &&
+            !p.isEjected &&
+            p.type === '時魔' &&
+            p.roleCard === targetRole
+        );
+        if (isRoleTaken) continue;
+
+        // 計算命中目標數字的張數（>= 3 即符合）
+        let collectedCount = 0;
+        for (const requiredNum of req.requiredCards) {
+            if (collectedNumbers.includes(requiredNum)) collectedCount++;
+        }
+
+        if (collectedCount >= 3) {
+            // ✅ 進化成功：更新 roleCard 與 name（命名規則：時魔幼體 1 -> 時魔 1 (秒針)）
+            player.roleCard = targetRole;
+
+            const idxText = (typeof timeDemonIndex === 'number' && !Number.isNaN(timeDemonIndex))
+                ? String(timeDemonIndex)
+                : (String(player.id || '').replace(/^SM_/, '') || '');
+
+            player.name = `時魔 ${idxText} (${targetRole})`;
+
+            console.log(`🎉【進化】${player.id} 升級為：${targetRole}！`);
+
+            // ✅ 進化後不再持有小時卡：把已收集的小時卡全部放回鐘面
+            //    珍貴放上層（push），普通放下層（unshift）
+            player.hourCards.forEach(card => {
+                const clockSpot = gameState.clockFace.find(s => s.position === card.number);
+                if (!clockSpot) return;
+                if (card.isPrecious) clockSpot.cards.push(card);
+                else clockSpot.cards.unshift(card);
+            });
+
+            player.hourCards = [];
+            return true;
+        }
+    }
+    return false;
 }

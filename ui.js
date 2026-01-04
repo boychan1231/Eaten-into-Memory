@@ -212,6 +212,22 @@ function updateUI(gameState) {
     const isWaitingMinuteInput = gameState.currentRoundAIChoices !== null;
     const isWaitingHourInput = gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === HUMAN_PLAYER_ID;
     const isWaitingAbilityChoice = !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === HUMAN_PLAYER_ID;
+    const isWaitingSecondFinalChoiceTop = !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
+
+    // ✅ 防呆：即使 humanPlayer 讀取失敗，也必須鎖住「下一回合」避免跳過出牌/選卡流程
+    const nextStepBtnTop = document.getElementById('next-step-btn');
+    if (nextStepBtnTop) {
+        if (gameState.gameEnded) {
+            nextStepBtnTop.disabled = true;
+            nextStepBtnTop.textContent = '遊戲結束';
+        } else if (isWaitingMinuteInput || isWaitingHourInput || isWaitingAbilityChoice || isWaitingSecondFinalChoiceTop) {
+            nextStepBtnTop.disabled = true;
+            nextStepBtnTop.textContent = '等待輸入中…';
+        } else {
+            nextStepBtnTop.disabled = false;
+            nextStepBtnTop.textContent = '下一回合';
+        }
+    }
     
     // A. 更新頂部資訊
     document.getElementById('round-info').textContent = `第 ${gameState.gameRound} 輪`;
@@ -690,45 +706,6 @@ function updateUI(gameState) {
             }
         }
     }
-		
-	    // --- 時之惡能力面板控制（人類玩家） ---
-    const sinAbilityPanel = document.getElementById('sin-ability-panel');
-    if (sinAbilityPanel) {
-        const sinUseBtn = document.getElementById('sin-targeting-use-btn');
-        const sinsinlBtn = document.getElementById('sin-sinl-all-btn');
-        const sinSkipBtn = document.getElementById('sin-targeting-skip-btn');
-        const sinStatusEl = document.getElementById('sin-ability-status');
-        const sinsinlStatusEl = document.getElementById('sin-sinl-status');
-
-        const issin = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string')
-            ? (gameState.phase === 'preMinute')
-            : isWaitingMinuteInput;
-
-        const canShow = GAME_CONFIG.enableAbilities && issin && isPreMinute && !gameState.gameEnded;
-        sinAbilityPanel.style.display = canShow ? 'block' : 'none';
-
-        if (canShow) {
-            const mode = (gameState.sinTargetingMode === 'sin') ? 'sin' : 'default';
-            const sinled = !!gameState.abilityMarker;
-
-            if (sinUseBtn) sinUseBtn.disabled = humanPlayer.mana < 2 || !!humanPlayer.specialAbilityUsed;
-            if (sinsinlBtn) sinsinlBtn.disabled = sinled || humanPlayer.mana < 4 || !!humanPlayer.specialAbilityUsed;
-            if (sinSkipBtn) sinSkipBtn.disabled = !!humanPlayer.specialAbilityUsed;
-
-            if (sinStatusEl) {
-                sinStatusEl.textContent =
-                    `本回合扣除規則：${mode === 'sin' ? '距離時之惡最近者受罰' : '接近 12 者受罰'}`;
-            }
-            if (sinsinlStatusEl) {
-                sinsinlStatusEl.textContent =
-                    `封印狀態：${sinled ? '已封印（本回合）' : '未封印'}`;
-            }
-        }
-    }
-
-	
-	
     
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
@@ -988,42 +965,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 時之惡能力按鈕（人類玩家）
-    const sinUseBtn = document.getElementById('sin-targeting-use-btn');
-    if (sinUseBtn) {
-        sinUseBtn.addEventListener('click', () => {
-            if (!globalGameState) return;
-            if (typeof handleHumansinTargetingChoice === 'function') {
-                handleHumansinTargetingChoice(globalGameState, true);
-                updateUI(globalGameState);
-            }
-        });
-    }
-
-    const sinSkipBtn = document.getElementById('sin-targeting-skip-btn');
-    if (sinSkipBtn) {
-        sinSkipBtn.addEventListener('click', () => {
-            if (!globalGameState) return;
-            if (typeof handleHumansinTargetingChoice === 'function') {
-                handleHumansinTargetingChoice(globalGameState, false);
-                updateUI(globalGameState);
-            }
-        });
-    }
-
-    const sinsinlBtn = document.getElementById('sin-sinl-all-btn');
-    if (sinsinlBtn) {
-        sinsinlBtn.addEventListener('click', () => {
-            if (!globalGameState) return;
-            if (typeof handleHumansinsinlAll === 'function') {
-                handleHumansinsinlAll(globalGameState);
-                updateUI(globalGameState);
-            }
-        });
-    }
-
-
-
     // 特殊能力選擇面板按鈕
     const abilityUseBtn = document.getElementById('ability-use-btn');
     if (abilityUseBtn) {
@@ -1050,7 +991,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContents = document.querySelectorAll('.tab-content');
 
     function switchTab(targetId) {
-        // 1) 切換 active 狀態
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active-tab'));
 
@@ -1058,16 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetEl = document.getElementById(targetId);
 
         if (activeBtn) activeBtn.classList.add('active');
-        if (targetEl) {
-            targetEl.classList.add('active-tab');
-
-            // 2) 重置分頁內容捲動
-            try { targetEl.scrollTop = 0; } catch (e) {}
-
-            // 3) 同時把整個頁面捲回頂部，確保 Header 的 tab 按鈕仍在視窗內
-            try { document.documentElement.scrollTop = 0; } catch (e) {}
-            try { document.body.scrollTop = 0; } catch (e) {}
-        }
+        if (targetEl) targetEl.classList.add('active-tab');
     }
 
     tabButtons.forEach(btn => {
@@ -1105,141 +1036,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 	
     // 4C. 開始遊戲
-    // 4C. 開始遊戲（先選擇角色）
-const startGameBtn = document.getElementById('start-game-btn');
-const roleOverlay = document.getElementById('role-choice-overlay');
-const roleBtnTimeDemon = document.getElementById('role-choice-time-demon');
-const roleBtnsin = document.getElementById('role-choice-sin');
-const roleBtnScz = document.getElementById('role-choice-scz');
+    const startGameBtn = document.getElementById('start-game-btn');
+    if (startGameBtn) {
+        startGameBtn.addEventListener('click', () => {
+            try {
+                const abilityToggle = document.getElementById('ability-toggle');
+                GAME_CONFIG.enableAbilities = !!abilityToggle?.checked;
 
-function _hideRoleOverlay() {
-    if (!roleOverlay) return;
-    roleOverlay.style.display = 'none';
-}
+				const testToggle = document.getElementById('test-toggle');
+				GAME_CONFIG.testMode = !!testToggle?.checked;
 
-function _showRoleOverlay() {
-    if (!roleOverlay) return;
-    roleOverlay.style.display = 'flex';
-}
+                const logListEl = document.getElementById('log-list');
+                if (logListEl) logListEl.innerHTML = '';
 
-function _resolveHumanIdByChoice(choice) {
-    // choice: 'timeDemon' | 'sin' | 'scz'
-    if (choice === 'sin') return 'sin';
-    if (choice === 'scz') return 'SCZ';
-    // 預設：時魔（使用 時魔幼體 1 作為人類玩家）
-    return 'SM_1';
-}
+                const gameMessage = document.getElementById('game-message');
+                if (gameMessage) gameMessage.textContent = '';
 
-function _setHumanId(newId) {
-    // game.js 提供的 setter（較穩）
-    if (typeof setHumanPlayerId === 'function') {
-        setHumanPlayerId(newId);
-        return;
-    }
-    // fallback：若沒有 setter，嘗試直接改全域變數（需要 game.js 的 HUMAN_PLAYER_ID 是 let）
-    try { HUMAN_PLAYER_ID = newId; } catch (_) {}
-    try { window.HUMAN_PLAYER_ID = newId; } catch (_) {}
-}
+                globalGameState = initializeGame();
+				
+				resetMinuteHistory(globalGameState);
 
-function _startNewGameCore() {
-    const abilityToggle = document.getElementById('ability-toggle');
-    GAME_CONFIG.enableAbilities = !!abilityToggle?.checked;
+				resetRightPanels(globalGameState);
+				
+				// ✅ 重置秒針 UI 狀態（避免上一局殘留）
+				selectedCardValue = null;
+				selectedCardValues = [];
+				isSecondHandSelectingTwo = false;
 
-    const logListEl = document.getElementById('log-list');
-    if (logListEl) logListEl.innerHTML = '';
+                const humanPlayer = globalGameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+                if (humanPlayer) {
+                    console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+                }
 
-    const gameMessage = document.getElementById('game-message');
-    if (gameMessage) gameMessage.textContent = '';
-
-    globalGameState = initializeGame();
-
-    resetMinuteHistory(globalGameState);
-    resetRightPanels(globalGameState);
-
-    // ✅ 重置秒針 UI 狀態（避免上一局殘留）
-    selectedCardValue = null;
-    selectedCardValues = [];
-    isSecondHandSelectingTwo = false;
-
-    const humanId = (typeof getHumanPlayerId === 'function')
-        ? getHumanPlayerId()
-        : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
-
-    const humanPlayer = globalGameState.players.find(p => p.id === humanId);
-    if (humanPlayer) {
-        console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
-    }
-
-    updateUI(globalGameState);
-
-    const nextBtn = document.getElementById('next-step-btn');
-    if (nextBtn) {
-        nextBtn.disabled = false;
-        nextBtn.textContent = "執行下一回合";
-        nextBtn.onclick = () => {
-            if (!globalGameState) return;
-
-            const hid = (typeof getHumanPlayerId === 'function')
-                ? getHumanPlayerId()
-                : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
-
-            const waitingSecondFinal =
-                !!globalGameState.waitingSecondHandFinalChoice &&
-                globalGameState.waitingSecondHandFinalChoicePlayerId === hid;
-
-            if (waitingSecondFinal) {
-                console.log('請先完成「秒針二選一」，再進入下一回合。');
-                return;
-            }
-
-            if (!globalGameState.gameEnded) {
-                startRound(globalGameState);
+				resetMinuteHistory(globalGameState);
                 updateUI(globalGameState);
-            } else {
-                console.log("遊戲已結束。");
-                nextBtn.disabled = true;
+
+                const nextBtn = document.getElementById('next-step-btn');
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = "執行下一回合";
+                    nextBtn.onclick = () => {
+						if (!globalGameState) return;
+
+					const waitingMinute = globalGameState.currentRoundAIChoices !== null;
+					const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === HUMAN_PLAYER_ID;
+					const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === HUMAN_PLAYER_ID;
+					const waitingSecondFinal =
+						!!globalGameState.waitingSecondHandFinalChoice &&
+						globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
+
+					if (isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
+						console.log('【UI】仍在等待人類輸入（出牌/選卡/能力），請先完成當前步驟。');
+						updateUI(globalGameState);
+						return;
+					}
+
+						if (!globalGameState.gameEnded) {
+							startRound(globalGameState);
+							updateUI(globalGameState);
+						} else {
+							console.log("遊戲已結束。");
+							nextBtn.disabled = true;
+						}
+					};
+                }
+            } catch (err) {
+                console.log('[UI] 開始遊戲時發生錯誤：', err);
             }
-        };
+        });
+    } else {
+        try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
     }
-}
-
-function _bindRoleButtonsOnce() {
-    if (!roleBtnTimeDemon || roleBtnTimeDemon.dataset.bound === '1') return;
-
-    roleBtnTimeDemon.dataset.bound = '1';
-    roleBtnsin.dataset.bound = '1';
-    roleBtnScz.dataset.bound = '1';
-
-    roleBtnTimeDemon.addEventListener('click', () => {
-        _hideRoleOverlay();
-        _setHumanId(_resolveHumanIdByChoice('timeDemon'));
-        _startNewGameCore();
-    });
-
-    roleBtnsin.addEventListener('click', () => {
-        _hideRoleOverlay();
-        _setHumanId(_resolveHumanIdByChoice('sin'));
-        _startNewGameCore();
-    });
-
-    roleBtnScz.addEventListener('click', () => {
-        _hideRoleOverlay();
-        _setHumanId(_resolveHumanIdByChoice('scz'));
-        _startNewGameCore();
-    });
-}
-
-if (startGameBtn) {
-    startGameBtn.addEventListener('click', () => {
-        try {
-            // 開始新遊戲前：要求先選擇角色
-            _bindRoleButtonsOnce();
-            _showRoleOverlay();
-        } catch (err) {
-            console.log('[UI] 開始遊戲時發生錯誤：', err);
-        }
-    });
-} else {
-    try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
-}
 });

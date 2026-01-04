@@ -35,10 +35,11 @@ body {
 }
 
 /* --- 頂部區域 --- */
+
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center; /* 修正對齊 */
     padding: 10px 20px;
     background-color: var(--clock-bg);
     border-radius: 8px;
@@ -47,7 +48,14 @@ header {
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
-header h1 { margin: 0; font-size: 1.5rem; text-shadow: 0 0 5px var(--accent-color); }
+/* 確保標題樣式正確 */
+header h1 { 
+    margin: 0; 
+    font-size: 1.5rem; 
+    text-shadow: 0 0 5px var(--accent-color); 
+    grid-column: 2; /* 讓標題置中 */
+    text-align: center;
+}
 
 /* style.css - Tab 導航樣式 */
 .tab-nav {
@@ -113,13 +121,6 @@ header h1 { margin: 0; font-size: 1.5rem; text-shadow: 0 0 5px var(--accent-colo
     
 }
 .setting-item { margin-bottom: 15px; }
-
-/* 調整 Header 排版以容納 Tab Nav */
-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: end;
-}
 
 .game-status {
     grid-column: 3;
@@ -1095,14 +1096,6 @@ input:checked + .slider:before {
   gap: 10px;
 }
 
-/* 多按鈕堆疊版（用於角色選擇等三選一彈窗） */
-.modal-actions.stacked {
-  flex-direction: column;
-}
-.modal-actions.stacked button {
-  flex: none;
-}
-
 .modal-actions button {
   flex: 1;
   padding: 12px 0;
@@ -1387,5 +1380,3 @@ input:checked + .slider:before {
 .clock-spot .card-preview .cp-num { font-size: 0.72rem; font-weight: 800; }
 .clock-spot .card-preview .cp-age { font-size: 0.52rem; font-weight: 700; opacity: 0.9; }
 .clock-spot .card-preview .cp-star{ font-size: 0.65rem; font-weight: 900; }
-
-#ability-choice-text { white-space: pre-line; }
