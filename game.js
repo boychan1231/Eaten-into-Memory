@@ -43,6 +43,8 @@ const GAME_CONFIG = {
     testMode: false
 };
 
+// ✅ 對外提供同一份設定（給 ui.js / abilities.js 使用）
+window.GAME_CONFIG = GAME_CONFIG;
 
 // --- 1. 卡牌定義 ---
 
@@ -1217,8 +1219,6 @@ function checkEjectionAndWinCondition(gameState) {
 			player.currentClockPosition = null;
 			if (typeof player.d6Die === 'number') player.d6Die = 0;
 			anyEjectedThisRound = true;
-        ...
-
 
             // 只要本輪有任一「時魔」被逐出，就紀錄在 roundHadTimeDemonEjection
             if (player.type === '時魔') {
@@ -1359,18 +1359,18 @@ function endGameRound(gameState) {
 
     if (sinPlayer) {
         if (currentRoundSafe && gameState.previousRoundSafe) {
-            seaPlayer.gearCards--;
+            sinPlayer.gearCards--;
 
-			console.log(`【時之惡懲罰】連續 2 輪無人被逐出，${seaPlayer.name} 扣除 1 齒輪。`);
+			console.log(`【時之惡懲罰】連續 2 輪無人被逐出，${sinPlayer.name} 扣除 1 齒輪。`);
 
 			// ✅ 新規則：齒輪 = 0 不逐出；齒輪 < 0（例如 -1）才逐出
-			if (seaPlayer.gearCards < 0) {
-				seaPlayer.isEjected = true;
-				seaPlayer.gearCards = 0;
-				seaPlayer.mana = 0;
-				seaPlayer.currentClockPosition = null;
-				if (typeof seaPlayer.d6Die === 'number') seaPlayer.d6Die = 0;
-				console.log(`⚠️【逐出】${seaPlayer.name} 齒輪耗盡，被逐出遊戲。`);
+			if (sinPlayer.gearCards < 0) {
+				sinPlayer.isEjected = true;
+				sinPlayer.gearCards = 0;
+				sinPlayer.mana = 0;
+				sinPlayer.currentClockPosition = null;
+				if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
+				console.log(`⚠️【逐出】${sinPlayer.name} 齒輪耗盡，被逐出遊戲。`);
 
 				console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
 				endGame(gameState);
@@ -1378,10 +1378,10 @@ function endGameRound(gameState) {
 			}
 
 			// 仍存活時，確保 Mana 不高於齒輪（且不為負）
-			if (seaPlayer.mana > seaPlayer.gearCards) {
-				seaPlayer.mana = seaPlayer.gearCards;
+			if (sinPlayer.mana > sinPlayer.gearCards) {
+				sinPlayer.mana = sinPlayer.gearCards;
 			}
-			if (seaPlayer.mana < 0) seaPlayer.mana = 0;
+			if (sinPlayer.mana < 0) sinPlayer.mana = 0;
         }
 		
         // 更新「上一輪是否安全」標記
@@ -1511,3 +1511,17 @@ function endGame(gameState) {
     gameState.gameEnded = true;
     if (typeof updateUI === 'function') updateUI(gameState);
 }
+
+// ✅ 對 UI 暴露必要 API（避免 scope/載入差異導致 initializeGame 不可見）
+try {
+    if (typeof window !== 'undefined') {
+        window.initializeGame = initializeGame;
+        window.startRound = startRound;
+        window.handleHumanChoice = handleHumanChoice;
+        window.handleHumanHourCardChoice = handleHumanHourCardChoice;
+        window.handleHumanAbilityChoice = handleHumanAbilityChoice;
+        window.handleHumanSecondHandCommit = handleHumanSecondHandCommit;
+        window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
+        window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
+    }
+} catch (_) {}

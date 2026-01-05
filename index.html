@@ -76,7 +76,7 @@
 						<h4 id="human-role-display">您是：--</h4>
 						<div id="evolution-progress-area" class="progress-area"></div>
 						<div class="human-stats-row">
-							<!--<div>手牌: <span id="h-hand-count">0</span></div>-->
+							<div>手牌: <span id="h-hand-count">0</span></div>
 							<div>Mana: <span id="h-mana">0</span></div>
 							<div>齒輪: <span id="h-gear">0</span></div>
 							<div>骰子: <span id="h-dice">--</span></div>
@@ -196,19 +196,6 @@
 				</div>
 			</div>
 			
-		<!-- 角色選擇 Overlay -->
-		<div id="role-choice-overlay" class="modal-overlay hidden">
-			<div class="modal">
-			<h2>選擇你的角色</h2>
-			<p>開始新遊戲後，請先選擇你要扮演的角色。</p>
-				<div class="modal-actions">
-				<button id="role-choice-timeDemon" class="primary">時魔</button>
-				<button id="role-choice-sin">時之惡</button>
-				<button id="role-choice-scz">受詛者</button>
-				</div>
-			</div>
-		</div>
-		
            
 		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
 			<div class="modal">
@@ -222,6 +209,19 @@
 			</div>
 		</div>
 	</div>
+	
+	<!-- 角色選擇 Overlay -->
+	<div id="role-choice-overlay" class="modal-overlay hidden">
+		<div class="modal">
+		<h2>選擇角色</h2>
+			<div class="modal-actions">
+			<button id="role-choice-timeDemon" class="primary">時魔</button>
+			<button id="role-choice-sin">時之惡</button>
+			<button id="role-choice-scz">受詛者</button>
+			</div>
+		</div>
+	</div>
+	
 	
 	<script src="abilities.js"></script> 
     <script src="game.js"></script>
