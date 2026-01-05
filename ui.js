@@ -424,6 +424,12 @@ function updateUI(gameState) {
         document.getElementById('h-score').textContent = humanPlayer.score;
         document.getElementById('h-pos').textContent = humanPlayer.currentClockPosition || '未上場';
         document.getElementById('h-hour').textContent = humanPlayer.hourCards.length;
+		const diceEl = document.getElementById('h-dice');
+		if (diceEl) {
+			const d = humanPlayer.d6Die;
+			diceEl.textContent = (d === null || d === undefined) ? '--' : String(d);
+		}
+
 
         humanHandEl.innerHTML = '';
         
