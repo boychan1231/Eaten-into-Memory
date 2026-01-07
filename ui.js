@@ -404,6 +404,9 @@ function updateUI(gameState) {
             diceInfo = `<div>骰子: <strong>${player.d6Die}</strong></div>`;
         }
 
+        // ✅ 修改重點：若被驅逐顯示「驅逐」，否則顯示位置或「未上場」
+        const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
+
         pCard.innerHTML = `
             <div class="role-badge" style="color:${color}">${player.roleCard}</div>
             <h4 style="color:${color}">${player.name}</h4>
@@ -413,7 +416,7 @@ function updateUI(gameState) {
                 <div>齒輪卡: ${player.gearCards}</div>
                 <div>分數: ${player.score}</div>
                 ${diceInfo}
-                <div>位置: ${player.currentClockPosition || '未上場'}</div>
+                <div>位置: ${posDisplay}</div>
                 <div>收集小時卡: ${player.hourCards.length}</div>
             </div>
         `;
@@ -440,7 +443,10 @@ function updateUI(gameState) {
         setText('h-mana', `${humanPlayer.mana} / ${humanPlayer.gearCards}`);
         setText('h-gear', String(humanPlayer.gearCards));
         setText('h-score', String(humanPlayer.score));
-        setText('h-pos', String(humanPlayer.currentClockPosition || '未上場'));
+        
+        // ✅ 修改重點：人類玩家若被驅逐，顯示「驅逐」
+        setText('h-pos', humanPlayer.isEjected ? '驅逐' : String(humanPlayer.currentClockPosition || '未上場'));
+        
         setText('h-hour', String(humanPlayer.hourCards.length));
 
         const diceEl = document.getElementById('h-dice');

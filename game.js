@@ -1360,7 +1360,7 @@ function endGameRound(gameState) {
 
 			console.log(`【時之惡懲罰】連續 2 輪無人被逐出，${sinPlayer.name} 扣除 1 齒輪。`);
 
-			// ✅ 新規則：齒輪 = 0 不逐出；齒輪 < 0（例如 -1）才逐出
+			// 齒輪 < 0（例如 -1）才逐出
 			if (sinPlayer.gearCards < 0) {
 				sinPlayer.isEjected = true;
 				sinPlayer.gearCards = 0;
@@ -1426,8 +1426,6 @@ function endGameRound(gameState) {
 	  console.log(`🔁 幼體時魔交還 ${returnedFromYoungDemons.length} 張小時卡，已回到小時卡庫。`);
 	}
 
-
-
     // 3. 重置鐘面（珍貴留場，普通回牌庫）
     const cardsToReturnToDeck = [];
     gameState.clockFace.forEach(spot => {
@@ -1462,7 +1460,13 @@ function endGameRound(gameState) {
         player.hand = gameState.originalHandSets[handSetIndex].map(c => ({ ...c }));
         
         player.specialAbilityUsed = false; 
-        player.currentClockPosition = null;
+
+        // ✅ 修改重點：若為 時之惡 或 受詛者，保留位置（不設為 null）
+        // 只有「非時之惡 且 非受詛者」的角色（即時魔們），才需要移出鐘面
+        if (player.type !== '時之惡' && player.type !== '受詛者') {
+            player.currentClockPosition = null;
+        }
+        
         player.isEjected = false;
         player.hourCards = []; 
     });
@@ -1490,7 +1494,6 @@ function endGameRound(gameState) {
         if (typeof updateUI === 'function') updateUI(gameState);
     }
 }
-
 
 function endGame(gameState) {
     console.log("=== 遊戲結束 ===");
