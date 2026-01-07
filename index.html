@@ -70,11 +70,11 @@
 
 					</div>
 				</div>
-				
+
 				<div id="human-player-area" class="human-area">
-					<div id="human-info">
+					
+					<div class="human-top-bar">
 						<h4 id="human-role-display">您是：--</h4>
-						<div id="evolution-progress-area" class="progress-area"></div>
 						<div class="human-stats-row">
 							<div>手牌: <span id="h-hand-count">0</span></div>
 							<div>Mana: <span id="h-mana">0</span></div>
@@ -86,18 +86,14 @@
 						</div>
 					</div>
 
-					  <!-- 時針能力面板（保留） -->
 					<div id="ability-panel" class="ability-panel" style="display:none;">
 						<div class="ability-title">特殊能力（時針）</div>
 						<div class="ability-actions">
-							<button id="ability-peek-btn" type="button">查看小時卡庫頂牌</button>
 							<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
 						</div>
 						<div id="ability-peek-result" class="ability-result">頂牌：--</div>
-						<div class="ability-hint">在「出分鐘卡前」使用；「頂牌放底」每回合一次。</div>
 					</div>
 
-					<!-- 分針能力二選一面板（保留） -->
 					<div id="ability-choice-panel" style="display:none; margin-bottom: 10px;">
 						<div id="ability-choice-text" class="instruction-text"></div>
 						<div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
@@ -106,20 +102,21 @@
 						</div>
 					</div>
 
-					<!-- 手牌 + 右側按鈕（新增這層 human-play-row） -->
 					<div class="human-play-row">
+						
 						<div id="human-hand" class="hand-display"></div>
+						
 						<div id="human-controls" class="hand-controls">
+							<div id="evolution-progress-area" class="progress-area"></div>
+							
 							<div id="seconds-ability-controls" class="control-block" style="display:none;">
-								<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張（消耗 3 Mana）</button>
-								<button id="seconds-ability-cancel-btn" type="button" style="display:none;">取消</button>
-							<div id="seconds-ability-hint" class="instruction-text" style="display:none;">
-							  請選擇 2 張分鐘卡，然後按「確認出牌」。
-							</div>
+								<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
+								<button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
+								<div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
 							</div>
 
-						  <button id="confirm-move-btn" disabled>確認出牌</button>
-						  <button id="next-step-btn" disabled>下一回合</button>
+							<button id="confirm-move-btn" disabled>確認出牌</button>
+							<button id="next-step-btn" disabled>下一回合</button>
 						</div>
 					</div>
 				</div>

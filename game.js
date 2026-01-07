@@ -3,9 +3,7 @@
 let HUMAN_PLAYER_ID = 'SM_1';
 
 // 讓 UI/測試模式可安全取得「當前實際的人類玩家 id」
-function getHumanPlayerId() { 
-    return HUMAN_PLAYER_ID; 
-}
+function getHumanPlayerId() { return HUMAN_PLAYER_ID; }
 function setHumanPlayerId(newId) {
     if (typeof newId !== 'string' || !newId.trim()) return false;
     HUMAN_PLAYER_ID = newId.trim();
@@ -36,12 +34,16 @@ if (typeof window !== 'undefined') {
 
 let humanChoiceCardValue = null; 
 
+// 遊戲設定（與 UI 共用同一份 window.GAME_CONFIG）
+const GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG)
+    ? window.GAME_CONFIG
+    : { enableAbilities: false, testMode: false };
 
-// 遊戲設定
-const GAME_CONFIG = {
-    enableAbilities: false,
-    testMode: false
-};
+if (GAME_CONFIG.enableAbilities === undefined) GAME_CONFIG.enableAbilities = false;
+if (GAME_CONFIG.testMode === undefined) GAME_CONFIG.testMode = false;
+
+try { if (typeof window !== 'undefined') window.GAME_CONFIG = GAME_CONFIG; } catch (_) {}
+
 
 // ✅ 對外提供同一份設定（給 ui.js / abilities.js 使用）
 window.GAME_CONFIG = GAME_CONFIG;
@@ -1125,8 +1127,7 @@ function handleDiceDeduction(player) {
 }
 
 // -------------------------------------------------------------
-// 扣除齒輪卡邏輯
-// -------------------------------------------------------------
+// --- 5. 扣除齒輪卡邏輯 (確認版) ---
 function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
@@ -1134,16 +1135,16 @@ function deductGearCards(gameState) {
     console.log(`--- 步驟 5: 扣除齒輪卡/骰子 (當前規則: ${modeText}) ---`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    // 若時之惡不在場，無人受罰 (直接檢查勝利條件)
     if (!sinPlayer || !sinPlayer.currentClockPosition) {
         checkEjectionAndWinCondition(gameState);
         return;
     }
     
     const sinPosition = sinPlayer.currentClockPosition;
-    let anyPlayerLostGear = false; 
-
     let playersToDeduct = [];
 
+    // 1. 決定受罰對象
     if (targetingMode === 'default') {
         const candidates = gameState.players.filter(p =>
             (p.type === '時魔' || p.type === '受詛者' || p.type === '時之惡') &&
@@ -1176,63 +1177,61 @@ function deductGearCards(gameState) {
         }
     }
 
+    // 2. 執行扣除
     playersToDeduct.forEach(player => {
         if (player.type === '時魔') {
+            // 檢查是否為「幼體」 (只有幼體有護盾)
+            const isYoungTimeDemon = typeof player.roleCard === 'string' && player.roleCard.includes('幼');
 
-            const isYoungTimeDemon =
-                typeof player.roleCard === 'string' && player.roleCard.includes('幼');
-
+            // 【幼體防禦】：若是幼體、未用過盾、且 Mana 足夠，則擋下傷害
             if (isYoungTimeDemon && !player.shieldUsed && player.mana >= 3) {
                 const spent = player.mana;
                 player.shieldUsed = true;
                 player.mana = 0;
                 console.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
-                return;
+                return; // 成功抵擋，不扣齒輪
             }
 
+            // 若已進化 (非幼體) 或 Mana 不足，直接扣齒輪
             player.gearCards--;
-            if (player.mana > player.gearCards) player.mana = player.gearCards;
-            anyPlayerLostGear = true;
-            console.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒輪。`);
+            
+            // Mana 不能超過當前齒輪數
+            if (player.mana > player.gearCards) player.mana = Math.max(0, player.gearCards);
+            
+            console.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒輪 (剩餘: ${player.gearCards})。`);
 
         } else if (player.type === '受詛者' || player.type === '時之惡') {
-            if (handleDiceDeduction(player)) {
-                anyPlayerLostGear = true;
-            }
+            handleDiceDeduction(player);
         }
     });
 	
+    // 3. 檢查是否有人因此死亡
     checkEjectionAndWinCondition(gameState);
 }
 
+// --- 檢查逐出與勝利條件 (確認版) ---
 function checkEjectionAndWinCondition(gameState) {
     if (!gameState || !gameState.players) return;
 
-    let anyEjectedThisRound = false;
+    // 1. 檢查齒輪 < 0（即 -1）才逐出。 0 是安全的。
+    gameState.players.forEach(player => {
+        if (!player.isEjected && player.gearCards < 0) {
+            player.isEjected = true;
+            player.gearCards = 0; // 歸零僅為了 UI 顯示好看
+            player.mana = 0;
+            player.currentClockPosition = null;
+            if (typeof player.d6Die === 'number') player.d6Die = 0;
 
-	// 1. 檢查齒輪 < 0（例如 -1） → 逐出
-	gameState.players.forEach(player => {
-		if (!player.isEjected && player.gearCards < 0) {
-			player.isEjected = true;
-			player.gearCards = 0;
-			player.mana = 0;
-			player.currentClockPosition = null;
-			if (typeof player.d6Die === 'number') player.d6Die = 0;
-			anyEjectedThisRound = true;
-
-            // 只要本輪有任一「時魔」被逐出，就紀錄在 roundHadTimeDemonEjection
+            // 標記本輪有時魔死亡 (影響時之惡懲罰判定)
             if (player.type === '時魔') {
                 gameState.roundHadTimeDemonEjection = true;
             }
 
-            console.log(`⚠️【逐出】${player.name} 的齒輪耗盡，被逐出遊戲。`);
+            console.log(`⚠️【逐出】${player.name} 的齒輪耗盡 (${player.gearCards})，被逐出遊戲。`);
         }
     });
 
-    // 🔸 這裡不再處理「連續兩輪無人被逐出」懲罰：
-    //     那個邏輯改到 endGameRound()，以「輪」為單位判斷
-
-    // 2. 勝利判定（是否有人已達成終局條件）
+    // 2. 勝利判定
     const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
 
@@ -1247,14 +1246,12 @@ function checkEjectionAndWinCondition(gameState) {
         }
     }
 
-    // 3. 若遊戲仍未結束，進入回合結束流程；否則只更新畫面
     if (!gameState.gameEnded) {
         inRoundEndActions(gameState);
     } else {
         if (typeof updateUI === 'function') updateUI(gameState);
     }
 }
-
 
 function inRoundEndActions(gameState) {
 	gameState.players.filter(p =>

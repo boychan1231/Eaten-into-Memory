@@ -1,4 +1,4 @@
-// ui.js (整合修正版：修復點擊錯誤 + 整合錯誤監控)
+// ui.js (整合修正版：修復變數重複宣告錯誤)
 
 const originalLog = console.log;
 const logList = document.getElementById('log-list');
@@ -212,12 +212,14 @@ function renderPlayerHistoryPanel(gameState) {
 function updateUI(gameState) {
     if (!gameState) return;
 
-    const humanId =
-        (typeof getEffectiveHumanPlayerId === 'function')
-            ? getEffectiveHumanPlayerId()
-            : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
+    // ✅ 修正：移除重複宣告，合併為單一邏輯
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+		? window.getEffectiveHumanPlayerId()
+		: (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1'));
+	
+	const HUMAN_PLAYER_ID = humanId; // ✅ 供 updateUI 內既有邏輯沿用
+	const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
 
-    const humanPlayer = gameState.players.find(p => p.id === humanId);
 
     // 定義等待狀態 (用於按鈕控制)
     const isWaitingMinuteInput = gameState.currentRoundAIChoices !== null;
@@ -355,7 +357,11 @@ function updateUI(gameState) {
             const topCard = spot.cards[spot.cards.length - 1];
             const cardDiv = document.createElement('div');
             cardDiv.className = 'card-preview';
-            cardDiv.textContent = topCard.number;
+            cardDiv.innerHTML = `
+                <div class="cp-num">${topCard.number}</div>
+                <div class="cp-age">${topCard.ageGroup || ''}</div>
+                <div class="cp-star">${topCard.isPrecious ? '★' : ''}</div>
+            `;
             if (topCard.isPrecious) {
                 cardDiv.style.color = '#d4af37'; 
                 cardDiv.style.border = '1px solid gold';
@@ -708,27 +714,30 @@ function updateUI(gameState) {
 
         if (canShow) {
             const blocked = !!gameState.abilityMarker;
-            if (peekBtn) peekBtn.disabled = blocked;
+            if (peekBtn) {
+            peekBtn.disabled = true;
+            peekBtn.style.display = 'none';
+			}
             if (buryBtn) {
                 buryBtn.disabled =
-                    blocked ||
-                    humanPlayer.mana < 2 ||
-                    humanPlayer.specialAbilityUsed ||
-                    !gameState.hourDeck ||
-                    gameState.hourDeck.length === 0;
-            }
+					blocked ||
+					humanPlayer.mana < 1 ||
+					humanPlayer.specialAbilityUsed ||
+					!gameState.hourDeck ||
+					gameState.hourDeck.length < 2;
+			}
 
             if (peekResultEl) {
-                const peek = gameState.lastHourHandPeek;
-                if (
-                    peek &&
-                    peek.by === humanPlayer.id &&
-                    peek.gameRound === gameState.gameRound &&
-                    peek.roundMarker === gameState.roundMarker
-                ) {
-                    peekResultEl.textContent = `頂牌：${peek.number}${peek.isPrecious ? '★' : ''}`;
-                } else {
-                    peekResultEl.textContent = '頂牌：--';
+                const top = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0)
+					? gameState.hourDeck[gameState.hourDeck.length - 1]
+					: null;
+
+				if (blocked || !top) {
+					peekResultEl.textContent = '頂牌：--';
+				} else {
+					const ageLine = top.ageGroup ? `\n${top.ageGroup}` : '';
+					const starLine = top.isPrecious ? `\n★` : '';
+					peekResultEl.textContent = `頂牌：${top.number}${ageLine}${starLine}`;
                 }
             }
         }
@@ -782,75 +791,82 @@ function updateUI(gameState) {
 		}
     }
 
-    // F. 繪製進化鑰匙進度
+	// F. 繪製進化鑰匙進度 (新版 UI：仿照圖片結構)
     if (humanPlayer && humanPlayer.type === '時魔' && humanPlayer.roleCard.includes('時魔')) {
-        const allReqs = (typeof ROLE_UPGRADE_REQUIREMENTS !== 'undefined') ? ROLE_UPGRADE_REQUIREMENTS : null;
         const progressArea = document.getElementById('evolution-progress-area');
-        const collectedNumbers = humanPlayer.hourCards.map(c => c.number);
+        
+        // 確保 helper 函式存在
+        if (progressArea && typeof window.checkEvolutionCondition === 'function') {
+            
+            // 取得目前收集狀況
+            const cards = humanPlayer.hourCards || [];
+            const preciousCount = cards.filter(c => c.isPrecious).length;
+            const uniqueAges = new Set(cards.map(c => c.ageGroup).filter(g => g)).size;
+            const uniqueNumbers = new Set(cards.map(c => c.number)).size;
+            const totalCount = cards.length;
 
-        if (allReqs && progressArea) {
-            let chosenRole = humanPlayer.targetRoleName && allReqs[humanPlayer.targetRoleName]
-                ? humanPlayer.targetRoleName
-                : '時針';
-            const targetReq = allReqs[chosenRole];
+            // 條件判定
+            const cond1 = (uniqueAges >= 3 && preciousCount >= 1);
+            const cond2 = (uniqueNumbers >= 4 && preciousCount >= 1);
+            const cond3 = (totalCount >= 5 && preciousCount >= 2);
+            const isReady = cond1 || cond2 || cond3;
 
-            let cardsCollectedCount = 0;
+            // 目前選擇的目標
+            const currentTarget = humanPlayer.targetRoleName || '時針';
 
-            let html = `<div class="progress-row">
-                            <label>目標身份：
-                                <select id="target-role-select">
-                                    <option value="時針" ${chosenRole === '時針' ? 'selected' : ''}>時針</option>
-                                    <option value="分針" ${chosenRole === '分針' ? 'selected' : ''}>分針</option>
-                                    <option value="秒針" ${chosenRole === '秒針' ? 'selected' : ''}>秒針</option>
-                                </select>
-                            </label>
-                        </div>`;
+            // --- 建立 HTML 結構 (Header + List) ---
+            let html = `
+                <div class="target-role-header">
+                    <label class="target-role-label">目標身份：
+                         <span class="target-role-hint">(達成任一條件即可)</span>
+                    </label>
+                    <select id="target-role-select" class="target-role-select">
+                        <option value="時針" ${currentTarget === '時針' ? 'selected' : ''}>時針</option>
+                        <option value="分針" ${currentTarget === '分針' ? 'selected' : ''}>分針</option>
+                        <option value="秒針" ${currentTarget === '秒針' ? 'selected' : ''}>秒針</option>
+                    </select>
+                </div>
+            `;
 
-            html += `<div class="progress-row">
-                        <span>目標數字 (${targetReq.cardName} 身份):</span>
-                        <div class="required-cards-list">`;
+            // 輔助函式：產生條列項目
+            const renderItem = (isMet, text) => {
+                const metClass = isMet ? 'met' : '';
+                return `
+                <div class="condition-row ${metClass}">
+                    <div class="condition-icon"></div>
+                    <div class="condition-text">${text}</div>
+                </div>`;
+            };
 
-            targetReq.requiredCards.forEach(requiredNum => {
-                const isCollected = collectedNumbers.includes(requiredNum);
-                if (isCollected) cardsCollectedCount++;
-                html += `<div class="card-req-item ${isCollected ? 'collected' : ''}">${requiredNum}</div>`;
-            });
+            // 列表內容
+            html += renderItem(cond1, `1. 三時代收集: 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`);
+            html += renderItem(cond2, `2. 數字收藏家: 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`);
+            html += renderItem(cond3, `3. 魔力滿溢: 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`);
 
-            html += `</div></div>`;
-
-            const hasPrecious = humanPlayer.hourCards.some(c => c.isPrecious);
-            const preciousStatusClass = hasPrecious ? 'collected' : '';
-            const upgradeReady = (cardsCollectedCount >= 4 && hasPrecious);
-
-            html += `<div class="progress-row">
-                        <span>珍貴回憶 (至少 1 張):</span>
-                        <span class="precious-status ${preciousStatusClass}">
-                            ${hasPrecious ? '✅ 已收集' : '❌ 尚未取得'}
-                        </span>
-                     </div>`;
-
-            if (upgradeReady) {
-                 html += `<div class="progress-row" style="color: gold; font-weight: bold;">
-                             可升級狀態：準備就緒！ (回合結束時嘗試升級)
+            // 達成提示
+            if (isReady) {
+                 html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px solid #ffd27f; background: rgba(255, 210, 127, 0.1); padding:6px; border-radius:4px;">
+                             ✨ 進化條件已達成！<br><span style="font-size:0.8rem; font-weight:normal;">(將於回合結束時觸發)</span>
                          </div>`;
             }
 
             progressArea.innerHTML = html;
 
+            // 綁定下拉選單事件
             const selectEl = document.getElementById('target-role-select');
             if (selectEl) {
                 selectEl.addEventListener('change', (e) => {
-                    const newRole = e.target.value;
-                    if (!allReqs[newRole]) return;
-                    humanPlayer.targetRoleName = newRole;
-                    updateUI(gameState);
+                    humanPlayer.targetRoleName = e.target.value;
+                    // 若需要即時存檔或反應，可在此呼叫 updateUI(globalGameState)，但通常不需要
                 });
             }
         }
     } else {
+        // 如果不是時魔，清空該區域
         const progressArea = document.getElementById('evolution-progress-area');
         if (progressArea) progressArea.innerHTML = '';
     }
+
 }
 
 
@@ -1145,14 +1161,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
-            if (roleOverlay) {
-                roleOverlay.style.display = 'flex'; // 顯示遮罩
-            } else {
-                // 如果找不到彈窗，直接開始 (防呆)
-                console.warn('[UI] 找不到角色選擇彈窗，直接使用預設角色開始。');
-                runGameInitialization();
-            }
-        });
+			try {
+				// ① 讀取設定（統一寫入 window.GAME_CONFIG，並同步到 GAME_CONFIG 若存在）
+				window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
+
+				const abilityToggleEl = document.getElementById('ability-toggle');
+				const testToggleEl = document.getElementById('test-toggle');
+
+				const cfgEnableAbilities = !!abilityToggleEl?.checked;
+				const cfgTestMode = !!testToggleEl?.checked;
+
+				window.GAME_CONFIG.enableAbilities = cfgEnableAbilities;
+				window.GAME_CONFIG.testMode = cfgTestMode;
+
+				try {
+					if (typeof GAME_CONFIG !== 'undefined') {
+						GAME_CONFIG.enableAbilities = cfgEnableAbilities;
+						GAME_CONFIG.testMode = cfgTestMode;
+					}
+				} catch (_) {}
+
+				// ② 定義「真正開始遊戲」流程（會在選角後呼叫）
+				const doInitialize = () => {
+					const logListEl = document.getElementById('log-list');
+					if (logListEl) logListEl.innerHTML = '';
+
+					const gameMessage = document.getElementById('game-message');
+					if (gameMessage) gameMessage.textContent = '';
+
+					const initFn = (typeof window.initializeGame === 'function')
+						? window.initializeGame
+						: (typeof initializeGame === 'function' ? initializeGame : null);
+
+					if (!initFn) throw new ReferenceError('initializeGame is not defined');
+
+					globalGameState = initFn();
+
+					resetMinuteHistory(globalGameState);
+					resetRightPanels(globalGameState);
+
+					selectedCardValue = null;
+					selectedCardValues = [];
+					isSecondHandSelectingTwo = false;
+
+					const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+						? window.getEffectiveHumanPlayerId()
+						: (typeof window.HUMAN_PLAYER_ID !== 'undefined'
+							? window.HUMAN_PLAYER_ID
+							: (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1'));
+
+					const humanPlayer = globalGameState.players.find(p => p.id === humanId);
+					if (humanPlayer) console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+
+					updateUI(globalGameState);
+
+					const nextBtn = document.getElementById('next-step-btn');
+					if (nextBtn) {
+						nextBtn.disabled = false;
+						nextBtn.textContent = "下一回合";
+					}
+				};
+
+				// ③ 角色選擇：若存在彈窗，先要求選角；否則直接開始
+				const roleOverlay = document.getElementById('role-choice-overlay');
+				const btnTimeDemon = document.getElementById('role-choice-timeDemon');
+				const btnSin = document.getElementById('role-choice-sin');
+				const btnScz = document.getElementById('role-choice-scz');
+
+				const startWithRole = (roleId) => {
+					if (roleOverlay) roleOverlay.style.display = 'none';
+
+					if (typeof window.setHumanPlayerId === 'function') {
+						window.setHumanPlayerId(roleId);
+					} else {
+						try { window.HUMAN_PLAYER_ID = roleId; } catch (_) {}
+					}
+
+					doInitialize();
+				};
+
+				if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
+					roleOverlay.style.display = 'flex';
+
+					// 使用 onclick 避免重複綁定
+					btnTimeDemon.onclick = () => startWithRole('SM_1');
+					btnSin.onclick = () => startWithRole('sin');
+					btnScz.onclick = () => startWithRole('SCZ');
+					return;
+				}
+
+				// fallback：沒有角色彈窗就照既有預設開始
+				startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
+
+			} catch (err) {
+				console.log('[UI] 開始遊戲時發生錯誤：', err);
+			}
+		});
+
     } else {
         try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
     }
