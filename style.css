@@ -660,6 +660,15 @@ input:checked + .slider:before { transform: translateX(16px); }
     width: 280px;
     display: flex; flex-direction: column; gap: 10px;
 }
+.play-control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #151019;
+    border: 1px solid #4a3b52;
+    border-radius: 6px;
+    padding: 12px;
+}
 
 /* 進化面板 (黑色區塊) */
 #evolution-progress-area, .progress-area {
