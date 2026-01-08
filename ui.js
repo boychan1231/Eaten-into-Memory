@@ -61,6 +61,50 @@ const ROLE_COLORS = {
     '秒針': '#00d2d3'
 };
 
+function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, activePanelClass) {
+    const buttons = Array.from(document.querySelectorAll(buttonSelector));
+    const panels = Array.from(document.querySelectorAll(panelSelector));
+    if (buttons.length === 0 || panels.length === 0) return;
+
+    const activateTab = (targetId) => {
+        buttons.forEach(btn => btn.classList.remove(activeButtonClass));
+        panels.forEach(panel => panel.classList.remove(activePanelClass));
+
+        const activeBtn = buttons.find(btn => btn.dataset.target === targetId);
+        const targetPanel = document.getElementById(targetId);
+
+        if (activeBtn) activeBtn.classList.add(activeButtonClass);
+        if (targetPanel) targetPanel.classList.add(activePanelClass);
+    };
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.target;
+            if (!targetId) return;
+            activateTab(targetId);
+        });
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ================================
 // 右側資訊面板（UI 狀態）
 // ================================
@@ -412,8 +456,7 @@ function updateUI(gameState) {
             <h4 style="color:${color}">${player.name}</h4>
             <div class="player-stats">
                 <div>手牌: ${player.hand.length}</div>
-                <div>Mana: ${player.mana} / ${player.gearCards}</div>
-                <div>齒輪卡: ${player.gearCards}</div>
+                <div>Mana/齒輪: ${player.mana} / ${player.gearCards}</div>
                 <div>分數: ${player.score}</div>
                 ${diceInfo}
                 <div>位置: ${posDisplay}</div>
@@ -448,6 +491,37 @@ function updateUI(gameState) {
         setText('h-pos', humanPlayer.isEjected ? '驅逐' : String(humanPlayer.currentClockPosition || '未上場'));
         
         setText('h-hour', String(humanPlayer.hourCards.length));
+
+        const hourCollectionEl = document.getElementById('human-hour-collection');
+        if (hourCollectionEl) {
+            hourCollectionEl.innerHTML = '';
+            const hourCards = Array.isArray(humanPlayer.hourCards) ? humanPlayer.hourCards : [];
+
+            if (hourCards.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'hour-collection-placeholder';
+                placeholder.textContent = '尚未收集小時卡';
+                hourCollectionEl.appendChild(placeholder);
+            } else {
+                hourCards.forEach(card => {
+                    const value = (typeof card === 'number') ? card : card?.number;
+                    const precious = (typeof card === 'object' && card) ? !!card.isPrecious : false;
+                    const ageGroup = (typeof card === 'object' && card) ? card.ageGroup : '';
+
+                    const cardEl = document.createElement('div');
+                    cardEl.className = `hour-collection-card${precious ? ' precious' : ''}`;
+                    cardEl.textContent = value != null ? `${value}${precious ? '★' : ''}` : '--';
+
+                    if (ageGroup) {
+                        cardEl.title = ageGroup;
+                    } else if (precious) {
+                        cardEl.title = '珍貴';
+                    }
+
+                    hourCollectionEl.appendChild(cardEl);
+                });
+            }
+        }
 
         const diceEl = document.getElementById('h-dice');
         if (diceEl) {
@@ -788,7 +862,8 @@ function updateUI(gameState) {
 				if (isWaitingHourInput) {
 					cardEl.classList.add('clickable');
 					cardEl.addEventListener('click', () => {
-						handleHumanHourCardChoice(globalGameState, card.number);
+						const idx = gameState.currentDrawnHourCards.indexOf(card);
+						handleHumanHourCardChoice(globalGameState, idx);
 					});
 				}
 				// 將卡牌加入到鐘面中心
@@ -879,6 +954,8 @@ function updateUI(gameState) {
 // 4. 綁定按鈕事件
 document.addEventListener('DOMContentLoaded', () => {
     try { console.log('[UI] 已載入，等待開始遊戲。'); } catch (_) {}
+	
+	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
 	// 4A. 出牌（分鐘卡）
 	const confirmMoveBtn = document.getElementById('confirm-move-btn');
@@ -1035,26 +1112,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4B. Tab 切換
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
+    // 4B-2. 人類玩家分頁切換
+    const humanTabButtons = document.querySelectorAll('.human-tab-btn');
+    const humanTabPanels = document.querySelectorAll('.human-tab-panel');
 
-    function switchTab(targetId) {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active-tab'));
+    function switchHumanTab(targetId) {
+        humanTabButtons.forEach(btn => btn.classList.remove('active'));
+        humanTabPanels.forEach(panel => panel.classList.remove('active'));
 
-        const activeBtn = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
+        const activeBtn = document.querySelector(`.human-tab-btn[data-target="${targetId}"]`);
         const targetEl = document.getElementById(targetId);
 
         if (activeBtn) activeBtn.classList.add('active');
-        if (targetEl) targetEl.classList.add('active-tab');
+        if (targetEl) targetEl.classList.add('active');
     }
 
-    tabButtons.forEach(btn => {
+    humanTabButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             if (!targetId) return;
-            switchTab(targetId);
+            switchHumanTab(targetId);
         });
     });
 	

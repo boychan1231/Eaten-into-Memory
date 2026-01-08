@@ -981,7 +981,7 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 
 
 
-function handleHumanHourCardChoice(gameState, chosenHourNumber) {
+function handleHumanHourCardChoice(gameState, chosenIndex) {
     if (!gameState || !gameState.waitingHourChoice || gameState.waitingHourChoicePlayerId !== HUMAN_PLAYER_ID) {
         return;
     }
@@ -990,13 +990,12 @@ function handleHumanHourCardChoice(gameState, chosenHourNumber) {
     if (!humanPlayer) return;
 
     const drawnCards = gameState.currentDrawnHourCards || [];
-    const idx = drawnCards.findIndex(c => c.number === chosenHourNumber);
-    if (idx === -1) {
+    if (chosenIndex < 0 || chosenIndex >= drawnCards.length) {
         console.warn("所選小時卡不存在或已被拿走。");
         return;
     }
 
-    const cardToPlace = drawnCards.splice(idx, 1)[0];
+    const cardToPlace = drawnCards.splice(chosenIndex, 1)[0];
     placeHourCardForPlayer(gameState, humanPlayer, cardToPlace, humanPlayer.name);
 
     gameState.waitingHourChoice = false;
@@ -1009,6 +1008,7 @@ function handleHumanHourCardChoice(gameState, chosenHourNumber) {
         updateUI(gameState);
     }
 }
+
 
 // 小時卡選完後的收尾：清狀態、丟棄分鐘卡、進入（或暫停等待）扣齒輪流程
 function finishHourSelection(gameState) {

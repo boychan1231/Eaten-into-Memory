@@ -8,44 +8,44 @@
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <header>
-            
-            <div class="tab-nav">
-                <button class="tab-btn active" data-target="game-content">遊戲</button>
-                <button class="tab-btn" data-target="rules-content">規則</button>
-                <button class="tab-btn" data-target="settings-content">設定</button>
-            </div>
-            
-            <div class="game-status">
-                <span id="round-info">準備開始</span> | 
-                <span id="turn-info">回合: --</span>
-                <button id="start-game-btn" style="margin-left: 15px;">開始新遊戲</button>
-            </div>
-        </header>
+	<div class="game-wrapper">
+		<header>
+				
+			<div class="tab-nav">
+					<button class="tab-btn active" data-target="game-content">遊戲</button>
+					<button class="tab-btn" data-target="rules-content">規則</button>
+					<button class="tab-btn" data-target="settings-content">設定</button>
+			</div>
+				
+			<div class="game-status">
+					<span id="round-info">準備開始</span> | 
+					<span id="turn-info">回合: --</span>
+					<button id="start-game-btn" style="margin-left: 15px;">開始新遊戲</button>
+			</div>
+		</header>
 
-        <div class="tab-wrapper">
-            <div id="game-content" class="tab-content active-tab">
-                
-                <div class="main-area">
-					  <!-- 左：日誌 -->
+		<div class="tab-wrapper">
+			<div id="game-content" class="tab-content active-tab">
+					
+				<div class="main-area">
+					<!-- 左：日誌 -->
 					<div class="log-section">
-						<h3>📜 命運日誌</h3>
+							<h3>📜 命運日誌</h3>
 						<div id="game-log-container">
-						  <ul id="log-list">
-							<li>請點擊「開始新遊戲」，然後點擊「下一回合」來翻開小時卡。</li>
-						  </ul>
+							<ul id="log-list">
+								<li>請點擊「開始新遊戲」，然後點擊「下一回合」來翻開小時卡。</li>
+							</ul>
 						</div>
 					</div>
 
-					  <!-- 中：鐘面 -->
+						  <!-- 中：鐘面 -->
 					<div class="clock-section">
 						<div id="clock-face">
-						  <div class="clock-center"></div>
+							<div class="clock-center"></div>
 						</div>
 					</div>
 
-					  <!-- 右：資訊面板群組 -->
+					<!-- 右：資訊面板群組 -->
 					<div class="side-panel-group">
 
 						<div id="deck-info" class="log-side-info no-click">
@@ -72,7 +72,7 @@
 				</div>
 
 				<div id="human-player-area" class="human-area">
-					
+						
 					<div class="human-top-bar">
 						<h4 id="human-role-display">您是：--</h4>
 						<div class="human-stats-row">
@@ -86,142 +86,165 @@
 						</div>
 					</div>
 
-					<div id="ability-panel" class="ability-panel" style="display:none;">
-						<div class="ability-title">特殊能力（時針）</div>
-						<div class="ability-actions">
-							<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
-						</div>
-						<div id="ability-peek-result" class="ability-result">頂牌：--</div>
-					</div>
-
-					<div id="ability-choice-panel" style="display:none; margin-bottom: 10px;">
-						<div id="ability-choice-text" class="instruction-text"></div>
-						<div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
-							<button id="ability-use-btn">使用特殊能力</button>
-							<button id="ability-skip-btn">略過能力</button>
-						</div>
-					</div>
-
-					<div class="human-play-row">
-						
-						<div id="human-hand" class="hand-display"></div>
-						
-						<div id="human-controls" class="hand-controls">
-							<div id="evolution-progress-area" class="progress-area"></div>
-							
-							<div id="seconds-ability-controls" class="control-block" style="display:none;">
-								<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
-								<button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
-								<div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
+					<div class="human-tabs">
+							<div class="human-tab-nav">
+								<button class="human-tab-btn active" data-target="human-tab-hand" type="button">手牌</button>
+								<button class="human-tab-btn" data-target="human-tab-ability" type="button">能力</button>
+								<button class="human-tab-btn" data-target="human-tab-evolution" type="button">進化</button>
 							</div>
 
-							<button id="confirm-move-btn" disabled>確認出牌</button>
-							<button id="next-step-btn" disabled>下一回合</button>
+						<div class="human-tab-panels">
+							<div id="human-tab-hand" class="human-tab-panel active">
+								<div class="human-play-row">
+									<div id="human-hand" class="hand-display"></div>
+									<div id="human-controls" class="hand-controls">
+										<div id="seconds-ability-controls" class="control-block" style="display:none;">
+											<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
+											<button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
+											<div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
+										</div>
+										<button id="confirm-move-btn" disabled>確認出牌</button>
+										<button id="next-step-btn" disabled>下一回合</button>
+									</div>
+								</div>
+							</div>
+
+							<div id="human-tab-ability" class="human-tab-panel">
+								<div id="ability-choice-panel" style="display:none; margin-bottom: 10px;">
+									<div id="ability-choice-text" class="instruction-text"></div>
+									<div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
+										<button id="ability-use-btn">使用特殊能力</button>
+										<button id="ability-skip-btn">略過能力</button>
+									</div>
+								</div>
+
+								<div id="ability-panel" class="ability-panel" style="display:none;">
+									<div class="ability-title">特殊能力（時針）</div>
+									<div class="ability-actions">
+										<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
+									</div>
+									<div id="ability-peek-result" class="ability-result">頂牌：--</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="human-tab-evolution" class="human-tab-panel">
+							<div class="evolution-tab-body">
+								<div class="evolution-left">
+											<div class="evolution-panel-title">已收集小時卡</div>
+											<div id="human-hour-collection" class="hour-collection-list"></div>
+								</div>
+								<div class="evolution-right">
+									<div id="evolution-progress-area" class="progress-area"></div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-
+						
 				<div id="players-section" class="players-grid">
 					<div class="player-card placeholder">
 						<p>等待遊戲開始...</p>
 					</div>
 				</div>
-            </div>
-        </div>
-            
-            <div id="rules-content" class="tab-content">
-                <div class="rules-wrapper">
-                    <h3>📖 遊戲規則總覽</h3>
-                    <p class="rules-intro">
-                        規則調整中，請以遊戲內呈現為準。
-                    </p>
 
-                    <section class="rules-section">
-                        <h4>一、遊戲目標</h4>
-                        <ul class="rules-list">
-                            <li>時魔：透過收集小時卡與保留齒輪，達成自身勝利條件。</li>
-                            <li>時之惡：利用骰子與攻擊規則，逐步削弱其他玩家。</li>
-                            <li>受詛者：運用特殊骰子與能力，在混亂中尋找生路。</li>
-                        </ul>
-                    </section>
+			</div>
 
-                    <section class="rules-section">
-                        <h4>二、卡牌種類與資源</h4>
-                        <ul class="rules-list">
-                            <li><span class="rules-tag">分鐘卡</span>：1–60，決定行動順序與齒輪收益。</li>
-                            <li><span class="rules-tag">小時卡</span>：1–12，一般 x2 24 ，x1 珍貴小時卡；共36張。</li>
-                            <li><span class="rules-tag">齒輪卡</span>：代表玩家生命，並提供等量 Mana。</li>
-                        </ul>
-                    </section>
+				<div id="rules-content" class="tab-content">
+					<h3>📜 遊戲規則簡介</h3>
 
-                    <section class="rules-section">
-                        <h4>三、基本回合流程（簡表）</h4>
-                        <ol class="rules-steps">
-                            <li>回合開始：觸發相關角色的回合前能力。</li>
-                            <li>揭示兩張小時卡，決定本回合時空環境。</li>
-                            <li>所有玩家選擇並打出分鐘卡。</li>
-                            <li>依分鐘卡數值，由大到小選取小時卡與站位。</li>
-                            <li>結算懲罰、齒輪與 Mana 變化、角色升級。</li>
-                            <li>檢查是否有人被逐出或達成勝利條件。</li>
-                        </ol>
-                        <p class="rules-note">
-                            詳細條文（例如「最接近 12 的懲罰」「幼體時魔防禦」等），
-                            建議各自獨立成一小節，方便查詢。
-                        </p>
-                    </section>
-                </div>
-            </div>
+					<h4>🎴 卡牌種類</h4>
+					<ul>
+						<li><strong>齒輪卡：</strong>提供 mana（消耗後需休息一回合）</li>
+						<li><strong>小時卡：</strong>分為少年、中年、老年三組，每組 12 張；每局從三種組合中抽一組作為珍貴小時卡</li>
+						<li><strong>身分卡：</strong>決定玩家角色與技能</li>
+					</ul>
 
-    <div id="settings-content" class="tab-content">
-            <h3>⚙️ 設定選項</h3>
-            <div class="setting-item">
-                <label class="toggle-switch">
-                    <input type="checkbox" id="ability-toggle">
-                    <span class="slider"></span>
-                    <span class="label-text">啟用特殊能力</span>
-                </label>
-            </div>
-			
-            <div class="setting-item">
-				<div class="setting-title">測試</div>
+					<h4>🌀 Mana 與行動</h4>
+					<ul>
+						<li>每回合玩家可出任意數量齒輪卡獲得 mana</li>
+						<li>打出小時卡或發動技能會消耗 mana</li>
+						<li>mana 不會累積，回合結束清零</li>
+					</ul>
+
+					<h4>🕰 小時卡的留場與回收</h4>
+					<ul>
+						<li>每位玩家每回合最多只能保留 1 張小時卡在場上</li>
+						<li>若打出第 2 張小時卡，必須選擇一張留場，另一張回收</li>
+						<li>珍貴小時卡回收後不再進入牌庫，變成「已收集」狀態</li>
+					</ul>
+
+					<h4>⚔ 角色技能</h4>
+					<ul>
+						<li><strong>時針：</strong>可預知下一輪小時卡</li>
+						<li><strong>分針：</strong>可偷取對手一張小時卡</li>
+						<li><strong>秒針：</strong>可從兩張小時卡中選一張</li>
+						<li><strong>時之惡：</strong>有懲罰與特殊行為模式（AI）</li>
+					</ul>
+
+					<h4>🏁 勝利條件</h4>
+					<ul>
+						<li>珍貴小時卡全被收集完畢後遊戲結束</li>
+						<li>收集最多珍貴小時卡者獲勝（時之惡有特殊勝負判定）</li>
+					</ul>
+				</div>
+
+		<div id="settings-content" class="tab-content">
+			<h3>⚙️ 設定選項</h3>
+			<div class="setting-item">
 				<label class="toggle-switch">
-				<input type="checkbox" id="test-toggle" />
+					<input type="checkbox" id="ability-toggle" checked>
 					<span class="slider"></span>
+					<span class="label-text">啟用特殊能力</span>
+				</label>
+				<p class="setting-desc">如果取消勾選，所有角色技能將停用，遊戲只依照出牌規則進行。</p>
+			</div>
+
+			<div class="setting-item">
+				<label class="toggle-switch">
+					<input type="checkbox" id="test-toggle" />
+					<span class="slider"></span>
+					<span class="label-text">測試模式</span>
 				</label>
 				<div class="setting-hint">
-				開啟後：人類玩家在第 1 輪起始手牌固定為 1,2,3,4,5,54,55,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
+				 <p class="setting-desc">人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,54,55,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。</p>
 				</div>
-			</div>
-			
-           
-		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
-			<div class="modal">
-				<div class="modal-title">秒針能力：二選一</div>
-				<div id="seconds-choice-desc" class="modal-desc"></div>
-				<div class="modal-actions">
-					<button id="seconds-choice-a" type="button"></button>
-					<button id="seconds-choice-b" type="button"></button>
-				</div>
-				<div class="modal-note">未選擇的卡牌會回到你的手牌。</div>
 			</div>
 		</div>
+
+	</div> 
+	<!-- end .tab-wrapper -->
+
+	<!-- 秒針能力：二選一 Overlay（必須放在 tab-wrapper 外面） -->
+	<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
+	  <div class="modal">
+		<div class="modal-title">秒針能力：二選一</div>
+		<div id="seconds-choice-desc" class="modal-desc"></div>
+		<div class="modal-actions">
+		  <button id="seconds-choice-a" type="button"></button>
+		  <button id="seconds-choice-b" type="button"></button>
+		</div>
+		<div class="modal-note">未選擇的卡牌會回到你的手牌。</div>
+	  </div>
 	</div>
-	
-	<!-- 角色選擇 Overlay -->
-	<div id="role-choice-overlay" class="modal-overlay hidden">
+
+	<!-- 角色選擇 Overlay（必須放在 tab-wrapper 外面） -->
+	<div id="role-choice-overlay" class="modal-overlay" style="display:none;">
 		<div class="modal">
 		<h2>選擇角色</h2>
 			<div class="modal-actions">
-			<button id="role-choice-timeDemon" class="primary">時魔</button>
-			<button id="role-choice-sin">時之惡</button>
-			<button id="role-choice-scz">受詛者</button>
+			<button id="role-choice-timeDemon" class="primary" type="button">時魔</button>
+			<button id="role-choice-sin" type="button">時之惡</button>
+			<button id="role-choice-scz" type="button">受詛者</button>
 			</div>
 		</div>
 	</div>
-	
-	
-	<script src="abilities.js"></script> 
-    <script src="game.js"></script>
-    <script src="ui.js"></script> 
+
+</div> <!-- end .game-wrapper -->
+
+<script src="abilities.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>
+

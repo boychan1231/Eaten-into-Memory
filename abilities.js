@@ -4,7 +4,6 @@
 // 相容性保護
 // ------------------------------------------------------------
 function activatesinPreRoundAbility() { return false; }
-function activateSinPreRoundAbility() { return false; }
 
 // 定義可進化的目標身份 (僅保留名稱，不再綁定特定數字)
 const AVAILABLE_ROLES = ['時針', '分針', '秒針'];
@@ -174,4 +173,30 @@ function attemptRoleUpgrade(player, gameState) {
 if (typeof window !== 'undefined') {
     window.checkEvolutionCondition = checkEvolutionCondition;
     window.AVAILABLE_ROLES = AVAILABLE_ROLES;
+}
+
+// === 時針能力：頂牌放到底 (2 Mana 消耗) ===
+function hourHandMoveTopToBottom(gameState, playerId) {
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player) return false;
+    if (player.mana < 2) {
+        console.warn("Mana 不足，無法使用時針能力。");
+        return false;
+    }
+    if (!Array.isArray(gameState.hourDeck) || gameState.hourDeck.length < 1) {
+        console.warn("牌庫中沒有卡可移動。");
+        return false;
+    }
+
+    const topCard = gameState.hourDeck.shift();
+    gameState.hourDeck.push(topCard);
+    player.mana -= 2;
+
+    console.log(`🕒【時針能力】${player.name} 消耗 2 Mana，將頂牌 (${topCard.number}${topCard.ageGroup || ''}${topCard.isPrecious ? '★' : ''}) 移至底部。`);
+    return true;
+}
+
+// 掛載至 window
+if (typeof window !== 'undefined') {
+    window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
 }
