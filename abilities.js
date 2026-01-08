@@ -1,7 +1,5 @@
 // abilities.js (特殊能力定義檔 - 新版進化規則)
 
-function activatesinPreRoundAbility() { return false; }
-
 // 定義可進化的目標身份 (僅保留名稱，不再綁定特定數字)
 const AVAILABLE_ROLES = ['時針', '分針', '秒針'];
 
