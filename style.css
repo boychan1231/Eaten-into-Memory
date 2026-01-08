@@ -525,6 +525,37 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ff6b6b; font-weight: bold; margin-left: 6px; font-size: 1.1rem;
 }
 
+/* 人類玩家分頁 */
+.human-tab-nav {
+    display: flex;
+    gap: 8px;
+    padding: 6px 6px 10px;
+    border-bottom: 1px solid #4a3b52;
+}
+.human-tab-btn {
+    background-color: #1f1424;
+    color: #dccae5;
+    border: 1px solid #4a3b52;
+    border-bottom: none;
+    padding: 6px 16px;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+}
+.human-tab-btn:hover { background-color: #2e2134; }
+.human-tab-btn.active {
+    background-color: #2b1d30;
+    color: #ff6b6b;
+    border-top: 2px solid #ff6b6b;
+}
+.human-tab-content {
+    border-top: 1px solid #4a3b52;
+    padding-top: 12px;
+}
+.human-tab-panel { display: none; }
+.human-tab-panel.active { display: block; }
+
 /* 下層：遊戲操作區 (橫向排列：左手牌、右控制) */
 .human-play-row {
     display: flex;
@@ -565,6 +596,15 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex: 0 0 280px;
     width: 280px;
     display: flex; flex-direction: column; gap: 10px;
+}
+.play-control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #151019;
+    border: 1px solid #4a3b52;
+    border-radius: 6px;
+    padding: 12px;
 }
 
 /* 進化面板 (黑色區塊) */
