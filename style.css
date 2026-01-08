@@ -526,35 +526,42 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 /* 人類玩家分頁 */
+.human-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 .human-tab-nav {
     display: flex;
-    gap: 8px;
-    padding: 6px 6px 10px;
-    border-bottom: 1px solid #4a3b52;
+    gap: 6px;
+    flex-wrap: wrap;
 }
+
 .human-tab-btn {
     background-color: #1f1424;
     color: #dccae5;
     border: 1px solid #4a3b52;
-    border-bottom: none;
-    padding: 6px 16px;
-    border-radius: 6px 6px 0 0;
+    padding: 6px 14px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    transition: background-color 0.2s, color 0.2s;
 }
-.human-tab-btn:hover { background-color: #2e2134; }
+
 .human-tab-btn.active {
-    background-color: #2b1d30;
-    color: #ff6b6b;
-    border-top: 2px solid #ff6b6b;
+    background-color: #2d1a36;
+    color: #ffd27f;
+    border-color: #6b4c7b;
+    box-shadow: 0 0 0 1px rgba(255, 210, 127, 0.3);
 }
-.human-tab-content {
-    border-top: 1px solid #4a3b52;
-    padding-top: 12px;
+
+.human-tab-panel {
+    display: none;
 }
-.human-tab-panel { display: none; }
-.human-tab-panel.active { display: block; }
+
+.human-tab-panel.active {
+    display: block;
+}
 
 /* 下層：遊戲操作區 (橫向排列：左手牌、右控制) */
 .human-play-row {
@@ -570,6 +577,62 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex: 1; /* 自動填滿 */
     display: flex; flex-wrap: wrap; gap: 8px;
     padding: 5px 0;
+}
+
+/* 進化分頁雙欄 */
+.evolution-tab-body {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.evolution-left {
+    background: #1f1424;
+    border: 1px solid #4a3b52;
+    border-radius: 10px;
+    padding: 12px;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.evolution-panel-title {
+    font-weight: bold;
+    color: #ffd27f;
+    text-shadow: 0 0 6px rgba(255, 210, 127, 0.3);
+}
+
+.hour-collection-list {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.hour-collection-card {
+    min-width: 42px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: center;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.35);
+}
+
+.hour-collection-card.precious {
+    border-color: #ffd27f;
+    color: #ffd27f;
+}
+
+.hour-collection-placeholder {
+    opacity: 0.6;
+    font-size: 0.9rem;
 }
 
 .minute-card {
