@@ -1036,27 +1036,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4B. Tab 切換
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
+    function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, activePanelClass) {
+        const buttons = Array.from(document.querySelectorAll(buttonSelector));
+        const panels = Array.from(document.querySelectorAll(panelSelector));
+        if (buttons.length === 0 || panels.length === 0) return;
 
-    function switchTab(targetId) {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active-tab'));
+        const activateTab = (targetId) => {
+            buttons.forEach(btn => btn.classList.remove(activeButtonClass));
+            panels.forEach(panel => panel.classList.remove(activePanelClass));
 
-        const activeBtn = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
-        const targetEl = document.getElementById(targetId);
+            const activeBtn = buttons.find(btn => btn.dataset.target === targetId);
+            const targetPanel = document.getElementById(targetId);
 
-        if (activeBtn) activeBtn.classList.add('active');
-        if (targetEl) targetEl.classList.add('active-tab');
+            if (activeBtn) activeBtn.classList.add(activeButtonClass);
+            if (targetPanel) targetPanel.classList.add(activePanelClass);
+        };
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                if (!targetId) return;
+                activateTab(targetId);
+            });
+        });
+
+        const defaultBtn = buttons.find(btn => btn.classList.contains(activeButtonClass)) || buttons[0];
+        if (defaultBtn?.dataset.target) {
+            activateTab(defaultBtn.dataset.target);
+        }
     }
 
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetId = btn.dataset.target;
-            if (!targetId) return;
-            switchTab(targetId);
-        });
-    });
+    setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
+    setupTabNavigation('.human-tab-btn', '.human-tab-panel', 'active', 'active');
 	
 	// --- 新增：右側面板切換邏輯 ---
     const btnPlayed = document.getElementById('btn-show-played');
