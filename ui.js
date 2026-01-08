@@ -41,6 +41,7 @@ window.addEventListener("error", (e) => {
         }
     } catch (_) {}
 });
+
 window.addEventListener("unhandledrejection", (e) => {
     try {
         originalLog("[Promise Rejection]", e.reason);
@@ -85,25 +86,6 @@ function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, ac
         });
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ====
 // 右側資訊面板（UI 狀態）
@@ -448,7 +430,6 @@ function updateUI(gameState) {
             diceInfo = `<div>骰子: <strong>${player.d6Die}</strong></div>`;
         }
 
-        // ✅ 修改重點：若被驅逐顯示「驅逐」，否則顯示位置或「未上場」
         const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
 
         pCard.innerHTML = `
@@ -1112,17 +1093,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // 4B-2. 人類玩家分頁切換
-    const humanTabButtons = document.querySelectorAll('.human-tab-btn');
-    const humanTabPanels = document.querySelectorAll('.human-tab-panel');
-
-    function switchHumanTab(targetId) {
-        humanTabButtons.forEach(btn => btn.classList.remove('active'));
-        humanTabPanels.forEach(panel => panel.classList.remove('active'));
-	}	
-
-
     // 4B. Tab 切換
     function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, activePanelClass) {
         const buttons = Array.from(document.querySelectorAll(buttonSelector));
@@ -1380,29 +1350,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
     }
-
-    // 邏輯 2：綁定角色選擇按鈕 -> 設定 ID -> 初始化遊戲
-    const btnTimeDemon = document.getElementById('role-choice-timeDemon');
-    const btnSin = document.getElementById('role-choice-sin');
-    const btnScz = document.getElementById('role-choice-scz');
-
-    function selectRoleAndStart(roleId) {
-        // 設定全域人類玩家 ID
-        if (typeof setHumanPlayerId === 'function') {
-            setHumanPlayerId(roleId);
-        } else {
-            window.HUMAN_PLAYER_ID = roleId;
-        }
-
-        // 關閉彈窗
-        if (roleOverlay) roleOverlay.style.display = 'none';
-
-        // 執行遊戲初始化
-        runGameInitialization();
-    }
-
-    if (btnTimeDemon) btnTimeDemon.addEventListener('click', () => selectRoleAndStart('SM_1'));
-    if (btnSin) btnSin.addEventListener('click', () => selectRoleAndStart('sin'));
-    if (btnScz) btnScz.addEventListener('click', () => selectRoleAndStart('SCZ'));
-	
-}
+});
