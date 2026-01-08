@@ -1,8 +1,5 @@
 // abilities.js (特殊能力定義檔 - 新版進化規則)
 
-// ------------------------------------------------------------
-// 相容性保護
-// ------------------------------------------------------------
 function activatesinPreRoundAbility() { return false; }
 
 // 定義可進化的目標身份 (僅保留名稱，不再綁定特定數字)
@@ -18,18 +15,18 @@ function checkEvolutionCondition(player) {
     // 條件 1: 3張不同時代 (少年/中年/老年)，至少 1 張珍貴
     const ageGroups = new Set(cards.map(c => c.ageGroup).filter(g => g));
     if (ageGroups.size >= 3 && preciousCount >= 1) {
-        return { met: true, type: '時代大滿貫 (3時代 + 1珍貴)' };
+        return { met: true, type: '久遠的一生 (3時代 + 1珍貴)' };
     }
 
     // 條件 2: 4張不同數字，至少 1 張珍貴
     const uniqueNumbers = new Set(cards.map(c => c.number));
     if (uniqueNumbers.size >= 4 && preciousCount >= 1) {
-        return { met: true, type: '數字收藏家 (4不同數 + 1珍貴)' };
+        return { met: true, type: ' 憶無數經歷(4不同數 + 1珍貴)' };
     }
 
     // 條件 3: 5張任意卡，至少 2 張珍貴
     if (cards.length >= 5 && preciousCount >= 2) {
-        return { met: true, type: '魔力滿溢 (5張卡 + 2珍貴)' };
+        return { met: true, type: '淩亂的結束 (5張卡 + 2珍貴)' };
     }
 
     return { met: false, type: null };

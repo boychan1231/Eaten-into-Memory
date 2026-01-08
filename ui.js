@@ -105,9 +105,9 @@ function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, ac
 
 
 
-// ================================
+// ====
 // 右側資訊面板（UI 狀態）
-// ================================
+// ====
 const UI_HISTORY_LIMIT = 12;
 let uiMinuteHistory = {};
 let uiLastRecordedTurnKey = null;
@@ -672,9 +672,9 @@ function updateUI(gameState) {
             }
         }
         
-		// ===============================
+		// ===
 		// ✅ 秒針能力 UI：顯示 / 隱藏
-		// ===============================
+		// ===
 		const secondsBtn = document.getElementById('seconds-ability-btn');
 		const secondsCancelBtn = document.getElementById('seconds-ability-cancel-btn');
 
@@ -704,9 +704,9 @@ function updateUI(gameState) {
 		  secondsCancelBtn.style.display = isSecondHandSelectingTwo ? 'inline-block' : 'none';
 		}
 
-		// ===============================
+		// ===
 		// ✅ 秒針二選一彈窗：顯示 / 隱藏
-		// ===============================
+		// ===
 		const overlay = document.getElementById('seconds-choice-overlay');
 		if (overlay) {
 		  if (
@@ -1112,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-<<<<<<< HEAD
+
     // 4B-2. 人類玩家分頁切換
     const humanTabButtons = document.querySelectorAll('.human-tab-btn');
     const humanTabPanels = document.querySelectorAll('.human-tab-panel');
@@ -1120,8 +1120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchHumanTab(targetId) {
         humanTabButtons.forEach(btn => btn.classList.remove('active'));
         humanTabPanels.forEach(panel => panel.classList.remove('active'));
+	}	
 
-=======
+
     // 4B. Tab 切換
     function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, activePanelClass) {
         const buttons = Array.from(document.querySelectorAll(buttonSelector));
@@ -1146,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 activateTab(targetId);
             });
         });
-    });
+    }
 
     // 4B-2. 人類玩家分頁切換
     const humanTabButtons = document.querySelectorAll('.human-tab-btn');
@@ -1155,8 +1156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchHumanTab(targetId) {
         humanTabButtons.forEach(btn => btn.classList.remove('active'));
         humanTabPanels.forEach(panel => panel.classList.remove('active'));
-
->>>>>>> 0900a854f3da93dead1ac5f466e8f681fb289870
         const activeBtn = document.querySelector(`.human-tab-btn[data-target="${targetId}"]`);
         const targetEl = document.getElementById(targetId);
 
@@ -1406,4 +1405,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnSin) btnSin.addEventListener('click', () => selectRoleAndStart('sin'));
     if (btnScz) btnScz.addEventListener('click', () => selectRoleAndStart('SCZ'));
 	
-});
+}
