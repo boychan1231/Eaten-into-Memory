@@ -1112,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+<<<<<<< HEAD
     // 4B-2. 人類玩家分頁切換
     const humanTabButtons = document.querySelectorAll('.human-tab-btn');
     const humanTabPanels = document.querySelectorAll('.human-tab-panel');
@@ -1120,6 +1121,42 @@ document.addEventListener('DOMContentLoaded', () => {
         humanTabButtons.forEach(btn => btn.classList.remove('active'));
         humanTabPanels.forEach(panel => panel.classList.remove('active'));
 
+=======
+    // 4B. Tab 切換
+    function setupTabNavigation(buttonSelector, panelSelector, activeButtonClass, activePanelClass) {
+        const buttons = Array.from(document.querySelectorAll(buttonSelector));
+        const panels = Array.from(document.querySelectorAll(panelSelector));
+        if (buttons.length === 0 || panels.length === 0) return;
+
+        const activateTab = (targetId) => {
+            buttons.forEach(btn => btn.classList.remove(activeButtonClass));
+            panels.forEach(panel => panel.classList.remove(activePanelClass));
+
+            const activeBtn = buttons.find(btn => btn.dataset.target === targetId);
+            const targetPanel = document.getElementById(targetId);
+
+            if (activeBtn) activeBtn.classList.add(activeButtonClass);
+            if (targetPanel) targetPanel.classList.add(activePanelClass);
+        };
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                if (!targetId) return;
+                activateTab(targetId);
+            });
+        });
+    });
+
+    // 4B-2. 人類玩家分頁切換
+    const humanTabButtons = document.querySelectorAll('.human-tab-btn');
+    const humanTabPanels = document.querySelectorAll('.human-tab-panel');
+
+    function switchHumanTab(targetId) {
+        humanTabButtons.forEach(btn => btn.classList.remove('active'));
+        humanTabPanels.forEach(panel => panel.classList.remove('active'));
+
+>>>>>>> 0900a854f3da93dead1ac5f466e8f681fb289870
         const activeBtn = document.querySelector(`.human-tab-btn[data-target="${targetId}"]`);
         const targetEl = document.getElementById(targetId);
 
