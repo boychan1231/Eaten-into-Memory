@@ -449,6 +449,37 @@ function updateUI(gameState) {
         
         setText('h-hour', String(humanPlayer.hourCards.length));
 
+        const hourCollectionEl = document.getElementById('human-hour-collection');
+        if (hourCollectionEl) {
+            hourCollectionEl.innerHTML = '';
+            const hourCards = Array.isArray(humanPlayer.hourCards) ? humanPlayer.hourCards : [];
+
+            if (hourCards.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'hour-collection-placeholder';
+                placeholder.textContent = '尚未收集小時卡';
+                hourCollectionEl.appendChild(placeholder);
+            } else {
+                hourCards.forEach(card => {
+                    const value = (typeof card === 'number') ? card : card?.number;
+                    const precious = (typeof card === 'object' && card) ? !!card.isPrecious : false;
+                    const ageGroup = (typeof card === 'object' && card) ? card.ageGroup : '';
+
+                    const cardEl = document.createElement('div');
+                    cardEl.className = `hour-collection-card${precious ? ' precious' : ''}`;
+                    cardEl.textContent = value != null ? `${value}${precious ? '★' : ''}` : '--';
+
+                    if (ageGroup) {
+                        cardEl.title = ageGroup;
+                    } else if (precious) {
+                        cardEl.title = '珍貴';
+                    }
+
+                    hourCollectionEl.appendChild(cardEl);
+                });
+            }
+        }
+
         const diceEl = document.getElementById('h-dice');
         if (diceEl) {
             const d = humanPlayer.d6Die;
@@ -1055,6 +1086,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetId = btn.dataset.target;
             if (!targetId) return;
             switchTab(targetId);
+        });
+    });
+
+    // 4B-2. 人類玩家分頁切換
+    const humanTabButtons = document.querySelectorAll('.human-tab-btn');
+    const humanTabPanels = document.querySelectorAll('.human-tab-panel');
+
+    function switchHumanTab(targetId) {
+        humanTabButtons.forEach(btn => btn.classList.remove('active'));
+        humanTabPanels.forEach(panel => panel.classList.remove('active'));
+
+        const activeBtn = document.querySelector(`.human-tab-btn[data-target="${targetId}"]`);
+        const targetEl = document.getElementById(targetId);
+
+        if (activeBtn) activeBtn.classList.add('active');
+        if (targetEl) targetEl.classList.add('active');
+    }
+
+    humanTabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.target;
+            if (!targetId) return;
+            switchHumanTab(targetId);
         });
     });
 	

@@ -86,37 +86,60 @@
 						</div>
 					</div>
 
-					<div id="ability-panel" class="ability-panel" style="display:none;">
-						<div class="ability-title">特殊能力（時針）</div>
-						<div class="ability-actions">
-							<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
+					<div class="human-tabs">
+						<div class="human-tab-nav">
+							<button class="human-tab-btn active" data-target="human-tab-hand" type="button">手牌</button>
+							<button class="human-tab-btn" data-target="human-tab-ability" type="button">能力</button>
+							<button class="human-tab-btn" data-target="human-tab-evolution" type="button">進化</button>
 						</div>
-						<div id="ability-peek-result" class="ability-result">頂牌：--</div>
-					</div>
 
-					<div id="ability-choice-panel" style="display:none; margin-bottom: 10px;">
-						<div id="ability-choice-text" class="instruction-text"></div>
-						<div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
-							<button id="ability-use-btn">使用特殊能力</button>
-							<button id="ability-skip-btn">略過能力</button>
-						</div>
-					</div>
+						<div class="human-tab-panels">
+							<div id="human-tab-hand" class="human-tab-panel active">
+								<div class="human-play-row">
+									<div id="human-hand" class="hand-display"></div>
+									
+									<div id="human-controls" class="hand-controls">
+										<div id="seconds-ability-controls" class="control-block" style="display:none;">
+											<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
+											<button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
+											<div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
+										</div>
 
-					<div class="human-play-row">
-						
-						<div id="human-hand" class="hand-display"></div>
-						
-						<div id="human-controls" class="hand-controls">
-							<div id="evolution-progress-area" class="progress-area"></div>
-							
-							<div id="seconds-ability-controls" class="control-block" style="display:none;">
-								<button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
-								<button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
-								<div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
+										<button id="confirm-move-btn" disabled>確認出牌</button>
+										<button id="next-step-btn" disabled>下一回合</button>
+									</div>
+								</div>
 							</div>
 
-							<button id="confirm-move-btn" disabled>確認出牌</button>
-							<button id="next-step-btn" disabled>下一回合</button>
+							<div id="human-tab-ability" class="human-tab-panel">
+								<div id="ability-choice-panel" style="display:none; margin-bottom: 10px;">
+									<div id="ability-choice-text" class="instruction-text"></div>
+									<div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
+										<button id="ability-use-btn">使用特殊能力</button>
+										<button id="ability-skip-btn">略過能力</button>
+									</div>
+								</div>
+
+								<div id="ability-panel" class="ability-panel" style="display:none;">
+									<div class="ability-title">特殊能力（時針）</div>
+									<div class="ability-actions">
+										<button id="ability-bury-btn" type="button">2 Mana：頂牌放到底</button>
+									</div>
+									<div id="ability-peek-result" class="ability-result">頂牌：--</div>
+								</div>
+							</div>
+
+							<div id="human-tab-evolution" class="human-tab-panel">
+								<div class="evolution-tab-body">
+									<div class="evolution-left">
+										<div class="evolution-panel-title">已收集小時卡</div>
+										<div id="human-hour-collection" class="hour-collection-list"></div>
+									</div>
+									<div class="evolution-right">
+										<div id="evolution-progress-area" class="progress-area"></div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
