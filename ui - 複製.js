@@ -740,7 +740,7 @@ function updateUI(gameState) {
         }
     }
 
- // 2. 時針能力面板控制
+    // 2. 時針能力面板控制
     const hourAbilityPanel = document.getElementById('ability-panel');
     if (hourAbilityPanel) {
         const peekBtn = document.getElementById('ability-peek-btn');
@@ -753,28 +753,6 @@ function updateUI(gameState) {
 
         hourAbilityPanel.style.display = canShow ? 'block' : 'none';
 
-        if (canShow) {
-            const blocked = !!gameState.abilityMarker;
-            if (peekBtn) {
-                peekBtn.disabled = true;
-                peekBtn.style.display = 'none';
-            }
-            if (buryBtn) {
-                buryBtn.disabled = blocked || humanPlayer.mana < 2 || humanPlayer.specialAbilityUsed || !gameState.hourDeck || gameState.hourDeck.length < 1;
-            }
-
-            if (peekResultEl) {
-                const top = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
-                if (blocked || !top) {
-                    peekResultEl.textContent = '頂牌：--';
-                } else {
-                    const ageLine = top.ageGroup ? `\n${top.ageGroup}` : '';
-                    const starLine = top.isPrecious ? `\n★` : '';
-                    peekResultEl.textContent = `頂牌：${top.number}${ageLine}${starLine}`;
-                }
-            }
-        }
-    }
 
     // 3. ✅ 分針能力面板控制 (固定 HTML 面板)
     const minutePanel = document.getElementById('minute-ability-panel');
@@ -792,7 +770,38 @@ function updateUI(gameState) {
             minutePanel.style.display = 'none';
         }
     }
+		
+        if (canShow) {
+            const blocked = !!gameState.abilityMarker;
+            if (peekBtn) {
+            peekBtn.disabled = true;
+            peekBtn.style.display = 'none';
+			}
+            if (buryBtn) {
+                buryBtn.disabled =
+					blocked ||
+					humanPlayer.mana < 1 ||
+					humanPlayer.specialAbilityUsed ||
+					!gameState.hourDeck ||
+					gameState.hourDeck.length < 2;
+			}
 
+            if (peekResultEl) {
+                const top = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0)
+					? gameState.hourDeck[gameState.hourDeck.length - 1]
+					: null;
+
+				if (blocked || !top) {
+					peekResultEl.textContent = '頂牌：--';
+				} else {
+					const ageLine = top.ageGroup ? `\n${top.ageGroup}` : '';
+					const starLine = top.isPrecious ? `\n★` : '';
+					peekResultEl.textContent = `頂牌：${top.number}${ageLine}${starLine}`;
+                }
+            }
+        }
+    }
+    
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
     
@@ -917,7 +926,7 @@ function updateUI(gameState) {
         const progressArea = document.getElementById('evolution-progress-area');
         if (progressArea) progressArea.innerHTML = '';
     }
-}
+
 
 // 4. 綁定按鈕事件
 document.addEventListener('DOMContentLoaded', () => {
