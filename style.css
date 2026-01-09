@@ -828,3 +828,63 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-family: 'Courier New', monospace; /* 等寬字體讓數字更清楚 */
     letter-spacing: 1px;
 }
+/* --- 版面調整：進化面板移至日誌區 --- */
+
+/* 1. 調整日誌區佈局：讓日誌列表 (flex: 1) 自動佔據剩餘空間，進化面板在底部固定 */
+.log-section {
+    display: flex;
+    flex-direction: column;
+    /* 確保高度足夠容納兩者，但不超過畫面 */
+    height: 100%; 
+    max-height: 600px; 
+}
+
+/* 日誌容器：自動伸縮，顯示捲軸 */
+#game-log-container {
+    flex: 1; 
+    min-height: 100px; /* 至少保留一點高度給日誌 */
+	max-height: 360px;
+    border-bottom: 1px solid #444; /* 與下方的進化面板做區隔 */
+}
+
+/* 2. 進化面板 (在日誌區內) 的微調 */
+#evolution-progress-area {
+    flex: 0 0 auto; /* 高度由內容決定，不伸縮 */
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+/* 3. 修復原本的進化分頁 (現在變寬了) */
+.evolution-tab-body {
+    display: block !important; /* 覆蓋原本的 grid */
+}
+#human-hour-collection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+/* 讓文字列表橫向排列更整齊 */
+.collection-text-row {
+    width: 100%;
+    padding: 4px 0;
+}
+
+/* --- style.css 新增：日誌逐條顯示動畫 --- */
+.log-entry-new {
+    animation: logFadeIn 0.5s ease-out forwards;
+    opacity: 0; /* 初始透明，由動畫變為不透明 */
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+@keyframes logFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px); /* 從下方滑入 */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -29,13 +29,15 @@
                 
                 <div class="main-area">
                     <div class="log-section">
-                        <h3>📜 命運日誌</h3>
-                        <div id="game-log-container">
-                            <ul id="log-list">
-                                <li>請點擊「開始新遊戲」，然後點擊「下一回合」來翻開小時卡。</li>
-                            </ul>
-                        </div>
-                    </div>
+						<h3>📜 遊戲日誌</h3>
+						<div id="game-log-container">
+							<ul id="log-list">
+								<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
+							</ul>
+						</div>
+
+						<div id="evolution-progress-area" class="progress-area" style="margin: 10px; border: 1px solid #4a3b52; background: #151019;"></div>
+					</div>
 
                     <div class="clock-section">
                         <div id="clock-face">
@@ -87,7 +89,7 @@
                         <div class="human-tab-nav">
                             <button class="human-tab-btn active" data-target="human-tab-hand" type="button">手牌</button>
                             <button class="human-tab-btn" data-target="human-tab-ability" type="button">能力</button>
-                            <button class="human-tab-btn" data-target="human-tab-evolution" type="button">進化</button>
+                            <button class="human-tab-btn" data-target="human-tab-evolution" type="button">小時</button>
                         </div>
 
                         <div class="human-tab-panels">
@@ -134,19 +136,30 @@
 										<button id="btn-minute-cw" type="button" style="flex:1; background:#ff9ff3; color:#000;">↻ 順時針</button>
 										<button id="btn-minute-skip" type="button" style="flex:0 0 auto; background:#555;">略過</button>
 									</div>
-								</div>                           
+								</div> 
+								<div id="sin-ability-panel" class="ability-panel" style="display:none; border-color: #feca57;">
+                                    <div class="ability-title" style="color: #feca57;">特殊能力（時之惡）</div>
+                                    <div class="instruction-text" style="font-size:0.9rem; margin-bottom:8px; color:#ddd;">
+                                        消耗 <span style="color:#ff6b6b; font-weight:bold;">2 Mana</span>，改變本回合懲罰規則：<br>
+                                        從「數值最大」改為「距離自己最近」。
+                                    </div>
+                                    <div class="ability-actions">
+                                        <button id="btn-sin-activate" type="button" style="width:100%; background:#feca57; color:#000; font-weight:bold;">
+                                            😈 發動「惡之牽引」
+                                        </button>
+                                        <div id="sin-ability-status" style="margin-top:5px; color:#aaa; font-size:0.85rem; text-align:center;">
+                                            當前規則：數值最大 (接近12)
+                                        </div>
+                                    </div>
+                                </div>
+								
 							</div>
 							
                             <div id="human-tab-evolution" class="human-tab-panel">
-                                <div class="evolution-tab-body">
-                                    <div class="evolution-left">
-                                        <div class="evolution-panel-title">已收集小時卡</div>
-                                        <div id="human-hour-collection" class="hour-collection-list"></div>
-                                    </div> <div class="evolution-right">
-                                        <div id="evolution-progress-area" class="progress-area"></div>
-                                    </div>
-                                </div>
-                            </div>
+								<div class="evolution-tab-body" style="display: block;"> <div class="evolution-panel-title">已收集小時卡</div>
+									<div id="human-hour-collection" class="hour-collection-list" style="max-height: 200px;"></div>
+								</div>
+							</div>
                         </div> </div> </div> <div id="players-section" class="players-grid">
                     <div class="player-card placeholder">
                         <p>等待遊戲開始...</p>

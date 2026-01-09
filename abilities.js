@@ -206,3 +206,37 @@ function hourHandMoveTopToBottom(gameState, playerId) {
 if (typeof window !== 'undefined') {
     window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
 }
+
+// abilities.js - 新增時之惡手動發動函式
+
+function activateSinAbility(gameState, playerId) {
+    if (!GAME_CONFIG.enableAbilities) return false;
+
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player || player.isEjected || player.type !== '時之惡') return false;
+
+    // 檢查限制
+    if (player.specialAbilityUsed) {
+        console.log("本回合已經發動過能力了。");
+        return false;
+    }
+    if (player.mana < 2) {
+        console.log("Mana 不足 (需要 2)，無法發動。");
+        return false;
+    }
+
+    // 執行能力
+    player.mana -= 2;
+    player.specialAbilityUsed = true; // 標記已使用
+    gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
+
+    console.log(`😈【時之惡】玩家發動能力！消耗 2 Mana。`);
+    console.log(`⚠️ 本回合懲罰規則已變更為：距離「時之惡」最近者受罰。`);
+
+    return true;
+}
+
+// 掛載到 window
+if (typeof window !== 'undefined') {
+    window.activateSinAbility = activateSinAbility;
+}

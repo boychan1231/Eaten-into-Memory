@@ -1,30 +1,68 @@
-// ui.js (整合修正版：修復變數重複宣告錯誤)
+// ui.js (開頭部分修改：實作日誌逐條顯示)
 
 const originalLog = console.log;
 const logList = document.getElementById('log-list');
 let globalGameState = null; 
+
+// 日誌佇列系統變數
+const logQueue = [];
+let isLogProcessing = false;
+const LOG_SPEED = 200; // ⏳ 設定顯示速度 (毫秒)，數值越小越快
 
 // ✅ 保險：避免 GAME_CONFIG 未定義導致 UI 事件中斷
 try {
     window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
 } catch (_) {}
 
+// 核心函式：處理日誌佇列
+function processLogQueue() {
+    // 如果正在處理中，或佇列是空的，就停止
+    if (isLogProcessing || logQueue.length === 0) return;
 
-// 重寫 console.log 以顯示在遊戲日誌中
-console.log = function(...args) {
-    originalLog.apply(console, args); 
-	
-	const list = document.getElementById('log-list'); // 每次即時抓取，或確保 DOM 已載入
-    if (!list) return; // 如果找不到元素，就只印在 Console
-	
-    if (!logList) return;
-    const message = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg) : arg)).join(' ');
-    const li = document.createElement('li');
-    li.textContent = message;
-    logList.appendChild(li);
+    isLogProcessing = true;
     
-    const logContainer = document.getElementById('game-log-container');
-    if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
+    // 取出下一條訊息
+    const message = logQueue.shift();
+    const list = document.getElementById('log-list');
+
+    if (list) {
+        const li = document.createElement('li');
+        li.textContent = message;
+        li.className = 'log-entry-new'; // 套用 CSS 動畫 class
+        list.appendChild(li);
+
+        // 自動捲動到底部
+        const logContainer = document.getElementById('game-log-container');
+        if (logContainer) {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    }
+
+    // 設定延遲後處理下一條
+    setTimeout(() => {
+        isLogProcessing = false;
+        // 如果還有訊息堆積，加快速度消化 (可選優化)
+        if (logQueue.length > 5) {
+             processLogQueue(); // 遞迴呼叫 (不延遲太久)
+        } else {
+             processLogQueue();
+        }
+    }, (logQueue.length > 5 ? 50 : LOG_SPEED)); // 如果堆積超過 5 條，加速到 50ms
+}
+
+// 重寫 console.log：改為推入佇列
+console.log = function(...args) {
+    // 1. 還是要印在瀏覽器的開發者工具 (除錯用)
+    originalLog.apply(console, args); 
+    
+    // 2. 組合文字
+    const message = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg) : arg)).join(' ');
+    
+    // 3. 推入佇列
+    logQueue.push(message);
+    
+    // 4. 啟動處理器
+    processLogQueue();
 };
 
 // 1. 錯誤監控 - 讓錯誤顯示在日誌中
@@ -811,6 +849,50 @@ function updateUI(gameState) {
         }
     }
 
+    // 4. ✅ 時之惡能力面板控制
+    const sinPanel = document.getElementById('sin-ability-panel');
+    const sinBtn = document.getElementById('btn-sin-activate');
+    const sinStatus = document.getElementById('sin-ability-status');
+
+    if (sinPanel && sinBtn && sinStatus) {
+        // 只有當玩家是「時之惡」且在「出牌前階段」且「未被逐出」時顯示
+        const isSinRole = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
+        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : isWaitingMinuteInput; // 借用等待輸入狀態
+        const canShow = window.GAME_CONFIG.enableAbilities && isSinRole && isPreMinute && !gameState.gameEnded;
+
+        sinPanel.style.display = canShow ? 'block' : 'none';
+
+        if (canShow) {
+            // 更新狀態文字
+            const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
+            sinStatus.textContent = `當前規則：${currentMode}`;
+            if (gameState.sinTargetingMode === 'sin') {
+                sinStatus.style.color = '#ff6b6b'; // 紅色強調
+            } else {
+                sinStatus.style.color = '#aaa';
+            }
+
+            // 按鈕狀態控制
+            const alreadyUsed = humanPlayer.specialAbilityUsed;
+            const enoughMana = humanPlayer.mana >= 2;
+            
+            sinBtn.disabled = alreadyUsed || !enoughMana;
+            
+            if (alreadyUsed) {
+                sinBtn.textContent = "本回合已發動";
+            } else if (!enoughMana) {
+                sinBtn.textContent = "Mana 不足 (需 2)";
+            } else {
+                sinBtn.textContent = "😈 發動「惡之牽引」";
+            }
+        }
+    }
+	
+	
+	
+	
+	
+
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
     
@@ -1389,3 +1471,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// (在 DOMContentLoaded 內的最後面)
+
+    // 時之惡能力按鈕
+    const btnSinActivate = document.getElementById('btn-sin-activate');
+    if (btnSinActivate) {
+        btnSinActivate.addEventListener('click', () => {
+            if (!globalGameState) return;
+            const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'sin';
+            
+            // 呼叫 abilities.js 的函式
+            if (typeof activateSinAbility === 'function') {
+                const success = activateSinAbility(globalGameState, humanId);
+                if (success) {
+                    updateUI(globalGameState); // 發動成功後更新介面
+                }
+            }
+        });
+    }

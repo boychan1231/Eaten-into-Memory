@@ -347,10 +347,10 @@ function activateSinTargetingAbility(gameState) {
     if (sinPlayer.mana >= 2 && Math.random() < 0.5) {
         sinPlayer.mana -= 2;
         gameState.sinTargetingMode = 'sin';
-        console.log(`⚡【時之惡】耗用 2 Mana 發動能力！本回合扣取規則改為：距離「時之惡」最近者受罰。`);
+        console.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
     } else {
         gameState.sinTargetingMode = 'default';
-        console.log(`【時之惡】保持原樣。本回合扣取規則：鐘面數值最大者受罰 (接近12)。`);
+        console.log(`【時之惡】鐘面數值最大者受罰 (接近12)。`);
     }
 }
 
@@ -414,9 +414,7 @@ function startRound(gameState) {
 	if (typeof hourHandPreMinuteAI === 'function') {
 		hourHandPreMinuteAI(gameState);
 }
-    
-    activateSinTargetingAbility(gameState);
-    
+        
     console.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
     console.log("等待玩家選擇並打出分鐘卡...");
     processMinuteCardSelection(gameState); 
@@ -797,7 +795,6 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
         });
     }
 
-    // ↓↓↓ 以下保留你原本的流程（排序→挑小時卡→finishHourSelection→deductGearCards）
     choices.sort((a, b) => b.card.value - a.card.value);
 
     const drawnCards = gameState.currentDrawnHourCards || [];
@@ -1015,8 +1012,8 @@ function handleHumanHourCardChoice(gameState, chosenIndex) {
     }
 }
 
+// game.js - finishHourSelection 函式 (已修改：分針取得任意小時卡皆可觸發)
 
-// 小時卡選完後的收尾：清狀態、丟棄分鐘卡、進入（或暫停等待）扣齒輪流程
 function finishHourSelection(gameState) {
     // 1. 清理上一階段狀態
     gameState.currentDrawnHourCards = null;
@@ -1032,33 +1029,32 @@ function finishHourSelection(gameState) {
     // 2. 檢查分針觸發條件
     const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
     
-    // 嚴格判斷條件
+    // 定義基礎條件
     const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
     const isAlive = humanPlayer && !humanPlayer.isEjected;
     const hasMana = humanPlayer && humanPlayer.mana >= 2;
     const notBlocked = !gameState.abilityMarker;
     const notUsed = humanPlayer && !humanPlayer.specialAbilityUsed;
     
-    // 判斷是否拿到小牌 (本回合拿到的小時卡 == 本回合最小值)
-    const gotSmallCard = 
+    // ✅ 修改重點：只要「本回合有取得小時卡」即可 (移除 roundMinHourNumber 的比對)
+    const gotCard = 
         humanPlayer &&
         humanPlayer.pickedHourThisTurn === true &&
-        typeof humanPlayer.pickedHourCardThisTurnNumber === 'number' &&
-        typeof gameState.roundMinHourNumber === 'number' &&
-        humanPlayer.pickedHourCardThisTurnNumber === gameState.roundMinHourNumber;
+        typeof humanPlayer.pickedHourCardThisTurnNumber === 'number';
 
-    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMana && notBlocked && notUsed && gotSmallCard) {
+    // 綜合判斷
+    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMana && notBlocked && notUsed && gotCard) {
         
-        // ✅ 設定專屬等待狀態
+        // 設定專屬等待狀態
         gameState.waitingMinuteHandChoice = true;
         
-        console.log(`⏱️【分針觸發】條件達成，暫停遊戲，顯示能力面板。`);
+        console.log(`⏱️【分針觸發】條件達成 (取得小時卡 ${humanPlayer.pickedHourCardThisTurnNumber})，暫停遊戲，顯示能力面板。`);
 
         if (typeof updateUI === 'function') updateUI(gameState);
-        return; // ⛔ 暫停流程，絕對不要繼續執行 deductGearCards
+        return; // ⛔ 暫停流程，等待玩家操作
     }
 
-    // 若沒觸發，直接進入扣血
+    // 若沒觸發，直接進入扣血階段
     deductGearCards(gameState);
 }
 
