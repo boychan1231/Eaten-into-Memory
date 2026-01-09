@@ -324,6 +324,9 @@ function updateUI(gameState) {
     
 
     // B. 繪製鐘面 (圓形鐘格)
+	const radius = 190;   // 這是 500px 圓心到邊緣的距離
+	const centerX = 250;  // 500 / 2
+	const centerY = 250;  // 500 / 2
     const clockFaceEl = document.getElementById('clock-face');
     
     // 移除舊的元素
@@ -332,11 +335,6 @@ function updateUI(gameState) {
     clockFaceEl.querySelectorAll('.ring-segment').forEach(el => el.remove()); 
     existingSpots.forEach(el => el.remove());
     existingArrows.forEach(el => el.remove());
-
-    // 參數設定
-    const radius = 190; 
-    const centerX = 250;
-    const centerY = 250;
     
     gameState.clockFace.forEach((spot, index) => {
         // 角度計算
