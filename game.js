@@ -76,22 +76,33 @@ for (let i = 1; i <= 60; i++) {
 
 const HOUR_AGE_GROUPS = ['少年', '中年', '老年'];
 
-// 你指定的三組配置：決定 1-4 / 5-8 / 9-12 各區間的珍貴年齡版本
+// 你指定的三組配置：決定各區間的珍貴年齡版本
 const HOUR_PRECIOUS_CONFIGS = [
-    {
-        id: 'CFG_1',
-        label: '少年(1-4)／中年(5-8)／老年(9-12)',
-        mapping: { '1-4': '少年', '5-8': '中年', '9-12': '老年' }
+    {	id: 'CFG_1',
+        label: 'hour123',
+        // 將數字改為陣列格式
+        mapping: { 
+            '少年': [1, 5, 8, 10], 
+            '中年': [2, 6, 7, 11], 
+            '老年': [3, 4, 9, 12] 
+        }
     },
-    {
-        id: 'CFG_2',
-        label: '中年(1-4)／老年(5-8)／少年(9-12)',
-        mapping: { '1-4': '中年', '5-8': '老年', '9-12': '少年' }
-    },
-    {
-        id: 'CFG_3',
-        label: '老年(1-4)／少年(5-8)／中年(9-12)',
-        mapping: { '1-4': '老年', '5-8': '少年', '9-12': '中年' }
+    {	id: 'CFG_2',
+        label: 'hour231',
+        // 將數字改為陣列格式
+        mapping: { 
+            '少年': [2, 6, 7, 11], 
+            '中年': [3, 4, 9, 12], 
+            '老年': [1, 5, 8, 10] 
+        }
+    },    {	id: 'CFG_3',
+        label: 'hour312',
+        // 將數字改為陣列格式
+        mapping: { 
+            '少年': [3, 4, 9, 12], 
+            '中年': [1, 5, 8, 10], 
+            '老年': [2, 6, 7, 11]
+        }
     }
 ];
 
@@ -105,9 +116,15 @@ function pickRandomPreciousConfig() {
 }
 
 function getPreciousAgeGroupForNumber(config, number) {
-    if (number >= 1 && number <= 4) return config.mapping['1-4'];
-    if (number >= 5 && number <= 8) return config.mapping['5-8'];
-    return config.mapping['9-12']; // 9~12
+    // 遍歷 mapping 中的所有年齡層 (少年、中年、老年)
+    for (const ageGroup in config.mapping) {
+        const numbers = config.mapping[ageGroup];
+        // 檢查目標數字是否在該年齡層的陣列中
+        if (numbers.includes(number)) {
+            return ageGroup;
+        }
+    }
+    return null; // 若數字不符合任何設定 (防呆用)
 }
 
 /**
