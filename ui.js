@@ -728,51 +728,49 @@ function updateUI(gameState) {
 		}
     } 
     
-    // === 分針特殊能力選擇面板 ===
-    const minuteAbilityPanel = document.getElementById('ability-choice-panel');
-	const abilityText = document.getElementById('ability-choice-text');
-	const abilityUseBtn = document.getElementById('ability-use-btn');
-	const abilitySkipBtn = document.getElementById('ability-skip-btn');
-
-	if (minuteAbilityPanel && abilityText && abilityUseBtn && abilitySkipBtn) {
-	  if (isWaitingAbilityChoice) {
-		minuteAbilityPanel.style.display = 'block';
-
-            if (gameState.waitingAbilityChoiceType === 'minuteHandShiftMinus1') {
-                const base = gameState.waitingAbilityBaseNumber;
-                abilityText.textContent = `【分針能力】你剛取得本回合較小小時卡 ${base}，是否消耗 2 Mana 移動到 ${base - 1}？（本回合限一次）`;
-            } else {
-				minuteAbilityPanel.style.display = 'none';
-                abilityText.textContent = '請選擇是否使用特殊能力。';
-            }
-
-            abilityUseBtn.disabled = false;
-            abilitySkipBtn.disabled = false;
+// === 分針特殊能力選擇面板 (UI 控制邏輯) ===
+    // 1. 舊的通用面板 (保留給其他潛在功能，但分針不再使用它)
+    const abilityChoicePanel = document.getElementById('ability-choice-panel');
+    if (abilityChoicePanel) {
+        // 如果是舊的 waitingAbilityChoice 狀態 (非分針)，顯示它；否則隱藏
+        if (isWaitingAbilityChoice && !gameState.waitingMinuteHandChoice) {
+            abilityChoicePanel.style.display = 'block';
         } else {
-            minuteAbilityPanel.style.display = 'none';
-            abilityText.textContent = '';
-            abilityUseBtn.disabled = true;
-            abilitySkipBtn.disabled = true;
+            abilityChoicePanel.style.display = 'none';
         }
     }
 
-    // --- 時針能力面板控制 ---
+    // 2. 時針能力面板控制
     const hourAbilityPanel = document.getElementById('ability-panel');
-	if (hourAbilityPanel) {
+    if (hourAbilityPanel) {
         const peekBtn = document.getElementById('ability-peek-btn');
         const buryBtn = document.getElementById('ability-bury-btn');
         const peekResultEl = document.getElementById('ability-peek-result');
 
         const isHourHand = humanPlayer && humanPlayer.roleCard === '時針' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string')
-            ? (gameState.phase === 'preMinute')
-            : isWaitingMinuteInput; 
-
-        const canShow = window.GAME_CONFIG.enableAbilities
- && isHourHand && isPreMinute && !gameState.gameEnded;
+        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : isWaitingMinuteInput;
+        const canShow = window.GAME_CONFIG.enableAbilities && isHourHand && isPreMinute && !gameState.gameEnded;
 
         hourAbilityPanel.style.display = canShow ? 'block' : 'none';
 
+
+    // 3. ✅ 分針能力面板控制 (固定 HTML 面板)
+    const minutePanel = document.getElementById('minute-ability-panel');
+    if (minutePanel) {
+        // 只有在遊戲狀態為「等待分針選擇」且是人類玩家回合時才顯示
+        if (gameState.waitingMinuteHandChoice) {
+            minutePanel.style.display = 'block';
+            
+            // 🔥 強制切換到「能力」分頁，確保玩家看得到面板
+            const btnAbility = document.querySelector('.human-tab-btn[data-target="human-tab-ability"]');
+            if (btnAbility && !btnAbility.classList.contains('active')) {
+                btnAbility.click();
+            }
+        } else {
+            minutePanel.style.display = 'none';
+        }
+    }
+		
         if (canShow) {
             const blocked = !!gameState.abilityMarker;
             if (peekBtn) {
@@ -901,9 +899,9 @@ function updateUI(gameState) {
             };
 
             // 列表內容
-            html += renderItem(cond1, `1. 三時代收集: 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`);
-            html += renderItem(cond2, `2. 數字收藏家: 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`);
-            html += renderItem(cond3, `3. 魔力滿溢: 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`);
+            html += renderItem(cond1, `1. 久遠的一生: 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`);
+            html += renderItem(cond2, `2. 憶無數經歷: 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`);
+            html += renderItem(cond3, `3. 淩亂的結束: 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`);
 
             // 達成提示
             if (isReady) {
@@ -928,8 +926,6 @@ function updateUI(gameState) {
         const progressArea = document.getElementById('evolution-progress-area');
         if (progressArea) progressArea.innerHTML = '';
     }
-
-}
 
 
 // 4. 綁定按鈕事件
@@ -1166,8 +1162,49 @@ document.addEventListener('DOMContentLoaded', () => {
             panelPlayed.style.display = 'none';
         });
     }
-	
-	// 4C. 開始遊戲 (修改版：加入角色選擇流程)
+
+   // 4C. 開始遊戲 (修改版：加入角色選擇流程)
+    function getCurrentHumanPlayerId() {
+        if (typeof window.getEffectiveHumanPlayerId === 'function') {
+            return window.getEffectiveHumanPlayerId();
+        }
+        if (typeof window.HUMAN_PLAYER_ID !== 'undefined') return window.HUMAN_PLAYER_ID;
+        if (typeof HUMAN_PLAYER_ID !== 'undefined') return HUMAN_PLAYER_ID;
+        return 'SM_1';
+    }
+
+    function bindNextStepButton() {
+        const nextBtn = document.getElementById('next-step-btn');
+        if (!nextBtn) return;
+
+        nextBtn.disabled = false;
+        nextBtn.textContent = "下一回合";
+        nextBtn.onclick = () => {
+            if (!globalGameState) return;
+
+            const humanId = getCurrentHumanPlayerId();
+            const waitingMinute = globalGameState.currentRoundAIChoices !== null;
+            const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === humanId;
+            const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === humanId;
+            const waitingSecondFinal =
+                !!globalGameState.waitingSecondHandFinalChoice &&
+                globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
+
+            if (isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
+                console.log('【UI】仍在等待人類輸入（出牌/選卡/能力），請先完成當前步驟。');
+                updateUI(globalGameState);
+                return;
+            }
+
+            if (!globalGameState.gameEnded) {
+                startRound(globalGameState);
+                updateUI(globalGameState);
+            } else {
+                console.log("遊戲已結束。");
+                nextBtn.disabled = true;
+            }
+        };
+    }
 
     // 定義：真正的遊戲初始化邏輯 (原按鈕內的程式碼移至此)
     function runGameInitialization() {
@@ -1210,36 +1247,9 @@ document.addEventListener('DOMContentLoaded', () => {
             resetMinuteHistory(globalGameState);
             updateUI(globalGameState);
 
-            const nextBtn = document.getElementById('next-step-btn');
-            if (nextBtn) {
-                nextBtn.disabled = false;
-                nextBtn.textContent = "執行下一回合";
-                nextBtn.onclick = () => {
-                    if (!globalGameState) return;
 
-                    const waitingMinute = globalGameState.currentRoundAIChoices !== null;
-                    const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === HUMAN_PLAYER_ID;
-                    const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === HUMAN_PLAYER_ID;
-                    const waitingSecondFinal =
-                        !!globalGameState.waitingSecondHandFinalChoice &&
-                        globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
-
-                    if (isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
-                        console.log('【UI】仍在等待人類輸入（出牌/選卡/能力），請先完成當前步驟。');
-                        updateUI(globalGameState);
-                        return;
-                    }
-
-                    if (!globalGameState.gameEnded) {
-                        startRound(globalGameState);
-                        updateUI(globalGameState);
-                    } else {
-                        console.log("遊戲已結束。");
-                        nextBtn.disabled = true;
-                    }
-                };
-            }
-        } catch (err) {
+            bindNextStepButton();
+        }catch (err) {
             console.log('[UI] 開始遊戲時發生錯誤：', err);
         }
     }
@@ -1293,22 +1303,15 @@ document.addEventListener('DOMContentLoaded', () => {
 					selectedCardValues = [];
 					isSecondHandSelectingTwo = false;
 
-					const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
-						? window.getEffectiveHumanPlayerId()
-						: (typeof window.HUMAN_PLAYER_ID !== 'undefined'
-							? window.HUMAN_PLAYER_ID
-							: (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1'));
+					const humanId = getCurrentHumanPlayerId();
 
 					const humanPlayer = globalGameState.players.find(p => p.id === humanId);
 					if (humanPlayer) console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
 
 					updateUI(globalGameState);
+					
+					bindNextStepButton();
 
-					const nextBtn = document.getElementById('next-step-btn');
-					if (nextBtn) {
-						nextBtn.disabled = false;
-						nextBtn.textContent = "下一回合";
-					}
 				};
 
 				// ③ 角色選擇：若存在彈窗，先要求選角；否則直接開始
@@ -1349,5 +1352,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else {
         try { console.log('[UI] 找不到 start-game-btn'); } catch (_) {}
+    }
+	
+	// (在 DOMContentLoaded 內)
+
+    // 分針能力按鈕綁定
+    const btnMinCCW = document.getElementById('btn-minute-ccw');
+    const btnMinCW = document.getElementById('btn-minute-cw');
+    const btnMinSkip = document.getElementById('btn-minute-skip');
+
+    if (btnMinCCW) {
+        btnMinCCW.addEventListener('click', () => {
+            if (!globalGameState) return;
+            handleHumanAbilityChoice(globalGameState, 'ccw');
+        });
+    }
+    if (btnMinCW) {
+        btnMinCW.addEventListener('click', () => {
+            if (!globalGameState) return;
+            handleHumanAbilityChoice(globalGameState, 'cw');
+        });
+    }
+    if (btnMinSkip) {
+        btnMinSkip.addEventListener('click', () => {
+            if (!globalGameState) return;
+            handleHumanAbilityChoice(globalGameState, 'skip');
+        });
     }
 });

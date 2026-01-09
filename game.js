@@ -246,7 +246,7 @@ function initializeGame(roles = PLAYER_ROLES) {
     if (__shouldApplyTestHand) {
         __testHumanIndex = gameState.players.findIndex(p => p.id === __humanIdForTest);
         if (__testHumanIndex >= 0) {
-            const __desiredValues = [1, 2, 3, 4, 5, 54, 55, 56, 57, 58, 59, 60];
+            const __desiredValues = [1, 2, 3, 4, 5, 12, 36, 56, 57, 58, 59, 60];
             __testHandCards = [];
 
             // 從分鐘牌庫中抽出指定牌（移除，避免重複分配）
@@ -1001,92 +1001,70 @@ function handleHumanHourCardChoice(gameState, chosenIndex) {
 
 // 小時卡選完後的收尾：清狀態、丟棄分鐘卡、進入（或暫停等待）扣齒輪流程
 function finishHourSelection(gameState) {
-    // 清理小時卡選牌相關狀態
+    // 1. 清理上一階段狀態
     gameState.currentDrawnHourCards = null;
     gameState.waitingHourChoice = false;
     gameState.waitingHourChoicePlayerId = null;
     gameState.hourPickOrder = null;
     gameState.nextHourPickerIndex = 0;
 
-    // 丟棄本回合分鐘卡（不清空 currentMinuteChoices，讓 UI 可持續顯示「本回合出牌」直到下一回合開始）
+    // 丟棄本回合分鐘卡
     const choices = gameState.currentMinuteChoices || [];
     choices.forEach(c => gameState.minuteDiscard.push(c.card));
 
-    // === 分針能力：小時卡選完後，若人類玩家符合條件 → 暫停等待按鈕決定 ===
+    // 2. 檢查分針觸發條件
     const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
-
-    const canPromptMinuteHand =
-        GAME_CONFIG.enableAbilities &&
+    
+    // 嚴格判斷條件
+    const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
+    const isAlive = humanPlayer && !humanPlayer.isEjected;
+    const hasMana = humanPlayer && humanPlayer.mana >= 2;
+    const notBlocked = !gameState.abilityMarker;
+    const notUsed = humanPlayer && !humanPlayer.specialAbilityUsed;
+    
+    // 判斷是否拿到小牌 (本回合拿到的小時卡 == 本回合最小值)
+    const gotSmallCard = 
         humanPlayer &&
-        !humanPlayer.isEjected &&
-        humanPlayer.roleCard === '分針' &&
-        !gameState.abilityMarker &&
-        !humanPlayer.specialAbilityUsed &&
-        humanPlayer.mana >= 2 &&
         humanPlayer.pickedHourThisTurn === true &&
         typeof humanPlayer.pickedHourCardThisTurnNumber === 'number' &&
         typeof gameState.roundMinHourNumber === 'number' &&
         humanPlayer.pickedHourCardThisTurnNumber === gameState.roundMinHourNumber;
 
-    if (canPromptMinuteHand) {
-        const base = humanPlayer.pickedHourCardThisTurnNumber;
-
-        // 更正規則：若數值為 1，不能移動到 12（因此不提供發動選項）
-        if (base <= 1) {
-            console.log(`⏱️【分針】${humanPlayer.name} 取得較小小時卡為 1，但規則不允許移動到 12，因此本回合不可發動分針能力。`);
-            deductGearCards(gameState);
-            return;
-        }
-
-        gameState.waitingAbilityChoice = true;
-        gameState.waitingAbilityChoiceType = 'minuteHandShiftMinus1';
-        gameState.waitingAbilityChoicePlayerId = HUMAN_PLAYER_ID;
-        gameState.waitingAbilityBaseNumber = base;
-
-        console.log(`⏱️【分針】${humanPlayer.name} 取得本回合較小小時卡 ${base}。請決定是否耗 2 Mana 移動到 ${base - 1}。`);
+    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMana && notBlocked && notUsed && gotSmallCard) {
+        
+        // ✅ 設定專屬等待狀態
+        gameState.waitingMinuteHandChoice = true;
+        
+        console.log(`⏱️【分針觸發】條件達成，暫停遊戲，顯示能力面板。`);
 
         if (typeof updateUI === 'function') updateUI(gameState);
-        return;
+        return; // ⛔ 暫停流程，絕對不要繼續執行 deductGearCards
     }
 
-    // 進入扣齒輪／mana 等既有流程
+    // 若沒觸發，直接進入扣血
     deductGearCards(gameState);
 }
 
-// 人類玩家：按下「使用/略過特殊能力」後，由 ui.js 呼叫此函式繼續流程
-function handleHumanAbilityChoice(gameState, usinbility) {
-    if (!gameState || !gameState.waitingAbilityChoice) return;
+// 處理人類玩家的能力選擇結果
+function handleHumanAbilityChoice(gameState, choice) {
+    // 如果不是在等待分針選擇，就忽略
+    if (!gameState || !gameState.waitingMinuteHandChoice) return;
 
-    const type = gameState.waitingAbilityChoiceType;
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    console.log(`收到分針選擇: ${choice}`);
 
-    if (type === 'minuteHandShiftMinus1') {
-        if (!humanPlayer || humanPlayer.isEjected) {
-            console.warn("找不到人類玩家或玩家已被逐出。");
-        } else if (usinbility) {
-            // 只在你按「使用」時才呼叫 abilities.js 的分針能力
-            // 請確保你的 activateMinuteHandAbility 已更新為：符合規則時才扣 2 Mana 並移動到「小時卡 -1」；不符合時不扣 Mana 並回傳 false
-            if (typeof activateMinuteHandAbility === 'function') {
-                const ok = activateMinuteHandAbility(gameState, HUMAN_PLAYER_ID);
-                if (ok === false) {
-                    console.log(`⏭️【分針】未能成功發動能力（可能 Mana 不足、已使用過、或被封鎖）。`);
-                }
-            } else {
-                console.warn("找不到 activateMinuteHandAbility()，請確認 abilities.js 已載入。");
-            }
-        } else {
-            console.log(`⏭️【分針】${humanPlayer.name} 選擇略過本回合分針能力。`);
+    if (choice === 'ccw' || choice === 'cw') {
+        // 呼叫 abilities.js 的函式 (需確保已載入)
+        if (typeof activateMinuteHandAbility === 'function') {
+            activateMinuteHandAbility(gameState, HUMAN_PLAYER_ID, choice);
         }
     } else {
-        console.warn(`未知的能力選擇類型: ${type}`);
+        console.log("分針選擇略過能力。");
     }
 
-    // 清掉等待狀態，繼續回合結算
-    gameState.waitingAbilityChoice = false;
-    gameState.waitingAbilityChoiceType = null;
-    gameState.waitingAbilityChoicePlayerId = null;
-    gameState.waitingAbilityBaseNumber = null;
+    // ✅ 清除等待狀態
+    gameState.waitingMinuteHandChoice = false;
 
+    // ✅ 恢復遊戲流程
     deductGearCards(gameState);
 
     if (typeof updateUI === 'function') updateUI(gameState);

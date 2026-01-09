@@ -42,10 +42,7 @@ function activateHourHandAbility(gameState) {
     if (hourHandPlayer && hourHandPlayer.mana >= 1) {
         if (Math.random() < 0.5) { 
             if (gameState.hourDeck.length < 2) return;
-
-            hourHandPlayer.mana--; 
-            console.log(`【時針】${hourHandPlayer.name} 耗用 1 Mana 觀看牌庫。`);
-
+			
             const card1 = gameState.hourDeck[gameState.hourDeck.length - 1]; 
             const card2 = gameState.hourDeck[gameState.hourDeck.length - 2]; 
             
@@ -63,36 +60,50 @@ function activateHourHandAbility(gameState) {
     }
 }
 
-function activateMinuteHandAbility(gameState) {
-    if (!GAME_CONFIG.enableAbilities) return;
-    const minuteHandPlayer = gameState.players.find(p => p.roleCard === '分針' && !p.isEjected && p.currentClockPosition);
-    if (gameState.abilityMarker) return;
-    
-    if (minuteHandPlayer && minuteHandPlayer.mana >= 2) {
-        // ... (保留原本分針能力邏輯，與升級無關故省略以節省篇幅，請確保這段沒被刪掉)
-        // 若您直接複製貼上，請確保這邊有完整的分針代碼，或是只替換上面的 checkEvolutionCondition 與下面的 attemptRoleUpgrade
-        // 為方便，這裡提供精簡版占位，建議您保留原檔分針部分，只改下面升級部分
-        // 但為了完整性，以下是標準分針代碼：
-        if (Math.random() < 0.5) { 
-            minuteHandPlayer.mana -= 2; 
-            console.log(`【分針】${minuteHandPlayer.name} 耗用 2 Mana 發動移動能力。`);
 
-            if (Math.random() < 0.5) {
-                minuteHandPlayer.currentClockPosition = minuteHandPlayer.currentClockPosition - 1;
-                if (minuteHandPlayer.currentClockPosition < 1) minuteHandPlayer.currentClockPosition = 12;
-                console.log(`【分針】將自己逆時針移動一步到 ${minuteHandPlayer.currentClockPosition}`);
-            } else {
-                const movableTargets = gameState.players.filter(p => 
-                    (p.type === '時魔' || p.type === '時之惡') && !p.isEjected && p.currentClockPosition
-                );
-                if (movableTargets.length > 0) {
-                    const target = movableTargets[Math.floor(Math.random() * movableTargets.length)];
-                    target.currentClockPosition = target.currentClockPosition % 12 + 1;
-                    console.log(`【分針】移動 ${target.name} 順時針一步到 ${target.currentClockPosition}`);
-                }
-            }
-        }
+function activateMinuteHandAbility(gameState, playerId, direction) {
+    if (!GAME_CONFIG.enableAbilities) return false;
+    
+    // 取得玩家
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player || player.isEjected) return false;
+
+    // 基本檢查
+    if (gameState.abilityMarker) {
+        console.log("【分針】能力被封鎖，無法發動。");
+        return false;
     }
+    if (player.mana < 2) {
+        console.log("【分針】Mana 不足 (需要 2)，無法發動。");
+        return false;
+    }
+    
+    // 執行消耗
+    player.mana -= 2;
+    player.specialAbilityUsed = true; // 標記本回合已用過
+
+    const oldPos = player.currentClockPosition;
+    let newPos = oldPos;
+
+    if (direction === 'ccw') {
+        // 逆時針 (Counter-Clockwise) -1
+        newPos = oldPos - 1;
+        if (newPos < 1) newPos = 12;
+        console.log(`⏱️【分針能力】${player.name} 耗用 2 Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
+    } else {
+        // 順時針 (Clockwise) +1
+        newPos = oldPos + 1;
+        if (newPos > 12) newPos = 1;
+        console.log(`⏱️【分針能力】${player.name} 耗用 2 Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
+    }
+
+    player.currentClockPosition = newPos;
+    return true;
+}
+
+// 確保掛載到 window
+if (typeof window !== 'undefined') {
+    window.activateMinuteHandAbility = activateMinuteHandAbility;
 }
 
 // -----------------------------------------------------------

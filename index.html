@@ -124,8 +124,19 @@
                                     </div>
                                     <div id="ability-peek-result" class="ability-result">頂牌：--</div>
                                 </div>
-                            </div>
-
+								<div id="minute-ability-panel" class="ability-panel" style="display:none; border-color: #f368e0;">
+									<div class="ability-title" style="color: #f368e0;">特殊能力（分針）</div>
+									<div class="instruction-text" style="font-size:0.9rem; margin-bottom:8px; color:#ddd;">
+										請選擇移動方向 (消耗 2 Mana)：
+									</div>
+									<div class="ability-actions" style="display:flex; gap:5px;">
+										<button id="btn-minute-ccw" type="button" style="flex:1; background:#00d2d3; color:#000;">↺ 逆時針</button>
+										<button id="btn-minute-cw" type="button" style="flex:1; background:#ff9ff3; color:#000;">↻ 順時針</button>
+										<button id="btn-minute-skip" type="button" style="flex:0 0 auto; background:#555;">略過</button>
+									</div>
+								</div>                           
+							</div>
+							
                             <div id="human-tab-evolution" class="human-tab-panel">
                                 <div class="evolution-tab-body">
                                     <div class="evolution-left">
@@ -199,7 +210,7 @@
 						<div class="setting-title">測試模式</div>
                     </label>
                     <div class="setting-hint">
-                    開啟後人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,54,55,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
+                    開啟後人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
                     </div>
                 </div>
             </div>
