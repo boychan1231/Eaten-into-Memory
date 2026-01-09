@@ -467,8 +467,12 @@ input:checked + .slider:before { transform: translateX(16px); }
     min-width: 92px; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .player-history-cards {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
-    width: 100%; max-width: 140px; margin-left: auto;
+    display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 4px;
+    width: 100%; 
+	max-width: 210px; 
+	margin-left: auto;
 }
 .minute-chip {
     width: auto; height: 24px;
