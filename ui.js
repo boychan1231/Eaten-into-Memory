@@ -471,6 +471,7 @@ function updateUI(gameState) {
         
         setText('h-hour', String(humanPlayer.hourCards.length));
 
+        // --- 修改開始：已收集小時卡 (分類文字版) ---
         const hourCollectionEl = document.getElementById('human-hour-collection');
         if (hourCollectionEl) {
             hourCollectionEl.innerHTML = '';
@@ -479,25 +480,44 @@ function updateUI(gameState) {
             if (hourCards.length === 0) {
                 const placeholder = document.createElement('div');
                 placeholder.className = 'hour-collection-placeholder';
-                placeholder.textContent = '尚未收集小時卡';
+                placeholder.textContent = '尚未收集';
+                placeholder.style.color = '#777';
+                placeholder.style.fontStyle = 'italic';
                 hourCollectionEl.appendChild(placeholder);
             } else {
-                hourCards.forEach(card => {
-                    const value = (typeof card === 'number') ? card : card?.number;
-                    const precious = (typeof card === 'object' && card) ? !!card.isPrecious : false;
-                    const ageGroup = (typeof card === 'object' && card) ? card.ageGroup : '';
+                // 1. 定義分組容器
+                const groups = { '少年': [], '中年': [], '老年': [] };
 
-                    const cardEl = document.createElement('div');
-                    cardEl.className = `hour-collection-card${precious ? ' precious' : ''}`;
-                    cardEl.textContent = value != null ? `${value}${precious ? '★' : ''}` : '--';
+                // 2. 先將卡片按數字大小排序，看起來更整齊
+                const sortedCards = [...hourCards].sort((a, b) => a.number - b.number);
 
-                    if (ageGroup) {
-                        cardEl.title = ageGroup;
-                    } else if (precious) {
-                        cardEl.title = '珍貴';
+                // 3. 分配卡片到對應群組
+                sortedCards.forEach(card => {
+                    const groupName = card.ageGroup || '未知';
+                    // 如果該群組尚未定義 (例如未知)，初始化它
+                    if (!groups[groupName]) groups[groupName] = [];
+                    
+                    // 組合顯示文字：數字 + 星號
+                    const text = `${card.number}${card.isPrecious ? '★' : ''}`;
+                    groups[groupName].push(text);
+                });
+
+                // 4. 依序渲染每一行
+                // 定義顯示順序
+                const order = ['少年', '中年', '老年']; 
+                
+                order.forEach(label => {
+                    const items = groups[label];
+                    if (items && items.length > 0) {
+                        const row = document.createElement('div');
+                        row.className = 'collection-text-row';
+                        // 使用 HTML 讓標籤與內容有不同顏色
+                        row.innerHTML = `
+                            <span class="col-label">${label}：</span>
+                            <span class="col-values">${items.join(', ')}</span>
+                        `;
+                        hourCollectionEl.appendChild(row);
                     }
-
-                    hourCollectionEl.appendChild(cardEl);
                 });
             }
         }

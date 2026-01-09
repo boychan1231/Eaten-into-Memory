@@ -27,7 +27,7 @@ body {
 	display: flex;
     flex-direction: column;
     height: 100vh;
-    max-width: 1400px;
+    max-width: 1500px;
     width: 100%;
     margin: 0 auto;
     padding: 10px;
@@ -189,11 +189,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* --- 鐘面區域 --- */
 .clock-section {
-    /* 將固定尺寸改為最大限制，並支援彈性縮放 */
     width: min(500px, 90vw); 
     height: min(500px, 90vw);
     aspect-ratio: 1 / 1;
-    margin: 20px auto;
+	margin: 10px auto;
 }
 
 #clock-face {
@@ -791,4 +790,37 @@ input:checked + .slider:before { transform: translateX(16px); }
 @media (max-width: 900px) {
     .human-play-row { flex-direction: column; }
     .hand-controls { width: 100%; flex: none; }
+}
+
+/* --- 新增：已收集小時卡 (文字列表樣式) --- */
+
+/* 列表容器微調 */
+#human-hour-collection {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* 行距 */
+    padding-top: 5px;
+}
+
+/* 每一行的樣式 */
+.collection-text-row {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1); /* 淡淡的分隔線 */
+    padding-bottom: 2px;
+}
+
+/* 標籤 (少年/中年/老年) */
+.col-label {
+    color: #aaa;       /* 灰色標籤 */
+    font-weight: normal;
+    margin-right: 2px;
+}
+
+/* 數值內容 */
+.col-values {
+    color: #fff;       /* 亮白數字 */
+    font-weight: bold;
+    font-family: 'Courier New', monospace; /* 等寬字體讓數字更清楚 */
+    letter-spacing: 1px;
 }
