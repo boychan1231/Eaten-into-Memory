@@ -784,115 +784,6 @@ function updateUI(gameState) {
 		}
     } 
     
-// === 分針特殊能力選擇面板 (UI 控制邏輯) ===
-    // 1. 舊的通用面板 (保留給其他潛在功能，但分針不再使用它)
-    const abilityChoicePanel = document.getElementById('ability-choice-panel');
-    if (abilityChoicePanel) {
-        // 如果是舊的 waitingAbilityChoice 狀態 (非分針)，顯示它；否則隱藏
-        if (isWaitingAbilityChoice && !gameState.waitingMinuteHandChoice) {
-            abilityChoicePanel.style.display = 'block';
-        } else {
-            abilityChoicePanel.style.display = 'none';
-        }
-    }
-
- // 2. 時針能力面板控制
-    const hourAbilityPanel = document.getElementById('ability-panel');
-    if (hourAbilityPanel) {
-        const peekBtn = document.getElementById('ability-peek-btn');
-        const buryBtn = document.getElementById('ability-bury-btn');
-        const peekResultEl = document.getElementById('ability-peek-result');
-
-        const isHourHand = humanPlayer && humanPlayer.roleCard === '時針' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : isWaitingMinuteInput;
-        const canShow = window.GAME_CONFIG.enableAbilities && isHourHand && isPreMinute && !gameState.gameEnded;
-
-        hourAbilityPanel.style.display = canShow ? 'block' : 'none';
-
-        if (canShow) {
-            const blocked = !!gameState.abilityMarker;
-            if (peekBtn) {
-                peekBtn.disabled = true;
-                peekBtn.style.display = 'none';
-            }
-            if (buryBtn) {
-                buryBtn.disabled = blocked || humanPlayer.mana < 2 || humanPlayer.specialAbilityUsed || !gameState.hourDeck || gameState.hourDeck.length < 1;
-            }
-
-            if (peekResultEl) {
-                const top = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
-                if (blocked || !top) {
-                    peekResultEl.textContent = '頂牌：--';
-                } else {
-                    const ageLine = top.ageGroup ? `\n${top.ageGroup}` : '';
-                    const starLine = top.isPrecious ? `\n★` : '';
-                    peekResultEl.textContent = `頂牌：${top.number}${ageLine}${starLine}`;
-                }
-            }
-        }
-    }
-
-    // 3. ✅ 分針能力面板控制 (固定 HTML 面板)
-    const minutePanel = document.getElementById('minute-ability-panel');
-    if (minutePanel) {
-        // 只有在遊戲狀態為「等待分針選擇」且是人類玩家回合時才顯示
-        if (gameState.waitingMinuteHandChoice) {
-            minutePanel.style.display = 'block';
-            
-            // 🔥 強制切換到「能力」分頁，確保玩家看得到面板
-            const btnAbility = document.querySelector('.human-tab-btn[data-target="human-tab-ability"]');
-            if (btnAbility && !btnAbility.classList.contains('active')) {
-                btnAbility.click();
-            }
-        } else {
-            minutePanel.style.display = 'none';
-        }
-    }
-
-    // 4. ✅ 時之惡能力面板控制
-    const sinPanel = document.getElementById('sin-ability-panel');
-    const sinBtn = document.getElementById('btn-sin-activate');
-    const sinStatus = document.getElementById('sin-ability-status');
-
-    if (sinPanel && sinBtn && sinStatus) {
-        // 只有當玩家是「時之惡」且在「出牌前階段」且「未被逐出」時顯示
-        const isSinRole = humanPlayer && humanPlayer.type === '時之惡' && !humanPlayer.isEjected;
-        const isPreMinute = (typeof gameState.phase === 'string') ? (gameState.phase === 'preMinute') : isWaitingMinuteInput; // 借用等待輸入狀態
-        const canShow = window.GAME_CONFIG.enableAbilities && isSinRole && isPreMinute && !gameState.gameEnded;
-
-        sinPanel.style.display = canShow ? 'block' : 'none';
-
-        if (canShow) {
-            // 更新狀態文字
-            const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
-            sinStatus.textContent = `當前規則：${currentMode}`;
-            if (gameState.sinTargetingMode === 'sin') {
-                sinStatus.style.color = '#ff6b6b'; // 紅色強調
-            } else {
-                sinStatus.style.color = '#aaa';
-            }
-
-            // 按鈕狀態控制
-            const alreadyUsed = humanPlayer.specialAbilityUsed;
-            const enoughMana = humanPlayer.mana >= 2;
-            
-            sinBtn.disabled = alreadyUsed || !enoughMana;
-            
-            if (alreadyUsed) {
-                sinBtn.textContent = "本回合已發動";
-            } else if (!enoughMana) {
-                sinBtn.textContent = "Mana 不足 (需 2)";
-            } else {
-                sinBtn.textContent = "😈 發動「惡之牽引」";
-            }
-        }
-    }
-	
-	
-	
-	
-	
-
     // E. 繪製當前回合抽出的小時卡
     const clockCenterEl = clockFaceEl.querySelector('.clock-center');
     
@@ -967,7 +858,7 @@ function updateUI(gameState) {
                 const currentTarget = humanPlayer.targetRoleName || '時針';
 
                 const roleDescriptions = {
-                    '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知小時卡庫頂+ ⚡2 Mana：將牌頂的至底部</div>`,
+                    '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知小時卡庫頂牌+ ⚡2 Mana：將牌頂的至底部</div>`,
                     '分針': `<div style="color:#f368e0; margin-top:4px;">⚡2 Mana：取得小時卡後，可順時針或逆時針移動 1 格</div>`,
                     '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡3 Mana：出牌時可打出 2 張蓋牌，對手出牌後再二選一</div>`
                 };
