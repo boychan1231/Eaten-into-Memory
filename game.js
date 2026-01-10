@@ -880,7 +880,7 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
 
     // 判斷「小時值是否為最大」：以所有未逐出的「時魔」玩家的鐘面位置做比較
     const activeTimeDemons = (gameState?.players || [])
-        .filter(p => !p.isEjected && typeof p.currentClockPosition === 'number')
+        .filter(p => !p.isEjected && typeof p.currentClockPosition === 'number');
 
     const maxPos = activeTimeDemons.length
         ? Math.max(...activeTimeDemons.map(p => p.currentClockPosition))
@@ -891,20 +891,20 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
          typeof player?.currentClockPosition === 'number' &&
          player.currentClockPosition === maxPos);
 
-    // 已持有的小時數字（只用於「小時值不是最大」時避免重複）
-    const heldNumbers = new Set(
-        (player && Array.isArray(player.hourCards))
-            ? player.hourCards.map(c => c.number)
-            : []
-    );
+    // 已持有的小時卡資訊
+    const heldCards = (player && Array.isArray(player.hourCards)) ? player.hourCards : [];
+    const heldNumbers = new Set(heldCards.map(c => c.number));
+    const heldPreciousCount = heldCards.filter(c => c.isPrecious).length; // ✅ 計算目前擁有的珍貴卡數量
 
-    // --- 你新增的判斷 ---
     // (1) 在小時值最大的時候：先取得「小時值低」的小時卡
-    //     → 這裡刻意把「珍貴優先」降為次要（只在同數值時當作平手優先）
     if (isAtMaxHourValue) {
         const sorted = drawnCards.slice().sort((a, b) => {
             if (a.number !== b.number) return a.number - b.number; // 先比數值
-            return (b.isPrecious === true) - (a.isPrecious === true); // 同數值時偏好珍貴
+            // 若數值相同：如果珍貴卡未滿 2 張，優先選珍貴；否則不特別優先
+            if (heldPreciousCount < 2) {
+                return (b.isPrecious === true) - (a.isPrecious === true);
+            }
+            return 0;
         });
         const target = sorted[0];
         const idx = drawnCards.findIndex(c => c === target);
@@ -912,23 +912,30 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
         return drawnCards.splice(idx, 1)[0];
     }
 
-    // (2) 在小時值不是最大的時候：避免挑到自己已持有的數字（若可避開）
+    // (2) 一般情況：避免挑到自己已持有的數字（若可避開）
     let candidate = drawnCards.slice();
     const nonDuplicate = candidate.filter(c => !heldNumbers.has(c.number));
     if (nonDuplicate.length > 0) {
         candidate = nonDuplicate;
     }
 
-    // 維持你原本的 AI 核心策略：先珍貴，再小
-    const precious = candidate.filter(c => c.isPrecious);
-    const pool = (precious.length > 0) ? precious : candidate;
+    // ✅ 修改重點：策略調整
+    // 若「已持有 2 張以上珍貴卡」，則不再優先搶珍貴卡 (視為普通卡池)
+    // 否則 (未滿 2 張)，依舊優先過濾出珍貴卡
+    let pool = candidate;
+    if (heldPreciousCount < 2) {
+        const precious = candidate.filter(c => c.isPrecious);
+        if (precious.length > 0) {
+            pool = precious;
+        }
+    }
 
+    // 從最終池中選數字最小的
     const targetCard = pool.slice().sort((a, b) => a.number - b.number)[0];
     const idx = drawnCards.findIndex(c => c === targetCard);
     if (idx === -1) return null;
     return drawnCards.splice(idx, 1)[0];
 }
-
 
 // 將選到的小時卡「放置」：依規則決定是給幼體時魔持有，或留在鐘面
 function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog) {

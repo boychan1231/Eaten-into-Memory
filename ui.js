@@ -942,81 +942,238 @@ function updateUI(gameState) {
 		}
     }
 
-	// F. 繪製進化鑰匙進度 (新版 UI：仿照圖片結構)
-    if (humanPlayer && humanPlayer.type === '時魔' && humanPlayer.roleCard.includes('時魔')) {
-        const progressArea = document.getElementById('evolution-progress-area');
-        
-        // 確保 helper 函式存在
-        if (progressArea && typeof window.checkEvolutionCondition === 'function') {
+// F. 繪製進化鑰匙進度 OR 進化後的能力面板 (位於日誌下方)
+    const progressArea = document.getElementById('evolution-progress-area');
+    
+    // 確保區域存在
+    if (progressArea) {
+        progressArea.innerHTML = ''; // 清空舊內容
+
+        // === 情況 1：尚未進化的「幼體時魔」 (顯示收集進度) ===
+        if (humanPlayer && humanPlayer.type === '時魔' && humanPlayer.roleCard.includes('幼')) {
             
-            // 取得目前收集狀況
-            const cards = humanPlayer.hourCards || [];
-            const preciousCount = cards.filter(c => c.isPrecious).length;
-            const uniqueAges = new Set(cards.map(c => c.ageGroup).filter(g => g)).size;
-            const uniqueNumbers = new Set(cards.map(c => c.number)).size;
-            const totalCount = cards.length;
+            // (這部分保持原本的進度顯示邏輯)
+            if (typeof window.checkEvolutionCondition === 'function') {
+                const cards = humanPlayer.hourCards || [];
+                const preciousCount = cards.filter(c => c.isPrecious).length;
+                const uniqueAges = new Set(cards.map(c => c.ageGroup).filter(g => g)).size;
+                const uniqueNumbers = new Set(cards.map(c => c.number)).size;
+                const totalCount = cards.length;
 
-            // 條件判定
-            const cond1 = (uniqueAges >= 3 && preciousCount >= 1);
-            const cond2 = (uniqueNumbers >= 4 && preciousCount >= 1);
-            const cond3 = (totalCount >= 5 && preciousCount >= 2);
-            const isReady = cond1 || cond2 || cond3;
+                const cond1 = (uniqueAges >= 3 && preciousCount >= 1);
+                const cond2 = (uniqueNumbers >= 4 && preciousCount >= 1);
+                const cond3 = (totalCount >= 5 && preciousCount >= 2);
+                const isReady = cond1 || cond2 || cond3;
+                const currentTarget = humanPlayer.targetRoleName || '時針';
 
-            // 目前選擇的目標
-            const currentTarget = humanPlayer.targetRoleName || '時針';
+                const roleDescriptions = {
+                    '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️ 預知未來 + ⚡ 時序操控</div>`,
+                    '分針': `<div style="color:#f368e0; margin-top:4px;">⚡ 空間位移 (取卡後移動)</div>`,
+                    '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡ 命運精選 (出牌二選一)</div>`
+                };
+                const currentDesc = roleDescriptions[currentTarget] || '';
 
-            // --- 建立 HTML 結構 (Header + List) ---
-            let html = `
-                <div class="target-role-header">
-                    <label class="target-role-label">目標身份：
-                         <span class="target-role-hint">(達成任一條件即可)</span>
-                    </label>
-                    <select id="target-role-select" class="target-role-select">
-                        <option value="時針" ${currentTarget === '時針' ? 'selected' : ''}>時針</option>
-                        <option value="分針" ${currentTarget === '分針' ? 'selected' : ''}>分針</option>
-                        <option value="秒針" ${currentTarget === '秒針' ? 'selected' : ''}>秒針</option>
-                    </select>
-                </div>
-            `;
+                let html = `
+                    <div class="target-role-header">
+                        <label class="target-role-label">目標身份：</label>
+                        <select id="target-role-select" class="target-role-select">
+                            <option value="時針" ${currentTarget === '時針' ? 'selected' : ''}>時針</option>
+                            <option value="分針" ${currentTarget === '分針' ? 'selected' : ''}>分針</option>
+                            <option value="秒針" ${currentTarget === '秒針' ? 'selected' : ''}>秒針</option>
+                        </select>
+                        <div style="font-size:0.8rem; line-height:1.4; color:#ddd;">${currentDesc}</div>
+                    </div>
+                `;
 
-            // 輔助函式：產生條列項目
-            const renderItem = (isMet, text) => {
-                const metClass = isMet ? 'met' : '';
-                return `
-                <div class="condition-row ${metClass}">
-                    <div class="condition-icon"></div>
-                    <div class="condition-text">${text}</div>
-                </div>`;
-            };
+                const renderItem = (isMet, text) => {
+                    const metClass = isMet ? 'met' : '';
+                    return `<div class="condition-row ${metClass}"><div class="condition-icon"></div><div class="condition-text">${text}</div></div>`;
+                };
 
-            // 列表內容
-            html += renderItem(cond1, `1. 久遠的一生: 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`);
-            html += renderItem(cond2, `2. 憶無數經歷: 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`);
-            html += renderItem(cond3, `3. 淩亂的結束: 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`);
+                html += `<div style="margin-top:10px;">`;
+                html += renderItem(cond1, `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`);
+                html += renderItem(cond2, `2. 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`);
+                html += renderItem(cond3, `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`);
+                html += `</div>`;
 
-            // 達成提示
-            if (isReady) {
-                 html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px solid #ffd27f; background: rgba(255, 210, 127, 0.1); padding:6px; border-radius:4px;">
-                             ✨ 進化條件已達成！<br><span style="font-size:0.8rem; font-weight:normal;">(將於回合結束時觸發)</span>
-                         </div>`;
+                if (isReady) {
+                     html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px dashed #ffd27f; padding:4px;">✨ 條件達成！回合結束時進化</div>`;
+                }
+
+                progressArea.innerHTML = html;
+
+                const selectEl = document.getElementById('target-role-select');
+                if (selectEl) {
+                    selectEl.addEventListener('change', (e) => {
+                        humanPlayer.targetRoleName = e.target.value;
+                        updateUI(globalGameState);
+                    });
+                }
+            }
+        } 
+        // === 情況 2：已進化的時魔 (顯示能力按鈕) ===
+        else if (humanPlayer && !humanPlayer.isEjected && ['時針', '分針', '秒針'].includes(humanPlayer.roleCard)) {
+            
+            const role = humanPlayer.roleCard;
+            const container = document.createElement('div');
+            container.className = 'evo-ability-panel';
+
+            // 標題
+            const titleColor = ROLE_COLORS[role] || '#fff';
+            container.innerHTML = `<div class="evo-role-title" style="color:${titleColor}">${role} 能力面板</div>`;
+
+            // --- 依照角色產生按鈕 ---
+            
+            // 1. 時針面板
+            if (role === '時針') {
+                // ✅ 新增：被動能力顯示 (預知牌庫頂) - 放在按鈕上方
+                const passiveContainer = document.createElement('div');
+                passiveContainer.style.cssText = 'background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin-bottom:8px; border:1px solid #555; text-align:center;';
+                
+                const blocked = !!gameState.abilityMarker;
+                // 取得牌庫頂端卡片 (陣列最後一張)
+                const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
+                    ? gameState.hourDeck[gameState.hourDeck.length - 1] 
+                    : null;
+
+                let contentHtml = '';
+                if (blocked) {
+                    contentHtml = '<div style="color:#ff6b6b; font-weight:bold;">🚫 能力被封鎖</div>';
+                } else if (!topCard) {
+                    contentHtml = '<div style="color:#aaa;">(牌庫已空)</div>';
+                } else {
+                    // 顯示格式：數字 (時代) ★
+                    const star = topCard.isPrecious ? '<span style="color:#ffd27f; font-size:1.2rem;">★</span>' : '';
+                    contentHtml = `
+                        <div style="font-size:0.85rem; margin-bottom:4px; border-bottom:1px dashed #666; padding-bottom:2px; display:inline-block;">
+						👁️ 牌庫頂：${topCard.number}${topCard.ageGroup || ''}${star}
+						</div>
+                    `;
+                }
+                passiveContainer.innerHTML = contentHtml;
+                container.appendChild(passiveContainer);
+                
+                // --- 主動能力按鈕 ---
+                const canUse = !gameState.gameEnded && humanPlayer.mana >= 2 && !humanPlayer.specialAbilityUsed && gameState.hourDeck.length > 0;
+                
+                const btn = document.createElement('button');
+                btn.className = 'evo-btn';
+                btn.style.backgroundColor = '#ff9ff3';
+                btn.innerHTML = `2 Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
+                btn.disabled = !canUse;
+                
+                btn.onclick = () => {
+                    if (typeof hourHandMoveTopToBottom === 'function') {
+                        hourHandMoveTopToBottom(globalGameState, HUMAN_PLAYER_ID);
+                        updateUI(globalGameState);
+                    }
+                };
+                container.appendChild(btn);
             }
 
-            progressArea.innerHTML = html;
+            // 2. 分針面板
+            else if (role === '分針') {
+                // 分針能力是被動觸發的 (waitingMinuteHandChoice)，或是顯示提示
+                if (gameState.waitingMinuteHandChoice) {
+                    const desc = document.createElement('div');
+                    desc.className = 'evo-desc';
+                    desc.innerHTML = `<span style="color:#f368e0">⚡ 觸發！</span> 請選擇移動方向 (2 Mana)：`;
+                    container.appendChild(desc);
 
-            // 綁定下拉選單事件
-            const selectEl = document.getElementById('target-role-select');
-            if (selectEl) {
-                selectEl.addEventListener('change', (e) => {
-                    humanPlayer.targetRoleName = e.target.value;
-                    // 若需要即時存檔或反應，可在此呼叫 updateUI(globalGameState)，但通常不需要
-                });
+                    const btnGroup = document.createElement('div');
+                    btnGroup.style.display = 'flex';
+                    btnGroup.style.gap = '5px';
+
+                    const btnCCW = document.createElement('button');
+                    btnCCW.className = 'evo-btn';
+                    btnCCW.style.background = '#00d2d3';
+                    btnCCW.textContent = '↺ 逆時針';
+                    btnCCW.onclick = () => handleHumanAbilityChoice(globalGameState, 'ccw');
+
+                    const btnCW = document.createElement('button');
+                    btnCW.className = 'evo-btn';
+                    btnCW.style.background = '#ff9ff3';
+                    btnCW.textContent = '↻ 順時針';
+                    btnCW.onclick = () => handleHumanAbilityChoice(globalGameState, 'cw');
+
+                    const btnSkip = document.createElement('button');
+                    btnSkip.className = 'evo-btn';
+                    btnSkip.style.background = '#777';
+                    btnSkip.style.color = '#fff';
+                    btnSkip.textContent = '略過';
+                    btnSkip.onclick = () => handleHumanAbilityChoice(globalGameState, false);
+
+                    btnGroup.appendChild(btnCCW);
+                    btnGroup.appendChild(btnCW);
+                    btnGroup.appendChild(btnSkip);
+                    container.appendChild(btnGroup);
+
+                } else {
+                    const info = document.createElement('div');
+                    info.className = 'evo-desc';
+                    info.innerHTML = `取得小時卡時，可消耗 2 Mana 移動一步。<br>(條件達成時按鈕將自動出現)`;
+                    container.appendChild(info);
+                }
             }
+
+            // 3. 秒針面板
+            else if (role === '秒針') {
+                // 秒針能力條件
+                const isWaitingMinute = gameState.currentRoundAIChoices !== null; // 正在出牌階段
+                const isWaitingFinal = !!gameState.waitingSecondHandFinalChoice; // 正在二選一
+                const canUse = window.GAME_CONFIG.enableAbilities && 
+                               isWaitingMinute && 
+                               !isWaitingFinal && 
+                               !humanPlayer.specialAbilityUsed && 
+                               humanPlayer.mana >= 3 && 
+                               humanPlayer.hand.length >= 2;
+
+                if (isWaitingFinal) {
+                    const desc = document.createElement('div');
+                    desc.className = 'evo-desc';
+                    desc.textContent = '請從彈窗中選擇一張牌...';
+                    container.appendChild(desc);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = 'evo-btn';
+                    btn.style.backgroundColor = '#00d2d3';
+                    btn.innerHTML = `3 Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
+                    
+                    // 如果正在選 2 張模式
+                    if (isSecondHandSelectingTwo) {
+                        btn.style.backgroundColor = '#ff6b6b';
+                        btn.style.color = '#fff';
+                        btn.textContent = '取消選擇';
+                        btn.onclick = () => {
+                            isSecondHandSelectingTwo = false;
+                            selectedCardValues = [];
+                            updateUI(globalGameState);
+                        };
+                    } else {
+                        btn.disabled = !canUse;
+                        btn.onclick = () => {
+                            isSecondHandSelectingTwo = true;
+                            selectedCardValue = null;
+                            selectedCardValues = [];
+                            updateUI(globalGameState);
+                        };
+                    }
+                    container.appendChild(btn);
+                    
+                    if (isSecondHandSelectingTwo) {
+                        const hint = document.createElement('div');
+                        hint.className = 'evo-desc';
+                        hint.style.color = '#00d2d3';
+                        hint.textContent = '👆 請點擊上方 2 張手牌';
+                        container.appendChild(hint);
+                    }
+                }
+            }
+
+            progressArea.appendChild(container);
         }
-    } else {
-        // 如果不是時魔，清空該區域
-        const progressArea = document.getElementById('evolution-progress-area');
-        if (progressArea) progressArea.innerHTML = '';
     }
+
 }
 
 // 4. 綁定按鈕事件

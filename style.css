@@ -888,3 +888,48 @@ input:checked + .slider:before { transform: translateX(16px); }
         transform: translateY(0);
     }
 }
+
+/* --- 新增：進化後能力面板樣式 --- */
+.evo-ability-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+}
+
+.evo-role-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffd27f;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.evo-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #000;
+    font-size: 0.95rem;
+    position: relative;
+}
+.evo-btn:disabled {
+    background-color: #555 !important;
+    color: #888 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.evo-btn:active {
+    transform: translateY(2px);
+}
+
+.evo-desc {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 2px;
+}
