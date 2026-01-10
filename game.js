@@ -1323,7 +1323,7 @@ function checkSCZMissionSuccess(gameState) {
             }
         }
     });
-    return (preciousOnFace >= 10); 
+    return (preciousOnFace >= 12); 
 }
 
 function endGameRound(gameState) {

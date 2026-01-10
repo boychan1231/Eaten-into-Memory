@@ -120,42 +120,67 @@
                     </div>
                 </div>
 
-            </div> <div id="rules-content" class="tab-content">
+            </div> 
+			
+			<div id="rules-content" class="tab-content">
                 <h3>📜 遊戲規則簡介</h3>
 
                 <h4>🎴 卡牌種類</h4>
                 <ul>
-                    <li><strong>齒輪卡：</strong>提供 mana（消耗後需休息一回合）</li>
-                    <li><strong>小時卡：</strong>分為少年、青年、中年三組，每組 12 張；每局從三種組合中抽一組作為珍貴小時卡</li>
-                    <li><strong>身分卡：</strong>決定玩家角色與技能</li>
+                    <li><strong>齒輪卡 (生命/Mana)：</strong>代表角色的生命值與能量上限。歸零時角色將被「驅逐」。</li>
+                    <li><strong>分鐘卡 (1-60)：</strong>手牌。數值越大，回合結算時越優先行動。</li>
+                    <li><strong>小時卡 (1-12)：</strong>分為少年、青年、中年三種時代。每局隨機指定一種時代為<strong>「珍貴(★)」</strong>卡。</li>
                 </ul>
 
-                <h4>🌀 Mana 與行動</h4>
+                <h4>🔄 回合流程</h4>
+                <ol>
+                    <li><strong>抽卡：</strong>每回合抽出 2 張小時卡。</li>
+                    <li><strong>出牌：</strong>所有玩家打出 1 張分鐘卡 (數字大者先行動)。</li>
+                    <li><strong>移動與收集：</strong>
+                        <ul>
+                            <li>依順序選擇場上的小時卡，並移動到該數字的位置。</li>
+                            <li><strong>幼體時魔：</strong>可將卡片收為己有（用於進化）。</li>
+                            <li><strong>其他角色：</strong>卡片將留在此鐘面位置上（堆疊）。</li>
+                        </ul>
+                    </li>
+                    <li><strong>審判 (扣除齒輪)：</strong>結算後，位置最接近 12 (數值最大) 的角色受到懲罰，扣除 1 齒輪。</li>
+                </ol>
+
+                <h4>🧬 進化機制 (時魔專屬)</h4>
+                <p>幼體時魔收集足夠的小時卡後，可進化為以下強力型態 (三選一)：</p>
                 <ul>
-                    <li>每回合玩家可出任意數量齒輪卡獲得 mana</li>
-                    <li>打出小時卡或發動技能會消耗 mana</li>
-                    <li>mana 不會累積，回合結束清零</li>
+                    <li><strong>條件 A：</strong>3 張不同時代 + 至少 1 張珍貴。</li>
+                    <li><strong>條件 B：</strong>4 張不同數字 + 至少 1 張珍貴。</li>
+                    <li><strong>條件 C：</strong>5 張任意卡 + 至少 2 張珍貴。</li>
                 </ul>
 
-                <h4>🕰 小時卡的留場與回收</h4>
+                <h4>⚔ 角色能力</h4>
                 <ul>
-                    <li>每位玩家每回合最多只能保留 1 張小時卡在場上</li>
-                    <li>若打出第 2 張小時卡，必須選擇一張留場，另一張回收</li>
-                    <li>珍貴小時卡回收後不再進入牌庫，變成「已收集」狀態</li>
+                    <li><strong>幼體時魔：</strong>
+                        <br>🛡️ <strong>防禦：</strong>受罰時，若 Mana ≥ 3，可消耗所有 Mana 抵擋傷害。
+                    </li>
+                    <li><strong>時之惡 (Boss)：</strong>
+                        <br>😈 <strong>惡之牽引 (2 Mana)：</strong>將本回合懲罰對象改為「距離自己最近」的角色。
+                        <br>⚠️ <strong>飢餓：</strong>若連續 2 輪沒有時魔被逐出，時之惡將自損 1 齒輪。
+                    </li>
+                    <li><strong>進化 - 時針：</strong>
+                        <br>👁️ <strong>被動：</strong>預知牌庫頂的小時卡。
+                        <br>⚡ <strong>主動 (2 Mana)：</strong>將牌庫頂的卡移至底部。
+                    </li>
+                    <li><strong>進化 - 分針：</strong>
+                        <br>⚡ <strong>主動 (2 Mana)：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
+                    </li>
+                    <li><strong>進化 - 秒針：</strong>
+                        <br>⚡ <strong>主動 (3 Mana)：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
+                    </li>
                 </ul>
 
-                <h4>⚔ 角色技能</h4>
+                <h4>🏁 勝負判定</h4>
                 <ul>
-                    <li><strong>時針：</strong>可預知下一輪小時卡</li>
-                    <li><strong>分針：</strong>可偷取對手一張小時卡</li>
-                    <li><strong>秒針：</strong>可從兩張小時卡中選一張</li>
-                    <li><strong>時之惡：</strong>有懲罰與特殊行為模式（AI）</li>
-                </ul>
-
-                <h4>🏁 勝利條件</h4>
-                <ul>
-                    <li>珍貴小時卡全被收集完畢後遊戲結束</li>
-                    <li>收集最多珍貴小時卡者獲勝（時之惡有特殊勝負判定）</li>
+                    <li><strong>時魔勝利：</strong>時之惡的齒輪耗盡被逐出。</li>
+                    <li><strong>時之惡勝利：</strong>所有時魔皆被逐出。</li>
+					<li><strong>受詛者：</strong>第 5 輪結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡。</li>
+                    <li><strong>計分：</strong>若遊戲結束時雙方皆存活，依剩餘齒輪數與額外加分決定排名。</li>
                 </ul>
             </div>
             
