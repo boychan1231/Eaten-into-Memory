@@ -967,9 +967,9 @@ function updateUI(gameState) {
                 const currentTarget = humanPlayer.targetRoleName || '時針';
 
                 const roleDescriptions = {
-                    '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️ 預知未來 + ⚡ 時序操控</div>`,
-                    '分針': `<div style="color:#f368e0; margin-top:4px;">⚡ 空間位移 (取卡後移動)</div>`,
-                    '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡ 命運精選 (出牌二選一)</div>`
+                    '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知小時卡庫頂+ ⚡2 Mana：將牌頂的至底部</div>`,
+                    '分針': `<div style="color:#f368e0; margin-top:4px;">⚡2 Mana：取得小時卡後，可順時針或逆時針移動 1 格</div>`,
+                    '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡3 Mana：出牌時可打出 2 張蓋牌，對手出牌後再二選一</div>`
                 };
                 const currentDesc = roleDescriptions[currentTarget] || '';
 
