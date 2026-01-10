@@ -10,7 +10,7 @@ function checkEvolutionCondition(player) {
     const cards = player.hourCards;
     const preciousCount = cards.filter(c => c.isPrecious).length;
     
-    // 條件 1: 3張不同時代 (少年/中年/老年)，至少 1 張珍貴
+    // 條件 1: 3張不同時代 (少年/青年/中年)，至少 1 張珍貴
     const ageGroups = new Set(cards.map(c => c.ageGroup).filter(g => g));
     if (ageGroups.size >= 3 && preciousCount >= 1) {
         return { met: true, type: '久遠的一生 (3時代 + 1珍貴)' };

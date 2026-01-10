@@ -70,11 +70,11 @@ for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-// === 小時卡：少年 / 中年 / 老年 各 12 張（每種 1~12 各 1 張），總計 36 張 ===
+// === 小時卡：少年 / 青年 / 中年 各 12 張（每種 1~12 各 1 張），總計 36 張 ===
 // 每局開局：隨機從 3 組配置中選 1 組，決定哪一組年齡版本是「珍貴(★)」。
 // 珍貴仍然是 12 張（每個數字 1~12 各 1 張是珍貴）。
 
-const HOUR_AGE_GROUPS = ['少年', '中年', '老年'];
+const HOUR_AGE_GROUPS = ['少年', '青年', '中年'];
 
 // 你指定的三組配置：決定各區間的珍貴年齡版本
 const HOUR_PRECIOUS_CONFIGS = [
@@ -83,8 +83,8 @@ const HOUR_PRECIOUS_CONFIGS = [
         // 將數字改為陣列格式
         mapping: { 
             '少年': [1, 5, 8, 10], 
-            '中年': [2, 6, 7, 11], 
-            '老年': [3, 4, 9, 12] 
+            '青年': [2, 6, 7, 11], 
+            '中年': [3, 4, 9, 12] 
         }
     },
     {	id: 'CFG_2',
@@ -92,16 +92,16 @@ const HOUR_PRECIOUS_CONFIGS = [
         // 將數字改為陣列格式
         mapping: { 
             '少年': [2, 6, 7, 11], 
-            '中年': [3, 4, 9, 12], 
-            '老年': [1, 5, 8, 10] 
+            '青年': [3, 4, 9, 12], 
+            '中年': [1, 5, 8, 10] 
         }
     },    {	id: 'CFG_3',
         label: 'hour312',
         // 將數字改為陣列格式
         mapping: { 
             '少年': [3, 4, 9, 12], 
-            '中年': [1, 5, 8, 10], 
-            '老年': [2, 6, 7, 11]
+            '青年': [1, 5, 8, 10], 
+            '中年': [2, 6, 7, 11]
         }
     }
 ];
@@ -116,7 +116,7 @@ function pickRandomPreciousConfig() {
 }
 
 function getPreciousAgeGroupForNumber(config, number) {
-    // 遍歷 mapping 中的所有年齡層 (少年、中年、老年)
+    // 遍歷 mapping 中的所有年齡層 (少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
         // 檢查目標數字是否在該年齡層的陣列中
@@ -129,7 +129,7 @@ function getPreciousAgeGroupForNumber(config, number) {
 
 /**
  * buildHourDeckWithRandomPrecious()
- * - 生成 36 張小時卡：少年/中年/老年 各 12 張（1~12）
+ * - 生成 36 張小時卡：少年/青年/中年 各 12 張（1~12）
  * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true
  * - 回傳：{ deck, config }
  */

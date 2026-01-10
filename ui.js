@@ -524,7 +524,7 @@ function updateUI(gameState) {
                 hourCollectionEl.appendChild(placeholder);
             } else {
                 // 1. 定義分組容器
-                const groups = { '少年': [], '中年': [], '老年': [] };
+                const groups = { '少年': [], '青年': [], '中年': [] };
 
                 // 2. 先將卡片按數字大小排序，看起來更整齊
                 const sortedCards = [...hourCards].sort((a, b) => a.number - b.number);
@@ -542,7 +542,7 @@ function updateUI(gameState) {
 
                 // 4. 依序渲染每一行
                 // 定義顯示順序
-                const order = ['少年', '中年', '老年']; 
+                const order = ['少年', '青年', '中年']; 
                 
                 order.forEach(label => {
                     const items = groups[label];
@@ -806,7 +806,7 @@ function updateUI(gameState) {
 				const ageText = card.ageGroup ? `(${card.ageGroup})` : '';
 				const starText = card.isPrecious ? '★' : '';
 
-				// 主要顯示：7/中年/★
+				// 主要顯示：7/青年/★
 				const ageLine = card.ageGroup ? card.ageGroup : '&nbsp;';
 				const starLine = card.isPrecious ? '★' : '&nbsp;';
 

@@ -814,7 +814,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding-bottom: 2px;
 }
 
-/* 標籤 (少年/中年/老年) */
+/* 標籤 (少年/青年/中年) */
 .col-label {
     color: #aaa;       /* 灰色標籤 */
     font-weight: normal;
