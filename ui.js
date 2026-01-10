@@ -1337,6 +1337,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!globalGameState.gameEnded) {
                 startRound(globalGameState);
+				
+				// ✅ 新增這一行：每次點擊「下一回合」(進入新的一輪) 時，清空右側歷史記錄
+                resetMinuteHistory(globalGameState);
+				
                 updateUI(globalGameState);
             } else {
                 console.log("遊戲已結束。");
