@@ -1159,6 +1159,80 @@ function updateUI(gameState) {
             progressArea.appendChild(container);
         }
 		
+        // ✅ 新增：情況 4：受詛者 (顯示珍貴卡流失監控)
+        else if (humanPlayer && !humanPlayer.isEjected && humanPlayer.type === '受詛者') {
+            const container = document.createElement('div');
+            container.className = 'evo-ability-panel';
+
+            // 1. 標題
+            container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">⚠️ 珍貴卡流失監控</div>`;
+
+            // 2. 掃描所有時魔，找出誰拿了珍貴卡
+            const theftList = document.createElement('div');
+            theftList.style.textAlign = 'left';
+            theftList.style.marginTop = '8px';
+            
+            let totalStolenCount = 0;
+
+            // 過濾出時魔陣營 (排除自己和時之惡)
+            const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+
+            timeDemons.forEach(demon => {
+                // 檢查該玩家持有的卡片中，有沒有珍貴卡
+                const heldPrecious = (demon.hourCards || []).filter(c => c.isPrecious);
+                
+                if (heldPrecious.length > 0) {
+                    totalStolenCount += heldPrecious.length;
+
+                    // 建立顯示列
+                    const row = document.createElement('div');
+                    row.style.cssText = 'margin-bottom:8px; border-bottom:1px dashed #444; padding-bottom:4px;';
+                    
+                    // 玩家名稱
+                    const nameDiv = document.createElement('div');
+                    nameDiv.style.cssText = 'font-size:0.85rem; color:#ccc; margin-bottom:2px;';
+                    nameDiv.textContent = `${demon.name} (${heldPrecious.length}張)`;
+                    
+                    // 卡片內容 (例如: [3★] [7★])
+                    const cardsDiv = document.createElement('div');
+                    cardsDiv.innerHTML = heldPrecious.map(c => 
+                        `<span style="display:inline-block; background:rgba(255, 210, 127, 0.1); border:1px solid #ffd27f; color:#ffd27f; border-radius:3px; padding:0 4px; margin-right:4px; font-weight:bold; font-size:0.85rem;">${c.number}★</span>`
+                    ).join('');
+
+                    row.appendChild(nameDiv);
+                    row.appendChild(cardsDiv);
+                    theftList.appendChild(row);
+                }
+            });
+
+            // 3. 顯示結果
+            if (totalStolenCount === 0) {
+                // 如果沒人拿走珍貴卡，顯示安全訊息
+                theftList.innerHTML = `
+                    <div style="text-align:center; padding:15px 0; color:#4cd137;">
+                        <div style="font-size:1.5rem; margin-bottom:5px;">🛡️</div>
+                        <div style="font-size:0.9rem;">目前無珍貴卡流失</div>
+                    </div>
+                `;
+            }
+
+            container.appendChild(theftList);
+            
+            // 底部統計
+            if (totalStolenCount > 0) {
+                const summary = document.createElement('div');
+                summary.className = 'evo-desc';
+                summary.style.color = '#ff6b6b';
+                summary.style.marginTop = '5px';
+                summary.style.textAlign = 'center';
+                summary.textContent = `⚠️ 共計流失 ${totalStolenCount} 張珍貴卡`;
+                container.appendChild(summary);
+            }
+
+            progressArea.appendChild(container);
+        }
+		
+		
     }
 // ✅ 新增：處理數值變動的漂浮文字
     processFloatingText(gameState);
