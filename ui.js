@@ -1,8 +1,9 @@
-// ui.js (開頭部分修改：實作日誌逐條顯示)
-
+// ui.js 
 const originalLog = console.log;
 const logList = document.getElementById('log-list');
-let globalGameState = null; 
+let globalGameState = null;
+// 新增：記錄玩家上一狀態，用於比對數值變化
+let lastPlayerStats = {}; 
 
 // 日誌佇列系統變數
 const logQueue = [];
@@ -221,6 +222,7 @@ function renderMinuteHistory(gameState) {
 
 function resetRightPanels(gameState) {
     uiLastRecordedTurnKey = null;
+	lastPlayerStats = {}; // 重置數值記錄
     for (const k of Object.keys(uiMinuteHistory)) delete uiMinuteHistory[k];
     if (!gameState) return;
 
@@ -414,9 +416,11 @@ function updateUI(gameState) {
         numSpan.textContent = spot.position;
         spotEl.appendChild(numSpan);
         
-        // 卡牌顯示邏輯 (鐘面上的)
+		// 卡牌顯示邏輯 (鐘面上的)
         if (spot.cards.length > 0) {
-            const topCard = spot.cards[spot.cards.length - 1];
+            const topCard = spot.cards[spot.cards.length - 1]; // 取得最上面那張
+            
+            // 1. 繪製原本的「頂牌預覽」 (保持不變，這是鐘面上直接看到的)
             const cardDiv = document.createElement('div');
             cardDiv.className = 'card-preview';
             cardDiv.innerHTML = `
@@ -429,6 +433,36 @@ function updateUI(gameState) {
                 cardDiv.style.border = '1px solid gold';
             }
             spotEl.appendChild(cardDiv);
+
+            // 2. ✅ 新增：堆疊查看器 (Stack Inspector)
+            // 這個 div 平常隱藏(display:none)，滑鼠移上去時 CSS 會讓它顯示
+            const inspector = document.createElement('div');
+            inspector.className = 'stack-inspector';
+            
+            // 標題：顯示總張數
+            const title = document.createElement('div');
+            title.className = 'stack-title';
+            title.textContent = `堆疊 (${spot.cards.length}張)`;
+            inspector.appendChild(title);
+
+            // 列表：從「最上面」列到「最下面」 (將陣列反轉顯示)
+            [...spot.cards].reverse().forEach((card, i) => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+                if (card.isPrecious) item.classList.add('precious');
+                
+                // 第一張標示為 Top
+                const isTop = (i === 0);
+                const prefix = isTop ? '🔝 ' : '';
+                const star = card.isPrecious ? '★' : '';
+                // 簡化顯示，如果是青年/少年/中年 顯示縮寫或全名
+                const age = card.ageGroup ? `<span class="age-tag">(${card.ageGroup})</span>` : '';
+                
+                item.innerHTML = `${prefix}${card.number}${star}${age}`;
+                inspector.appendChild(item);
+            });
+
+            spotEl.appendChild(inspector);
         }
 
         // 棋子顯示邏輯
@@ -456,6 +490,7 @@ function updateUI(gameState) {
     gameState.players.filter(p => p.id !== HUMAN_PLAYER_ID).forEach(player => {
         const pCard = document.createElement('div');
         pCard.className = 'player-card';
+		pCard.dataset.id = player.id; // 標記 ID 以便漂浮文字定位		
         if (player.isEjected) pCard.classList.add('ejected');
 
         const roleKey = player.roleCard.includes('時魔') ? '時魔' : player.roleCard;
@@ -902,6 +937,7 @@ function updateUI(gameState) {
                 }
             }
         } 
+		
         // === 情況 2：已進化的時魔 (顯示能力按鈕) ===
         else if (humanPlayer && !humanPlayer.isEjected && ['時針', '分針', '秒針'].includes(humanPlayer.roleCard)) {
             
@@ -1063,8 +1099,72 @@ function updateUI(gameState) {
 
             progressArea.appendChild(container);
         }
-    }
+		
+		// === 情況 2：已進化的時魔 (顯示能力按鈕) ===
+        else if (humanPlayer && !humanPlayer.isEjected && ['時針', '分針', '秒針'].includes(humanPlayer.roleCard)) {
+             // ... (這裡是原本時針/分針/秒針的程式碼，保持不變) ...
+             // ...
+             progressArea.appendChild(container);
+        }
 
+        // ✅ 新增：情況 3：時之惡 (顯示能力按鈕)
+        else if (humanPlayer && !humanPlayer.isEjected && humanPlayer.type === '時之惡') {
+            const container = document.createElement('div');
+            container.className = 'evo-ability-panel';
+
+            // 標題
+            container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡 能力面板</div>`;
+
+            // 狀態顯示
+            const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
+            statusDiv.innerHTML = `當前規則：<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
+            container.appendChild(statusDiv);
+
+            // 按鈕
+            const canUse = window.GAME_CONFIG.enableAbilities && 
+                           !gameState.gameEnded && 
+                           humanPlayer.mana >= 2 && 
+                           !humanPlayer.specialAbilityUsed;
+
+            const btn = document.createElement('button');
+            btn.className = 'evo-btn';
+            btn.style.backgroundColor = '#feca57';
+            btn.style.color = '#000'; // 黑字比較清楚
+            
+            // 按鈕文字與狀態
+            if (humanPlayer.specialAbilityUsed) {
+                btn.textContent = "本回合已發動";
+                btn.disabled = true;
+            } else if (humanPlayer.mana < 2) {
+                btn.textContent = "Mana 不足 (需 2)";
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = `2 Mana：改為懲罰「距離最近」者</span>`;
+                btn.disabled = !canUse;
+                
+                // 綁定點擊事件
+                btn.onclick = () => {
+                    if (typeof activateSinAbility === 'function') {
+                        const success = activateSinAbility(globalGameState, humanPlayer.id);
+                        if (success) {
+                            updateUI(globalGameState); // 發動後立即更新介面
+                        }
+                    }
+                };
+            }
+            
+            container.appendChild(btn);
+            progressArea.appendChild(container);
+        }
+		
+    }
+// ✅ 新增：處理數值變動的漂浮文字
+    processFloatingText(gameState);
+	
+	// ✅ 新增：繪製時之惡紅線
+    drawSinTargetLines(gameState);
 }
 
 // 4. 綁定按鈕事件
@@ -1527,18 +1627,179 @@ document.addEventListener('DOMContentLoaded', () => {
 // (在 DOMContentLoaded 內的最後面)
 
     // 時之惡能力按鈕
-    const btnSinActivate = document.getElementById('btn-sin-activate');
-    if (btnSinActivate) {
-        btnSinActivate.addEventListener('click', () => {
-            if (!globalGameState) return;
-            const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'sin';
+const btnSinActivate = document.getElementById('btn-sin-activate');
+if (btnSinActivate) {
+    btnSinActivate.addEventListener('click', () => {
+        if (!globalGameState) return;
+        const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'sin';
             
-            // 呼叫 abilities.js 的函式
-            if (typeof activateSinAbility === 'function') {
-                const success = activateSinAbility(globalGameState, humanId);
-                if (success) {
-                    updateUI(globalGameState); // 發動成功後更新介面
-                }
+        // 呼叫 abilities.js 的函式
+        if (typeof activateSinAbility === 'function') {
+            const success = activateSinAbility(globalGameState, humanId);
+            if (success) {
+                updateUI(globalGameState); // 發動成功後更新介面
+            }
+        }
+    });
+}
+	
+// --- 新增：處理數值變動漂浮文字邏輯 (全域定位版) ---
+function processFloatingText(gameState) {
+    if (!gameState || !gameState.players) return;
+
+    gameState.players.forEach(player => {
+        const last = lastPlayerStats[player.id];
+        
+        // 如果有舊資料才比對 (避免剛開局跳數字)
+        if (last) {
+            // 1. 檢查 Mana 變動
+            const manaDiff = player.mana - last.mana;
+            if (manaDiff !== 0) {
+                const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
+                const color = manaDiff > 0 ? '#4cd137' : '#e17055'; // 綠 / 紅
+                triggerFloat(player.id, text, color, 'mana');
+            }
+
+            // 2. 檢查 齒輪 變動
+            const gearDiff = player.gearCards - last.gearCards;
+            if (gearDiff !== 0) {
+                const text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
+                const color = gearDiff > 0 ? '#00d2d3' : '#ff4757'; // 青 / 深紅
+                triggerFloat(player.id, text, color, 'gear');
+            }
+        }
+
+        // 更新記錄
+        lastPlayerStats[player.id] = {
+            mana: player.mana,
+            gearCards: player.gearCards
+        };
+    });
+}
+
+function triggerFloat(playerId, text, color, type) {
+    let targetEl = null;
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+
+    if (playerId === humanId) {
+        // 人類：找介面上的欄位
+        targetEl = (type === 'mana') ? document.getElementById('h-mana') : document.getElementById('h-gear');
+        if (!targetEl) targetEl = document.querySelector('.human-top-bar'); // 防呆
+    } else {
+        // AI：找 C 區的卡片
+        targetEl = document.querySelector(`.player-card[data-id="${playerId}"]`);
+    }
+
+    if (targetEl) {
+        spawnFloatingText(targetEl, text, color);
+    }
+}
+
+function spawnFloatingText(targetEl, text, color) {
+    // 1. 計算目標元素在螢幕上的座標
+    const rect = targetEl.getBoundingClientRect();
+    
+    // 2. 找出「水平中心點」與「頂部位置」
+    const centerX = rect.left + rect.width / 2;
+    const topY = rect.top; // 從元素頂端飄出來
+
+    // 3. 建立浮動元素，直接加在 body 上 (fixed定位)
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.textContent = text;
+    el.style.color = color;
+    el.style.left = `${centerX}px`;
+    el.style.top = `${topY}px`;
+    
+    document.body.appendChild(el);
+
+    // 4. 動畫結束後移除
+    setTimeout(() => {
+        el.remove();
+    }, 1800);
+}
+
+// --- 新增：繪製時之惡索命紅線 ---
+function drawSinTargetLines(gameState) {
+    const svg = document.getElementById('connection-lines');
+    if (!svg) return;
+    
+    // 清空舊線條
+    svg.innerHTML = '';
+
+    // 1. 找出時之惡
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    if (!sinPlayer || !sinPlayer.currentClockPosition) return;
+
+    // 2. 確定瞄準模式與目標
+    const mode = gameState.sinTargetingMode || 'default';
+    const targets = [];
+    const sinPos = sinPlayer.currentClockPosition;
+
+    // 篩選潛在受害者 (時魔 & 受詛者)
+    const candidates = gameState.players.filter(p => 
+        (p.type === '時魔' || p.type === '受詛者') && 
+        !p.isEjected && 
+        p.currentClockPosition
+    );
+
+    if (candidates.length === 0) return;
+
+    if (mode === 'sin') {
+        // --- 模式：距離最近 (紅線) ---
+        // 算出最短距離
+        let minDist = 100;
+        candidates.forEach(p => {
+            const dist = getUIDistance(sinPos, p.currentClockPosition);
+            if (dist < minDist) minDist = dist;
+        });
+        // 抓出所有距離最短的人
+        candidates.forEach(p => {
+            if (getUIDistance(sinPos, p.currentClockPosition) === minDist) {
+                targets.push(p.currentClockPosition);
             }
         });
+    } else {
+        // --- 模式：數值最大 (預設不畫線，或畫個淡灰色線) ---
+        // 如果您希望預設模式也要畫線，可以在這裡實作。
+        // 目前需求是針對「時之惡能力」，所以我們只畫 'sin' 模式的紅線。
+        return; 
     }
+
+    // 3. 繪製線條
+    // 必須與 updateUI 中的半徑參數一致
+    const radius = 190;
+    const centerX = 250;
+    const centerY = 250;
+
+    // 取得座標的輔助函式
+    const getCoords = (pos) => {
+        const angleDeg = pos * 30 - 90;
+        const angleRad = angleDeg * (Math.PI / 180);
+        return {
+            x: centerX + radius * Math.cos(angleRad),
+            y: centerY + radius * Math.sin(angleRad)
+        };
+    };
+
+    const start = getCoords(sinPos);
+
+    targets.forEach(targetPos => {
+        const end = getCoords(targetPos);
+        
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", start.x);
+        line.setAttribute("y1", start.y);
+        line.setAttribute("x2", end.x);
+        line.setAttribute("y2", end.y);
+        line.setAttribute("class", "sin-line"); // 套用 CSS 樣式
+        
+        svg.appendChild(line);
+    });
+}
+
+// UI 專用的距離計算 (複製自 game.js 避免 scope 問題)
+function getUIDistance(pos1, pos2) {
+    const diff = Math.abs(pos1 - pos2);
+    return Math.min(diff, 12 - diff);
+}

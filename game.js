@@ -1270,10 +1270,28 @@ function inRoundEndActions(gameState) {
 
     // 時之惡封印能力
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-    if (GAME_CONFIG.enableAbilities && sinPlayer && sinPlayer.mana >= 4 && Math.random() < 0.2) { 
+    
+    // ✅ 新增判定：計算場上「已進化」的時魔數量 (時針、分針、秒針)
+    const evolvedCount = gameState.players.filter(p => 
+        p.type === '時魔' && 
+        !p.isEjected && 
+        ['時針', '分針', '秒針'].includes(p.roleCard)
+    ).length;
+
+    // 修改觸發條件：
+    // 1. 能力開啟
+    // 2. Mana >= 4
+    // 3. 場上已進化時魔 >= 2 (關鍵新條件)
+    // 4. 機率觸發 (稍微提高機率到 0.4，因為條件變嚴苛了)
+    if (GAME_CONFIG.enableAbilities && 
+        sinPlayer && 
+        sinPlayer.mana >= 4 && 
+        evolvedCount >= 2 && 
+        Math.random() < 0.4
+    ) { 
         sinPlayer.mana -= 4; 
         gameState.abilityMarker = true; 
-        console.log(`【時之惡】耗用 4 Mana，禁止所有時魔特殊能力！`);
+        console.log(`😈【時之惡】感知到威脅 (${evolvedCount} 名進化時魔)，耗用 4 Mana 封印全場特殊能力！`);
     }
 
     // 受詛者保護卡片

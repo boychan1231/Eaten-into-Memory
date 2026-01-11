@@ -192,7 +192,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     width: min(500px, 90vw); 
     height: min(500px, 90vw);
     aspect-ratio: 1 / 1;
-	margin: 10px auto;
+	margin: 50px auto 20px auto;;
 }
 
 #clock-face {
@@ -932,4 +932,147 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: 0.8rem;
     color: #aaa;
     margin-top: 2px;
+}
+
+/* --- 新增：鐘面卡牌堆疊查看器 (Stack Inspector) --- */
+.stack-inspector {
+    display: none; /* 預設隱藏 */
+    position: absolute;
+    bottom: 110%; /* 顯示在格子上方 */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 25, 40, 0.95);
+    border: 1px solid #777;
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 110px;
+    z-index: 100; /* 確保浮在最上層 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    pointer-events: none; /* 讓滑鼠點擊穿透，不會擋到操作 */
+    text-align: center;
+    backdrop-filter: blur(4px);
+}
+
+/* 當滑鼠懸停在鐘面格子時顯示 */
+.clock-spot:hover .stack-inspector {
+    display: flex;
+    flex-direction: column;
+    animation: popupFadeIn 0.2s ease-out;
+}
+
+.stack-title {
+    font-size: 0.75rem;
+    color: #aaa;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.stack-item {
+    font-size: 0.85rem;
+    padding: 3px 0;
+    color: #ddd;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+    line-height: 1.2;
+}
+.stack-item:last-child { border-bottom: none; }
+
+/* 珍貴卡特別標示 */
+.stack-item.precious { 
+    color: #ffd27f; 
+    font-weight: bold; 
+    text-shadow: 0 0 2px orange; 
+}
+.stack-item .age-tag { 
+    font-size: 0.7em; 
+    color: #888; 
+    margin-left: 2px; 
+    vertical-align: middle;
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: translate(-50%, 5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* --- 修正：讓滑鼠指到的格子層級最高，避免視窗被遮擋 --- */
+.clock-spot:hover {
+    z-index: 200 !important; /* 強制壓過其他格子(10)、中心(30)與箭頭(20) */
+}
+
+/* --- 新增：數值變動漂浮文字 (Floating Text) --- */
+@keyframes floatUpFade {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+}
+
+.floating-text {
+    position: absolute;
+    top: 0;
+    left: 50%; /* 預設置中 */
+    transform: translateX(-50%);
+    font-weight: 900;
+    font-size: 1.4rem;
+    pointer-events: none; /* 讓點擊穿透 */
+    animation: floatUpFade 1.5s ease-out forwards;
+    z-index: 999;
+    text-shadow: 0 0 3px black, 0 0 5px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+/* --- 新增：數值變動漂浮文字 (Floating Text) --- */
+@keyframes floatUpFade {
+    0% { 
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1); /* -50% 是為了水平置中 */
+    }
+    50% { 
+        opacity: 1;
+        transform: translate(-50%, -25px) scale(1.2); 
+    }
+    100% { 
+        opacity: 0;
+        transform: translate(-50%, -50px) scale(1); 
+    }
+}
+
+.floating-text {
+    position: fixed; /* ✅ 改用 fixed，無視容器邊框，直接浮在螢幕最上層 */
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999; /* 確保蓋過所有視窗 */
+    font-weight: 900;
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 0px #000, -1px -1px 0 #000; /* 加上黑邊讓文字更明顯 */
+    white-space: nowrap;
+    animation: floatUpFade 1.8s ease-out forwards;
+}
+
+/* --- 新增：時之惡索命紅線 (SVG) --- */
+.connection-lines-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 讓點擊穿透 */
+    z-index: 5; /* 在背景之上，但在卡片/數字之下 */
+    overflow: visible;
+}
+
+/* 紅線樣式 */
+.sin-line {
+    stroke: #ff4757;        /* 鮮紅色 */
+    stroke-width: 4;        /* 線條粗細 */
+    stroke-dasharray: 10, 10; /* 虛線間隔 */
+    filter: drop-shadow(0 0 5px #ff4757); /* 發光效果 */
+    animation: dashMove 1s linear infinite; /* 流動動畫 */
+    opacity: 0.8;
+}
+
+@keyframes dashMove {
+    from { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 0; }
 }
