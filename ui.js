@@ -1211,7 +1211,7 @@ function updateUI(gameState) {
                 theftList.innerHTML = `
                     <div style="text-align:center; padding:15px 0; color:#4cd137;">
                         <div style="font-size:1.5rem; margin-bottom:5px;">🛡️</div>
-                        <div style="font-size:0.9rem;">目前無珍貴卡流失</div>
+                        <div style="font-size:0.9rem;">目前無珍貴卡遺失</div>
                     </div>
                 `;
             }
@@ -1225,7 +1225,7 @@ function updateUI(gameState) {
                 summary.style.color = '#ff6b6b';
                 summary.style.marginTop = '5px';
                 summary.style.textAlign = 'center';
-                summary.textContent = `⚠️ 共計流失 ${totalStolenCount} 張珍貴卡`;
+                summary.textContent = `⚠️ 共計遺失 ${totalStolenCount} 張珍貴卡`;
                 container.appendChild(summary);
             }
 
