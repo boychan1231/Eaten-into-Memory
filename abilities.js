@@ -60,7 +60,7 @@ function activateHourHandAbility(gameState) {
     }
 }
 
-
+// 分針能力
 function activateMinuteHandAbility(gameState, playerId, direction) {
     if (!GAME_CONFIG.enableAbilities) return false;
     
@@ -73,13 +73,14 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         console.log("【分針】能力被封鎖，無法發動。");
         return false;
     }
-    if (player.mana < 2) {
+	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.MINUTE_HAND_MOVE) || 2;
+    if (player.mana < COST) {
         console.log("【分針】Mana 不足 (需要 2)，無法發動。");
         return false;
     }
     
     // 執行消耗
-    player.mana -= 2;
+    player.mana -= COST;
     player.specialAbilityUsed = true; // 標記本回合已用過
 
     const oldPos = player.currentClockPosition;
@@ -89,12 +90,12 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         // 逆時針 (Counter-Clockwise) -1
         newPos = oldPos - 1;
         if (newPos < 1) newPos = 12;
-        console.log(`⏱️【分針能力】${player.name} 耗用 2 Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
+        console.log(`⏱️【分針能力】${player.name} 耗用 ${COST}Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
     } else {
         // 順時針 (Clockwise) +1
         newPos = oldPos + 1;
         if (newPos > 12) newPos = 1;
-        console.log(`⏱️【分針能力】${player.name} 耗用 2 Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
+        console.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
     }
 
     player.currentClockPosition = newPos;
@@ -181,11 +182,13 @@ if (typeof window !== 'undefined') {
     window.AVAILABLE_ROLES = AVAILABLE_ROLES;
 }
 
-// === 時針能力：頂牌放到底 (2 Mana 消耗) ===
+// === 時針能力：頂牌放到底 (1 Mana 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
+	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.TIME_HAND_MOVE) || 1;
+
     if (!player) return false;
-    if (player.mana < 2) {
+    if (player.mana < COST) {
         console.warn("Mana 不足，無法使用時針能力。");
         return false;
     }
@@ -196,9 +199,9 @@ function hourHandMoveTopToBottom(gameState, playerId) {
 
     const topCard = gameState.hourDeck.shift();
     gameState.hourDeck.push(topCard);
-    player.mana -= 2;
+    player.mana -= COST;;
 
-    console.log(`🕒【時針能力】${player.name} 消耗 2 Mana，將頂牌 (${topCard.number}${topCard.ageGroup || ''}${topCard.isPrecious ? '★' : ''}) 移至底部。`);
+    console.log(`🕒【時針能力】${player.name} 消耗 ${COST} Mana，將頂牌 (${topCard.number}${topCard.ageGroup || ''}${topCard.isPrecious ? '★' : ''}) 移至底部。`);
     return true;
 }
 
@@ -207,8 +210,7 @@ if (typeof window !== 'undefined') {
     window.hourHandMoveTopToBottom = hourHandMoveTopToBottom;
 }
 
-// abilities.js - 新增時之惡手動發動函式
-
+//時之惡能力
 function activateSinAbility(gameState, playerId) {
     if (!GAME_CONFIG.enableAbilities) return false;
 
@@ -220,17 +222,18 @@ function activateSinAbility(gameState, playerId) {
         console.log("本回合已經發動過能力了。");
         return false;
     }
-    if (player.mana < 2) {
-        console.log("Mana 不足 (需要 2)，無法發動。");
+	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SIN_PULL) || 2;
+    if (player.mana < COST) {
+        console.log("Mana 不足，無法發動。");
         return false;
     }
 
     // 執行能力
-    player.mana -= 2;
+    player.mana -= COST;
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
-    console.log(`😈【時之惡】玩家發動能力！消耗 2 Mana。`);
+    console.log(`😈【時之惡】玩家發動能力！消耗 ${COST} Mana。`);
     console.log(`⚠️ 本回合懲罰規則已變更為：距離「時之惡」最近者受罰。`);
 
     return true;

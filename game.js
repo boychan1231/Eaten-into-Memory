@@ -76,44 +76,18 @@ for (let i = 1; i <= 60; i++) {
 
 const HOUR_AGE_GROUPS = ['少年', '青年', '中年'];
 
-// 你指定的三組配置：決定各區間的珍貴年齡版本
-const HOUR_PRECIOUS_CONFIGS = [
-    {	id: 'CFG_1',
-        label: 'hour123',
-        // 將數字改為陣列格式
-        mapping: { 
-            '少年': [1, 5, 8, 10], 
-            '青年': [2, 6, 7, 11], 
-            '中年': [3, 4, 9, 12] 
-        }
-    },
-    {	id: 'CFG_2',
-        label: 'hour231',
-        // 將數字改為陣列格式
-        mapping: { 
-            '少年': [2, 6, 7, 11], 
-            '青年': [3, 4, 9, 12], 
-            '中年': [1, 5, 8, 10] 
-        }
-    },    {	id: 'CFG_3',
-        label: 'hour312',
-        // 將數字改為陣列格式
-        mapping: { 
-            '少年': [3, 4, 9, 12], 
-            '青年': [1, 5, 8, 10], 
-            '中年': [2, 6, 7, 11]
-        }
-    }
-];
-
 function createHourCard(number, ageGroup, isPrecious = false) {
     return { type: 'hour', number, ageGroup, isPrecious };
 }
 
+//讀取 window.GAME_DATA
 function pickRandomPreciousConfig() {
-    const idx = Math.floor(Math.random() * HOUR_PRECIOUS_CONFIGS.length);
-    return HOUR_PRECIOUS_CONFIGS[idx];
+    const configs = (window.GAME_DATA && window.GAME_DATA.HOUR_PRECIOUS_CONFIGS) || [];
+    if (configs.length === 0) return null; // 防呆
+    const idx = Math.floor(Math.random() * configs.length);
+    return configs[idx];
 }
+
 
 function getPreciousAgeGroupForNumber(config, number) {
     // 遍歷 mapping 中的所有年齡層 (少年、青年、中年)
@@ -155,7 +129,8 @@ function buildHourDeckWithRandomPrecious() {
 }
 
 // --- 2. 玩家/角色定義 ---
-const PLAYER_ROLES = [
+// ✅ 修改：從 config.js 讀取角色列表
+const PLAYER_ROLES = (window.GAME_DATA && window.GAME_DATA.PLAYER_ROLES) || [
     { id: 'SM_1', name: '時魔幼體 1', type: '時魔' },
     { id: 'SM_2', name: '時魔幼體 2 ', type: '時魔' },
     { id: 'SM_3', name: '時魔幼體 3 ', type: '時魔' },
@@ -420,9 +395,10 @@ function startRound(gameState) {
     processMinuteCardSelection(gameState); 
 }
 
+
+
 function makeAIChoice(player, gameState) {
     if (player.hand.length === 0) return null;
-
     const sortedHand = [...player.hand].sort((a, b) => a.value - b.value);
     const handSize = sortedHand.length;
     const drawnHours = gameState.currentDrawnHourCards || [];
@@ -543,13 +519,16 @@ function makeAIChoice(player, gameState) {
     //    }
     //}
 	
+	
 	// ✅ 秒針能力（新版）：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
+		//讀取秒針能力消耗
+	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SECOND_HAND_SELECT) || 3;	
 	if (
 		GAME_CONFIG.enableAbilities &&
 		player.roleCard === '秒針' &&
 		!gameState.abilityMarker &&
 		!player.specialAbilityUsed &&
-		player.mana >= 3 &&
+		player.mana >= COST &&
 		player.hand.length >= 1 // chosenCard 已拿走後，還要至少 1 張當第二張
 	) {
 		const usinbility = Math.random() < 0.6; // AI 使用機率，可自行調整
@@ -568,7 +547,6 @@ function makeAIChoice(player, gameState) {
 			const altIdx = player.hand.indexOf(altCard);
 			if (altIdx !== -1) {
 				player.hand.splice(altIdx, 1);
-				// ...略... (執行能力)
 			} else {
 				// 如果找不到第二張牌，取消發動能力，把第一張牌放回去或直接當作普通出牌
 				console.log("AI 秒針能力發動失敗：找不到第二張牌");
@@ -576,10 +554,6 @@ function makeAIChoice(player, gameState) {
 			}
 		}
 	}
-
-	
-	
-	
     return chosenCard;
 }
 
@@ -624,7 +598,9 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
         console.warn("本回合已使用過特殊能力。");
         return false;
     }
-    if (humanPlayer.mana < 3) {
+	//讀取秒針能力消耗
+	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SECOND_HAND_SELECT) || 3;	
+    if (humanPlayer.mana < COST) {
         console.warn("Mana 不足，不能使用秒針能力。");
         return false;
     }
@@ -647,7 +623,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     const card2 = humanPlayer.hand.splice(idx2, 1)[0];
 
     // ✅ 只在成功蓋牌後扣 Mana
-    humanPlayer.mana -= 3;
+    humanPlayer.mana -= COST;
     humanPlayer.specialAbilityUsed = true;
 
     gameState.phase = 'postMinute';
@@ -667,7 +643,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     // 清掉等待出牌（人類已完成「蓋牌」）
     gameState.currentRoundAIChoices = null;
 
-    console.log(`⏱️【秒針】您耗用 3 Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+    console.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
     console.log("--- ✋ 翻牌時刻！ 🤚 ---");
     aiChoices.forEach(c => console.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`));
     console.log("⏳【秒針】請從 2 張蓋牌中選 1 張打出。");
@@ -743,7 +719,7 @@ function handleHumanChoice(gameState, chosenCardValue) {
         card: chosenCard, 
         roleType: humanPlayer.type 
     });
-    console.log(`您 (人類) 打出了 ${chosenCard.value} 號分鐘卡。`);
+    console.log(`你打出了 ${chosenCard.value} 號分鐘卡。`);
 
     resolveMinuteCardSelection(gameState, allChoices);
     gameState.currentRoundAIChoices = null;
@@ -1113,7 +1089,6 @@ function handleDiceDeduction(player) {
     return gearCardDeducted;
 }
 
-// -------------------------------------------------------------
 // --- 5. 扣除齒輪卡邏輯 (確認版) ---
 function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
@@ -1283,15 +1258,18 @@ function inRoundEndActions(gameState) {
     // 2. Mana >= 4
     // 3. 場上已進化時魔 >= 2 (關鍵新條件)
     // 4. 機率觸發 (稍微提高機率到 0.4，因為條件變嚴苛了)
+	
+	//讀取mana設定
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
     if (GAME_CONFIG.enableAbilities && 
         sinPlayer && 
-        sinPlayer.mana >= 4 && 
+        sinPlayer.mana >= COST && 
         evolvedCount >= 2 && 
         Math.random() < 0.4
     ) { 
-        sinPlayer.mana -= 4; 
+        sinPlayer.mana -= COST; 
         gameState.abilityMarker = true; 
-        console.log(`😈【時之惡】感知到威脅 (${evolvedCount} 名進化時魔)，耗用 4 Mana 封印全場特殊能力！`);
+        console.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
     }
 
     // 受詛者保護卡片
