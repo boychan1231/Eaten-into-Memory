@@ -1076,3 +1076,31 @@ input:checked + .slider:before { transform: translateX(16px); }
     from { stroke-dashoffset: 20; }
     to { stroke-dashoffset: 0; }
 }
+
+/* --- 新增：防禦護盾特效 (Suggestion C) --- */
+.shield-indicator {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 5px #00d2d3); /* 青色光暈 */
+    animation: shieldFloat 2s ease-in-out infinite;
+    z-index: 25;
+    cursor: help;
+}
+
+/* 人類玩家區域的護盾 (調整為行內顯示) */
+.human-top-bar .shield-indicator {
+    position: static;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+    font-size: 1.3rem;
+    animation: none; /* 人類區不需要浮動，避免干擾閱讀 */
+    filter: drop-shadow(0 0 3px #00d2d3);
+}
+
+@keyframes shieldFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.1); }
+}

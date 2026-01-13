@@ -130,7 +130,7 @@
                 <ul>
                     <li><strong>齒輪卡 (生命/Mana)：</strong>代表角色的生命值與能量上限。歸零時角色將被「驅逐」。</li>
                     <li><strong>分鐘卡 (1-60)：</strong>手牌。數值越大，回合結算時越優先行動。</li>
-                    <li><strong>小時卡 (1-12)：</strong>分為少年、青年、中年三種時代。每局隨機指定一種時代為<strong>「珍貴(★)」</strong>卡。</li>
+                    <li><strong>小時卡 (1-12)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>「珍貴(★)」</strong>小時卡。</li>
                 </ul>
 
                 <h4>🔄 回合流程</h4>
@@ -150,9 +150,10 @@
                 <h4>🧬 進化機制 (時魔專屬)</h4>
                 <p>幼體時魔收集足夠的小時卡後，可進化為以下強力型態 (三選一)：</p>
                 <ul>
-                    <li><strong>條件 A：</strong>3 張不同時代 + 至少 1 張珍貴。</li>
-                    <li><strong>條件 B：</strong>4 張不同數字 + 至少 1 張珍貴。</li>
-                    <li><strong>條件 C：</strong>5 張任意卡 + 至少 2 張珍貴。</li>
+                    <li><strong>久遠一生：</strong>3 張不同時代 + 至少 1 張珍貴。</li>
+                    <li><strong>命途節錄：</strong>4 張不同數字 + 至少 1 張珍貴。</li>
+                    <li><strong>漫長生涯：</strong>5 張任意卡 + 至少 2 張珍貴。</li>
+                    <li><strong>刻骨時刻：</strong>3 張珍貴。</li>					
                 </ul>
 
                 <h4>⚔ 角色能力</h4>
@@ -161,18 +162,19 @@
                         <br>🛡️ <strong>防禦：</strong>受罰時，若 Mana ≥ 3，可消耗所有 Mana 抵擋傷害。
                     </li>
                     <li><strong>時之惡 (Boss)：</strong>
-                        <br>😈 <strong>2 Mana：將本回合懲罰對象改為「距離自己最近」的角色。
+                        <br>😈 <strong>主動 2 Mana：</strong>惡之牽引 - 本回合改為懲罰「距離最近」者。
+                        <br>🚫 <strong>主動 4 Mana：</strong>時間凍結 - 封印本回合所有時魔能力 (需場上 ≥2 名進化時魔)。
                         <br>⚠️ <strong>飢餓：</strong>若連續 2 輪沒有時魔被逐出，時之惡將自損 1 齒輪。
                     </li>
                     <li><strong>進化 - 時針：</strong>
                         <br>👁️ <strong>被動：</strong>預知牌庫頂的小時卡。
-                        <br>⚡ <strong>主動 (2 Mana)：</strong>將牌庫頂的卡移至底部。
+                        <br>⚡ <strong>主動 1 Mana：</strong>將牌庫頂的卡移至底部。
                     </li>
                     <li><strong>進化 - 分針：</strong>
-                        <br>⚡ <strong>主動 (2 Mana)：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
+                        <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
                     </li>
                     <li><strong>進化 - 秒針：</strong>
-                        <br>⚡ <strong>主動 (3 Mana)：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
+                        <br>⚡ <strong>主動 3 Mana：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
                     </li>
                 </ul>
 
@@ -180,45 +182,10 @@
                 <ul>
                     <li><strong>時魔勝利：</strong>時之惡的齒輪耗盡被逐出。</li>
                     <li><strong>時之惡勝利：</strong>所有時魔皆被逐出。</li>
-					<li><strong>受詛者：</strong>第 5 輪結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡。</li>
-                    <li><strong>計分：</strong>若遊戲結束時雙方皆存活，依剩餘齒輪數與額外加分決定排名。</li>
+                    <li><strong>受詛者勝利：</strong>第 5 輪結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡。</li>
+                    <li><strong>計分：</strong>若遊戲結束時多方存活，依剩餘齒輪數與額外加分決定排名。</li>
                 </ul>
             </div>
-            
-            <div id="settings-content" class="tab-content">
-                <h3>⚙️ 設定選項</h3>
-
-                <div class="setting-item">
-                    <label class="toggle-switch">
-                    <input type="checkbox" id="ability-toggle" checked>
-                    <span class="slider"></span>
-                    <span class="label-text">啟用特殊能力</span>
-                    </label>
-                </div>
-
-                <div class="setting-item">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="test-toggle">
-                        <span class="slider"></span>
-						<div class="setting-title">測試模式</div>
-                    </label>
-                    <div class="setting-hint">
-                    開啟後人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
-                    </div>
-                </div>
-            </div>
-
-        </div> <div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
-            <div class="modal">
-                <div class="modal-title">秒針能力：二選一</div>
-                <div id="seconds-choice-desc" class="modal-desc"></div>
-                <div class="modal-actions">
-                <button id="seconds-choice-a" type="button"></button>
-                <button id="seconds-choice-b" type="button"></button>
-                </div>
-                <div class="modal-note">未選擇的卡牌會回到你的手牌。</div>
-            </div>
-        </div>
 
         <div id="role-choice-overlay" class="modal-overlay" style="display:none;">
             <div class="modal">
@@ -232,6 +199,7 @@
         </div>
     </div>
 
+<script src="config.js"></script>
 <script src="abilities.js"></script>
 <script src="game.js"></script>
 <script src="ui.js"></script>
