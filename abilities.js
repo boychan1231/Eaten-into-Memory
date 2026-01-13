@@ -73,7 +73,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         console.log("【分針】能力被封鎖，無法發動。");
         return false;
     }
-	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.MINUTE_HAND_MOVE) || 2;
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
     if (player.mana < COST) {
         console.log("【分針】Mana 不足 (需要 2)，無法發動。");
         return false;
@@ -185,7 +185,7 @@ if (typeof window !== 'undefined') {
 // === 時針能力：頂牌放到底 (1 Mana 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
-	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.TIME_HAND_MOVE) || 1;
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
 
     if (!player) return false;
     if (player.mana < COST) {
@@ -222,7 +222,7 @@ function activateSinAbility(gameState, playerId) {
         console.log("本回合已經發動過能力了。");
         return false;
     }
-	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SIN_PULL) || 2;
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
         console.log("Mana 不足，無法發動。");
         return false;

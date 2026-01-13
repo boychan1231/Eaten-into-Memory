@@ -6,10 +6,13 @@ let globalGameState = null;
 let lastPlayerStats = {}; 
 
 // 日誌佇列系統變數
+
 const logQueue = [];
 let isLogProcessing = false;
 // ✅ 修改：讀取 config.js
-const LOG_SPEED = (window.UI_CONFIG && window.UI_CONFIG.LOG_SPEED) || 200;
+
+let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360; 
+let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
 
 // ✅ 保險：避免 GAME_CONFIG 未定義導致 UI 事件中斷
 try {
@@ -17,8 +20,17 @@ try {
 } catch (_) {}
 
 // 核心函式：處理日誌佇列
+// ui.js (取代原本的 processLogQueue)
+
+// 核心函式：處理日誌佇列 (含動態變速與略過功能)
 function processLogQueue() {
-    if (isLogProcessing || logQueue.length === 0) return;
+    if (isLogProcessing || logQueue.length === 0) {
+        // 如果佇列空了，重置略過狀態，恢復正常速度
+        if (logQueue.length === 0) {
+            isSkippingLogs = false;
+        }
+        return;
+    }
     isLogProcessing = true;
     
     const message = logQueue.shift();
@@ -28,17 +40,31 @@ function processLogQueue() {
         const li = document.createElement('li');
         li.textContent = message;
         li.className = 'log-entry-new';
+        
+        // 如果正在略過模式，移除動畫 class 以便瞬間顯示
+        if (isSkippingLogs) {
+            li.style.animation = 'none';
+            li.style.opacity = '1';
+        }
+        
         list.appendChild(li);
 
         const logContainer = document.getElementById('game-log-container');
         if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
     }
 
+    // 決定下一條訊息的延遲時間
+    // 1. 如果開啟略過 (isSkippingLogs) -> 0ms (瞬間)
+    // 2. 如果佇列堆積太多 (>5) -> 30ms (加速消化)
+    // 3. 否則 -> 使用滑桿設定的速度 (currentLogSpeed)
+    let nextDelay = currentLogSpeed;
+    if (isSkippingLogs) nextDelay = 0;
+    else if (logQueue.length > 5) nextDelay = 30;
+
     setTimeout(() => {
         isLogProcessing = false;
-        if (logQueue.length > 5) processLogQueue();
-        else processLogQueue();
-    }, (logQueue.length > 5 ? 50 : LOG_SPEED));
+        processLogQueue();
+    }, nextDelay);
 }
 
 console.log = function(...args) {
@@ -65,7 +91,7 @@ let selectedCardValues = [];
 let isSecondHandSelectingTwo = false; 
 
 // ✅ 修改：優先使用 config.js 的設定，若無則使用預設值
-const ROLE_COLORS = (window.UI_CONFIG && window.UI_CONFIG.ROLE_COLORS) || {
+const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
     '時魔': '#ff6b6b',
     '時之惡': '#feca57',
     '受詛者': '#54a0ff',
@@ -391,6 +417,20 @@ function renderAIPlayers(gameState, humanId) {
         pCard.dataset.id = player.id; // ID for Floating Text
         if (player.isEjected) pCard.classList.add('ejected');
 
+        // ✅ 新增：護盾可視化邏輯
+        // 條件：是幼體時魔 + Mana >= 3 + 護盾未使用
+        const isYoung = player.roleCard && player.roleCard.includes('幼');
+        // 讀取 config 中的護盾消耗，預設為 3
+        const shieldCost = (window.GAME_DATA?.ABILITY_COSTS?.YOUNG_SHIELD) || 3;
+        
+        if (isYoung && player.mana >= shieldCost && !player.shieldUsed && !player.isEjected) {
+            const shieldEl = document.createElement('div');
+            shieldEl.className = 'shield-indicator';
+            shieldEl.textContent = '🛡️';
+            shieldEl.title = `護盾就緒！(Mana ≥ ${shieldCost}，可抵擋傷害)`;
+            pCard.appendChild(shieldEl);
+        }
+
         const roleKey = player.roleCard.includes('時魔') ? '時魔' : player.roleCard;
         const color = ROLE_COLORS[roleKey] || '#fff';
         
@@ -400,7 +440,10 @@ function renderAIPlayers(gameState, humanId) {
         }
         const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
 
-        pCard.innerHTML = `
+        // 注意：這裡使用 += 附加內容，以免覆蓋掉剛加的 shieldEl
+        // 但為了排版簡單，我們將內容包在一個 div 裡，或者直接 append HTML
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = `
             <div class="role-badge" style="color:${color}">${player.roleCard}</div>
             <h4 style="color:${color}">${player.name}</h4>
             <div class="player-stats">
@@ -412,6 +455,8 @@ function renderAIPlayers(gameState, humanId) {
                 <div>收集小時卡: ${player.hourCards.length}</div>
             </div>
         `;
+        pCard.appendChild(contentDiv);
+        
         playersContainer.appendChild(pCard);
     });
 }
@@ -425,8 +470,21 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
     };
+    
     const humanRoleEl = document.getElementById('human-role-display');
-    if (humanRoleEl) humanRoleEl.textContent = `您是：${humanPlayer.roleCard}`;
+    if (humanRoleEl) {
+        // ✅ 新增：人類玩家護盾顯示
+        const isYoung = humanPlayer.roleCard && humanPlayer.roleCard.includes('幼');
+        const shieldCost = (window.GAME_DATA?.ABILITY_COSTS?.YOUNG_SHIELD) || 3;
+        const hasShield = isYoung && humanPlayer.mana >= shieldCost && !humanPlayer.shieldUsed && !humanPlayer.isEjected;
+        
+        // 使用 innerHTML 插入圖示
+        const shieldHtml = hasShield 
+            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 Mana 抵擋">🛡️</span>` 
+            : '';
+            
+        humanRoleEl.innerHTML = `您是：${humanPlayer.roleCard} ${shieldHtml}`;
+    }
 
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-mana', `${humanPlayer.mana} / ${humanPlayer.gearCards}`);
@@ -688,7 +746,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
     container.innerHTML = `<div class="evo-role-title" style="color:${ROLE_COLORS[role]}">${role} 能力面板</div>`;
 
     if (role === '時針') {
-		const COST = window.GAME_DATA?.ABILITY_COSTS.TIME_HAND_MOVE || 1;
+		const COST = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
         // 預知牌頂
         const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
             ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
@@ -721,7 +779,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         container.appendChild(btn);
 
     } else if (role === '分針') {
-		const COST = window.GAME_DATA?.ABILITY_COSTS.MINUTE_HAND_MOVE || 2;
+		const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
         if (gameState.waitingMinuteHandChoice) {
             const desc = document.createElement('div');
             desc.className = 'evo-desc';
@@ -751,7 +809,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         }
 
     } else if (role === '秒針') {
-		const COST = window.GAME_DATA?.ABILITY_COSTS.SECOND_HAND_SELECT || 3;
+		const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
         const isWaitingMinute = gameState.currentRoundAIChoices !== null; 
         const isWaitingFinal = !!gameState.waitingSecondHandFinalChoice; 
         const canUse = window.GAME_CONFIG.enableAbilities && isWaitingMinute && !isWaitingFinal && 
@@ -791,7 +849,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
 // F-3. 時之惡
 function renderSinAbilityPanel(gameState, humanPlayer, parent) {
-	const COST = window.GAME_DATA.ABILITY_COSTS.SIN_PULL || 2;
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
     container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡 能力面板</div>`;
@@ -801,6 +859,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
     statusDiv.innerHTML = `當前規則：<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
     container.appendChild(statusDiv);
+
 
     const canUse = window.GAME_CONFIG.enableAbilities && !gameState.gameEnded && humanPlayer.mana >= COST && !humanPlayer.specialAbilityUsed;
     const btn = document.createElement('button');
@@ -1161,6 +1220,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (success) updateUI(globalGameState);
             }
         });
+    }
+	
+    // ✅ 新增：日誌速度滑桿控制
+    const speedSlider = document.getElementById('log-speed-slider');
+    const speedValDisplay = document.getElementById('log-speed-value');
+    
+    if (speedSlider && speedValDisplay) {
+        // 初始化滑桿位置
+        speedSlider.value = currentLogSpeed;
+        
+        // 更新顯示文字輔助函式
+        const updateSpeedText = (val) => {
+            val = Number(val);
+            let text = `${val} ms`;
+            if (val === 0) text = "⚡ 瞬間 (0ms)";
+            else if (val <= 100) text = "⏩ 極快";
+            else if (val <= 300) text = "▶ 一般";
+            else text = "🐢 慢速阅读";
+            speedValDisplay.textContent = `${text} (${val}ms)`;
+            
+            // 如果滑桿被拖動，取消目前的略過狀態，改用新速度
+            isSkippingLogs = false; 
+            currentLogSpeed = val;
+        };
+
+        // 初始化文字
+        updateSpeedText(currentLogSpeed);
+
+        // 監聽滑動
+        speedSlider.addEventListener('input', (e) => {
+            updateSpeedText(e.target.value);
+        });
+    }
+
+    // ✅ 新增：點擊日誌區域「瞬間顯示」
+    const logContainer = document.getElementById('game-log-container');
+    if (logContainer) {
+        logContainer.addEventListener('click', () => {
+            if (logQueue.length > 0) {
+                // 開啟略過模式
+                isSkippingLogs = true;
+                // 若當前沒有在跑 (例如卡住)，手動推一下
+                if (!isLogProcessing) processLogQueue();
+            }
+        });
+        // 改變滑鼠游標提示可點擊
+        logContainer.style.cursor = "pointer";
+        logContainer.title = "點擊可瞬間顯示剩餘訊息";
     }
 });
 

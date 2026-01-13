@@ -82,9 +82,9 @@ function createHourCard(number, ageGroup, isPrecious = false) {
 
 //讀取 window.GAME_DATA
 function pickRandomPreciousConfig() {
-    const configs = (window.GAME_DATA && window.GAME_DATA.HOUR_PRECIOUS_CONFIGS) || [];
+    const configs = window.GAME_DATA?.HOUR_PRECIOUS_CONFIGS || [];
     if (configs.length === 0) return null; // 防呆
-    const idx = Math.floor(Math.random() * configs.length);
+    const idx = getRandomInt(configs.length);
     return configs[idx];
 }
 
@@ -130,7 +130,7 @@ function buildHourDeckWithRandomPrecious() {
 
 // --- 2. 玩家/角色定義 ---
 // ✅ 修改：從 config.js 讀取角色列表
-const PLAYER_ROLES = (window.GAME_DATA && window.GAME_DATA.PLAYER_ROLES) || [
+const PLAYER_ROLES = window.GAME_DATA?.PLAYER_ROLES || [
     { id: 'SM_1', name: '時魔幼體 1', type: '時魔' },
     { id: 'SM_2', name: '時魔幼體 2 ', type: '時魔' },
     { id: 'SM_3', name: '時魔幼體 3 ', type: '時魔' },
@@ -148,7 +148,8 @@ class GameState {
             gearCards: 0,
             hourCards: [],
             roleCard: role.name,
-            d6Die: role.type === '時之惡' || role.type === '受詛者' ? 6 : null,
+			// ✅ 修改：加入 ID 判斷，確保受詛者一定有骰子
+            d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
 			shieldUsed: false,
             specialAbilityUsed: false,
@@ -194,11 +195,37 @@ class GameState {
     }
 }
 
+
 // --- 4. 輔助函式 ---
+
+// ✅ 新增：統一亂數核心
+// 目前是直接回傳 Math.random()，未來可在此替換為 Seeded Random (種子亂數)
+function getRandom() {
+    return Math.random();
+}
+
+// ✅ 新增：機率判定 (輸入 0.0 ~ 1.0)
+// 用法：if (checkChance(0.5)) { ... } 代表 50% 機率成功
+function checkChance(probability) {
+    return getRandom() < probability;
+}
+
+// ✅ 新增：取得 0 到 max-1 的隨機整數 (用於陣列取值)
+// 用法：getRandomInt(10) 會回傳 0~9
+function getRandomInt(max) {
+    return Math.floor(getRandom() * max);
+}
+
+// 掛載到 window，讓 abilities.js 也能呼叫
+if (typeof window !== 'undefined') {
+    window.getRandom = getRandom;
+    window.checkChance = checkChance;
+    window.getRandomInt = getRandomInt;
+}
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+		const j = getRandomInt(i + 1);
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
@@ -318,9 +345,9 @@ function activateSinTargetingAbility(gameState) {
 
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     if (!sinPlayer) return;
-
-    if (sinPlayer.mana >= 2 && Math.random() < 0.5) {
-        sinPlayer.mana -= 2;
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
+    if (sinPlayer.mana >= COST && checkChance(0.5)) {
+        sinPlayer.mana -= COST;
         gameState.sinTargetingMode = 'sin';
         console.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
     } else {
@@ -406,7 +433,7 @@ function makeAIChoice(player, gameState) {
     const hasPosition = myPos !== null;
 
     function pickIndex(rankA, rankB, isFromSmallest) {
-        const chosenRank = Math.random() < 0.5 ? rankA : rankB;
+        const chosenRank = checkChance(0.5) ? rankA : rankB;
         if (isFromSmallest) {
             return Math.min(chosenRank - 1, handSize - 1);
         } else {
@@ -522,7 +549,7 @@ function makeAIChoice(player, gameState) {
 	
 	// ✅ 秒針能力（新版）：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
 		//讀取秒針能力消耗
-	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SECOND_HAND_SELECT) || 3;	
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;	
 	if (
 		GAME_CONFIG.enableAbilities &&
 		player.roleCard === '秒針' &&
@@ -531,7 +558,7 @@ function makeAIChoice(player, gameState) {
 		player.mana >= COST &&
 		player.hand.length >= 1 // chosenCard 已拿走後，還要至少 1 張當第二張
 	) {
-		const usinbility = Math.random() < 0.6; // AI 使用機率，可自行調整
+		const usinbility = checkChance(0.7); // AI 使用機率 70%
 
 		if (usinbility) {
 			const remainingSorted = [...player.hand].sort((a, b) => a.value - b.value);
@@ -599,7 +626,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
         return false;
     }
 	//讀取秒針能力消耗
-	const COST = (window.GAME_DATA && window.GAME_DATA.ABILITY_COSTS.SECOND_HAND_SELECT) || 3;	
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
     if (humanPlayer.mana < COST) {
         console.warn("Mana 不足，不能使用秒針能力。");
         return false;
@@ -1261,11 +1288,12 @@ function inRoundEndActions(gameState) {
 	
 	//讀取mana設定
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+	
     if (GAME_CONFIG.enableAbilities && 
         sinPlayer && 
         sinPlayer.mana >= COST && 
         evolvedCount >= 2 && 
-        Math.random() < 0.4
+        checkChance(0.4)
     ) { 
         sinPlayer.mana -= COST; 
         gameState.abilityMarker = true; 
