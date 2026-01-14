@@ -508,7 +508,7 @@ function renderAIPlayers(gameState, humanId) {
             <h4 style="color:${color}">${player.name}</h4>
             <div class="player-stats">
                 <div>手牌: ${player.hand.length}</div>
-                <div>Mana/齒輪: ${player.mana} / ${player.gearCards}</div>
+                <div>Mana / 齒輪: ${player.mana} / ${player.gearCards}</div>
                 <div>分數: ${player.score}</div>
                 ${diceInfo}
                 <div>位置: ${posDisplay}</div>

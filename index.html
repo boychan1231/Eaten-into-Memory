@@ -82,13 +82,11 @@
                 <div id="human-player-area" class="human-area">
                         
                     <div class="human-top-bar">
-                        <h4 id="human-role-display">您是：--</h4>
                         <div class="human-stats-row">
+							<h4 id="human-role-display">您是：--</h4>
                             <div>手牌: <span id="h-hand-count">0</span></div>
-                            <div>Mana: <span id="h-mana">0</span></div>
-                            <div>齒輪: <span id="h-gear">0</span></div>
+                            <div>Mana / 齒輪: <span id="h-mana">0</span></div>
                             <div>護盾: <span id="h-dice">--</span></div>
-                            <div>分數: <span id="h-score">0</span></div>
                             <div>位置: <span id="h-pos">--</span></div>
                             <div>收集小時卡: <span id="h-hour">0</span></div>
                         </div>
@@ -103,8 +101,10 @@
                         <div class="human-tab-panels">
                             <div id="human-tab-hand" class="human-tab-panel active">
                                 <div class="human-play-row">
-                                    <div id="human-hand" class="hand-display"></div>
-                                    
+                                <div id="human-hand" class="hand-display"></div>
+								
+                                <div class="info-divider"></div>    
+								
                                     <div id="human-controls" class="hand-controls">
                                         <div id="seconds-ability-controls" class="control-block" style="display:none;">
                                             <button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
@@ -123,11 +123,17 @@
 									<div id="human-hour-collection" class="hour-collection-list" style="max-height: 200px;"></div>
 								</div>
 							</div>
-                        </div> </div> </div> <div id="players-section" class="players-grid">
+                        </div> 
+					</div>
+				</div> 
+				
+				<div id="players-section" class="players-grid">
                     <div class="player-card placeholder">
                         <p>等待遊戲開始...</p>
                     </div>
                 </div>
+				
+				
 
             </div> 
 			
