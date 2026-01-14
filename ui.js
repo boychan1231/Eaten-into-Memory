@@ -497,7 +497,7 @@ function renderAIPlayers(gameState, humanId) {
         
         let diceInfo = '';
         if (player.d6Die !== null) {
-            diceInfo = `<div>骰子: <strong>${player.d6Die}</strong></div>`;
+            diceInfo = `<div>護盾: <strong>${player.d6Die}</strong></div>`;
         }
         const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
 
@@ -923,7 +923,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
     const statusDiv = document.createElement('div');
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
-    statusDiv.innerHTML = `當前規則：<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
+    statusDiv.innerHTML = `<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
     container.appendChild(statusDiv);
 
     // 共用變數

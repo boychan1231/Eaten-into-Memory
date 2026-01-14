@@ -149,7 +149,7 @@ class GameState {
             gearCards: 0,
             hourCards: [],
             roleCard: role.name,
-			// ✅ 修改：加入 ID 判斷，確保受詛者一定有骰子
+			// ✅ 修改：加入 ID 判斷，確保受詛者一定有護盾
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
 			shieldUsed: false,
@@ -346,8 +346,12 @@ function activateSinTargetingAbility(gameState) {
 
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     if (!sinPlayer) return;
+	
+	// 如果是人類扮演時之惡，直接退出，不執行 AI 自動判定(人類玩家需透過 UI 按鈕手動發動)
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+    if (sinPlayer.id === humanId) return;
 
-    // ✅ 新增條件：場上必須有存活的時魔
+    // 場上必須有存活的時魔
     const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     if (timeDemons.length === 0) return;
 
@@ -1106,7 +1110,7 @@ function handleDiceDeduction(player) {
                 player.mana = player.gearCards;
             }
             gearCardDeducted = true;
-            console.log(`【${player.type}】${player.name} 骰子耗盡，扣除 1 齒輪。`);
+            console.log(`【${player.type}】${player.name} 護盾耗盡，扣除 1 齒輪。`);
 
             if (player.type === '時之惡') {
                 player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
@@ -1125,7 +1129,7 @@ function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
     
-    console.log(`--- 步驟 5: 扣除齒輪卡/骰子 (當前規則: ${modeText}) ---`);
+    console.log(`--- 步驟 5: 扣除齒輪卡/護盾 (當前規則: ${modeText}) ---`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     // 若時之惡不在場，無人受罰 (直接檢查勝利條件)
@@ -1279,6 +1283,10 @@ function inRoundEndActions(gameState) {
     // 時之惡封印能力
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     
+	// 判斷是否為 AI
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+    const isAI = sinPlayer && sinPlayer.id !== humanId;
+	
     // ✅ 新增判定：計算場上「已進化」的時魔數量 (時針、分針、秒針)
     const evolvedCount = gameState.players.filter(p => 
         p.type === '時魔' && 
@@ -1497,7 +1505,7 @@ function endGameRound(gameState) {
     });
     console.log("🔄 玩家已接收新一輪的手牌與齒輪。");
 
-    // 5. 重置骰子
+    // 5. 重置護盾
     gameState.players.forEach(player => {
         if (player.type === '時之惡') {
             player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5)); 
