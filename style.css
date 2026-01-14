@@ -1104,3 +1104,46 @@ input:checked + .slider:before { transform: translateX(16px); }
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(-4px) scale(1.1); }
 }
+
+/* style.css */
+
+/* ... (原有代碼) ... */
+
+/* ✅ 新增：右側積分榜樣式 */
+#score-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 5px;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 第一名高亮 */
+.score-row.leader {
+    background: rgba(255, 210, 127, 0.15);
+    border: 1px solid rgba(255, 210, 127, 0.3);
+}
+
+.score-name {
+    font-weight: bold;
+}
+
+.score-val {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #fff;
+}
+
+.score-row.leader .score-val {
+    color: #ffd27f;
+    text-shadow: 0 0 5px rgba(255, 210, 127, 0.5);
+}

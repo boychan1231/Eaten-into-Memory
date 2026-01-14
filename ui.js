@@ -215,6 +215,7 @@ function updateUI(gameState) {
     updateNextStepButton(gameState, flags);        // 按鈕狀態
     renderTopInfo(gameState);                      // A. 頂部資訊
     renderPlayedCardsPanel(gameState);             // A-2. 出牌列表與歷史
+	renderScorePanel(gameState);                   // 呼叫積分榜渲染
     renderClockFace(gameState, flags);             // B. 鐘面 (含堆疊查看器)
     renderAIPlayers(gameState, humanId);           // C. AI 玩家 (含 ID for 漂浮文字)
     renderHumanPlayerArea(gameState, humanPlayer, flags); // D. 人類操作區 (手牌/數據)
@@ -297,6 +298,45 @@ function renderPlayedCardsPanel(gameState) {
         }
     }
 }
+
+// ✅ 新增：渲染右側積分榜
+function renderScorePanel(gameState) {
+    const list = document.getElementById('score-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    // 依分數高低排序 (高分在前)
+    const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+    const maxScore = sortedPlayers.length > 0 ? sortedPlayers[0].score : -999;
+
+    sortedPlayers.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'score-row';
+        
+        // 若是最高分且分數 > 0，標記為領先者
+        if (p.score === maxScore && p.score > 0) {
+            row.classList.add('leader');
+        }
+        // 若被逐出，降低透明度
+        if (p.isEjected) {
+            row.style.opacity = '0.5';
+            row.style.textDecoration = 'line-through';
+        }
+
+        const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
+        // 使用 config 定義的顏色，若無則預設灰色
+        const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) 
+                      ? window.UI_CONFIG.ROLE_COLORS[roleKey] 
+                      : '#ccc';
+
+        row.innerHTML = `
+            <span class="score-name" style="color:${color}">${p.name}</span>
+            <span class="score-val">${p.score}</span>
+        `;
+        list.appendChild(row);
+    });
+}
+
 
 // --- B. 鐘面繪製 (含 Stack Inspector) ---
 function renderClockFace(gameState, flags) {
@@ -1132,23 +1172,43 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	// 右側面板切換
     const btnPlayed = document.getElementById('btn-show-played');
+    const btnScore = document.getElementById('btn-show-score');   // 新增
     const btnHistory = document.getElementById('btn-show-history');
+    
     const panelPlayed = document.getElementById('played-cards-panel');
+    const panelScore = document.getElementById('score-panel');    // 新增
     const panelHistory = document.getElementById('player-history-panel');
-    if (btnPlayed && btnHistory && panelPlayed && panelHistory) {
-        btnPlayed.addEventListener('click', () => {
-            btnPlayed.classList.add('active');
-            btnHistory.classList.remove('active');
-            panelPlayed.style.display = 'block';
-            panelHistory.style.display = 'none';
+
+    // 統一的切換函式
+    function switchSideTab(target) {
+        // 1. 重置所有按鈕狀態
+        [btnPlayed, btnScore, btnHistory].forEach(btn => {
+            if (btn) btn.classList.remove('active');
         });
-        btnHistory.addEventListener('click', () => {
-            btnHistory.classList.add('active');
-            btnPlayed.classList.remove('active');
-            panelHistory.style.display = 'block';
-            panelPlayed.style.display = 'none';
+        
+        // 2. 隱藏所有面板
+        [panelPlayed, panelScore, panelHistory].forEach(panel => {
+            if (panel) panel.style.display = 'none';
         });
+
+        // 3. 啟用目標
+        if (target === 'played') {
+            if (btnPlayed) btnPlayed.classList.add('active');
+            if (panelPlayed) panelPlayed.style.display = 'block';
+        } else if (target === 'score') {
+            if (btnScore) btnScore.classList.add('active');
+            if (panelScore) panelScore.style.display = 'block';
+        } else if (target === 'history') {
+            if (btnHistory) btnHistory.classList.add('active');
+            if (panelHistory) panelHistory.style.display = 'block';
+        }
     }
+
+    // 綁定點擊事件
+    if (btnPlayed) btnPlayed.addEventListener('click', () => switchSideTab('played'));
+    if (btnScore) btnScore.addEventListener('click', () => switchSideTab('score'));
+    if (btnHistory) btnHistory.addEventListener('click', () => switchSideTab('history'));
+
 
    // 開始遊戲與選角
     function getCurrentHumanPlayerId() {

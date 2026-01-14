@@ -46,30 +46,32 @@
                         </div>
                     </div>
 
-                    <div class="side-panel-group">
+					<div class="side-panel-group">
+						<div id="deck-info" class="log-side-info no-click">
+							<div class="deck-title">小時卡庫</div>
+							<div class="deck-count" id="deck-count-num">--</div>
+						</div>
+						<div class="panel-switcher">
+							<button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
+							<button id="btn-show-history" class="switch-btn" type="button">歷史</button>
+							<button id="btn-show-score" class="switch-btn" type="button">積分</button>
+						</div>
+						<div id="played-cards-panel" class="log-side-info">
+							<div class="deck-title" style="color:#ffd27f;">本回合出牌</div>
+							<div id="played-cards-list"></div>
+						</div>
+						<div id="score-panel" class="log-side-info" style="display:none; min-height: auto;">
+							<div class="deck-title" style="color:#ffd27f;">🏆 積分</div>
+							<div id="score-list"></div>
+						</div>
+						<div id="player-history-panel" class="log-side-info" style="display:none;">
+							<div class="deck-title" style="color:#ffd27f;">各角色出牌記錄</div>
+							<div id="player-history-list"></div>
+						</div>
 
-                        <div id="deck-info" class="log-side-info no-click">
-                            <div class="deck-title">小時卡庫</div>
-                            <div class="deck-count" id="deck-count-num">--</div>
-                        </div>
-
-                        <div class="panel-switcher">
-                            <button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
-                            <button id="btn-show-history" class="switch-btn" type="button">歷史記錄</button>
-                        </div>
-
-                        <div id="played-cards-panel" class="log-side-info">
-                            <div class="deck-title" style="color:#ffd27f;">本回合出牌</div>
-                            <div id="played-cards-list"></div>
-                        </div>
-
-                        <div id="player-history-panel" class="log-side-info" style="display:none;">
-                            <div class="deck-title" style="color:#ffd27f;">各角色出牌記錄</div>
-                            <div id="player-history-list"></div>
-                        </div>
-
-                    </div>
-                </div>
+					</div>
+                
+				</div>
 
                 <div id="human-player-area" class="human-area">
                         
