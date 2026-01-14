@@ -6,78 +6,78 @@
     <title>時魔 2025 - 網頁版</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-    <div class="game-wrapper">
-        <header>
-            <div class="tab-nav">
-                <button class="tab-btn active" data-target="game-content">遊戲</button>
+<body>
+<div class="game-wrapper">
+    <header>
+		<div class="tab-nav">
+            <button class="tab-btn active" data-target="game-content">遊戲</button>
                 <button class="tab-btn" data-target="rules-content">規則</button>
-                <button class="tab-btn" data-target="settings-content">設定</button>
-            </div>
+            <button class="tab-btn" data-target="settings-content">設定</button>
+        </div>
             
-            <div class="game-status">
+        <div class="game-status">
                 <span id="round-info">準備開始</span> | 
                 <button id="start-game-btn" style="margin-left: 15px;">開始新遊戲</button>
-            </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="tab-wrapper">
-            <div id="game-content" class="tab-content active-tab">
-                
-                <div class="main-area">
-                    <div class="log-section">
-						<h3>📜 遊戲日誌</h3>
-						<div id="game-log-container">
-							<ul id="log-list">
-								<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
-							</ul>
-						</div>
-
-						<div id="evolution-progress-area" class="progress-area" style="margin: 10px; border: 1px solid #4a3b52; background: #151019;"></div>
+    <div class="tab-wrapper">
+        <div id="game-content" class="tab-content active-tab">  
+            <div class="main-area">
+                <div class="log-section">
+					<h3>📜 遊戲日誌</h3>
+					<div id="game-log-container">
+						<ul id="log-list">
+						<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
+						</ul>
 					</div>
-
-                    <div class="clock-section">
-                        <div id="clock-face">
-							<svg id="connection-lines" class="connection-lines-svg"></svg>
-                            <div class="clock-center"></div>
-                        </div>
-                    </div>
-
-					<div class="side-panel-group">
-						<div id="deck-info" class="log-side-info no-click">
-							<div class="info-block">
-								<div class="deck-title">小時卡庫</div>
-								<div class="deck-count" id="deck-count-num">--</div>
-							</div>	
-							<div class="info-divider"></div>
-							<div class="info-block">
-								<div class="deck-title">當前回合</div>
-								<div class="deck-count" id="round-count-num">--</div>
-							</div>
-						</div>
-						
-						<div class="panel-switcher">
-							<button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
-							<button id="btn-show-history" class="switch-btn" type="button">歷史</button>
-							<button id="btn-show-score" class="switch-btn" type="button">積分</button>
-						</div>
-						<div id="played-cards-panel" class="log-side-info">
-							<div class="deck-title" style="color:#ffd27f;">本回合出牌</div>
-							<div id="played-cards-list"></div>
-						</div>
-						<div id="score-panel" class="log-side-info" style="display:none; min-height: auto;">
-							<div class="deck-title" style="color:#ffd27f;">🏆 積分</div>
-							<div id="score-list"></div>
-						</div>
-						<div id="player-history-panel" class="log-side-info" style="display:none;">
-							<div class="deck-title" style="color:#ffd27f;">各角色出牌記錄</div>
-							<div id="player-history-list"></div>
-						</div>
-
-					</div>
-                
+					<div id="evolution-progress-area" class="progress-area" style="margin: 10px; border: 1px solid #4a3b52; background: #151019;"></div>
 				</div>
+                <div class="clock-section">
+                    <div id="clock-face">
+						<svg id="connection-lines" class="connection-lines-svg"></svg>
+                        <div class="clock-center"></div>
+                    </div>
+                </div>
+
+				<div class="side-panel-group">
+					<div id="deck-info" class="log-side-info no-click">
+						<div class="info-block">
+							<div class="deck-title">小時卡庫</div>
+							<div class="deck-count" id="deck-count-num">--</div>
+						</div>	
+						<div class="info-divider"></div>
+						<div class="info-block">
+							<div class="deck-title">當前回合</div>
+							<div class="deck-count" id="round-count-num">--</div>
+						</div>
+					</div>
+					
+					<div class="panel-switcher">
+						<button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
+						<button id="btn-show-history" class="switch-btn" type="button">歷史</button>
+						<button id="btn-show-score" class="switch-btn" type="button">積分</button>
+					</div>
+					
+					<div id="played-cards-panel" class="log-side-info">
+						<div class="deck-title" style="color:#ffd27f;">本回合出牌</div>
+						<div id="played-cards-list"></div>
+					</div>
+					
+					<div id="score-panel" class="log-side-info" style="display:none; min-height: auto;">
+						<div class="deck-title" style="color:#ffd27f;">🏆 積分</div>
+						<div id="score-list"></div>
+					</div>
+					
+					<div id="player-history-panel" class="log-side-info" style="display:none;">
+						<div class="deck-title" style="color:#ffd27f;">各角色出牌記錄</div>
+						<div id="player-history-list"></div>
+					</div>
+
+				</div>
+                
+			</div>
 
                 <div id="human-player-area" class="human-area">
                         
@@ -243,27 +243,39 @@
 
 		<hr style="border-color: #333; margin: 20px 0;">
 
-		<div class="setting-item">
-			<h4>除錯資訊</h4>
-			<p style="font-size: 0.8rem; color: #666;">
-				Build Ver: 2025.01.27<br>
-				Core: game.js / UI: ui.js
-				2026 01 14：鐘面回合數指示浮標變成指示玩家位置
-			</p>
-		</div>
+			<div class="setting-item">
+				<h4>除錯資訊</h4>
+				<p style="font-size: 0.8rem; color: #666;">
+					Build Ver: 2025.01.27<br>
+					Core: game.js / UI: ui.js
+					2026 01 14：鐘面回合數指示浮標變成指示玩家位置
+				</p>
+			</div>
 	</div>
 			
-        <div id="role-choice-overlay" class="modal-overlay" style="display:none;">
+		<div id="role-choice-overlay" class="modal-overlay" style="display:none;">
+			<div class="modal">
+			<h2>選擇角色</h2>
+				<div class="modal-actions">
+				<button id="role-choice-timeDemon" class="primary" type="button">時魔</button>
+				<button id="role-choice-sin" type="button">時之惡</button>
+				<button id="role-choice-scz" type="button">受詛者</button>
+				</div>
+			</div>
+		</div>
+		
+		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
             <div class="modal">
-            <h2>選擇角色</h2>
-                <div class="modal-actions">
-                <button id="role-choice-timeDemon" class="primary" type="button">時魔</button>
-                <button id="role-choice-sin" type="button">時之惡</button>
-                <button id="role-choice-scz" type="button">受詛者</button>
-                </div>
+            <h2 class="modal-title" style="color:#00d2d3;">⏱️ 秒針能力：命運抉擇</h2>
+            <p class="modal-desc">您已看過所有對手的出牌。<br>現在，請從剛才蓋放的 2 張牌中，選擇 1 張打出。</p>
+				<div class="modal-actions">
+                <button id="seconds-choice-a" class="primary" style="font-size:1.5rem; font-weight:bold;">A</button>
+                <button id="seconds-choice-b" class="primary" style="font-size:1.5rem; font-weight:bold;">B</button>
+				</div>
             </div>
-        </div>
-    </div>
+        </div>	
+	</div>	
+</div>
 
 <script src="config.js"></script>
 <script src="abilities.js"></script>

@@ -101,7 +101,7 @@ const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
 };
 
 // ==== 右側資訊面板（UI 狀態） ====
-const UI_HISTORY_LIMIT = 12;
+const UI_HISTORY_LIMIT = window.UI_CONFIG?.HISTORY_LIMIT || 12;
 let uiMinuteHistory = {};
 let uiLastRecordedTurnKey = null;
 // 追蹤目前輪數，用於偵測換輪時重置歷史
@@ -262,7 +262,6 @@ function updateNextStepButton(gameState, flags) {
 }
 
 // --- A. 頂部資訊 ---
-// --- A. 頂部資訊 (修改版) ---
 function renderTopInfo(gameState) {
     const roundInfo = document.getElementById('round-info');
     if (roundInfo) roundInfo.textContent = `第 ${gameState.gameRound} 輪`;
@@ -597,7 +596,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             const cardEl = document.createElement('div');
             cardEl.className = 'minute-card';
             cardEl.setAttribute('data-value', card.value);
-            cardEl.innerHTML = `<div>${card.value}</div><div class="card-gear">${card.gear} ⚙</div>`;
+            cardEl.innerHTML = `<div>${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
                 cardEl.addEventListener('click', function() {

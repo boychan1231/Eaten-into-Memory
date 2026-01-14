@@ -91,6 +91,7 @@ function pickRandomPreciousConfig() {
 
 
 function getPreciousAgeGroupForNumber(config, number) {
+    if (!config || !config.mapping) return null;
     // 遍歷 mapping 中的所有年齡層 (少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
@@ -110,12 +111,16 @@ function getPreciousAgeGroupForNumber(config, number) {
  */
 function buildHourDeckWithRandomPrecious() {
     const config = pickRandomPreciousConfig();
+    if (!config || !config.mapping) {
+        console.warn("⚠️ 未載入小時卡珍貴配置，將以非珍貴卡建立牌庫。");
+    }
     const deck = [];
 
     for (const age of HOUR_AGE_GROUPS) {
         for (let n = 1; n <= 12; n++) {
             const preciousAge = getPreciousAgeGroupForNumber(config, n);
-            const isPrecious = (age === preciousAge);
+           
+			const isPrecious = (age === preciousAge);
             deck.push(createHourCard(n, age, isPrecious));
         }
     }
@@ -357,14 +362,48 @@ function activateSinTargetingAbility(gameState) {
 
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     
-    // ✅ 修改條件：機率改為 80% (0.8)
-    if (sinPlayer.mana >= COST && checkChance(0.8)) {
+    // 機率改為 60% (0.6)
+    if (sinPlayer.mana >= COST && checkChance(0.6)) {
         sinPlayer.mana -= COST;
         gameState.sinTargetingMode = 'sin';
         console.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
     } else {
         gameState.sinTargetingMode = 'default';
         console.log(`【時之惡】鐘面數值最大者受罰 (接近12)。`);
+    }
+}
+
+
+//新增 AI 封印判定函式
+function activateSinSealAI(gameState) {
+    if (!GAME_CONFIG.enableAbilities) return;
+
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    if (!sinPlayer) return;
+
+    // 1. 檢查是否為 AI (人類玩家手動發動，不在此處理)
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+    if (sinPlayer.id === humanId) return;
+
+    // 2. 檢查本回合是否已發動過能力 (避免與惡之牽引衝突，或設定優先順序)
+    if (sinPlayer.specialAbilityUsed) return;
+
+    // 3. 條件檢查
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+    
+    // 計算場上「已進化」的時魔數量
+    const evolvedCount = gameState.players.filter(p => 
+        p.type === '時魔' && !p.isEjected && 
+        ['時針', '分針', '秒針'].includes(p.roleCard)
+    ).length;
+
+    // 觸發條件：Mana >= 4, 進化時魔 >= 2, 機率 50%
+    if (sinPlayer.mana >= COST && evolvedCount >= 2 && checkChance(0.5)) {
+        sinPlayer.mana -= COST;
+        sinPlayer.specialAbilityUsed = true; // 標記已使用能力
+        gameState.abilityMarker = true;      // ✅ 設定封印標記 (重點)
+        
+        console.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
     }
 }
 
@@ -390,6 +429,7 @@ function startRound(gameState) {
     console.log(`--- 開始第 ${gameState.gameRound} 輪 第 ${gameState.roundMarker} 回合 ---`);
 
 	// === 每回合重置：特殊能力使用狀態 & 本回合拿到的小時卡記錄 ===
+	gameState.abilityMarker = false; // ✅ 1. 回合開始先重置封印狀態
 	gameState.players.forEach(p => {
 		p.specialAbilityUsed = false;        
 		p.pickedHourThisTurn = false;         
@@ -397,11 +437,19 @@ function startRound(gameState) {
         p.pickedMinHourThisTurn = false;
 	});
 
-// ✅ 修正：呼叫正確的時之惡開局能力函式
-    if (typeof activateSinTargetingAbility === 'function') {
-        activateSinTargetingAbility(gameState); 
+// ✅ 2. 先嘗試判定「封印全場」(消耗較高，優先判定)
+    if (typeof activateSinSealAI === 'function') {
+        activateSinSealAI(gameState);
     }
-    
+	
+// ✅ 3. 若沒封印(沒耗魔)，再嘗試判定「惡之牽引」
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+    if (sinPlayer && !sinPlayer.specialAbilityUsed) { // 確保沒有一回合放兩招
+        if (typeof activateSinTargetingAbility === 'function') {
+            activateSinTargetingAbility(gameState); 
+        }
+    }	
+	
     const drawnCards = [];
     if (gameState.hourDeck.length >= 2) {
         drawnCards.push(gameState.hourDeck.pop()); 
@@ -946,7 +994,6 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
     return drawnCards.splice(idx, 1)[0];
 }
 
-// 將選到的小時卡「放置」：依規則決定是給幼體時魔持有，或留在鐘面
 function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog) {
     if (!gameState || !player || !cardToPlace) return;
 
@@ -957,14 +1004,12 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 	player.pickedHourThisTurn = true;
 	player.pickedHourCardThisTurnNumber = cardToPlace.number;
 
-
 	// 記錄本回合實際取得的小時卡（給分針能力判定用）
 	player.pickedHourCardThisTurnNumber = cardToPlace.number;
 	player.pickedMinHourThisTurn =
 		(player.roleCard === '分針' &&
 		 gameState.roundMinHourNumber !== null &&
 		 cardToPlace.number === gameState.roundMinHourNumber);
-
 
     const label = playerNameForLog || player.name;
     console.log(`${label} 挑選小時卡 [${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}]，移動到 ${cardToPlace.number} 格。`);
@@ -976,11 +1021,9 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 
     if (!Array.isArray(player.hourCards)) player.hourCards = [];
 
-    const alreadyHasSameNumber =
-        isTimeDemon && player.hourCards.some(c => c.number === cardToPlace.number);
-
-    // ✅ 規則：小時卡由幼體時魔持有（同數字不重複）；受詛者/時之惡不持有；已進化不持有
-    if (isYoungTimeDemon && !alreadyHasSameNumber) {
+    // ✅ 修正：移除 alreadyHasSameNumber 變數與檢查
+    // 只要是「幼體時魔」就可以持有，允許重複數字
+    if (isYoungTimeDemon) {
         player.hourCards.push(cardToPlace);
         console.log(`🧠【持有】${label} 持有小時卡 ${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}`);
         return;
@@ -993,12 +1036,10 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
         return;
     }
 
-    // 4) 防呆：若找不到鐘面格子，退回牌庫避免卡牌遺失（理論上不會發生）
+    // 4) 防呆：若找不到鐘面格子，退回牌庫避免卡牌遺失
     gameState.hourDeck.push(cardToPlace);
     console.warn(`⚠️ 找不到鐘面位置 ${cardToPlace.number}，已將小時卡退回牌庫避免遺失。`);
 }
-
-
 
 function handleHumanHourCardChoice(gameState, chosenIndex) {
     if (!gameState || !gameState.waitingHourChoice || gameState.waitingHourChoicePlayerId !== HUMAN_PLAYER_ID) {
@@ -1252,7 +1293,7 @@ function checkEjectionAndWinCondition(gameState) {
 }
 
 function inRoundEndActions(gameState) {
-	gameState.abilityMarker = false;
+
 	gameState.players.filter(p =>
 		p.type === '時魔' &&
 		!p.isEjected &&
@@ -1280,36 +1321,32 @@ function inRoundEndActions(gameState) {
 	  });
 
 
-    // 時之惡封印能力
-    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-    
+    //舊 時之惡封印能力
+    //const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
 	// 判斷是否為 AI
-    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
-    const isAI = sinPlayer && sinPlayer.id !== humanId;
-	
-    // ✅ 新增判定：計算場上「已進化」的時魔數量 (時針、分針、秒針)
-    const evolvedCount = gameState.players.filter(p => 
-        p.type === '時魔' && 
-        !p.isEjected && 
-        ['時針', '分針', '秒針'].includes(p.roleCard)
-    ).length;
-
+    //const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+    //const isAI = sinPlayer && sinPlayer.id !== humanId;
+    // 計算場上「已進化」的時魔數量 (時針、分針、秒針)
+    //const evolvedCount = gameState.players.filter(p => 
+    //    p.type === '時魔' && 
+    //    !p.isEjected && 
+    //    ['時針', '分針', '秒針'].includes(p.roleCard)
+    //).length;
 	// 條件：
     // 1. Mana >= 4
     // 2. 進化時魔 >= 2
     // 3. 機率 50% (0.5)
-	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;//讀取mana設定
-	
-    if (GAME_CONFIG.enableAbilities && 
-        sinPlayer && 
-        sinPlayer.mana >= COST && 
-        evolvedCount >= 2 && 
-        checkChance(0.5)
-    ) { 
-        sinPlayer.mana -= COST; 
-        gameState.abilityMarker = true; 
-        console.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
-    }
+	//const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;//讀取mana設定
+    //if (GAME_CONFIG.enableAbilities && 
+    //    sinPlayer && 
+    //    sinPlayer.mana >= COST && 
+    //    evolvedCount >= 2 && 
+    //    checkChance(0.5)
+    //) { 
+    //    sinPlayer.mana -= COST; 
+    //    gameState.abilityMarker = true; 
+    //    console.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
+    //}
 
     // 受詛者保護卡片
     const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
@@ -1515,9 +1552,14 @@ function endGameRound(gameState) {
     });
 
     // 6. 進入下一輪
-    gameState.gameRound++;
+	gameState.gameRound++;
     gameState.roundMarker = 1;
     gameState.currentRoundAIChoices = null;
+    
+    //清空「本回合出牌」，防止上一輪最後一手的牌出現在新一輪的歷史記錄中
+    gameState.currentMinuteChoices = null; 
+    gameState.uiMinuteChoicesTurnKey = null; // 同步清空 UI 識別鍵
+
     gameState.sinTargetingMode = 'default';
     
     if (gameState.gameRound > numPlayers) {

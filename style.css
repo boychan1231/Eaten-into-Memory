@@ -368,8 +368,51 @@ input:checked + .slider:before { transform: translateX(16px); }
     scrollbar-width: thin;
     scrollbar-color: #444 #222;
 }
-#log-list { list-style: none; padding: 0; margin: 0; }
-#log-list li { margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 4px; }
+
+/* 日誌列表容器 */
+#log-list { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+}
+
+/* 單條日誌樣式：卡片化設計 */
+#log-list li { 
+    position: relative;
+    margin-bottom: 4px;              /* 項目間保留微小空隙 */
+    padding: 5px 6px;              /* 增加內距，讓文字呼吸 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* 柔和的底線 */
+    background-color: rgba(0, 0, 0, 0.2); /* 深色背景，與面板區隔 */
+    border-left: 4px solid #555;     /* 左側視覺引導線 (灰色預設) */
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #ccc;
+    transition: background-color 0.2s; /* 懸停時平滑過渡 */
+}
+
+/* 斑馬紋效果 (Zebra Striping)：區分單雙行，建立閱讀節奏 */
+#log-list li:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 最新訊息高亮：鎖定最後一條，給予強烈提示 */
+#log-list li:last-child {
+    border-left-color: var(--accent-color); /* 左側變紅 */
+    background: linear-gradient(90deg, rgba(233, 69, 96, 0.15) 0%, rgba(0,0,0,0) 100%); /* 紅色漸層光暈 */
+    color: #fff;
+    font-weight: bold;
+    border-bottom: none;
+}
+
+/* 滑鼠懸停輔助：當滑鼠滑過時打亮，方便回頭閱讀 */
+#log-list li:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: #ffd27f; /* 金色引導線 */
+    color: #fff;
+}
+
+
+
 
 /* 右側資訊面板群組 */
 .side-panel-group {
@@ -1183,5 +1226,8 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* 讓數字大一點 */
 #deck-info .deck-count {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
+	font-weight: bold;
+    color: white;
+    white-space: nowrap; /* 確保不換行 */
 }
