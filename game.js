@@ -1,4 +1,4 @@
-// game.js (整合修正版：保留您的邏輯調整 + 修復缺失流程)
+// game.js (修復版)
 // ✅ 人類玩家 ID：改為可動態設定（支援角色選擇/測試），預設為 SM_1。
 let HUMAN_PLAYER_ID = 'SM_1';
 
@@ -315,9 +315,9 @@ function initializeGame(roles = PLAYER_ROLES) {
         player.mana = player.gearCards;
         
         if (player.type === '時之惡') {
-            player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 6)); 
+            player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5)); 
         } else if (player.type === '受詛者') {
-            player.d6Die = Math.max(1, Math.min(player.gearCards, 6)); 
+            player.d6Die = Math.max(1, Math.min(player.gearCards, 3)); 
         }
     });
 
@@ -1107,7 +1107,9 @@ function handleDiceDeduction(player) {
             console.log(`【${player.type}】${player.name} 骰子耗盡，扣除 1 齒輪。`);
 
             if (player.type === '時之惡') {
-                player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 6));
+                player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
+            } else if (player.type === '受詛者') {
+                player.d6Die = Math.max(1, Math.min(player.gearCards, 3)); 
             } else { 
                 player.d6Die = Math.max(1, Math.min(player.gearCards, 6));
             }
@@ -1220,8 +1222,8 @@ function checkEjectionAndWinCondition(gameState) {
         }
     });
 
-    // 2. 勝利判定
-    const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+	// 2. 勝利判定
+	const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
 
     if (!sinAlive || aliveTimeDemons.length === 0) {
@@ -1229,7 +1231,8 @@ function checkEjectionAndWinCondition(gameState) {
         if (!sinAlive && aliveTimeDemons.length > 0) {
             console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
         } else if (sinAlive && aliveTimeDemons.length === 0) {
-            console.log('🎉 遊戲結束：所有時魔被逐出，時之惡陣營勝利！');
+            // ✅ 修改：更新勝利訊息文字
+            console.log('🎉 遊戲結束：第五輪前所有時魔皆被逐出，時之惡陣營勝利！');
         } else {
             console.log('🎉 遊戲結束。');
         }
@@ -1379,7 +1382,6 @@ function endGameRound(gameState) {
 				sinPlayer.currentClockPosition = null;
 				if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
 				console.log(`⚠️【逐出】${sinPlayer.name} 齒輪耗盡，被逐出遊戲。`);
-
 				console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
 				endGame(gameState);
 				return;
@@ -1391,8 +1393,6 @@ function endGameRound(gameState) {
 			}
 			if (sinPlayer.mana < 0) sinPlayer.mana = 0;
         }
-		
-        // 更新「上一輪是否安全」標記
         gameState.previousRoundSafe = currentRoundSafe;
     } else {
         // 沒有存活的時之惡，就不再計算這個懲罰
@@ -1401,19 +1401,35 @@ function endGameRound(gameState) {
 
     // 為下一輪重置「本輪是否有時魔被逐出」的紀錄
     gameState.roundHadTimeDemonEjection = false;
-
-    // 【5P 專用】第 5 輪結算
-    if (numPlayers === 5 && gameState.gameRound === 5) {
-        const sczPlayer = gameState.players.find(p => p.type === '受詛者');
-        if (sczPlayer) {
-            if (checkSCZMissionSuccess(gameState)) {
+	
+	// 受詛者任務檢查 (加入 R2, R3, R4 額外加分機制)
+	const sczPlayer = gameState.players.find(p => p.type === '受詛者'); // 即使被逐出也檢查? 通常活著才算，這邊假設活著
+    if (sczPlayer && !sczPlayer.isEjected) {
+        const isMissionSuccess = checkSCZMissionSuccess(gameState);
+        
+        if (isMissionSuccess) {
+            if (gameState.gameRound === 2) {
+                sczPlayer.score += 9;
+                console.log("🎉【受詛者】第 2 輪任務達成 (保留12張珍貴)！獲得額外 9 分！");
+            } else if (gameState.gameRound === 3) {
+                sczPlayer.score += 5;
+                console.log("🎉【受詛者】第 3 輪任務達成 (保留12張珍貴)！獲得額外 5 分！");
+            } else if (gameState.gameRound === 4) {
+                sczPlayer.score += 2;
+                console.log("🎉【受詛者】第 4 輪任務達成 (保留12張珍貴)！獲得額外 2 分！");
+            }
+        }
+	
+        // 【5P 專用】第 5 輪結算
+        if (numPlayers === 5 && gameState.gameRound === 5) {
+            if (isMissionSuccess) {
                 console.log("🎉【受詛者】任務達成！");
             } else {
                 console.log("⚠️【受詛者】任務失敗。");
                 sczPlayer.score -= 999;
             }
         }
-    }
+    } // ✅ 修正：補上這個閉合大括號，結束受詛者的判斷區塊
 
 	// 2.5 幼體時魔交還小時卡：實體卡全部回到牌庫
 	let returnedFromYoungDemons = [];
@@ -1486,9 +1502,9 @@ function endGameRound(gameState) {
     // 5. 重置骰子
     gameState.players.forEach(player => {
         if (player.type === '時之惡') {
-            player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 6)); 
+            player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5)); 
         } else if (player.type === '受詛者') {
-            player.d6Die = Math.max(1, Math.min(player.gearCards, 6)); 
+            player.d6Die = Math.max(1, Math.min(player.gearCards, 3)); 
         }
     });
 
@@ -1509,11 +1525,11 @@ function endGameRound(gameState) {
 function endGame(gameState) {
     console.log("=== 遊戲結束 ===");
     gameState.players
-        .filter(p => p.type === '時魔' && typeof ROLE_UPGRADE_REQUIREMENTS !== 'undefined' && ROLE_UPGRADE_REQUIREMENTS[p.roleCard])
+        .filter(p => p.type === '時魔' && ['時針', '分針', '秒針'].includes(p.roleCard))
         .forEach(player => {
-            player.score += 5;
+			player.score += 3;
         });
-    
+		
     const finalScores = gameState.players.slice().sort((a, b) => b.score - a.score);
     finalScores.forEach((p, index) => {
         console.log(`#${index + 1}: ${p.name} (總分: ${p.score})`);

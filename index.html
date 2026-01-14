@@ -153,7 +153,7 @@
                     <li><strong>久遠一生：</strong>3 張不同時代 + 至少 1 張珍貴。</li>
                     <li><strong>命途節錄：</strong>4 張不同數字 + 至少 1 張珍貴。</li>
                     <li><strong>漫長生涯：</strong>5 張任意卡 + 至少 2 張珍貴。</li>
-                    <li><strong>刻骨時刻：</strong>3 張珍貴。</li>					
+                    <li><strong>刻骨銘記：</strong>3 張珍貴。</li>					
                 </ul>
 
                 <h4>⚔ 角色能力</h4>
@@ -179,14 +179,71 @@
                 </ul>
 
                 <h4>🏁 勝負判定</h4>
-                <ul>
-                    <li><strong>時魔勝利：</strong>時之惡的齒輪耗盡被逐出。</li>
-                    <li><strong>時之惡勝利：</strong>所有時魔皆被逐出。</li>
-                    <li><strong>受詛者勝利：</strong>第 5 輪結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡。</li>
-                    <li><strong>計分：</strong>若遊戲結束時多方存活，依剩餘齒輪數與額外加分決定排名。</li>
-                </ul>
+				<ul>
+					<li><strong>受詛者：</strong>遊戲結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡，否則必須落敗（除非觸發「不可能的救贖」）。</li>
+					<li><strong>時之惡：</strong>所有時魔皆曾被驅逐，時之惡勝利。</li>	
+					<li><strong>不可能的救贖：</strong>時之惡的齒輪耗盡被驅逐時，時魔立即落敗。</li>
+					<li><strong>受詛者額外加分：</strong>
+						<ul>
+							<li>第 2 輪達成 12 張珍貴卡：+9 分</li>
+							<li>第 3 輪達成 12 張珍貴卡：+5 分</li>
+							<li>第 4 輪達成 12 張珍貴卡：+2 分</li>
+						</ul>
+					</li>
+					<li><strong>計分：</strong>
+						<ul>
+							<li>主要分數：結束時剩餘齒輪數。</li>
+							<li>時魔進化加分：已進化的時魔 (時/分/秒針) 結束時 +3 分。</li>
+							<li>受詛者加分：若提早在第 2/ 3/ 4 輪達成 12 張珍貴小時卡目標，分別獲得 <strong>9 / 5 / 2</strong> 分。</li>
+						</ul>
+					</li>
+				</ul>
             </div>
+		
+		<div id="settings-content" class="tab-content">
+		<h3>⚙️ 遊戲設定</h3>
+		
+		<div class="setting-item">
+			<h4>日誌速度</h4>
+			<div style="display: flex; align-items: center; gap: 15px;">
+				<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" style="flex:1;">
+				<span id="log-speed-value" style="font-family: monospace; width: 120px;">360 ms</span>
+			</div>
+			<p style="font-size: 0.8rem; color: #888;">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
+		</div>
 
+		<hr style="border-color: #333; margin: 20px 0;">
+
+		<div class="setting-item">
+			<h3>設定選項</h3>
+			
+			<label class="toggle-switch" style="margin-bottom: 15px;">
+				<input type="checkbox" id="ability-toggle">
+				<span class="slider"></span>
+				<span>啟用特殊能力 (進化時魔 / 時之惡技能)</span>
+			</label>
+
+			<label class="toggle-switch">
+				<input type="checkbox" id="test-toggle">
+				<span class="slider"></span>
+				<span>測試模式</span>
+			</label>
+			    <div class="setting-hint">
+                開啟後人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
+                </div>
+		</div>
+
+		<hr style="border-color: #333; margin: 20px 0;">
+
+		<div class="setting-item">
+			<h4>除錯資訊</h4>
+			<p style="font-size: 0.8rem; color: #666;">
+				Build Ver: 2025.01.27<br>
+				Core: game.js / UI: ui.js
+			</p>
+		</div>
+	</div>
+			
         <div id="role-choice-overlay" class="modal-overlay" style="display:none;">
             <div class="modal">
             <h2>選擇角色</h2>
