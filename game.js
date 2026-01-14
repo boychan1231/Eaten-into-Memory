@@ -346,8 +346,15 @@ function activateSinTargetingAbility(gameState) {
 
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     if (!sinPlayer) return;
+
+    // ✅ 新增條件：場上必須有存活的時魔
+    const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+    if (timeDemons.length === 0) return;
+
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
-    if (sinPlayer.mana >= COST && checkChance(0.5)) {
+    
+    // ✅ 修改條件：機率改為 80% (0.8)
+    if (sinPlayer.mana >= COST && checkChance(0.8)) {
         sinPlayer.mana -= COST;
         gameState.sinTargetingMode = 'sin';
         console.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
@@ -358,15 +365,14 @@ function activateSinTargetingAbility(gameState) {
 }
 
 function startRound(gameState) {
-	 const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
-	// 修正 3：當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
+	const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+	// 當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
     const waitingMinute = gameState && gameState.currentRoundAIChoices !== null;
     const waitingHour = gameState && !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId;
     const waitingAbility = gameState && !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId;
     const waitingSecondFinal = gameState && !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
-	
-    // ✅ 防呆：若仍在等待人類輸入（出牌/選卡/能力），禁止直接進入下一回合
+    //防呆：若仍在等待人類輸入（出牌/選卡/能力），禁止直接進入下一回合
     if (waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
         console.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
         return;
@@ -376,25 +382,20 @@ function startRound(gameState) {
 	
 	// 每回合開始：重置「每回合一次」能力使用狀態（含時針頂牌放底）
 	gameState.players.forEach(p => { p.specialAbilityUsed = false; });
- 
+
     console.log(`--- 開始第 ${gameState.gameRound} 輪 第 ${gameState.roundMarker} 回合 ---`);
-	// 每回合一次：重置能力使用狀態 + 本回合拿牌記錄
-	
+
 	// === 每回合重置：特殊能力使用狀態 & 本回合拿到的小時卡記錄 ===
 	gameState.players.forEach(p => {
-		p.specialAbilityUsed = false;          // 「每回合一次」能力用
-		p.pickedHourThisTurn = false;          // 本回合是否真的有拿到小時卡
-		p.pickedHourCardThisTurnNumber = null; // 本回合拿到的小時卡數值
-	});
-
-	gameState.players.forEach(p => {
-		p.specialAbilityUsed = false;
+		p.specialAbilityUsed = false;        
+		p.pickedHourThisTurn = false;         
 		p.pickedHourCardThisTurnNumber = null;
-		p.pickedMinHourThisTurn = false;
+        p.pickedMinHourThisTurn = false;
 	});
 
-    if (typeof activatesinPreRoundAbility === 'function') {
-        activatesinPreRoundAbility(gameState); 
+// ✅ 修正：呼叫正確的時之惡開局能力函式
+    if (typeof activateSinTargetingAbility === 'function') {
+        activateSinTargetingAbility(gameState); 
     }
     
     const drawnCards = [];
@@ -419,7 +420,7 @@ function startRound(gameState) {
 }
         
     console.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
-    console.log("等待玩家選擇並打出分鐘卡...");
+    console.log("等待玩家打出分鐘卡...");
     processMinuteCardSelection(gameState); 
 }
 
@@ -1247,6 +1248,7 @@ function checkEjectionAndWinCondition(gameState) {
 }
 
 function inRoundEndActions(gameState) {
+	gameState.abilityMarker = false;
 	gameState.players.filter(p =>
 		p.type === '時魔' &&
 		!p.isEjected &&
@@ -1284,20 +1286,17 @@ function inRoundEndActions(gameState) {
         ['時針', '分針', '秒針'].includes(p.roleCard)
     ).length;
 
-    // 修改觸發條件：
-    // 1. 能力開啟
-    // 2. Mana >= 4
-    // 3. 場上已進化時魔 >= 2 (關鍵新條件)
-    // 4. 機率觸發 (稍微提高機率到 0.4，因為條件變嚴苛了)
-	
-	//讀取mana設定
-	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+	// 條件：
+    // 1. Mana >= 4
+    // 2. 進化時魔 >= 2
+    // 3. 機率 50% (0.5)
+	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;//讀取mana設定
 	
     if (GAME_CONFIG.enableAbilities && 
         sinPlayer && 
         sinPlayer.mana >= COST && 
         evolvedCount >= 2 && 
-        checkChance(0.4)
+        checkChance(0.5)
     ) { 
         sinPlayer.mana -= COST; 
         gameState.abilityMarker = true; 
@@ -1328,9 +1327,7 @@ function inRoundEndActions(gameState) {
 
 function moveRoundMarker(gameState) {
     gameState.roundMarker++; 
-    gameState.abilityMarker = false; 
     gameState.sinTargetingMode = 'default';
-	
 	gameState.phase = 'idle';
 
     if (gameState.roundMarker > 12) {

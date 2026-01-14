@@ -10,7 +10,6 @@
 
     <div class="game-wrapper">
         <header>
-            
             <div class="tab-nav">
                 <button class="tab-btn active" data-target="game-content">遊戲</button>
                 <button class="tab-btn" data-target="rules-content">規則</button>
@@ -19,7 +18,6 @@
             
             <div class="game-status">
                 <span id="round-info">準備開始</span> | 
-                <span id="turn-info">回合: --</span>
                 <button id="start-game-btn" style="margin-left: 15px;">開始新遊戲</button>
             </div>
         </header>
@@ -48,9 +46,17 @@
 
 					<div class="side-panel-group">
 						<div id="deck-info" class="log-side-info no-click">
-							<div class="deck-title">小時卡庫</div>
-							<div class="deck-count" id="deck-count-num">--</div>
+							<div class="info-block">
+								<div class="deck-title">小時卡庫</div>
+								<div class="deck-count" id="deck-count-num">--</div>
+							</div>	
+							<div class="info-divider"></div>
+							<div class="info-block">
+								<div class="deck-title">當前回合</div>
+								<div class="deck-count" id="round-count-num">--</div>
+							</div>
 						</div>
+						
 						<div class="panel-switcher">
 							<button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
 							<button id="btn-show-history" class="switch-btn" type="button">歷史</button>
@@ -220,9 +226,9 @@
 			<h3>設定選項</h3>
 			
 			<label class="toggle-switch" style="margin-bottom: 15px;">
-				<input type="checkbox" id="ability-toggle">
+				<input type="checkbox" id="ability-toggle" checked>
 				<span class="slider"></span>
-				<span>啟用特殊能力 (進化時魔 / 時之惡技能)</span>
+				<span>啟用特殊能力 span>
 			</label>
 
 			<label class="toggle-switch">
@@ -242,6 +248,7 @@
 			<p style="font-size: 0.8rem; color: #666;">
 				Build Ver: 2025.01.27<br>
 				Core: game.js / UI: ui.js
+				2026 01 14：鐘面回合數指示浮標變成指示玩家位置
 			</p>
 		</div>
 	</div>

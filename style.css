@@ -575,8 +575,11 @@ input:checked + .slider:before { transform: translateX(16px); }
 /* 左側：手牌區 */
 .hand-display {
     flex: 1; /* 自動填滿 */
-    display: flex; flex-wrap: wrap; gap: 8px;
+    display: flex; 
+	flex-wrap: wrap; 
+	gap: 8px;
     padding: 5px 0;
+	justify-content: flex-end; /* 將手牌排列方式改為靠右對齊 */
 }
 
 /* 進化分頁雙欄 */
@@ -1146,4 +1149,39 @@ input:checked + .slider:before { transform: translateX(16px); }
 .score-row.leader .score-val {
     color: #ffd27f;
     text-shadow: 0 0 5px rgba(255, 210, 127, 0.5);
+}
+
+#deck-info {
+    /* 修改 display 為 flex 以支援左右並排 */
+    display: flex !important; 
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-around;
+    height: 100px; /*稍微調整高度*/
+    padding: 5px 0;
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.info-divider {
+    width: 1px;
+    height: 60%;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 讓標題字稍微小一點以適應並排 */
+#deck-info .deck-title {
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+}
+
+/* 讓數字大一點 */
+#deck-info .deck-count {
+    font-size: 1.6rem;
 }

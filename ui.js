@@ -104,6 +104,8 @@ const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
 const UI_HISTORY_LIMIT = 12;
 let uiMinuteHistory = {};
 let uiLastRecordedTurnKey = null;
+// 追蹤目前輪數，用於偵測換輪時重置歷史
+let uiTrackedGameRound = 1;
 
 function resetMinuteHistory(gameState) {
     uiMinuteHistory = {};
@@ -191,7 +193,15 @@ function resetRightPanels(gameState) {
 // ==========================================
 function updateUI(gameState) {
     if (!gameState) return;
-
+	
+	// 檢查是否進入新的一輪 (例如從 第1輪 變 第2輪)
+    // 若是，則清空右側的出牌歷史記錄
+    if (gameState.gameRound > uiTrackedGameRound) {
+        resetMinuteHistory(gameState);
+        uiTrackedGameRound = gameState.gameRound;
+        console.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
+    }
+	
     // 1. 準備共用變數
     const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
         ? window.getEffectiveHumanPlayerId()
@@ -252,12 +262,14 @@ function updateNextStepButton(gameState, flags) {
 }
 
 // --- A. 頂部資訊 ---
+// --- A. 頂部資訊 (修改版) ---
 function renderTopInfo(gameState) {
     const roundInfo = document.getElementById('round-info');
     if (roundInfo) roundInfo.textContent = `第 ${gameState.gameRound} 輪`;
     
-    const turnInfo = document.getElementById('turn-info');
-    if (turnInfo) turnInfo.textContent = `回合標記: ${gameState.roundMarker}`;
+    // 將回合數顯示在側邊欄的新位置
+    const roundMarkerEl = document.getElementById('round-count-num');
+    if (roundMarkerEl) roundMarkerEl.textContent = gameState.roundMarker;
     
     const deckNumEl = document.getElementById('deck-count-num');
     if (deckNumEl) deckNumEl.textContent = gameState.hourDeck.length;
@@ -339,6 +351,9 @@ function renderScorePanel(gameState) {
 
 
 // --- B. 鐘面繪製 (含 Stack Inspector) ---
+// ui.js
+
+// --- B. 鐘面繪製 (修改版：箭頭指向玩家) ---
 function renderClockFace(gameState, flags) {
     const radius = 190;
     const centerX = 250;
@@ -346,11 +361,16 @@ function renderClockFace(gameState, flags) {
     const clockFaceEl = document.getElementById('clock-face');
     if (!clockFaceEl) return;
 
-    // 保留 SVG 線條與 Center，移除舊格子
+    // 清理舊元素
     const existingSpots = clockFaceEl.querySelectorAll('.clock-spot');
     const existingArrows = clockFaceEl.querySelectorAll('.active-round-arrow');
     existingSpots.forEach(el => el.remove());
     existingArrows.forEach(el => el.remove());
+
+    // ✅ 取得人類玩家位置
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
+    const humanPos = humanPlayer ? humanPlayer.currentClockPosition : null;
 
     gameState.clockFace.forEach((spot) => {
         const angleDeg = spot.position * 30 - 90;
@@ -363,9 +383,10 @@ function renderClockFace(gameState, flags) {
         spotEl.style.left = `${x}px`;
         spotEl.style.top = `${y}px`;
 
-        // 高亮當前回合
-        if (spot.position === gameState.roundMarker) {
-            spotEl.classList.add('active-round');
+        // ✅ 修改：浮標箭頭現在指向「人類玩家的位置」
+        if (humanPos !== null && spot.position === humanPos) {
+            spotEl.classList.add('active-round'); // 借用這個 class 來做高亮效果
+            
             // 繪製箭頭
             const arrowEl = document.createElement('div');
             arrowEl.className = 'active-round-arrow';
@@ -404,7 +425,7 @@ function renderClockFace(gameState, flags) {
             }
             spotEl.appendChild(cardDiv);
 
-            // 堆疊查看器 (Stack Inspector)
+            // 堆疊查看器
             const inspector = document.createElement('div');
             inspector.className = 'stack-inspector';
             const title = document.createElement('div');
@@ -1238,7 +1259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!globalGameState.gameEnded) {
                 startRound(globalGameState);
-                resetMinuteHistory(globalGameState);
                 updateUI(globalGameState);
             } else {
                 console.log("遊戲已結束。");
@@ -1273,6 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					globalGameState = initFn();
 					resetMinuteHistory(globalGameState);
 					resetRightPanels(globalGameState);
+                    uiTrackedGameRound = 1;// 重置輪數追蹤變數
 					selectedCardValue = null;
 					selectedCardValues = [];
 					isSecondHandSelectingTwo = false;
