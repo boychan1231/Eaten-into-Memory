@@ -44,9 +44,10 @@ if (GAME_CONFIG.testMode === undefined) GAME_CONFIG.testMode = false;
 
 try { if (typeof window !== 'undefined') window.GAME_CONFIG = GAME_CONFIG; } catch (_) {}
 
-
 // ✅ 對外提供同一份設定（給 ui.js / abilities.js 使用）
-window.GAME_CONFIG = GAME_CONFIG;
+if (typeof window !== 'undefined') {
+    window.GAME_CONFIG = GAME_CONFIG;
+}
 
 // --- 1. 卡牌定義 ---
 
