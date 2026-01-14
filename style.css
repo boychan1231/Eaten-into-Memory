@@ -199,6 +199,16 @@ input:checked + .slider:before { transform: translateX(16px); }
     position: relative;
     width: 100%;
     height: 100%;
+	
+	/* 設定背景圖片 */
+    /* 請將 'clock-bg.png' 換成你的檔名 */
+    background-image: url('clock-bg.png');
+	/* 圖片置中 */
+    background-position: center;
+    /* 不重複 */
+    background-repeat: no-repeat;
+	background-color: transparent !important; /* 強制背景透明 */
+	background-size: contain;
 }
 
 .clock-center {
@@ -220,11 +230,11 @@ input:checked + .slider:before { transform: translateX(16px); }
 .clock-spot {
     position: absolute;
     width: 70px; height: 70px;
-    background: #222;
-    background-image: var(--mirror-shine);
-    border: 2px solid var(--mirror-border);
+    background: transparent;
+    background-image: none;
+    border: 2px solid rgba(255, 255, 255, 0.15);
     border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -232,7 +242,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: 0.8rem;
     transform: translate(-50%, -50%);
     transition: all 0.3s;
-    backdrop-filter: blur(2px);
+    backdrop-filter: none;
     z-index: 10;
 }
 
@@ -257,15 +267,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 @keyframes arrowFloat {
     from { opacity: 0.8; transform: translate(-50%, -50%) rotate(var(--arrow-rotation)) translateY(0); }
     to { opacity: 1; transform: translate(-50%, -50%) rotate(var(--arrow-rotation)) translateY(-10px); }
-}
-
-.clock-spot .spot-num {
-    position: absolute;
-    top: -20px;
-    font-weight: bold;
-    color: #888;
-    font-size: 1rem;
-    text-shadow: 0 1px 2px black;
 }
 
 /* 鐘面上卡牌預覽 */
@@ -1230,4 +1231,16 @@ input:checked + .slider:before { transform: translateX(16px); }
 	font-weight: bold;
     color: white;
     white-space: nowrap; /* 確保不換行 */
+}
+
+/* ✅ 新增：鐘面底圖樣式 */
+.clock-bg-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 保持圖片比例 */
+    z-index: 0;          /* ✅ 重點：設為 0，確保在紅線(5)和格子(10)之下 */
+    opacity: 0.8;        /* 可選：調整透明度讓上面的元件更清楚 */
 }

@@ -400,12 +400,6 @@ function renderClockFace(gameState, flags) {
             clockFaceEl.appendChild(arrowEl);
         }
 
-        // 數字
-        const numSpan = document.createElement('span');
-        numSpan.className = 'spot-num';
-        numSpan.textContent = spot.position;
-        spotEl.appendChild(numSpan);
-
         // 卡牌顯示 (含 Stack Inspector)
         if (spot.cards.length > 0) {
             const topCard = spot.cards[spot.cards.length - 1];
