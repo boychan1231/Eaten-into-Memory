@@ -823,13 +823,27 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
     if (role === '時針') {
 		const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
         
-        // --- 預知牌頂 (保持原本代碼不變) ---
-        const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
+        // --- 預知牌頂 --
+		const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
             ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
-        // ... (預知顯示代碼省略，保持不變) ...
-        // ... (passiveContainer 代碼省略，保持不變) ...
+        
+        let contentHtml = '';
+        if (!!gameState.abilityMarker) {
+            contentHtml = '<div style="color:#ff6b6b; font-weight:bold;">🚫 能力被封鎖</div>';
+        } else if (!topCard) {
+            contentHtml = '<div style="color:#aaa;">(牌庫已空)</div>';
+        } else {
+            const star = topCard.isPrecious ? '<span style="color:#ffd27f; font-size:1.2rem;">★</span>' : '';
+            // ✅ 這裡就是「顯示牌頂資訊」的關鍵 HTML
+            contentHtml = `<div style="font-size:0.9rem; margin-bottom:6px; border-bottom:1px dashed #666; padding-bottom:4px; color:#fff;">👁️ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${topCard.ageGroup || ''}</span> ${star}</div>`;
+        }
 
-        // --- ✅ 修改：主動技能按鈕邏輯 ---
+        const passiveContainer = document.createElement('div');
+        passiveContainer.style.cssText = 'background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin-bottom:8px; border:1px solid #555; text-align:center;';
+        passiveContainer.innerHTML = contentHtml;
+        container.appendChild(passiveContainer);
+
+        // --- 主動技能按鈕邏輯 ---
         
         // 1. 取得當前使用次數與對應消耗
         const moveCount = humanPlayer.hourHandMoveCount || 0;
