@@ -1395,3 +1395,99 @@ body {
 .avatar-evo-hour { background: radial-gradient(circle, #ff9ff3, #550055); }
 .avatar-evo-min  { background: radial-gradient(circle, #f368e0, #440044); }
 .avatar-evo-sec  { background: radial-gradient(circle, #00d2d3, #004444); }
+
+/* style.css */
+
+/* 小圖示按鈕 (放大鏡) */
+.icon-btn {
+    background: transparent;
+    border: 1px solid #666;
+    color: #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    margin-left: 8px;
+    transition: all 0.2s;
+}
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #999;
+}
+
+/* 調整彈窗內的收集列表樣式 */
+#collection-overlay .hour-collection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+/* 讓列表文字大一點，比較好閱讀 */
+#collection-overlay .collection-text-row {
+    font-size: 1.1rem; 
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 0;
+}
+
+/* style.css */
+
+/* 遊戲結束面板樣式 */
+.ranking-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 60px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    color: #aaa;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 2px;
+}
+
+.ranking-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 4px 4px;
+}
+
+.rank-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 60px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 1rem;
+}
+
+/* 冠軍 (金) */
+.rank-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), transparent);
+    border-left: 4px solid gold;
+    color: #ffd700;
+    font-weight: bold;
+}
+/* 亞軍 (銀) */
+.rank-row.rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent);
+    border-left: 4px solid silver;
+    color: #e0e0e0;
+}
+/* 季軍 (銅) */
+.rank-row.rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent);
+    border-left: 4px solid #cd7f32;
+    color: #cd7f32;
+}
+
+/* 被逐出者 */
+.rank-row.dead {
+    opacity: 0.5;
+    text-decoration: line-through;
+    filter: grayscale(1);
+}
+
+.rank-medal { font-size: 1.2rem; }

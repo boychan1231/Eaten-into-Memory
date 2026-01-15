@@ -220,6 +220,13 @@ function updateUI(gameState) {
         isWaitingSecondFinalChoice: !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId,
         gameEnded: gameState.gameEnded
     };
+	
+	// 如果遊戲結束，顯示結算面板 (只顯示一次，避免重複彈出)
+    if (gameState.gameEnded && !gameState.hasShownGameOverPanel) {
+        renderGameOverPanel(gameState);
+        gameState.hasShownGameOverPanel = true; // 標記已顯示，防止 updateUI 重複觸發
+    }
+	
 
     // 3. 呼叫各個子函式進行繪製
     updateNextStepButton(gameState, flags);        // 按鈕狀態
@@ -249,7 +256,16 @@ function updateNextStepButton(gameState, flags) {
     if (flags.gameEnded) {
         nextStepBtn.disabled = true;
         nextStepBtn.textContent = '遊戲結束';
-    } else if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice) {
+    } 
+	
+	/ 分針能力等待時，允許點擊按鈕 (視為略過)
+    if (gameState.waitingMinuteHandChoice) {
+        nextStepBtn.disabled = false;
+        nextStepBtn.textContent = "下一回合 (略過能力)";
+        return; // 直接返回，不執行下方的 disable 邏輯
+    }
+		
+	if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice) {
         nextStepBtn.disabled = true;
         if (flags.isWaitingHourInput) nextStepBtn.textContent = "請選擇小時卡...";
         else if (flags.isWaitingAbilityChoice) nextStepBtn.textContent = "請決定是否使用特殊能力...";
@@ -1284,6 +1300,16 @@ document.addEventListener('DOMContentLoaded', () => {
         nextBtn.textContent = "下一回合";
         nextBtn.onclick = () => {
             if (!globalGameState) return;
+			
+			// 若處於「分針能力選擇中」，點擊此按鈕等同於「略過」
+            if (globalGameState.waitingMinuteHandChoice) {
+                console.log("【UI】玩家直接點擊下一回合，視為略過分針能力。");
+                if (typeof handleHumanAbilityChoice === 'function') {
+                    handleHumanAbilityChoice(globalGameState, 'skip');
+                }
+                return; // 執行完略過後就結束，不繼續執行 startRound
+            }
+			
             const humanId = getCurrentHumanPlayerId();
             const waitingMinute = globalGameState.currentRoundAIChoices !== null;
             const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === humanId;
@@ -1451,6 +1477,32 @@ document.addEventListener('DOMContentLoaded', () => {
         logContainer.style.cursor = "pointer";
         logContainer.title = "點擊可瞬間顯示剩餘訊息";
     }
+
+    // 已收集小時卡彈窗控制
+    const btnViewCol = document.getElementById('btn-view-collection');
+    const colOverlay = document.getElementById('collection-overlay');
+    const colClose = document.getElementById('collection-close-btn');
+
+    if (btnViewCol && colOverlay) {
+        btnViewCol.addEventListener('click', () => {
+            colOverlay.style.display = 'flex'; // 開啟彈窗
+        });
+    }
+
+    if (colClose && colOverlay) {
+        colClose.addEventListener('click', () => {
+            colOverlay.style.display = 'none'; // 關閉彈窗
+        });
+    }
+
+    // 點擊視窗外部也可以關閉 (選用)
+    if (colOverlay) {
+        colOverlay.addEventListener('click', (e) => {
+            if (e.target === colOverlay) {
+                colOverlay.style.display = 'none';
+            }
+        });
+    }
 });
 
 // --- 處理數值變動漂浮文字 ---
@@ -1554,3 +1606,100 @@ function getUIDistance(pos1, pos2) {
     const diff = Math.abs(pos1 - pos2);
     return Math.min(diff, 12 - diff);
 }
+
+function renderGameOverPanel(gameState) {
+    const overlay = document.getElementById('game-over-overlay');
+    const titleEl = document.getElementById('winner-title');
+    const subEl = document.getElementById('winner-subtitle');
+    const listEl = document.getElementById('game-over-ranking-list');
+    
+    if (!overlay || !listEl) return;
+
+    // 1. 判斷陣營勝負 (邏輯與 game.js checkEjectionAndWinCondition 一致)
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+    const timeDemons = gameState.players.filter(p => p.type === '時魔');
+    const aliveDemons = timeDemons.filter(p => !p.isEjected);
+    // 檢查是否所有時魔都曾被逐出 (累積全滅)
+    const allDemonsEverEjected = timeDemons.every(p => p.hasEverBeenEjected);
+
+    let winnerText = "遊戲結束";
+    let subText = "";
+    let titleColor = "#fff";
+
+    if (sinPlayer && sinPlayer.isEjected) {
+        winnerText = "🎉 時魔陣營 獲勝！";
+        subText = "時之惡已被逐出";
+        titleColor = "#ff6b6b"; // 時魔紅
+    } else if (aliveDemons.length === 0 || allDemonsEverEjected) {
+        winnerText = "😈 時之惡陣營 獲勝！";
+        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被逐出)" : "時魔全數陣亡";
+        titleColor = "#feca57"; // 時之惡黃
+    } else {
+        // 時間到 (回合數滿)
+        winnerText = "⏳ 遊戲結束";
+        subText = "結算最終積分";
+    }
+
+    if (titleEl) {
+        titleEl.textContent = winnerText;
+        titleEl.style.color = titleColor;
+        titleEl.style.textShadow = `0 0 15px ${titleColor}`;
+    }
+    if (subEl) subEl.textContent = subText;
+
+    // 2. 積分排序
+    const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+
+    // 3. 生成列表 HTML
+    listEl.innerHTML = '';
+    sortedPlayers.forEach((p, index) => {
+        const rank = index + 1;
+        const row = document.createElement('div');
+        row.className = `rank-row rank-${rank}`;
+        if (p.isEjected) row.classList.add('dead');
+
+        // 獎牌圖示
+        let medal = `#${rank}`;
+        if (rank === 1) medal = '🥇';
+        if (rank === 2) medal = '🥈';
+        if (rank === 3) medal = '🥉';
+
+        // 角色顏色
+        const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
+        const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ccc';
+
+        row.innerHTML = `
+            <div class="rank-medal">${medal}</div>
+            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(💀)' : ''}</div>
+            <div style="font-size:0.85rem; color:#aaa;">${p.roleCard}</div>
+            <div style="font-family:monospace; font-size:1.2rem; font-weight:bold;">${p.score}</div>
+        `;
+        listEl.appendChild(row);
+    });
+
+    // 顯示視窗
+    overlay.style.display = 'flex';
+}
+
+// 綁定按鈕事件 (加在 DOMContentLoaded 內)
+document.addEventListener('DOMContentLoaded', () => {
+    // ... (原本的代碼) ...
+
+    // 綁定遊戲結束面板按鈕
+    const btnRestart = document.getElementById('btn-restart-game');
+    const btnCloseGO = document.getElementById('btn-close-gameover');
+    const goOverlay = document.getElementById('game-over-overlay');
+
+    if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+            // 重新整理頁面是最乾淨的重置方式
+            location.reload(); 
+        });
+    }
+
+    if (btnCloseGO && goOverlay) {
+        btnCloseGO.addEventListener('click', () => {
+            goOverlay.style.display = 'none'; // 僅關閉視窗，讓玩家看盤面
+        });
+    }
+});

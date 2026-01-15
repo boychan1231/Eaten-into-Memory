@@ -89,16 +89,14 @@
                             <div>Mana / 齒輪: <span id="h-mana">0</span></div>
                             <div>護盾: <span id="h-dice">--</span></div>
                             <div>位置: <span id="h-pos">--</span></div>
-                            <div>收集小時卡: <span id="h-hour">0</span></div>
+                            <div>收集小時卡: 
+								<span id="h-hour">0</span>
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片">🔍</button>
+							</div>
                         </div>
                     </div>
 
                     <div class="human-tabs">
-                        <div class="human-tab-nav">
-                            <button class="human-tab-btn active" data-target="human-tab-hand" type="button">手牌</button>
-                            <button class="human-tab-btn" data-target="human-tab-evolution" type="button">小時</button>
-                        </div>
-
                         <div class="human-tab-panels">
                             <div id="human-tab-hand" class="human-tab-panel active">
                                 <div class="human-play-row">
@@ -118,12 +116,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="human-tab-evolution" class="human-tab-panel">
-								<div class="evolution-tab-body" style="display: block;"> <div class="evolution-panel-title">已收集小時卡</div>
-									<div id="human-hour-collection" class="hour-collection-list" style="max-height: 200px;"></div>
-								</div>
-							</div>
                         </div> 
 					</div>
 				</div> 
@@ -253,7 +245,7 @@
 					2026 01 14：鐘面回合數指示浮標變成指示玩家位置
 				</p>
 			</div>
-	</div>
+		</div>
 			
 		<div id="role-choice-overlay" class="modal-overlay" style="display:none;">
 			<div class="modal">
@@ -269,14 +261,51 @@
 		
 		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
             <div class="modal">
-            <h2 class="modal-title" style="color:#00d2d3;">⏱️ 秒針能力：命運抉擇</h2>
-            <p class="modal-desc">您已看過所有對手的出牌。<br>現在，請從剛才蓋放的 2 張牌中，選擇 1 張打出。</p>
+            <h2 class="modal-title" style="color:#00d2d3;">⏱️ 秒針能力：</h2>
+            <p class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
 				<div class="modal-actions">
                 <button id="seconds-choice-a" class="primary" style="font-size:1.5rem; font-weight:bold;">A</button>
                 <button id="seconds-choice-b" class="primary" style="font-size:1.5rem; font-weight:bold;">B</button>
 				</div>
             </div>
         </div>	
+		
+		<div id="collection-overlay" class="modal-overlay" style="display:none;">
+			<div class="modal">
+                <span id="collection-close-btn" class="modal-close-btn">&times;</span>
+                <h2 class="modal-title" style="color:#ffd27f;">已收集小時卡</h2>
+                <div id="human-hour-collection" class="hour-collection-list" style="max-height: 400px; overflow-y: auto;">
+                    </div>
+			</div>
+		</div>
+		
+		<div id="game-over-overlay" class="modal-overlay" style="display:none;">
+            <div class="modal" style="text-align: center; border: 2px solid #ffd27f; box-shadow: 0 0 30px rgba(255, 210, 127, 0.2);">
+                <h1 id="winner-title" style="font-size: 2rem; margin-bottom: 5px; text-shadow: 0 0 10px currentColor;">遊戲結束</h1>
+                <p id="winner-subtitle" style="color:#ccc; margin-bottom: 20px; font-size:1.1rem;">--</p>
+                
+                <div class="ranking-header">
+                    <span>排名</span>
+                    <span>玩家</span>
+                    <span>身份</span>
+                    <span>得分</span>
+                </div>
+                <div id="game-over-ranking-list" class="ranking-list">
+                    </div>
+
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button id="btn-restart-game" class="primary" style="background: #4caf50;">🔄 再玩一局</button>
+                    <button id="btn-close-gameover" style="background: #555;">👀 查看盤面</button>
+                </div>
+            </div>
+        </div>
+		
+		
+		
+		
+		
+		
+		
 	</div>	
 </div>
 

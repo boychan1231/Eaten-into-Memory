@@ -179,6 +179,11 @@ class GameState {
         this.activePlayerIndex = 0;
         this.abilityMarker = false;
         this.gameEnded = false;
+		
+		// 防止結算面板重複彈出
+        this.hasShownGameOverPanel = false; 
+        this.currentRoundAIChoices = null;
+		
         this.currentRoundAIChoices = null;
 		
 		this.phase = 'idle';
