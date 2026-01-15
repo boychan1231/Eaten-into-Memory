@@ -1370,6 +1370,17 @@ document.addEventListener('DOMContentLoaded', () => {
 				console.log('[UI] 開始遊戲時發生錯誤：', err);
 			}
 		});
+		
+		// ✅ 綁定「選擇角色」視窗的關閉按鈕事件
+		const roleCloseBtn = document.getElementById('role-choice-close-btn');
+		const roleOverlayEl = document.getElementById('role-choice-overlay');
+		
+		if (roleCloseBtn && roleOverlayEl) {
+			roleCloseBtn.addEventListener('click', () => {
+				roleOverlayEl.style.display = 'none';
+			});
+		}
+		
     }
 
     // 分針能力按鈕

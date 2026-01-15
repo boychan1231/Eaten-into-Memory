@@ -790,12 +790,31 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: none; align-items: center; justify-content: center; z-index: 9999;
 }
 .modal {
+    position: relative;/* 設定相對定位，讓內部的絕對定位按鈕參考此框 */
     width: min(420px, calc(100vw - 24px));
     background: rgba(25, 25, 25, 0.98);
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 14px; padding: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.45);
 }
+
+/* 右上角關閉按鈕樣式 */
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;      /* 靠右 */
+    font-size: 2rem; /* 大一點的 X */
+    line-height: 1;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+}
+
+.modal-close-btn:hover {
+    color: #ff6b6b; /* 懸停時變紅色 */
+}
+
 .modal-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
 .modal-desc { font-size: 0.9rem; opacity: 0.9; margin-bottom: 12px; color: #ddd; }
 .modal-actions { display: flex; gap: 10px; }

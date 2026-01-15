@@ -181,34 +181,29 @@
                         <br>🚫 <strong>主動 4 Mana：</strong>時間凍結 - 封印本回合所有時魔能力 (需場上 ≥2 名進化時魔)。
                         <br>⚠️ <strong>飢餓：</strong>若連續 2 輪沒有時魔被逐出，時之惡將自損 1 齒輪。
                     </li>
-                    <li><strong>進化 - 時針：</strong>
+                    <li><strong>時針：</strong>
                         <br>👁️ <strong>被動：</strong>預知牌庫頂的小時卡。
-                        <br>⚡ <strong>主動 1 Mana：</strong>將牌庫頂的卡移至底部。
+						<br>⚡ <strong>主動 1 Mana：</strong>將牌庫頂的卡移至底部。
+                        <br><span style="color:#aaa; font-size:0.9em; margin-left:24px;">└ 可再消耗 <strong>2 Mana</strong> 再次執行 (每回合 1 次)。</span>
                     </li>
-                    <li><strong>進化 - 分針：</strong>
+                    <li><strong>分針：</strong>
                         <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
                     </li>
-                    <li><strong>進化 - 秒針：</strong>
+                    <li><strong>秒針：</strong>
                         <br>⚡ <strong>主動 3 Mana：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
                     </li>
                 </ul>
 
                 <h4>🏁 勝負判定</h4>
 				<ul>
-					<li><strong>受詛者：</strong>遊戲結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡，否則必須落敗（除非觸發「不可能的救贖」）。</li>
+					<li><strong>受詛者：</strong>遊戲結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡，否則落敗（除非觸發「不可能的救贖」）。</li>
 					<li><strong>時之惡：</strong>所有時魔皆曾被驅逐，時之惡勝利。</li>	
 					<li><strong>不可能的救贖：</strong>時之惡的齒輪耗盡被驅逐時，時魔立即落敗。</li>
-					<li><strong>受詛者額外加分：</strong>
-						<ul>
-							<li>第 2 輪達成 12 張珍貴卡：+9 分</li>
-							<li>第 3 輪達成 12 張珍貴卡：+5 分</li>
-							<li>第 4 輪達成 12 張珍貴卡：+2 分</li>
-						</ul>
-					</li>
+
 					<li><strong>計分：</strong>
 						<ul>
-							<li>主要分數：結束時剩餘齒輪數。</li>
-							<li>時魔進化加分：已進化的時魔 (時/分/秒針) 結束時 +3 分。</li>
+							<li>主要分數：每輪結束時剩餘齒輪數。</li>
+							<li>時魔進化加分：已進化的時魔 (時/分/秒針) 在遊戲結束時 +3 分。</li>
 							<li>受詛者加分：若提早在第 2/ 3/ 4 輪達成 12 張珍貴小時卡目標，分別獲得 <strong>9 / 5 / 2</strong> 分。</li>
 						</ul>
 					</li>
@@ -262,6 +257,7 @@
 			
 		<div id="role-choice-overlay" class="modal-overlay" style="display:none;">
 			<div class="modal">
+			<span id="role-choice-close-btn" class="modal-close-btn">&times;</span>
 			<h2>選擇角色</h2>
 				<div class="modal-actions">
 				<button id="role-choice-timeDemon" class="primary" type="button">時魔</button>

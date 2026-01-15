@@ -157,6 +157,7 @@ class GameState {
 			// ✅ 修改：加入 ID 判斷，確保受詛者一定有護盾
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
+            hasEverBeenEjected: false,// 永久記錄是否曾被驅逐 (用於時之惡勝利判定)
 			shieldUsed: false,
             specialAbilityUsed: false,
             giftCards: [],
@@ -1274,13 +1275,22 @@ function checkEjectionAndWinCondition(gameState) {
 	const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
 
-    if (!sinAlive || aliveTimeDemons.length === 0) {
+	// 檢查是否「所有時魔都曾被逐出過」
+    const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
+    const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
+	
+	// 判斷：時之惡死亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被逐出 (累計全滅)
+    if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
             console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
-        } else if (sinAlive && aliveTimeDemons.length === 0) {
-            // ✅ 修改：更新勝利訊息文字
-            console.log('🎉 遊戲結束：第五輪前所有時魔皆被逐出，時之惡陣營勝利！');
+        } else if (sinAlive && (aliveTimeDemons.length === 0 || allDemonsEverEjected)) {
+            // ✅ 修改訊息：明確指出獲勝原因
+            if (allDemonsEverEjected) {
+                console.log('🎉 遊戲結束：所有時魔皆曾被逐出，時之惡完成「完全狩獵」，時之惡陣營勝利！');
+            } else {
+                console.log('🎉 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
+            }
         } else {
             console.log('🎉 遊戲結束。');
         }
