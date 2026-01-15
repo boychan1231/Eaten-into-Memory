@@ -19,7 +19,7 @@ function checkEvolutionCondition(player) {
     // 條件 2: 4張不同數字，至少 1 張珍貴
     const uniqueNumbers = new Set(cards.map(c => c.number));
     if (uniqueNumbers.size >= 4 && preciousCount >= 1) {
-        return { met: true, type: ' 命途節錄(4不同數 + 1珍貴)' };
+        return { met: true, type: '命途節錄(4不同數 + 1珍貴)' };
     }
 
     // 條件 3: 5張任意卡，至少 2 張珍貴
@@ -29,7 +29,7 @@ function checkEvolutionCondition(player) {
 	
 	// 條件 4: 3 張任意珍貴卡
     if (preciousCount >= 3) {
-        return { met: true, type: '刻骨時刻 (3張珍貴)' };
+        return { met: true, type: '銘記珍重 (3張珍貴)' };
     }
 
     return { met: false, type: null };
@@ -190,11 +190,22 @@ if (typeof window !== 'undefined') {
 // === 時針能力：頂牌放到底 (1 Mana 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
-	const COST = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
-
     if (!player) return false;
-    if (player.mana < COST) {
-        console.warn("Mana 不足，無法使用時針能力。");
+
+    // 1. 計算當前是第幾次使用 (0=尚未, 1=已用一次)
+    const moveCount = player.hourHandMoveCount || 0;
+
+    // 2. 設定消耗：第1次 1 Mana，第2次 2 Mana
+    const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
+    const currentCost = (moveCount === 0) ? baseCost : 2;
+
+    // 3. 檢查限制
+    if (moveCount >= 2) {
+        console.warn("時針能力每回合限用 2 次。");
+        return false;
+    }
+    if (player.mana < currentCost) {
+        console.warn(`Mana 不足 (需 ${currentCost})`);
         return false;
     }
     if (!Array.isArray(gameState.hourDeck) || gameState.hourDeck.length < 1) {
@@ -202,11 +213,25 @@ function hourHandMoveTopToBottom(gameState, playerId) {
         return false;
     }
 
+    // 4. 執行移動
     const topCard = gameState.hourDeck.shift();
     gameState.hourDeck.push(topCard);
-    player.mana -= COST;;
+    
+    // 5. 扣除消耗並更新計數
+    player.mana -= currentCost;
+    player.hourHandMoveCount = moveCount + 1;
 
-    console.log(`🕒【時針能力】${player.name} 消耗 ${COST} Mana，將頂牌 (${topCard.number}${topCard.ageGroup || ''}${topCard.isPrecious ? '★' : ''}) 移至底部。`);
+    // ✅ 關鍵：如果是第 2 次使用，才將 specialAbilityUsed 設為 true (鎖定)
+    // 如果是第 1 次使用，保持 false，讓 UI 允許玩家按第二次
+    if (player.hourHandMoveCount >= 2) {
+        player.specialAbilityUsed = true;
+    } else {
+        player.specialAbilityUsed = false; 
+    }
+
+    const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 Mana 發動一次)" : " (次數已達上限)";
+    console.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} Mana，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
+    
     return true;
 }
 

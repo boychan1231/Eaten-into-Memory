@@ -1244,3 +1244,135 @@ input:checked + .slider:before { transform: translateX(16px); }
     z-index: 0;          /* ✅ 重點：設為 0，確保在紅線(5)和格子(10)之下 */
     opacity: 0.8;        /* 可選：調整透明度讓上面的元件更清楚 */
 }
+
+/* --- 1. 全域背景紋理 --- */
+body {
+    /* 原本的底色 */
+    background-color: var(--bg-color);
+    
+    /* CSS 繪製的微弱網格圖 */
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    
+    /* 網格大小 */
+    background-size: 30px 30px;
+    
+    /* 讓背景稍微暗一點，突顯前景 */
+    background-blend-mode: overlay;
+}
+
+/* --- 2. 鐘面中心：能量核心 (Magic Core) --- */
+.clock-center {
+    /* 深邃的中心底色 */
+    background-color: #0f0c15; 
+    
+    /* 多層漸層模擬魔法陣 */
+    background-image: 
+        /* 最內層的亮光 */
+        radial-gradient(circle, rgba(233, 69, 96, 0.8) 0%, transparent 40%),
+        /* 內圈環 */
+        radial-gradient(circle, transparent 45%, var(--accent-color) 46%, transparent 47%),
+        /* 外圈環 */
+        radial-gradient(circle, transparent 55%, #ffd27f 56%, transparent 57%),
+        /* 旋轉的光暈感 */
+        conic-gradient(from 0deg, transparent 0%, rgba(233, 69, 96, 0.1) 25%, transparent 50%, rgba(255, 210, 127, 0.1) 75%, transparent 100%);
+    
+    border: 2px solid #333;
+    box-shadow: 0 0 30px rgba(233, 69, 96, 0.2); /* 增加外發光 */
+}
+
+/* --- 3. 分鐘卡：金屬紋理 --- */
+.minute-card {
+    /* 銀灰色金屬質感 */
+    background-color: #dcdcdc;
+    
+    /* 斜向紋理 */
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.05) 0px,
+        rgba(0, 0, 0, 0.05) 2px,
+        transparent 2px,
+        transparent 5px
+    );
+    border-color: #999;
+}
+
+/* 珍貴小時卡：黃金質感 */
+.drawn-hour-card.precious, .stack-item.precious {
+    /* 金色漸層底 */
+    background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #d4af37 100%);
+    color: #4a3b00; /* 深色文字讓閱讀更清楚 */
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* --- 4. 資源圖示 CSS 繪製 --- */
+
+/* 齒輪 (Gear) 替代圖示 */
+.icon-gear-css {
+    display: inline-block;
+    width: 16px; height: 16px;
+    background: #ccc;
+    border-radius: 50%;
+    border: 2px dashed #555; /* 虛線邊框模擬齒輪 */
+    vertical-align: middle;
+    margin-right: 4px;
+    box-shadow: 0 0 2px #fff;
+}
+
+/* 護盾 (Shield) 替代圖示 */
+.icon-shield-css {
+    display: inline-block;
+    width: 14px; height: 16px;
+    background: linear-gradient(to bottom, #00d2d3, #008c8c);
+    border-radius: 0 0 50% 50%; /* 下半圓模擬盾牌 */
+    border-top: 2px solid #fff;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Mana (Energy) 替代圖示 */
+.icon-mana-css {
+    display: inline-block;
+    width: 14px; height: 14px;
+    background: radial-gradient(circle, #ff9ff3 30%, #f368e0 90%);
+    border-radius: 50%;
+    box-shadow: 0 0 5px #f368e0;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* --- 5. 角色頭像 Placeholder --- */
+
+/* 基礎頭像圓框 */
+.avatar-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    background-size: cover;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* 時魔 (Time Demon) - 紅黑漸層 */
+.avatar-demon {
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #550000);
+}
+
+/* 時之惡 (Sin) - 金紫漩渦 */
+.avatar-sin {
+    background: conic-gradient(#feca57, #6a0572, #feca57);
+}
+
+/* 受詛者 (Cursed) - 藍灰陰鬱 */
+.avatar-scz {
+    background: linear-gradient(180deg, #54a0ff 0%, #222 100%);
+}
+
+/* 進化後：時針/分針/秒針 - 對應霓虹色 */
+.avatar-evo-hour { background: radial-gradient(circle, #ff9ff3, #550055); }
+.avatar-evo-min  { background: radial-gradient(circle, #f368e0, #440044); }
+.avatar-evo-sec  { background: radial-gradient(circle, #00d2d3, #004444); }
