@@ -258,7 +258,7 @@ function updateNextStepButton(gameState, flags) {
         nextStepBtn.textContent = '遊戲結束';
     } 
 	
-	/ 分針能力等待時，允許點擊按鈕 (視為略過)
+	// 分針能力等待時，允許點擊按鈕 (視為略過)
     if (gameState.waitingMinuteHandChoice) {
         nextStepBtn.disabled = false;
         nextStepBtn.textContent = "下一回合 (略過能力)";
@@ -365,8 +365,6 @@ function renderScorePanel(gameState) {
 }
 
 
-// --- B. 鐘面繪製 (含 Stack Inspector) ---
-// ui.js
 
 // --- B. 鐘面繪製 (修改版：箭頭指向玩家) ---
 function renderClockFace(gameState, flags) {
