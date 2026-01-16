@@ -780,11 +780,46 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         const cond1 = (uniqueAges >= 3 && preciousCount >= 1);
         const cond2 = (uniqueNumbers >= 4 && preciousCount >= 1);
         const cond3 = (totalCount >= 5 && preciousCount >= 2);
-		const cond4 = (preciousCount >= 3);
-		
-        const isReady = cond1 || cond2 || cond3|| cond4;
-		
-        const currentTarget = humanPlayer.targetRoleName || '時針';
+        const cond4 = (preciousCount >= 3);
+        
+        const isReady = cond1 || cond2 || cond3 || cond4;
+        
+        //過濾已被佔用的身份 ---
+        // 1. 找出已被「其他存活玩家」佔用的身份
+        const takenRoles = gameState.players
+            .filter(p => p.id !== humanPlayer.id && !p.isEjected)
+            .map(p => p.roleCard);
+
+        // 2. 定義所有可能的身份
+        const allRoles = ['時針', '分針', '秒針'];
+
+        // 3. 決定當前目標 (若原目標已被搶走，嘗試切換到第一個可用的)
+        let currentTarget = humanPlayer.targetRoleName || '時針';
+        const availableRoles = allRoles.filter(r => !takenRoles.includes(r));
+        
+        // 如果當前選的已經被搶走了，且還有其他選擇，暫時顯示為第一個可用的 (視覺上)
+        if (takenRoles.includes(currentTarget) && availableRoles.length > 0) {
+            currentTarget = availableRoles[0];
+            // 這裡可以選擇是否直接更新玩家狀態，建議讓 change 事件去觸發實際更新，
+            // 但為了讓下方的 roleDescriptions 顯示正確，這裡先用 effective target。
+        }
+
+        // 4. 動態生成下拉選單 HTML
+        let optionsHtml = '';
+        allRoles.forEach(role => {
+            // 如果該身份已被其他人佔用，就跳過 (不生成 option)
+            if (takenRoles.includes(role)) return;
+
+            const selected = (currentTarget === role) ? 'selected' : '';
+            optionsHtml += `<option value="${role}" ${selected}>${role}</option>`;
+        });
+
+        // 若全部被搶光 (極端狀況)
+        if (optionsHtml === '') {
+            optionsHtml = `<option disabled selected>無可用身份</option>`;
+        }
+        
+        // --- 修改結束 ---
 
         const roleDescriptions = {
             '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知牌頂 + ⚡1 Mana：牌頂移底</div>`,
@@ -792,13 +827,12 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
             '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡3 Mana：出牌二選一</div>`
         };
 
+        // 將 optionsHtml 放入 select 中
         let html = `
             <div class="target-role-header">
                 <label class="target-role-label">目標身份：</label>
                 <select id="target-role-select" class="target-role-select">
-                    <option value="時針" ${currentTarget === '時針' ? 'selected' : ''}>時針</option>
-                    <option value="分針" ${currentTarget === '分針' ? 'selected' : ''}>分針</option>
-                    <option value="秒針" ${currentTarget === '秒針' ? 'selected' : ''}>秒針</option>
+                    ${optionsHtml}
                 </select>
                 <div style="font-size:0.8rem; line-height:1.4; color:#ddd;">${roleDescriptions[currentTarget] || ''}</div>
             </div>
@@ -806,7 +840,7 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
                 ${renderConditionRow(cond1, `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`)}
                 ${renderConditionRow(cond2, `2. 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`)}
                 ${renderConditionRow(cond3, `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`)}
-				${renderConditionRow(cond4, `4. 珍貴 ${preciousCount}/3 (任意)`)}
+                ${renderConditionRow(cond4, `4. 珍貴 ${preciousCount}/3 (任意)`)}
             </div>
         `;
         if (isReady) {
@@ -820,9 +854,19 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
                 humanPlayer.targetRoleName = e.target.value;
                 updateUI(globalGameState);
             });
+            
+            // 如果發現當前記憶的 targetRoleName 其實已經被隱藏了(不合法)，
+            // 且 select 已經自動跳到第一個合法選項，我們需要同步更新回 humanPlayer
+            // 這樣下一幀繪製時描述文字才會正確
+            if (selectEl.value && selectEl.value !== humanPlayer.targetRoleName) {
+                 humanPlayer.targetRoleName = selectEl.value;
+                 // 不用急著 updateUI，等下次循環或玩家操作即可，
+                 // 或是這裡可以手動呼叫一次 updateUI(globalGameState) 來即時刷新描述文字
+            }
         }
     }
 }
+
 function renderConditionRow(isMet, text) {
     return `<div class="condition-row ${isMet ? 'met' : ''}"><div class="condition-icon"></div><div class="condition-text">${text}</div></div>`;
 }
