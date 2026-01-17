@@ -31,12 +31,11 @@ function openModal(overlay, focusTarget) {
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
     }
-    openModal(overlay, document.getElementById('btn-restart-game') || undefined);
     overlay.setAttribute('aria-hidden', 'false');
     if (!modalOpenOrder.includes(overlay)) {
         modalOpenOrder.push(overlay);
     }
-    const focusEl = focusTarget || getFocusableElement(overlay);
+    const focusEl = focusTarget || document.getElementById('btn-restart-game') || getFocusableElement(overlay);
     if (focusEl && typeof focusEl.focus === 'function') {
         focusEl.focus();
     }
