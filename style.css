@@ -138,6 +138,8 @@ button {
 button:hover:not(:disabled) { filter: brightness(1.1); }
 button:disabled { background-color: #555; cursor: not-allowed; }
 
+.start-game-btn { margin-left: 15px; }
+
 .toggle-switch {
     display: flex;
     align-items: center;
@@ -365,16 +367,21 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    max-height: 550px;
+    max-height: 600px;
+    height: 100%;
 }
+
 .log-section h3 { padding: 10px; margin: 0; background: #222; border-radius: 8px 8px 0 0; }
 #game-log-container {
     flex: 1;
+    min-height: 100px;
+    max-height: 360px;
     overflow-y: auto;
     padding: 10px;
     font-size: 0.9rem;
     scrollbar-width: thin;
     scrollbar-color: #444 #222;
+    border-bottom: 1px solid #444;
 }
 
 /* 日誌列表容器 */
@@ -714,7 +721,13 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex: 0 0 280px;
     width: 280px;
     display: flex; flex-direction: column; gap: 10px;
+    background: linear-gradient(180deg, rgba(21, 16, 25, 0.95), rgba(21, 16, 25, 0.6));
+    border: 1px solid #4a3b52;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
+
 .play-control-block {
     display: flex;
     flex-direction: column;
@@ -733,6 +746,11 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 12px;
     color: #ccc; font-size: 0.85rem;
     display: flex; flex-direction: column; gap: 8px;
+}
+#evolution-progress-area {
+    margin: 10px;
+    flex: 0 0 auto;
+    border-radius: 3px;
 }
 
 /* 目標身份與選單 */
@@ -784,6 +802,17 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 #next-step-btn { background-color: #e94560; color: white; }
 #next-step-btn:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+
+.action-hint {
+    min-height: 32px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #c7b6cf;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
 
 /* 秒針按鈕 */
 #seconds-ability-controls { margin: 5px 0; display: flex; flex-direction: column; gap: 5px; }
@@ -902,42 +931,11 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-family: 'Courier New', monospace; /* 等寬字體讓數字更清楚 */
     letter-spacing: 1px;
 }
+
 /* --- 版面調整：進化面板移至日誌區 --- */
-
-/* 1. 調整日誌區佈局：讓日誌列表 (flex: 1) 自動佔據剩餘空間，進化面板在底部固定 */
-.log-section {
-    display: flex;
-    flex-direction: column;
-    /* 確保高度足夠容納兩者，但不超過畫面 */
-    height: 100%; 
-    max-height: 600px; 
-}
-
-/* 日誌容器：自動伸縮，顯示捲軸 */
-#game-log-container {
-    flex: 1; 
-    min-height: 100px; /* 至少保留一點高度給日誌 */
-	max-height: 360px;
-    border-bottom: 1px solid #444; /* 與下方的進化面板做區隔 */
-}
-
-/* 2. 進化面板 (在日誌區內) 的微調 */
-#evolution-progress-area {
-    flex: 0 0 auto; /* 高度由內容決定，不伸縮 */
-    border-radius: 3px;
-    font-size: 0.85rem;
-}
-
-/* 3. 修復原本的進化分頁 (現在變寬了) */
 .evolution-tab-body {
     display: block !important; /* 覆蓋原本的 grid */
 }
-#human-hour-collection {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-/* 讓文字列表橫向排列更整齊 */
 .collection-text-row {
     width: 100%;
     padding: 4px 0;
@@ -1077,27 +1075,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* --- 新增：數值變動漂浮文字 (Floating Text) --- */
 @keyframes floatUpFade {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-    100% { transform: translateY(-40px) scale(1); opacity: 0; }
-}
-
-.floating-text {
-    position: absolute;
-    top: 0;
-    left: 50%; /* 預設置中 */
-    transform: translateX(-50%);
-    font-weight: 900;
-    font-size: 1.4rem;
-    pointer-events: none; /* 讓點擊穿透 */
-    animation: floatUpFade 1.5s ease-out forwards;
-    z-index: 999;
-    text-shadow: 0 0 3px black, 0 0 5px rgba(0,0,0,0.5);
-    white-space: nowrap;
-}
-
-/* --- 新增：數值變動漂浮文字 (Floating Text) --- */
-@keyframes floatUpFade {
     0% { 
         opacity: 1;
         transform: translate(-50%, 0) scale(1); /* -50% 是為了水平置中 */
@@ -1178,10 +1155,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(-4px) scale(1.1); }
 }
-
-/* style.css */
-
-/* ... (原有代碼) ... */
 
 /* ✅ 新增：右側積分榜樣式 */
 #score-list {

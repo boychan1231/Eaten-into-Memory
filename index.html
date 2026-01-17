@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>時魔 2025 - 網頁版</title>
+    <title>Eaten into Memory</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -15,9 +15,9 @@
                 <button class="tab-btn" data-target="rules-content">規則</button>
             <button class="tab-btn" data-target="settings-content">設定</button>
         </div>
-            
+		
         <div class="game-status">
-			<button id="start-game-btn" style="margin-left: 15px;">開始新遊戲</button>
+			<button id="start-game-btn" class="start-game-btn">開始新遊戲</button>
         </div>
     </header>
 
@@ -31,7 +31,7 @@
 						<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
 						</ul>
 					</div>
-					<div id="evolution-progress-area" class="progress-area" style="margin: 10px; border: 1px solid #4a3b52; background: #151019;"></div>
+					<div id="evolution-progress-area" class="progress-area"></div>
 				</div>
                 <div class="clock-section">
                     <div id="clock-face">
@@ -99,7 +99,7 @@
                             <div>位置: <span id="h-pos">--</span></div>
                             <div>收集小時卡: 
 								<span id="h-hour">0</span>
-								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片">🔍</button>
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
 							</div>
                         </div>
                     </div>
@@ -121,6 +121,7 @@
 
                                         <button id="confirm-move-btn" disabled>確認出牌</button>
                                         <button id="next-step-btn" disabled>下一回合</button>
+										<div id="action-hint" class="action-hint" role="status" aria-live="polite"></div>
                                     </div>
                                 </div>
                             </div>
@@ -139,6 +140,7 @@
             </div> 
 			
 			<div id="rules-content" class="tab-content">
+				<h1>E<del>tched</del>aten into Memory</h1>
                 <h3>📜 遊戲規則簡介</h3>
 
                 <h4>🎴 卡牌種類</h4>
@@ -163,9 +165,8 @@
                 </ol>
 
                 <h4>🧬 進化機制 (時魔專屬)</h4>
-                <p>幼體時魔收集足夠的小時卡並達成指定條件後可成長為時、分、秒三種形態。</p>
+                <p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
                 <ul>
-				<li>收集目標：</li>
                     <li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
                     <li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
                     <li><strong>漫長生涯：</strong>5 張任意卡 + 當中至少 2 張珍貴。</li>

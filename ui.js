@@ -6,12 +6,13 @@ let globalGameState = null;
 let lastPlayerStats = {}; 
 
 // 日誌佇列系統變數
-
 const logQueue = [];
 let isLogProcessing = false;
 // ✅ 修改：讀取 config.js
-
-let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360; 
+let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360;
+const LOG_ACCEL_THRESHOLD = window.UI_CONFIG?.LOG_ACCEL_THRESHOLD ?? 5;
+const LOG_ACCEL_DELAY = window.UI_CONFIG?.LOG_ACCEL_DELAY ?? 30;
+const shouldMirrorConsole = window.UI_CONFIG?.MIRROR_CONSOLE ?? true;
 let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
 
 // ✅ 保險：避免 GAME_CONFIG 未定義導致 UI 事件中斷
@@ -19,8 +20,10 @@ try {
     window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
 } catch (_) {}
 
-// 核心函式：處理日誌佇列
-// ui.js (取代原本的 processLogQueue)
+function logToUI(message) {
+    logQueue.push(message);
+    processLogQueue();
+}
 
 // 核心函式：處理日誌佇列 (含動態變速與略過功能)
 function processLogQueue() {
@@ -55,11 +58,11 @@ function processLogQueue() {
 
     // 決定下一條訊息的延遲時間
     // 1. 如果開啟略過 (isSkippingLogs) -> 0ms (瞬間)
-    // 2. 如果佇列堆積太多 (>5) -> 30ms (加速消化)
+    // 2. 如果佇列堆積太多 -> 加速消化
     // 3. 否則 -> 使用滑桿設定的速度 (currentLogSpeed)
     let nextDelay = currentLogSpeed;
     if (isSkippingLogs) nextDelay = 0;
-    else if (logQueue.length > 5) nextDelay = 30;
+    else if (logQueue.length > LOG_ACCEL_THRESHOLD) nextDelay = LOG_ACCEL_DELAY;
 
     setTimeout(() => {
         isLogProcessing = false;
@@ -76,12 +79,13 @@ function safeStringify(value) {
     }
 }
 
-console.log = function(...args) {
-    originalLog.apply(console, args);
-    const message = args.map(arg => safeStringify(arg)).join(' ');
-    logQueue.push(message);
-    processLogQueue();
-};
+if (shouldMirrorConsole) {
+    console.log = function(...args) {
+        originalLog.apply(console, args);
+        const message = args.map(arg => safeStringify(arg)).join(' ');
+        logToUI(message);
+    };
+}
 
 
 // 1. 錯誤監控
@@ -96,9 +100,11 @@ window.addEventListener("error", (e) => {
 });
 
 // 2. 定義玩家顏色和變數
-let selectedCardValue = null;         
-let selectedCardValues = [];          
-let isSecondHandSelectingTwo = false; 
+const uiState = {
+    selectedCardValue: null,
+    selectedCardValues: [],
+    isSecondHandSelectingTwo: false
+};
 
 // ✅ 修改：優先使用 config.js 的設定，若無則使用預設值
 const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
@@ -299,7 +305,7 @@ function renderTopInfo(gameState) {
 	
 	// ✅ 新增：更新中間的「遊戲輪次」數值
     const gameRoundEl = document.getElementById('game-round-num');
-    if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound
+    if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound;
 }
 
 // --- A-2. 出牌列表與歷史 ---
@@ -628,6 +634,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     // 3. 更新手牌 (分鐘卡)
     const humanHandEl = document.getElementById('human-hand');
     const confirmBtn = document.getElementById('confirm-move-btn');
+    const actionHint = document.getElementById('action-hint');
     
     if (humanHandEl) {
         humanHandEl.innerHTML = '';
@@ -642,22 +649,22 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             if (flags.isWaitingMinuteInput) {
                 cardEl.addEventListener('click', function() {
                     const v = card.value;
-                    if (isSecondHandSelectingTwo) {
-                        if (selectedCardValues.includes(v)) {
-                            selectedCardValues = selectedCardValues.filter(x => x !== v);
+                    if (uiState.isSecondHandSelectingTwo) {
+                        if (uiState.selectedCardValues.includes(v)) {
+                            uiState.selectedCardValues = uiState.selectedCardValues.filter(x => x !== v);
                             this.classList.remove('selected');
                         } else {
-                            if (selectedCardValues.length >= 2) return;
-                            selectedCardValues.push(v);
+                            if (uiState.selectedCardValues.length >= 2) return;
+                            uiState.selectedCardValues.push(v);
                             this.classList.add('selected');
                         }
-                        selectedCardValue = null;
-                        confirmBtn.disabled = (selectedCardValues.length !== 2);
+                        uiState.selectedCardValue = null;
+                        confirmBtn.disabled = (uiState.selectedCardValues.length !== 2);
                     } else {
                         document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
                         this.classList.add('selected');
-                        selectedCardValue = v;
-                        selectedCardValues = [];
+                        uiState.selectedCardValue = v;
+                        uiState.selectedCardValues = [];
                         confirmBtn.disabled = false;
                     }
                 });
@@ -666,16 +673,42 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 cardEl.style.opacity = '0.7';
             }
 
-            if (!isSecondHandSelectingTwo && selectedCardValue === card.value) cardEl.classList.add('selected');
-            if (isSecondHandSelectingTwo && selectedCardValues.includes(card.value)) cardEl.classList.add('selected');
+            if (!uiState.isSecondHandSelectingTwo && uiState.selectedCardValue === card.value) cardEl.classList.add('selected');
+            if (uiState.isSecondHandSelectingTwo && uiState.selectedCardValues.includes(card.value)) cardEl.classList.add('selected');
             humanHandEl.appendChild(cardEl);
         });
 
         // 確認出牌按鈕狀態
         if (flags.isWaitingMinuteInput) {
-            confirmBtn.disabled = isSecondHandSelectingTwo ? (selectedCardValues.length !== 2) : (selectedCardValue === null);
+            confirmBtn.disabled = uiState.isSecondHandSelectingTwo ? (uiState.selectedCardValues.length !== 2) : (uiState.selectedCardValue === null);
         } else {
             confirmBtn.disabled = true;
+        }
+
+        if (actionHint) {
+            let hintText = '';
+            if (flags.gameEnded) {
+                hintText = '遊戲已結束，可查看盤面或重新開始。';
+            } else if (flags.isWaitingSecondFinalChoice) {
+                hintText = '請完成秒針二選一選擇。';
+            } else if (flags.isWaitingAbilityChoice) {
+                hintText = '請選擇是否使用特殊能力。';
+            } else if (flags.isWaitingHourInput) {
+                hintText = '請在鐘面選擇小時卡。';
+            } else if (flags.isWaitingMinuteInput) {
+                if (uiState.isSecondHandSelectingTwo) {
+                    hintText = uiState.selectedCardValues.length < 2
+                        ? '請選擇 2 張分鐘卡。'
+                        : '已選擇 2 張卡牌，請確認出牌。';
+                } else {
+                    hintText = uiState.selectedCardValue === null
+                        ? '請選擇 1 張分鐘卡。'
+                        : '已選擇卡牌，請確認出牌。';
+                }
+            } else {
+                hintText = '準備完成，點擊「下一回合」繼續遊戲。';
+            }
+            actionHint.textContent = hintText;
         }
     }
 
@@ -695,16 +728,16 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
         flags.isWaitingMinuteInput && !flags.isWaitingSecondFinalChoice && !gameState.gameEnded && !gameState.abilityMarker &&
         !humanPlayer.specialAbilityUsed && humanPlayer.mana >= 3 && humanPlayer.hand.length >= 2;
 
-    if (sWrap) sWrap.style.display = (canUseSecondHand || isSecondHandSelectingTwo) ? 'block' : 'none';
+    if (sWrap) sWrap.style.display = (canUseSecondHand || uiState.isSecondHandSelectingTwo) ? 'block' : 'none';
     if (sBtn) {
-        sBtn.style.display = (canUseSecondHand || isSecondHandSelectingTwo) ? 'inline-block' : 'none';
-        sBtn.disabled = !canUseSecondHand || isSecondHandSelectingTwo;
+        sBtn.style.display = (canUseSecondHand || uiState.isSecondHandSelectingTwo) ? 'inline-block' : 'none';
+        sBtn.disabled = !canUseSecondHand || uiState.isSecondHandSelectingTwo;
     }
     if (sCancel) {
-        sCancel.style.display = isSecondHandSelectingTwo ? 'inline-block' : 'none';
+        sCancel.style.display = uiState.isSecondHandSelectingTwo ? 'inline-block' : 'none';
         sCancel.disabled = false;
     }
-    if (sHint) sHint.style.display = isSecondHandSelectingTwo ? 'block' : 'none';
+    if (sHint) sHint.style.display = uiState.isSecondHandSelectingTwo ? 'block' : 'none';
 
     // 二選一彈窗
     if (overlay) {
@@ -1003,17 +1036,17 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             btn.className = 'evo-btn';
             btn.style.backgroundColor = '#00d2d3';
             btn.innerHTML = `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
-            if (isSecondHandSelectingTwo) {
+            if (uiState.isSecondHandSelectingTwo) {
                 btn.style.backgroundColor = '#ff6b6b';
                 btn.style.color = '#fff';
                 btn.textContent = '取消選擇';
-                btn.onclick = () => { isSecondHandSelectingTwo = false; selectedCardValues = []; updateUI(globalGameState); };
+                btn.onclick = () => { uiState.isSecondHandSelectingTwo = false; uiState.selectedCardValues = []; updateUI(globalGameState); };
             } else {
                 btn.disabled = !canUse;
-                btn.onclick = () => { isSecondHandSelectingTwo = true; selectedCardValue = null; selectedCardValues = []; updateUI(globalGameState); };
+                btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
             }
             container.appendChild(btn);
-            if (isSecondHandSelectingTwo) {
+            if (uiState.isSecondHandSelectingTwo) {
                 const hint = document.createElement('div');
                 hint.className = 'evo-desc';
                 hint.style.color = '#00d2d3';
@@ -1240,64 +1273,73 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
-	// 4A. 出牌（分鐘卡）
-	const confirmMoveBtn = document.getElementById('confirm-move-btn');
-	if (confirmMoveBtn) {
-		confirmMoveBtn.addEventListener('click', () => {
-			if (!globalGameState) {
-				console.log('請先按「開始遊戲」。');
-				return;
-			}
-			const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
-			if (waitingSecondFinal) {
-				console.log('請先完成「秒針二選一」。');
-				return;
-			}
-			// 秒針選 2 張
-			if (isSecondHandSelectingTwo) {
-				if (!Array.isArray(selectedCardValues) || selectedCardValues.length !== 2) {
-					console.log('秒針能力：請先選擇 2 張分鐘卡！');
-					return;
-				}
-				if (typeof handleHumanSecondHandCommit !== 'function') {
-					console.error("找不到 handleHumanSecondHandCommit 函式");
-					return;
-				}
-				confirmMoveBtn.disabled = true;
-				const ok = handleHumanSecondHandCommit(globalGameState, selectedCardValues);
-				if (ok) {
-					document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
-					selectedCardValue = null;
-					selectedCardValues = [];
-					isSecondHandSelectingTwo = false;
-					confirmMoveBtn.textContent = '本回合出牌';
-					updateUI(globalGameState);
-				} else {
-					confirmMoveBtn.disabled = false;
-				}
-				return;
-			}
-			// 一般出牌
-			if (selectedCardValue === null) {
-				console.log('請先選擇一張分鐘卡！');
-				return;
-			}
-			if (typeof handleHumanChoice !== 'function') {
-				console.error("找不到 handleHumanChoice 函式");
-				return;
-			}
-			confirmMoveBtn.disabled = true;
-			const success = handleHumanChoice(globalGameState, selectedCardValue);
-			if (success) {
-				document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
-				selectedCardValue = null;
-				confirmMoveBtn.textContent = '本回合出牌';
-				updateUI(globalGameState);
-			} else {
-				confirmMoveBtn.disabled = false;
-			}
-		});
-	}
+	// 4A. 出牌（分鐘卡）按鈕事件修正
+    const confirmMoveBtn = document.getElementById('confirm-move-btn');
+    if (confirmMoveBtn) {
+        confirmMoveBtn.addEventListener('click', () => {
+            if (!globalGameState) {
+                console.log('請先按「開始遊戲」。');
+                return;
+            }
+            
+            // 檢查是否處於等待秒針最終選擇階段
+            const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
+            if (waitingSecondFinal) {
+                console.log('請先完成「秒針二選一」。');
+                return;
+            }
+
+            // --- 分支 1：秒針能力 (選 2 張) ---
+            if (uiState.isSecondHandSelectingTwo) {
+                if (!Array.isArray(uiState.selectedCardValues) || uiState.selectedCardValues.length !== 2) {
+                    console.log('秒針能力：請先選擇 2 張分鐘卡！');
+                    return;
+                }
+                if (typeof handleHumanSecondHandCommit !== 'function') {
+                    console.error("找不到 handleHumanSecondHandCommit 函式");
+                    return;
+                }
+                
+                confirmMoveBtn.disabled = true;
+                
+                const ok = handleHumanSecondHandCommit(globalGameState, uiState.selectedCardValues);
+                if (ok) {
+                    document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
+                    uiState.selectedCardValue = null;
+                    uiState.selectedCardValues = [];
+                    uiState.isSecondHandSelectingTwo = false;
+                    
+                    confirmMoveBtn.textContent = '本回合出牌';
+                    updateUI(globalGameState);
+                } else {
+                    confirmMoveBtn.disabled = false;
+                }
+                return; // ✅ 秒針邏輯結束，直接返回
+            }
+
+            // --- 分支 2：一般出牌 (選 1 張) ---
+            if (uiState.selectedCardValue === null) {
+                console.log('請先選擇一張分鐘卡！');
+                return;
+            }
+            if (typeof handleHumanChoice !== 'function') {
+                console.error("找不到 handleHumanChoice 函式");
+                return;
+            }
+            
+            confirmMoveBtn.disabled = true;
+            const success = handleHumanChoice(globalGameState, uiState.selectedCardValue);
+            
+            if (success) {
+                document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
+                uiState.selectedCardValue = null;
+                confirmMoveBtn.textContent = '本回合出牌';
+                updateUI(globalGameState);
+            } else {
+                confirmMoveBtn.disabled = false;
+            }
+        });
+    }
 
 	// 秒針能力按鈕
 	const secondsBtn = document.getElementById('seconds-ability-btn');
@@ -1305,18 +1347,18 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (secondsBtn) {
 	  secondsBtn.addEventListener('click', () => {
 		if (!globalGameState) return;
-		isSecondHandSelectingTwo = true;
-		selectedCardValue = null;
-		selectedCardValues = [];
+		uiState.isSecondHandSelectingTwo = true;
+		uiState.selectedCardValue = null;
+		uiState.selectedCardValues = [];
 		updateUI(globalGameState);
 	  });
 	}
 	if (secondsCancelBtn) {
 	  secondsCancelBtn.addEventListener('click', () => {
 		if (!globalGameState) return;
-		isSecondHandSelectingTwo = false;
-		selectedCardValues = [];
-		selectedCardValue = null;
+		uiState.isSecondHandSelectingTwo = false;
+		uiState.selectedCardValues = [];
+		uiState.selectedCardValue = null;
 		updateUI(globalGameState);
 	  });
 	}
@@ -1422,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === humanId;
             const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
-            if (isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
+            if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
                 console.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
                 updateUI(globalGameState);
                 return;
@@ -1465,9 +1507,9 @@ document.addEventListener('DOMContentLoaded', () => {
 					resetMinuteHistory(globalGameState);
 					resetRightPanels(globalGameState);
                     uiTrackedGameRound = 1;// 重置輪數追蹤變數
-					selectedCardValue = null;
-					selectedCardValues = [];
-					isSecondHandSelectingTwo = false;
+					uiState.selectedCardValue = null;
+					uiState.selectedCardValues = [];
+					uiState.isSecondHandSelectingTwo = false;
 					const humanId = getCurrentHumanPlayerId();
 					const humanPlayer = globalGameState.players.find(p => p.id === humanId);
 					if (humanPlayer) console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
@@ -1808,7 +1850,6 @@ function renderGameOverPanel(gameState) {
 
 // 綁定按鈕事件 (加在 DOMContentLoaded 內)
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (原本的代碼) ...
 
     // 綁定遊戲結束面板按鈕
     const btnRestart = document.getElementById('btn-restart-game');
