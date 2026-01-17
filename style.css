@@ -1491,3 +1491,58 @@ body {
 }
 
 .rank-medal { font-size: 1.2rem; }
+
+/* --- style.css 底部新增 --- */
+
+/* 基礎震動動畫 */
+@keyframes shake-effect {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* 飄浮文字動畫 */
+@keyframes float-up-fade {
+    0% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) translateY(-25px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translateY(-50px) scale(1); opacity: 0; }
+}
+
+/* 🔵 受詛者：幽冥破碎特效 (藍光) */
+.effect-shield-hit-scz {
+    animation: shake-effect 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    box-shadow: 0 0 15px 5px rgba(84, 160, 255, 0.8) !important;
+    border-color: #54a0ff !important;
+    position: relative;
+}
+
+/* 🔴 時之惡：混沌震擊特效 (紅光) */
+.effect-shield-hit-sin {
+    animation: shake-effect 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    box-shadow: 0 0 15px 5px rgba(255, 107, 107, 0.8) !important;
+    border-color: #ff6b6b !important;
+    position: relative;
+}
+
+/* 飄浮的扣除數值文字 */
+.floating-shield-loss {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    pointer-events: none;
+    animation: float-up-fade 1.5s ease-out forwards;
+    z-index: 999;
+    white-space: nowrap;
+}

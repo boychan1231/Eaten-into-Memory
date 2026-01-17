@@ -1110,19 +1110,18 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     parent.appendChild(container);
 }
 
-// F-4. 受詛者
-// ui.js - renderSczMissionPanel 重構版
 
 // F-4. 受詛者專用面板：顯示「已固定」與「敵人持有」的珍貴卡
 function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
-    // 標題改為較通用的「戰況監控」
     container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">📊 珍貴卡分佈監控</div>`;
 
     // --- 區塊 1: 受詛者已固定 (Locked) ---
-    // 掃描鐘面，找出所有 isLocked 且 isPrecious 的卡片
     const lockedCards = [];
+	    // 定義已進化的角色名稱，用於排除
+    const evolvedRoles = ['時針', '分針', '秒針'];
+	
     gameState.clockFace.forEach(spot => {
         spot.cards.forEach(c => {
             if (c.isPrecious && c.isLocked) {
@@ -1130,7 +1129,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
             }
         });
     });
-    lockedCards.sort((a, b) => a - b); // 排序讓顯示更整齊
+    lockedCards.sort((a, b) => a - b);
 
     const lockedSection = document.createElement('div');
     lockedSection.style.cssText = 'background:rgba(84, 160, 255, 0.1); border:1px solid #54a0ff; border-radius:6px; padding:8px; margin-bottom:8px;';
@@ -1150,15 +1149,28 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
 
 
     // --- 區塊 2: 幼體時魔已收集 (Held by Young Demons) ---
-    // 掃描所有「幼體時魔」的手牌
     const enemyHoldings = [];
+
     gameState.players.forEach(p => {
-        // 條件：是時魔 + 未被逐出 + 角色名稱包含「幼」 + 有持有小時卡
-        if (p.type === '時魔' && !p.isEjected && p.roleCard.includes('幼') && Array.isArray(p.hourCards)) {
-            const heldPrecious = p.hourCards.filter(c => c.isPrecious).map(c => c.number);
-            if (heldPrecious.length > 0) {
-                heldPrecious.sort((a, b) => a - b);
-                enemyHoldings.push({ name: p.name, cards: heldPrecious });
+        // 條件：是時魔 + 未被逐出
+        if (p.type === '時魔' && !p.isEjected) {
+            
+            // 判定是否為幼體：
+            // 1. roleCard 包含 '幼' (最準確)
+            // 2. 或者 roleCard 不在已進化名單中 (防呆後備)
+            const roleName = String(p.roleCard || '');
+            const isYoung = roleName.includes('幼') || !evolvedRoles.includes(roleName);
+
+            if (isYoung && Array.isArray(p.hourCards) && p.hourCards.length > 0) {
+                // 篩選出該玩家持有的「珍貴」卡片
+                const heldPrecious = p.hourCards
+                    .filter(c => c && c.isPrecious)
+                    .map(c => c.number);
+                
+                if (heldPrecious.length > 0) {
+                    heldPrecious.sort((a, b) => a - b);
+                    enemyHoldings.push({ name: p.name, cards: heldPrecious });
+                }
             }
         }
     });
@@ -1167,8 +1179,9 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     enemySection.style.cssText = 'background:rgba(255, 107, 107, 0.1); border:1px solid #ff6b6b; border-radius:6px; padding:8px;';
     
     let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🎒 幼體時魔持有</div>`;
+    
     if (enemyHoldings.length === 0) {
-        enemyHtml += `<div style="color:#888; font-size:0.85rem;">目前無威脅</div>`;
+        enemyHtml += `<div style="color:#888; font-size:0.85rem;">目前無威脅 (或是持有卡皆非珍貴)</div>`;
     } else {
         enemyHoldings.forEach(item => {
             enemyHtml += `<div style="margin-top:4px; font-size:0.85rem; color:#ccc;">`;
@@ -1186,7 +1199,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     if (lockedCards.length >= 12) {
         const winMsg = document.createElement('div');
         winMsg.style.cssText = 'margin-top:8px; text-align:center; color:#ffd27f; font-weight:bold; animation: tipPulse 1s infinite;';
-        winMsg.innerHTML = '🎉 條件達成！堅持到遊戲結束即可獲勝！';
+        winMsg.innerHTML = '🎉 條件達成！請繼續努力保護手中齒輪！';
         container.appendChild(winMsg);
     }
 
@@ -1596,26 +1609,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- 處理數值變動漂浮文字 ---
+// --- 處理數值變動漂浮文字 (Mana / 齒輪 / 護盾) ---
 function processFloatingText(gameState) {
     if (!gameState || !gameState.players) return;
     gameState.players.forEach(player => {
         const last = lastPlayerStats[player.id];
         if (last) {
+            // 1. Mana 變動
             const manaDiff = player.mana - last.mana;
             if (manaDiff !== 0) {
                 const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
                 const color = manaDiff > 0 ? '#4cd137' : '#e17055';
                 triggerFloat(player.id, text, color, 'mana');
             }
+            // 2. 齒輪變動
             const gearDiff = player.gearCards - last.gearCards;
             if (gearDiff !== 0) {
                 const text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
                 const color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
                 triggerFloat(player.id, text, color, 'gear');
             }
+            // ✅ 3. 新增：護盾變動 (與 Mana 特效一致)
+            const currentShield = (typeof player.d6Die === 'number') ? player.d6Die : 0;
+            const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
+            const shieldDiff = currentShield - lastShield;
+            
+            if (shieldDiff !== 0) {
+                const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' 🛡️';
+                // 扣除時使用與 Mana 扣除相同的紅色 (#e17055)，增加時使用綠色
+                const color = shieldDiff > 0 ? '#4cd137' : '#e17055'; 
+                triggerFloat(player.id, text, color, 'shield');
+            }
         }
-        lastPlayerStats[player.id] = { mana: player.mana, gearCards: player.gearCards };
+        
+        // 更新記錄
+        lastPlayerStats[player.id] = { 
+            mana: player.mana, 
+            gearCards: player.gearCards,
+            d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0
+        };
     });
 }
 

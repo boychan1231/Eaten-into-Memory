@@ -427,7 +427,35 @@ function startRound(gameState) {
         return;
     }
 	
-	// 第 5 輪開局平衡機制 (僅在第5輪且第1回合時觸發)
+	// ✅ 新增：第 4 輪開局平衡機制 (僅在第4輪且第1回合時觸發)
+    // 若牌庫 > 26 張，優先移除「非珍貴的 1」
+    if (gameState.gameRound === 4 && gameState.roundMarker === 1) {
+        if (gameState.hourDeck.length > 26) {
+            
+            // 1. 找出所有「非珍貴」且數字為「1」的卡
+            const candidates = gameState.hourDeck.filter(c => !c.isPrecious && c.number === 1);
+            
+            // 2. 固定移除 2 張
+            const countToRemove = Math.min(2, candidates.length);
+            const cardsToRemove = candidates.slice(0, countToRemove);
+            
+            // 3. 執行移除
+            cardsToRemove.forEach(card => {
+                const idx = gameState.hourDeck.indexOf(card);
+                if (idx !== -1) {
+                    gameState.hourDeck.splice(idx, 1);
+                }
+            });
+            
+            // 4. 重新洗牌
+            if (cardsToRemove.length > 0) {
+                shuffle(gameState.hourDeck);
+                console.log(`⚖️【第4輪平衡】牌庫>26，強制移除 ${cardsToRemove.length} 張「非珍貴 1 號卡」。`);
+            }
+        }
+    }
+	
+		// 第 5 輪開局平衡機制 (僅在第5輪且第1回合時觸發)
     // 如果牌庫大於 24 張，優先移除數字小的非珍貴卡，直到剩下 24 張
     if (gameState.gameRound === 5 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 24) {
@@ -459,9 +487,6 @@ function startRound(gameState) {
         }
     }
 	
-	
-	
-
     gameState.currentMinuteChoices = null;
 	
 	// 每回合開始：重置「每回合一次」能力使用狀態（含時針頂牌放底）
@@ -1216,6 +1241,9 @@ function handleDiceDeduction(player) {
     if (player.d6Die) {
         player.d6Die--;
 		
+		// 設定特效標記 (UI 讀取到此標記時會播放動畫)
+        player.triggerShieldAnim = true;
+		
         if (player.d6Die < 1) { 
             player.gearCards--;
 			console.log(`【${player.type}】 扣除 1 護盾。`);
@@ -1233,6 +1261,9 @@ function handleDiceDeduction(player) {
             } else { 
                 player.d6Die = Math.max(1, Math.min(player.gearCards, 6));
             }
+        }else {
+            // (選用) 可以在這裡補一個 log
+            console.log(`🛡️【${player.name}】護盾抵消懲罰 (剩餘: ${player.d6Die})`);
         }
     }
     return gearCardDeducted;
