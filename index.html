@@ -70,17 +70,17 @@
 					</div>
 					
 					<div id="played-cards-panel" class="log-side-info">
-						<div class="deck-title" style="color:#ffd27f;">本回合出牌</div>
+						<div class="deck-title panel-title-highlight">本回合出牌</div>
 						<div id="played-cards-list"></div>
 					</div>
 					
-					<div id="score-panel" class="log-side-info" style="display:none; min-height: auto;">
-						<div class="deck-title" style="color:#ffd27f;">🏆 積分</div>
+					<div id="score-panel" class="log-side-info score-panel">
+						<div class="deck-title panel-title-highlight">🏆 積分</div>
 						<div id="score-list"></div>
 					</div>
 					
-					<div id="player-history-panel" class="log-side-info" style="display:none;">
-						<div class="deck-title" style="color:#ffd27f;">各角色出牌記錄</div>
+					<div id="player-history-panel" class="log-side-info history-panel">
+						<div class="deck-title panel-title-highlight">各角色出牌記錄</div>
 						<div id="player-history-list"></div>
 					</div>
 
@@ -113,10 +113,10 @@
                                 <div class="info-divider"></div>    
 								
                                     <div id="human-controls" class="hand-controls">
-                                        <div id="seconds-ability-controls" class="control-block" style="display:none;">
+                                        <div id="seconds-ability-controls" class="control-block hidden">
                                             <button id="seconds-ability-btn" type="button">秒針能力：蓋放 2 張</button>
-                                            <button id="seconds-ability-cancel-btn" type="button" style="display:none; margin-top:5px;">取消</button>
-                                            <div id="seconds-ability-hint" class="instruction-text" style="display:none;">請選擇 2 張卡</div>
+                                            <button id="seconds-ability-cancel-btn" type="button" class="hidden seconds-cancel-btn">取消</button>
+                                            <div id="seconds-ability-hint" class="instruction-text hidden">請選擇 2 張卡</div>
                                         </div>
 
                                         <button id="confirm-move-btn" disabled>確認出牌</button>
@@ -187,7 +187,7 @@
                     <li><strong>時針：</strong>
                         <br>👁️ <strong>被動：</strong>預知牌庫頂的小時卡。
 						<br>⚡ <strong>主動 1 Mana：</strong>將牌庫頂的卡移至底部。
-                        <br><span style="color:#aaa; font-size:0.9em; margin-left:24px;">└ 可再消耗 <strong>2 Mana</strong> 再次執行 (每回合 1 次)。</span>
+                        <br><span class="rules-subhint">└ 可再消耗 <strong>2 Mana</strong> 再次執行 (每回合 1 次)。</span>
                     </li>
                     <li><strong>分針：</strong>
                         <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
@@ -213,24 +213,24 @@
 				</ul>
             </div>
 		
-		<div id="settings-content" class="tab-content">
-		<h3>⚙️ 遊戲設定</h3>
-		
+			<div id="settings-content" class="tab-content">
+			<h3>⚙️ 遊戲設定</h3>
+			
 		<div class="setting-item">
 			<h4>日誌速度</h4>
-			<div style="display: flex; align-items: center; gap: 15px;">
-				<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" style="flex:1;">
-				<span id="log-speed-value" style="font-family: monospace; width: 120px;">360 ms</span>
+			<div class="settings-range-row">
+				<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" class="log-speed-slider">
+				<span id="log-speed-value" class="log-speed-value">360 ms</span>
 			</div>
-			<p style="font-size: 0.8rem; color: #888;">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
+			<p class="setting-note">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
 		</div>
 
-		<hr style="border-color: #333; margin: 20px 0;">
+		<hr class="settings-divider">
 
 		<div class="setting-item">
 			<h3>設定選項</h3>
 			
-			<label class="toggle-switch" style="margin-bottom: 15px;">
+				<label class="toggle-switch toggle-switch-spaced">
 				<input type="checkbox" id="ability-toggle" checked>
 				<span class="slider"></span>
 				<span>啟用特殊能力 </span>
@@ -246,11 +246,11 @@
                 </div>
 		</div>
 
-		<hr style="border-color: #333; margin: 20px 0;">
+		<hr class="settings-divider">
 
 			<div class="setting-item">
 				<h4>除錯資訊</h4>
-				<p style="font-size: 0.8rem; color: #666;">
+				<p class="setting-muted">
 					Build Ver: 2025.01.27<br>
 					Core: game.js / UI: ui.js
 					2026 01 14：鐘面回合數指示浮標變成指示玩家位置
@@ -258,10 +258,11 @@
 			</div>
 		</div>
 			
-		<div id="role-choice-overlay" class="modal-overlay" style="display:none;">
+		<div id="role-choice-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="role-choice-title" aria-describedby="role-choice-desc">
 			<div class="modal">
 			<span id="role-choice-close-btn" class="modal-close-btn">&times;</span>
-			<h2>選擇角色</h2>
+			<h2 id="role-choice-title">選擇角色</h2>
+			<p id="role-choice-desc" class="modal-desc">請選擇想要扮演的角色，開始新遊戲。</p>
 				<div class="modal-actions">
 				<button id="role-choice-timeDemon" class="primary" type="button">時魔</button>
 				<button id="role-choice-sin" type="button">時之惡</button>
@@ -270,30 +271,31 @@
 			</div>
 		</div>
 		
-		<div id="seconds-choice-overlay" class="modal-overlay" style="display:none;">
+		<div id="seconds-choice-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="seconds-choice-title" aria-describedby="seconds-choice-desc">
             <div class="modal">
-            <h2 class="modal-title" style="color:#00d2d3;">⏱️ 秒針能力：</h2>
-            <p class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
+            <h2 id="seconds-choice-title" class="modal-title modal-title-seconds">⏱️ 秒針能力：</h2>
+            <p id="seconds-choice-desc" class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
 				<div class="modal-actions">
-                <button id="seconds-choice-a" class="primary" style="font-size:1.5rem; font-weight:bold;">A</button>
-                <button id="seconds-choice-b" class="primary" style="font-size:1.5rem; font-weight:bold;">B</button>
+                <button id="seconds-choice-a" class="primary seconds-choice-btn">A</button>
+                <button id="seconds-choice-b" class="primary seconds-choice-btn">B</button>
 				</div>
             </div>
         </div>	
 		
-		<div id="collection-overlay" class="modal-overlay" style="display:none;">
+		<div id="collection-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="collection-title" aria-describedby="collection-desc">
 			<div class="modal">
                 <span id="collection-close-btn" class="modal-close-btn">&times;</span>
-                <h2 class="modal-title" style="color:#ffd27f;">已收集小時卡</h2>
-                <div id="human-hour-collection" class="hour-collection-list" style="max-height: 400px; overflow-y: auto;">
+                <h2 id="collection-title" class="modal-title modal-title-collection">已收集小時卡</h2>
+				<p id="collection-desc" class="modal-desc">查看目前已收集的小時卡清單。</p>
+                <div id="human-hour-collection" class="hour-collection-list collection-list-scroll">
                     </div>
 			</div>
 		</div>
 		
-		<div id="game-over-overlay" class="modal-overlay" style="display:none;">
-            <div class="modal" style="text-align: center; border: 2px solid #ffd27f; box-shadow: 0 0 30px rgba(255, 210, 127, 0.2);">
-                <h1 id="winner-title" style="font-size: 2rem; margin-bottom: 5px; text-shadow: 0 0 10px currentColor;">遊戲結束</h1>
-                <p id="winner-subtitle" style="color:#ccc; margin-bottom: 20px; font-size:1.1rem;">--</p>
+		<div id="game-over-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="winner-title" aria-describedby="winner-subtitle">
+            <div class="modal game-over-modal">
+                <h1 id="winner-title" class="game-over-title">遊戲結束</h1>
+                <p id="winner-subtitle" class="game-over-subtitle">--</p>
                 
                 <div class="ranking-header">
                     <span>排名</span>
@@ -304,9 +306,9 @@
                 <div id="game-over-ranking-list" class="ranking-list">
                     </div>
 
-                <div class="modal-actions" style="margin-top: 20px;">
-                    <button id="btn-restart-game" class="primary" style="background: #4caf50;">🔄 再玩一局</button>
-                    <button id="btn-close-gameover" style="background: #555;">👀 查看盤面</button>
+                <div class="modal-actions game-over-actions">
+                    <button id="btn-restart-game" class="primary btn-restart-game">🔄 再玩一局</button>
+                    <button id="btn-close-gameover" class="btn-close-gameover">👀 查看盤面</button>
                 </div>
             </div>
         </div>
