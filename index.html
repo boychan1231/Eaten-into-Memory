@@ -222,6 +222,17 @@
 		<hr class="settings-divider">
 
 		<div class="setting-item">
+			<h4>日誌保留量</h4>
+			<div class="settings-range-row">
+				<input type="range" id="log-retention-slider" min="50" max="1000" step="50" value="200" class="log-speed-slider">
+				<span id="log-retention-value" class="log-speed-value">200 則</span>
+			</div>
+			<p class="setting-note">限制日誌清單保留的最大數量，避免長局造成 DOM 過大。</p>
+		</div>
+
+		<hr class="settings-divider">
+
+		<div class="setting-item">
 			<h3>設定選項</h3>
 			
 				<label class="toggle-switch toggle-switch-spaced">
