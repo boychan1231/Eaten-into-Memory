@@ -1,6 +1,8 @@
-// game.js (修復版)
-// ✅ 人類玩家 ID：改為可動態設定（支援角色選擇/測試），預設為 SM_1。
-let HUMAN_PLAYER_ID = 'SM_1';
+// game.js
+// ✅ 人類玩家 ID：改為可動態設定（支援角色選擇/測試），預設讀取設定檔。
+let HUMAN_PLAYER_ID = (typeof window !== 'undefined' && window.GAME_CONFIG?.defaultHumanId)
+    ? window.GAME_CONFIG.defaultHumanId
+    : 'SM_1';
 
 // 讓 UI/測試模式可安全取得「當前實際的人類玩家 id」
 function getHumanPlayerId() { return HUMAN_PLAYER_ID; }
@@ -154,7 +156,7 @@ class GameState {
             gearCards: 0,
             hourCards: [],
             roleCard: role.name,
-			// ✅ 修改：加入 ID 判斷，確保受詛者一定有護盾
+			// 加入 ID 判斷，確保受詛者一定有護盾
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
             hasEverBeenEjected: false,// 永久記錄是否曾被驅逐 (用於時之惡勝利判定)
@@ -182,8 +184,6 @@ class GameState {
 		
 		// 防止結算面板重複彈出
         this.hasShownGameOverPanel = false; 
-        this.currentRoundAIChoices = null;
-		
         this.currentRoundAIChoices = null;
 		
 		this.phase = 'idle';
@@ -426,6 +426,41 @@ function startRound(gameState) {
         console.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
         return;
     }
+	
+	// 第 5 輪開局平衡機制 (僅在第5輪且第1回合時觸發)
+    // 如果牌庫大於 24 張，優先移除數字小的非珍貴卡，直到剩下 24 張
+    if (gameState.gameRound === 5 && gameState.roundMarker === 1) {
+        if (gameState.hourDeck.length > 24) {
+            const targetCount = 24;
+            const removeCount = gameState.hourDeck.length - targetCount;
+            
+            // 1. 找出所有非珍貴卡 (候選名單)
+            const nonPreciousCandidates = gameState.hourDeck.filter(c => !c.isPrecious);
+            
+            // 2. 依照數字由小到大排序 (1, 1, 2, 2, 3...)
+            nonPreciousCandidates.sort((a, b) => a.number - b.number);
+            
+            // 3. 鎖定要移除的卡片 (取前 N 張)
+            const cardsToRemove = nonPreciousCandidates.slice(0, removeCount);
+            
+            // 4. 執行移除
+            cardsToRemove.forEach(card => {
+                const idx = gameState.hourDeck.indexOf(card);
+                if (idx !== -1) {
+                    gameState.hourDeck.splice(idx, 1);
+                }
+            });
+            
+            // 5. 重新洗牌 (確保剩餘卡片的隨機性)
+            shuffle(gameState.hourDeck);
+            
+            const maxRemovedNum = cardsToRemove.length > 0 ? cardsToRemove[cardsToRemove.length - 1].number : '?';
+            console.log(`⚖️【第5輪平衡】牌庫過厚 (${gameState.hourDeck.length + cardsToRemove.length}張)，系統已移除 ${cardsToRemove.length} 張非珍貴卡 (數字 1~${maxRemovedNum})，修正為 24 張。`);
+        }
+    }
+	
+	
+	
 
     gameState.currentMinuteChoices = null;
 	
@@ -1001,49 +1036,77 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
     return drawnCards.splice(idx, 1)[0];
 }
 
+// --- 新增輔助函式：受詛者鎖定機制 ---
+// game.js - 輔助函式區
+
+// --- 新增輔助函式：受詛者鎖定機制 (接觸即鎖定) ---
+function checkAndLockPreciousCards(gameState) {
+    const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
+    if (!sczPlayer || !sczPlayer.currentClockPosition) return;
+
+    // 找出受詛者所在的格子
+    const currentSpot = gameState.clockFace.find(s => s.position === sczPlayer.currentClockPosition);
+    if (!currentSpot || currentSpot.cards.length === 0) return;
+
+    let newLockedCount = 0;
+    
+    // 遍歷該格子的所有卡片
+    currentSpot.cards.forEach(card => {
+        // 只要是珍貴卡，且尚未被鎖定，就執行鎖定
+        if (card.isPrecious && !card.isLocked) {
+            card.isLocked = true; // 🔒 加上鎖定標記 (永久保留在鐘面)
+            newLockedCount++;
+            console.log(`🔒【受詛者】接觸並固定了珍貴小時卡 [${card.number}★]！`);
+        }
+    });
+}
+
+// game.js - placeHourCardForPlayer 修正版
+
 function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog) {
     if (!gameState || !player || !cardToPlace) return;
 
-    // 1) 永遠先更新玩家位置（站位一定會變）
+    // 1) 更新玩家位置
     player.currentClockPosition = cardToPlace.number;
 
-	// 本回合「實際取得」小時卡的紀錄（分針能力需要）
-	player.pickedHourThisTurn = true;
-	player.pickedHourCardThisTurnNumber = cardToPlace.number;
-
-	// 記錄本回合實際取得的小時卡（給分針能力判定用）
-	player.pickedHourCardThisTurnNumber = cardToPlace.number;
-	player.pickedMinHourThisTurn =
-		(player.roleCard === '分針' &&
-		 gameState.roundMinHourNumber !== null &&
-		 cardToPlace.number === gameState.roundMinHourNumber);
+    // 記錄本回合資訊
+    player.pickedHourThisTurn = true;
+    player.pickedHourCardThisTurnNumber = cardToPlace.number;
+    player.pickedMinHourThisTurn =
+        (player.roleCard === '分針' &&
+         gameState.roundMinHourNumber !== null &&
+         cardToPlace.number === gameState.roundMinHourNumber);
 
     const label = playerNameForLog || player.name;
     console.log(`${label} 挑選小時卡 [${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}]，移動到 ${cardToPlace.number} 格。`);
 
-    // 2) 判定是否可持有：僅「幼體時魔」可持有；已進化或非時魔皆不可
+    // 2) 幼體時魔：持有卡片
     const isTimeDemon = player.type === '時魔' && !player.isEjected;
     const roleText = String(player.roleCard || '');
     const isYoungTimeDemon = isTimeDemon && roleText.includes('幼');
 
     if (!Array.isArray(player.hourCards)) player.hourCards = [];
 
-    // ✅ 修正：移除 alreadyHasSameNumber 變數與檢查
-    // 只要是「幼體時魔」就可以持有，允許重複數字
     if (isYoungTimeDemon) {
         player.hourCards.push(cardToPlace);
-        console.log(`🧠【持有】${label} 持有小時卡 ${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}`);
+        console.log(`${label} 取得小時卡 ${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}`);
         return;
     }
 
-    // 3) 其他情況：不持有 → 留在鐘面（供珍貴留場/回收機制處理）
+    // 3) 其他角色 (含受詛者)：留在鐘面
     const clockSpot = gameState.clockFace.find(s => s.position === cardToPlace.number);
     if (clockSpot) {
         clockSpot.cards.push(cardToPlace);
-        return;
+        
+        // 這樣受詛者一拿到卡片 (一踩上去)，卡片就會立刻被鎖定
+        if (typeof checkAndLockPreciousCards === 'function') {
+            checkAndLockPreciousCards(gameState);
+        }
+
+        return; 
     }
 
-    // 4) 防呆：若找不到鐘面格子，退回牌庫避免卡牌遺失
+    // 4) 防呆
     gameState.hourDeck.push(cardToPlace);
     console.warn(`⚠️ 找不到鐘面位置 ${cardToPlace.number}，已將小時卡退回牌庫避免遺失。`);
 }
@@ -1151,14 +1214,17 @@ function handleHumanAbilityChoice(gameState, choice) {
 function handleDiceDeduction(player) {
     let gearCardDeducted = false;
     if (player.d6Die) {
-        player.d6Die--; 
+        player.d6Die--;
+		
         if (player.d6Die < 1) { 
-            player.gearCards--; 
+            player.gearCards--;
+			console.log(`【${player.type}】 扣除 1 護盾。`);
+			 
             if (player.mana > player.gearCards) {
                 player.mana = player.gearCards;
             }
             gearCardDeducted = true;
-            console.log(`【${player.type}】${player.name} 護盾耗盡，扣除 1 齒輪。`);
+            console.log(`【${player.type}】護盾耗盡，扣除 1 齒輪。`);
 
             if (player.type === '時之惡') {
                 player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
@@ -1399,15 +1465,12 @@ function moveRoundMarker(gameState) {
     }
 }
 
-// 【5P 專用】檢查受詛者任務
+// 檢查受詛者任務
 function checkSCZMissionSuccess(gameState) {
     let preciousOnFace = 0;
     gameState.clockFace.forEach(spot => {
-        if (spot.cards.length > 0) {
-            if (spot.cards.some(c => c.isPrecious)) {
-                preciousOnFace++;
-            }
-        }
+        // 計算所有在鐘面上的珍貴卡 (包含堆疊中的)
+        preciousOnFace += spot.cards.filter(c => c.isPrecious).length;
     });
     return (preciousOnFace >= 12); 
 }
@@ -1509,18 +1572,29 @@ function endGameRound(gameState) {
     const cardsToReturnToDeck = [];
     gameState.clockFace.forEach(spot => {
         if (spot.cards.length === 0) return;
-        const topCard = spot.cards[spot.cards.length - 1]; 
-        if (topCard.isPrecious) {
-            const cardsBelow = spot.cards.slice(0, -1); 
-            if (cardsBelow.length > 0) cardsToReturnToDeck.push(...cardsBelow);
-            spot.cards = [topCard]; 
-        } else {
-            cardsToReturnToDeck.push(...spot.cards);
-            spot.cards = [];
+
+        // 分離「鎖定卡」與「非鎖定卡」
+        const lockedCards = spot.cards.filter(c => c.isLocked);
+        const unlockedCards = spot.cards.filter(c => !c.isLocked);
+        
+        // 針對非鎖定卡：執行原本的規則 (只留最上面一張珍貴卡? 或者全部回收?)
+        // 為了簡化與配合新規則，這裡設定為：
+        // 「鎖定的卡」全部保留，「沒鎖定的卡」全部回收 (或者您可以保留原本邏輯)
+        
+        // 這裡採用最有利受詛者的規則：鎖定的全留，沒鎖定的全收
+        // (這樣受詛者就需要努力去「摸」每一張卡)
+        
+        // 將該格子的卡片重置為「僅包含鎖定卡」
+        spot.cards = lockedCards;
+        
+        // 其他卡片回收
+        if (unlockedCards.length > 0) {
+            cardsToReturnToDeck.push(...unlockedCards);
         }
     });
     
     if (cardsToReturnToDeck.length > 0) {
+        // 重置鎖定狀態？不，新規則是永久固定，所以回收的卡片必定是沒被鎖過的，不用清除 isLocked
         shuffle(cardsToReturnToDeck);
         gameState.hourDeck.push(...cardsToReturnToDeck);
         console.log(`♻️ 回收了 ${cardsToReturnToDeck.length} 張鐘面卡片回牌庫。`);

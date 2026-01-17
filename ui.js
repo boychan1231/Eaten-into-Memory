@@ -67,12 +67,22 @@ function processLogQueue() {
     }, nextDelay);
 }
 
+function safeStringify(value) {
+    if (typeof value !== 'object' || value === null) return String(value);
+    try {
+        return JSON.stringify(value);
+    } catch (error) {
+        return `[Unserializable: ${error?.message || 'unknown error'}]`;
+    }
+}
+
 console.log = function(...args) {
-    originalLog.apply(console, args); 
-    const message = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg) : arg)).join(' ');
+    originalLog.apply(console, args);
+    const message = args.map(arg => safeStringify(arg)).join(' ');
     logQueue.push(message);
     processLogQueue();
 };
+
 
 // 1. 錯誤監控
 window.addEventListener("error", (e) => {
@@ -421,6 +431,10 @@ function renderClockFace(gameState, flags) {
             // 頂牌預覽
             const cardDiv = document.createElement('div');
             cardDiv.className = 'card-preview';
+			
+			// 若頂牌被鎖定，顯示鎖頭
+            const lockDisplay = topCard.isLocked ? '<div style="font-size:0.6rem;">🔒</div>' : '';
+			
             cardDiv.innerHTML = `
                 <div class="cp-num">${topCard.number}</div>
                 <div class="cp-age">${topCard.ageGroup || ''}</div>
@@ -445,10 +459,10 @@ function renderClockFace(gameState, flags) {
                 item.className = 'stack-item';
                 if (card.isPrecious) item.classList.add('precious');
                 const isTop = (i === 0);
-                const prefix = isTop ? '🔝 ' : '';
                 const star = card.isPrecious ? '★' : '';
+                const lockIcon = card.isLocked ? '🔒' : '';// 鎖定圖示
                 const age = card.ageGroup ? `<span class="age-tag">(${card.ageGroup})</span>` : '';
-                item.innerHTML = `${prefix}${card.number}${star}${age}`;
+				item.innerHTML = `${lockIcon}${card.number}${star}${age}`;
                 inspector.appendChild(item);
             });
             spotEl.appendChild(inspector);
@@ -1097,53 +1111,88 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
 }
 
 // F-4. 受詛者
+// ui.js - renderSczMissionPanel 重構版
+
+// F-4. 受詛者專用面板：顯示「已固定」與「敵人持有」的珍貴卡
 function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
-    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">⚠️ 珍貴卡流失監控</div>`;
+    // 標題改為較通用的「戰況監控」
+    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">📊 珍貴卡分佈監控</div>`;
 
-    const theftList = document.createElement('div');
-    theftList.style.textAlign = 'left';
-    theftList.style.marginTop = '8px';
+    // --- 區塊 1: 受詛者已固定 (Locked) ---
+    // 掃描鐘面，找出所有 isLocked 且 isPrecious 的卡片
+    const lockedCards = [];
+    gameState.clockFace.forEach(spot => {
+        spot.cards.forEach(c => {
+            if (c.isPrecious && c.isLocked) {
+                lockedCards.push(c.number);
+            }
+        });
+    });
+    lockedCards.sort((a, b) => a - b); // 排序讓顯示更整齊
+
+    const lockedSection = document.createElement('div');
+    lockedSection.style.cssText = 'background:rgba(84, 160, 255, 0.1); border:1px solid #54a0ff; border-radius:6px; padding:8px; margin-bottom:8px;';
     
-    let totalStolenCount = 0;
-    const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+    let lockedHtml = `<div style="color:#54a0ff; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🔒 已固定 (${lockedCards.length}/12)</div>`;
+    if (lockedCards.length === 0) {
+        lockedHtml += `<div style="color:#888; font-size:0.85rem;">尚未固定任何卡片</div>`;
+    } else {
+        lockedHtml += `<div style="display:flex; flex-wrap:wrap; gap:4px;">`;
+        lockedCards.forEach(num => {
+            lockedHtml += `<span style="background:#54a0ff; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.9rem;">${num}★</span>`;
+        });
+        lockedHtml += `</div>`;
+    }
+    lockedSection.innerHTML = lockedHtml;
+    container.appendChild(lockedSection);
 
-    timeDemons.forEach(demon => {
-        const heldPrecious = (demon.hourCards || []).filter(c => c.isPrecious);
-        if (heldPrecious.length > 0) {
-            totalStolenCount += heldPrecious.length;
-            const row = document.createElement('div');
-            row.style.cssText = 'margin-bottom:8px; border-bottom:1px dashed #444; padding-bottom:4px;';
-            const nameDiv = document.createElement('div');
-            nameDiv.style.cssText = 'font-size:0.85rem; color:#ccc; margin-bottom:2px;';
-            nameDiv.textContent = `${demon.name} (${heldPrecious.length}張)`;
-            const cardsDiv = document.createElement('div');
-            cardsDiv.innerHTML = heldPrecious.map(c => 
-                `<span style="display:inline-block; background:rgba(255, 210, 127, 0.1); border:1px solid #ffd27f; color:#ffd27f; border-radius:3px; padding:0 4px; margin-right:4px; font-weight:bold; font-size:0.85rem;">${c.number}★</span>`
-            ).join('');
-            row.appendChild(nameDiv);
-            row.appendChild(cardsDiv);
-            theftList.appendChild(row);
+
+    // --- 區塊 2: 幼體時魔已收集 (Held by Young Demons) ---
+    // 掃描所有「幼體時魔」的手牌
+    const enemyHoldings = [];
+    gameState.players.forEach(p => {
+        // 條件：是時魔 + 未被逐出 + 角色名稱包含「幼」 + 有持有小時卡
+        if (p.type === '時魔' && !p.isEjected && p.roleCard.includes('幼') && Array.isArray(p.hourCards)) {
+            const heldPrecious = p.hourCards.filter(c => c.isPrecious).map(c => c.number);
+            if (heldPrecious.length > 0) {
+                heldPrecious.sort((a, b) => a - b);
+                enemyHoldings.push({ name: p.name, cards: heldPrecious });
+            }
         }
     });
 
-    if (totalStolenCount === 0) {
-        theftList.innerHTML = `<div style="text-align:center; padding:15px 0; color:#4cd137;"><div style="font-size:1.5rem; margin-bottom:5px;">🛡️</div><div style="font-size:0.9rem;">目前無珍貴卡遺失</div></div>`;
-    }
-    container.appendChild(theftList);
+    const enemySection = document.createElement('div');
+    enemySection.style.cssText = 'background:rgba(255, 107, 107, 0.1); border:1px solid #ff6b6b; border-radius:6px; padding:8px;';
     
-    if (totalStolenCount > 0) {
-        const summary = document.createElement('div');
-        summary.className = 'evo-desc';
-        summary.style.color = '#ff6b6b';
-        summary.style.marginTop = '5px';
-        summary.style.textAlign = 'center';
-        summary.textContent = `⚠️ 共計遺失 ${totalStolenCount} 張珍貴卡`;
-        container.appendChild(summary);
+    let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🎒 幼體時魔持有</div>`;
+    if (enemyHoldings.length === 0) {
+        enemyHtml += `<div style="color:#888; font-size:0.85rem;">目前無威脅</div>`;
+    } else {
+        enemyHoldings.forEach(item => {
+            enemyHtml += `<div style="margin-top:4px; font-size:0.85rem; color:#ccc;">`;
+            enemyHtml += `<span style="color:#fff;">${item.name}</span>: `;
+            item.cards.forEach(num => {
+                enemyHtml += `<span style="color:#ff6b6b; border:1px solid #ff6b6b; padding:0 3px; border-radius:3px; margin-left:3px;">${num}★</span>`;
+            });
+            enemyHtml += `</div>`;
+        });
     }
+    enemySection.innerHTML = enemyHtml;
+    container.appendChild(enemySection);
+
+    // --- 勝利提示 ---
+    if (lockedCards.length >= 12) {
+        const winMsg = document.createElement('div');
+        winMsg.style.cssText = 'margin-top:8px; text-align:center; color:#ffd27f; font-weight:bold; animation: tipPulse 1s infinite;';
+        winMsg.innerHTML = '🎉 條件達成！堅持到遊戲結束即可獲勝！';
+        container.appendChild(winMsg);
+    }
+
     parent.appendChild(container);
 }
+
 
 function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, activeContentClass) {
     const buttons = document.querySelectorAll(btnSelector);

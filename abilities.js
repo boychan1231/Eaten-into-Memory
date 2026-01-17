@@ -45,13 +45,14 @@ function activateHourHandAbility(gameState) {
     if (gameState.abilityMarker) return;
     
     if (hourHandPlayer && hourHandPlayer.mana >= 1) {
-        if (Math.random() < 0.5) { 
+        const random = (typeof getRandom === 'function') ? getRandom : Math.random;
+        if (random() < 0.5) { 
             if (gameState.hourDeck.length < 2) return;
 			
             const card1 = gameState.hourDeck[gameState.hourDeck.length - 1]; 
             const card2 = gameState.hourDeck[gameState.hourDeck.length - 2]; 
             
-            if (hourHandPlayer.mana >= 1 && Math.random() < 0.5) { 
+            if (hourHandPlayer.mana >= 1 && random() < 0.5) {
                 hourHandPlayer.mana--;
                 const cardToMove = (card1.number < card2.number) ? card1 : card2;
                 let cardIndex = gameState.hourDeck.findIndex(c => c === cardToMove);
@@ -178,6 +179,10 @@ function attemptRoleUpgrade(player, gameState) {
     });
 
     player.hourCards = [];
+	
+	// ✅ 新增：進化歸還卡片後，檢查是否有卡片落到了受詛者腳下
+    checkAndLockPreciousCards(gameState);
+	
     return true;
 }
 
