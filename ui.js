@@ -10,6 +10,7 @@ const logQueue = [];
 let isLogProcessing = false;
 // ✅ 修改：讀取 config.js
 let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360;
+let currentLogRetentionLimit = window.UI_CONFIG?.LOG_RETENTION_LIMIT || 200;
 const LOG_ACCEL_THRESHOLD = window.UI_CONFIG?.LOG_ACCEL_THRESHOLD ?? 5;
 const LOG_ACCEL_DELAY = window.UI_CONFIG?.LOG_ACCEL_DELAY ?? 30;
 const shouldMirrorConsole = window.UI_CONFIG?.MIRROR_CONSOLE ?? true;
@@ -70,6 +71,13 @@ try {
     window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
 } catch (_) {}
 
+function enforceLogRetention(list) {
+    if (!list) return;
+    while (list.children.length > currentLogRetentionLimit) {
+        list.removeChild(list.firstChild);
+    }
+}
+
 function logToUI(message) {
     logQueue.push(message);
     processLogQueue();
@@ -101,6 +109,7 @@ function processLogQueue() {
         }
         
         list.appendChild(li);
+        enforceLogRetention(list);
 
         const logContainer = document.getElementById('game-log-container');
         if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
@@ -145,7 +154,10 @@ window.addEventListener("error", (e) => {
         const li = document.createElement('li');
         li.style.color = '#ff6b6b';
         li.textContent = `❌ 錯誤: ${e.message}`;
-        if (logList) logList.appendChild(li);
+        if (logList) {
+            logList.appendChild(li);
+            enforceLogRetention(logList);
+        }
     } catch (_) {}
 });
 
@@ -1659,6 +1671,27 @@ document.addEventListener('DOMContentLoaded', () => {
         // 監聽滑動
         speedSlider.addEventListener('input', (e) => {
             updateSpeedText(e.target.value);
+        });
+    }
+
+    // ✅ 新增：日誌保留量滑桿控制
+    const retentionSlider = document.getElementById('log-retention-slider');
+    const retentionValDisplay = document.getElementById('log-retention-value');
+
+    if (retentionSlider && retentionValDisplay) {
+        retentionSlider.value = currentLogRetentionLimit;
+
+        const updateRetentionText = (val) => {
+            const parsed = Math.max(1, Number(val));
+            currentLogRetentionLimit = parsed;
+            retentionValDisplay.textContent = `${parsed} 則`;
+            enforceLogRetention(document.getElementById('log-list'));
+        };
+
+        updateRetentionText(currentLogRetentionLimit);
+
+        retentionSlider.addEventListener('input', (e) => {
+            updateRetentionText(e.target.value);
         });
     }
 
