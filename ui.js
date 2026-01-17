@@ -289,15 +289,17 @@ function updateNextStepButton(gameState, flags) {
 
 // --- A. 頂部資訊 ---
 function renderTopInfo(gameState) {
-    const roundInfo = document.getElementById('round-info');
-    if (roundInfo) roundInfo.textContent = `第 ${gameState.gameRound} 輪`;
-    
+	
     // 將回合數顯示在側邊欄的新位置
     const roundMarkerEl = document.getElementById('round-count-num');
     if (roundMarkerEl) roundMarkerEl.textContent = gameState.roundMarker;
     
     const deckNumEl = document.getElementById('deck-count-num');
     if (deckNumEl) deckNumEl.textContent = gameState.hourDeck.length;
+	
+	// ✅ 新增：更新中間的「遊戲輪次」數值
+    const gameRoundEl = document.getElementById('game-round-num');
+    if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound
 }
 
 // --- A-2. 出牌列表與歷史 ---
