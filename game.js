@@ -1498,12 +1498,13 @@ function moveRoundMarker(gameState) {
 
 // 檢查受詛者任務
 function checkSCZMissionSuccess(gameState) {
-    let preciousOnFace = 0;
+    let lockedPreciousCount = 0;
     gameState.clockFace.forEach(spot => {
-        // 計算所有在鐘面上的珍貴卡 (包含堆疊中的)
-        preciousOnFace += spot.cards.filter(c => c.isPrecious).length;
+        // ✅ 修正：必須只計算「已鎖定 (isLocked)」的珍貴卡
+        // 否則回合結束前(尚未清理鐘面時)，暫留在場上的未鎖定珍貴卡會被誤算
+        lockedPreciousCount += spot.cards.filter(c => c.isPrecious && c.isLocked).length;
     });
-    return (preciousOnFace >= 12); 
+    return (lockedPreciousCount >= 12); 
 }
 
 function endGameRound(gameState) {
