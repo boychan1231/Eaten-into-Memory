@@ -250,7 +250,6 @@ function resetRightPanels(gameState) {
     if (histEl) histEl.innerHTML = '';
 }
 
-// ==========================================
 // 3. 核心繪圖函式：主控台 (Orchestrator)
 // ==========================================
 function updateUI(gameState) {
@@ -1169,13 +1168,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
         btnSeal.textContent = "本回合已發動能力";
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
-    } 
-	//else if (evolvedCount < 2) {
-    //    btnSeal.innerHTML = `時間凍結 (鎖)<br><span style="font-size:0.75rem; font-weight:normal;">需場上 2 名進化時魔 (目前 ${evolvedCount})</span>`;
-    //    btnSeal.disabled = true;
-    //    btnSeal.style.backgroundColor = '#444';
-    //    btnSeal.style.color = '#888';} 
-	else if (humanPlayer.mana < sealCost) {
+    } else if (humanPlayer.mana < sealCost) {
         btnSeal.textContent = `Mana 不足 (${humanPlayer.mana}/${sealCost})`;
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
@@ -1924,3 +1917,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
