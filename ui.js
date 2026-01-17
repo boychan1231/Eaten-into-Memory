@@ -31,7 +31,7 @@ function openModal(overlay, focusTarget) {
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
     }
-    overlay.style.display = 'flex';
+    openModal(overlay, document.getElementById('btn-restart-game') || undefined);
     overlay.setAttribute('aria-hidden', 'false');
     if (!modalOpenOrder.includes(overlay)) {
         modalOpenOrder.push(overlay);
