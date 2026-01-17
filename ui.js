@@ -28,10 +28,15 @@ function openModal(overlay, focusTarget) {
     if (!modalFocusMap.has(overlay)) {
         modalFocusMap.set(overlay, document.activeElement);
     }
+    
+    // ✅ 修正：強制設定為 flex 以顯示視窗 (覆蓋 CSS 的 display: none)
+    overlay.style.display = 'flex';
+    
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
     }
     overlay.setAttribute('aria-hidden', 'false');
+    
     if (!modalOpenOrder.includes(overlay)) {
         modalOpenOrder.push(overlay);
     }
