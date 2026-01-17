@@ -124,6 +124,10 @@ header h1 {
     flex: 1;
 }
 
+.hidden {
+    display: none;
+}
+
 /* --- 按鈕與開關 --- */
 button {
     background-color: var(--accent-color);
@@ -180,6 +184,16 @@ input:checked + .slider:before { transform: translateX(16px); }
     border: 1px solid #333;
 }
 .setting-item { margin-bottom: 15px; }
+
+.rules-subhint {
+    color: #aaa;
+    font-size: 0.9em;
+    margin-left: 24px;
+}
+
+.toggle-switch.toggle-switch-spaced {
+    margin-bottom: 15px;
+}
 
 /* --- 主遊戲區域 (鐘面 + 日誌) --- */
 .main-area {
@@ -486,6 +500,15 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: white;
     font-weight: bold;
     box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+}
+
+.panel-title-highlight {
+    color: #ffd27f;
+}
+
+.score-panel,
+.history-panel {
+    display: none;
 }
 
 #played-cards-list, #player-history-list {
@@ -821,6 +844,10 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 8px; font-size: 0.9rem;
 }
 
+.seconds-cancel-btn {
+    margin-top: 5px;
+}
+
 /* --- 彈窗 Overlay --- */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.65);
@@ -861,6 +888,54 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: rgba(0,0,0,0.35); color: #fff; font-size: 1.1rem; cursor: pointer;
 }
 .modal-actions button:hover { background: rgba(255,255,255,0.10); }
+
+.modal-title-seconds {
+    color: #00d2d3;
+}
+
+.modal-title-collection {
+    color: #ffd27f;
+}
+
+.seconds-choice-btn {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.collection-list-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.game-over-modal {
+    text-align: center;
+    border: 2px solid #ffd27f;
+    box-shadow: 0 0 30px rgba(255, 210, 127, 0.2);
+}
+
+.game-over-title {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.game-over-subtitle {
+    color: #ccc;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.game-over-actions {
+    margin-top: 20px;
+}
+
+.btn-restart-game {
+    background: #4caf50;
+}
+
+.btn-close-gameover {
+    background: #555;
+}
 
 /* --- AI 玩家卡片 --- */
 .players-grid {
@@ -1395,6 +1470,36 @@ body {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
     border-color: #999;
+}
+
+.settings-range-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.log-speed-slider {
+    flex: 1;
+}
+
+.log-speed-value {
+    font-family: monospace;
+    width: 120px;
+}
+
+.setting-note {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.setting-muted {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.settings-divider {
+    border-color: #333;
+    margin: 20px 0;
 }
 
 /* 調整彈窗內的收集列表樣式 */
