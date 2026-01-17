@@ -14,6 +14,57 @@ const LOG_ACCEL_THRESHOLD = window.UI_CONFIG?.LOG_ACCEL_THRESHOLD ?? 5;
 const LOG_ACCEL_DELAY = window.UI_CONFIG?.LOG_ACCEL_DELAY ?? 30;
 const shouldMirrorConsole = window.UI_CONFIG?.MIRROR_CONSOLE ?? true;
 let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
+const modalFocusMap = new WeakMap();
+const modalOpenOrder = [];
+
+function getFocusableElement(root) {
+    if (!root) return null;
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    return root.querySelector(selector);
+}
+
+function openModal(overlay, focusTarget) {
+    if (!overlay) return;
+    if (overlay.dataset.modalOpen === 'true') {
+        return;
+    }
+    if (!modalFocusMap.has(overlay)) {
+        modalFocusMap.set(overlay, document.activeElement);
+    }
+    if (overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+    }
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.dataset.modalOpen = 'true';
+    if (!modalOpenOrder.includes(overlay)) {
+        modalOpenOrder.push(overlay);
+    }
+    const focusEl = focusTarget || getFocusableElement(overlay);
+    if (focusEl && typeof focusEl.focus === 'function') {
+        focusEl.focus();
+    }
+}
+
+function closeModal(overlay) {
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    delete overlay.dataset.modalOpen;
+    const previousFocus = modalFocusMap.get(overlay);
+    if (previousFocus && typeof previousFocus.focus === 'function') {
+        previousFocus.focus();
+    }
+    modalFocusMap.delete(overlay);
+    const idx = modalOpenOrder.indexOf(overlay);
+    if (idx >= 0) modalOpenOrder.splice(idx, 1);
+}
+
+function closeTopModal() {
+    const overlay = modalOpenOrder[modalOpenOrder.length - 1];
+    if (overlay) closeModal(overlay);
+}
 
 // ✅ 保險：避免 GAME_CONFIG 未定義導致 UI 事件中斷
 try {
@@ -742,14 +793,16 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
     // 二選一彈窗
     if (overlay) {
         if (flags.isWaitingSecondFinalChoice && gameState.secondHandPendingCards && gameState.secondHandPendingCards.length === 2) {
-            overlay.style.display = 'flex';
             const [a, b] = gameState.secondHandPendingCards;
             const btnA = document.getElementById('seconds-choice-a');
             const btnB = document.getElementById('seconds-choice-b');
             if (btnA) { btnA.textContent = String(a.value); btnA.dataset.value = String(a.value); }
             if (btnB) { btnB.textContent = String(b.value); btnB.dataset.value = String(b.value); }
-        } else {
-            overlay.style.display = 'none';
+            if (overlay.classList.contains('hidden')) {
+                openModal(overlay, btnA || undefined);
+            }
+        } else if (!overlay.classList.contains('hidden')) {
+            closeModal(overlay);
         }
     }
 }
@@ -1269,6 +1322,13 @@ function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, active
 
 // 4. 綁定按鈕事件
 document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (modalOpenOrder.length > 0) {
+            event.preventDefault();
+            closeTopModal();
+        }
+    });
     try { console.log('[UI] 已載入，等待開始遊戲。'); } catch (_) {}
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
@@ -1522,21 +1582,21 @@ document.addEventListener('DOMContentLoaded', () => {
 				const btnSin = document.getElementById('role-choice-sin');
 				const btnScz = document.getElementById('role-choice-scz');
 
-				const startWithRole = (roleId) => {
-					if (roleOverlay) roleOverlay.style.display = 'none';
-					if (typeof window.setHumanPlayerId === 'function') {
-						window.setHumanPlayerId(roleId);
-					} else {
+					const startWithRole = (roleId) => {
+						if (roleOverlay) closeModal(roleOverlay);
+						if (typeof window.setHumanPlayerId === 'function') {
+							window.setHumanPlayerId(roleId);
+						} else {
 						try { window.HUMAN_PLAYER_ID = roleId; } catch (_) {}
 					}
 					doInitialize();
 				};
 
-				if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
-					roleOverlay.style.display = 'flex';
-					btnTimeDemon.onclick = () => startWithRole('SM_1');
-					btnSin.onclick = () => startWithRole('sin');
-					btnScz.onclick = () => startWithRole('SCZ');
+					if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
+						openModal(roleOverlay, btnTimeDemon);
+						btnTimeDemon.onclick = () => startWithRole('SM_1');
+						btnSin.onclick = () => startWithRole('sin');
+						btnScz.onclick = () => startWithRole('SCZ');
 					return;
 				}
 				startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
@@ -1549,11 +1609,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		const roleCloseBtn = document.getElementById('role-choice-close-btn');
 		const roleOverlayEl = document.getElementById('role-choice-overlay');
 		
-		if (roleCloseBtn && roleOverlayEl) {
-			roleCloseBtn.addEventListener('click', () => {
-				roleOverlayEl.style.display = 'none';
-			});
-		}
+			if (roleCloseBtn && roleOverlayEl) {
+				roleCloseBtn.addEventListener('click', () => {
+					closeModal(roleOverlayEl);
+				});
+			}
 		
     }
 
@@ -1633,13 +1693,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnViewCol && colOverlay) {
         btnViewCol.addEventListener('click', () => {
-            colOverlay.style.display = 'flex'; // 開啟彈窗
+            openModal(colOverlay, colClose || undefined);
         });
     }
 
     if (colClose && colOverlay) {
         colClose.addEventListener('click', () => {
-            colOverlay.style.display = 'none'; // 關閉彈窗
+            closeModal(colOverlay);
         });
     }
 
@@ -1647,7 +1707,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (colOverlay) {
         colOverlay.addEventListener('click', (e) => {
             if (e.target === colOverlay) {
-                colOverlay.style.display = 'none';
+                closeModal(colOverlay);
             }
         });
     }
@@ -1845,7 +1905,7 @@ function renderGameOverPanel(gameState) {
     });
 
     // 顯示視窗
-    overlay.style.display = 'flex';
+    openModal(overlay, document.getElementById('btn-restart-game') || undefined);
 }
 
 // 綁定按鈕事件 (加在 DOMContentLoaded 內)
@@ -1865,7 +1925,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCloseGO && goOverlay) {
         btnCloseGO.addEventListener('click', () => {
-            goOverlay.style.display = 'none'; // 僅關閉視窗，讓玩家看盤面
+            closeModal(goOverlay);
         });
     }
 });
