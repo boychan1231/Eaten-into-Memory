@@ -1098,31 +1098,33 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
     container.className = 'evo-ability-panel';
     container.innerHTML = `<div class="evo-role-title" style="color:${ROLE_COLORS[role]}">${role}</div>`;
 
-// 檢查封印狀態，若被封印則顯示提示符號
-    if (gameState.abilityMarker) {
+    // 1. 檢查封印狀態
+    const isAbilityLocked = !!gameState.abilityMarker;
+
+    // 若被封印，顯示頂部警告條
+    if (isAbilityLocked) {
         const sealDiv = document.createElement('div');
         sealDiv.className = 'seal-badge';
         sealDiv.textContent = '能力已被封印';
-        sealDiv.title = '時之惡發動了「時間凍結」，本回合無法使用特殊能力。';
+        sealDiv.title = '時之惡發動「封鎖」，本回合無法使用特殊能力。';
         container.appendChild(sealDiv);
     }
 
-
+    // --- 時針 (Time Hand) ---
     if (role === '時針') {
-		const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
+        const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
         
-        // --- 預知牌頂 --
-		const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
+        // 顯示牌庫頂資訊
+        const topCard = (Array.isArray(gameState.hourDeck) && gameState.hourDeck.length > 0) 
             ? gameState.hourDeck[gameState.hourDeck.length - 1] : null;
         
         let contentHtml = '';
-        if (!!gameState.abilityMarker) {
-            contentHtml = '<div style="color:#ff6b6b; font-weight:bold;">🚫 能力被封鎖</div>';
+        if (isAbilityLocked) {
+            contentHtml = '<div style="color:#ff6b6b; font-weight:bold;">🚫 預知能力失效</div>';
         } else if (!topCard) {
             contentHtml = '<div style="color:#aaa;">(牌庫已空)</div>';
         } else {
             const star = topCard.isPrecious ? '<span style="color:#ffd27f; font-size:1.2rem;">★</span>' : '';
-            // ✅ 這裡就是「顯示牌頂資訊」的關鍵 HTML
             contentHtml = `<div style="font-size:0.9rem; margin-bottom:6px; border-bottom:1px dashed #666; padding-bottom:4px; color:#fff;">👁️ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${topCard.ageGroup || ''}</span> ${star}</div>`;
         }
 
@@ -1131,14 +1133,11 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         passiveContainer.innerHTML = contentHtml;
         container.appendChild(passiveContainer);
 
-        // --- 主動技能按鈕邏輯 ---
-        
-        // 1. 取得當前使用次數與對應消耗
+        // 按鈕邏輯
         const moveCount = humanPlayer.hourHandMoveCount || 0;
         const currentCost = (moveCount === 0) ? baseCost : 2;
-
-        // 2. 判斷是否可用 (未封印 + Mana夠 + 牌庫有牌 + (沒用過 OR 只用過1次))
-        const isAbilityLocked = !!gameState.abilityMarker; // 被時之惡封印
+        
+        // 判斷是否可用 (增加 !isAbilityLocked 檢查)
         const canUse = !gameState.gameEnded && 
                        !isAbilityLocked &&
                        humanPlayer.mana >= currentCost && 
@@ -1147,67 +1146,90 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         const btn = document.createElement('button');
         btn.className = 'evo-btn';
-        btn.style.backgroundColor = '#ff9ff3';
-        
-        // 3. 動態按鈕文字
-        let btnHtml = "";
-        if (isAbilityLocked) {
-             btnHtml = `🚫 能力被封鎖`;
-        } else if (moveCount === 0) {
-             btnHtml = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
-        } else {
-             btnHtml = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
-        }
 
-        btn.innerHTML = btnHtml;
-        btn.disabled = !canUse;
-        
-        btn.onclick = () => {
-            if (typeof hourHandMoveTopToBottom === 'function') {
-                hourHandMoveTopToBottom(globalGameState, humanPlayer.id);
-                updateUI(globalGameState); // 更新 UI 以顯示新狀態(變為2Mana按鈕)
+        if (isAbilityLocked) {
+            // ✅ 封鎖狀態樣式
+            btn.innerHTML = `🚫 能力被封鎖`;
+            btn.style.backgroundColor = '#555'; 
+            btn.style.color = '#999';
+            btn.disabled = true;
+        } else {
+            // 正常狀態
+            btn.style.backgroundColor = '#ff9ff3';
+            if (moveCount === 0) {
+                 btn.innerHTML = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
+            } else {
+                 btn.innerHTML = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
             }
-        };
+            btn.disabled = !canUse;
+            btn.onclick = () => {
+                if (typeof hourHandMoveTopToBottom === 'function') {
+                    hourHandMoveTopToBottom(globalGameState, humanPlayer.id);
+                    updateUI(globalGameState);
+                }
+            };
+        }
         container.appendChild(btn);
 
+    // --- 分針 (Minute Hand) ---
     } else if (role === '分針') {
         const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+        
         if (gameState.waitingMinuteHandChoice) {
-            const desc = document.createElement('div');
-            desc.className = 'evo-desc';
-            // 修改提示文字
-            desc.innerHTML = `<span style="color:#f368e0">⚡選擇移動方向 (跳至下一個小時卡格子)：`;
-            container.appendChild(desc);
+            // 只有當觸發條件達成且未被封鎖時，才會進入此區塊 (邏輯由 game.js 控制)
+            // 但為了保險，這裡也可以擋一下 UI
+            if (isAbilityLocked) {
+                container.innerHTML += `<div style="color:#ff6b6b">異常：封鎖狀態下不應顯示選擇面板。</div>`;
+            } else {
+                const desc = document.createElement('div');
+                desc.className = 'evo-desc';
+                desc.innerHTML = `<span style="color:#f368e0">⚡請選擇移動方向 (將跳至下一個有卡片的格子)：`;
+                container.appendChild(desc);
 
-            const btnGroup = document.createElement('div');
-            btnGroup.style.display = 'flex';
-            btnGroup.style.gap = '5px';
-            const makeBtn = (txt, val, color) => {
-                const b = document.createElement('button');
-                b.className = 'evo-btn';
-                b.style.background = color;
-                b.textContent = txt;
-                b.onclick = () => handleHumanAbilityChoice(globalGameState, val);
-                return b;
+                const btnGroup = document.createElement('div');
+                btnGroup.style.display = 'flex';
+                btnGroup.style.gap = '5px';
+                const makeBtn = (txt, val, color) => {
+                    const b = document.createElement('button');
+                    b.className = 'evo-btn';
+                    b.style.background = color;
+                    b.textContent = txt;
+                    b.onclick = () => handleHumanAbilityChoice(globalGameState, val);
+                    return b;
+                }
+                btnGroup.appendChild(makeBtn('↺ 逆時針', 'ccw', '#00d2d3'));
+                btnGroup.appendChild(makeBtn('↻ 順時針', 'cw', '#ff9ff3'));
+                btnGroup.appendChild(makeBtn('略過', false, '#777'));
+                container.appendChild(btnGroup);
             }
-            btnGroup.appendChild(makeBtn('↺ 逆時針搜尋', 'ccw', '#00d2d3')); // 修改按鈕文字
-            btnGroup.appendChild(makeBtn('↻ 順時針搜尋', 'cw', '#ff9ff3')); // 修改按鈕文字
-            btnGroup.appendChild(makeBtn('略過', false, '#777'));
-            container.appendChild(btnGroup);
         } else {
+            // 靜態描述 (被動觸發)
             const info = document.createElement('div');
             info.className = 'evo-desc';
-            // 修改靜態描述
-            info.innerHTML = `取得小時卡時，可消耗 ${COST} Mana 移至下一個順/逆時針的小時卡格子。`;
+            
+            if (isAbilityLocked) {
+                // ✅ 封鎖狀態提示
+                info.innerHTML = `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
+            } else {
+                info.innerHTML = `取得小時卡時，可消耗 ${COST} Mana 跳躍至順/逆時針下一個有卡片的格子。`;
+            }
             container.appendChild(info);
         }
 
+    // --- 秒針 (Second Hand) ---
     } else if (role === '秒針') {
-		const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
+        const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
         const isWaitingMinute = gameState.currentRoundAIChoices !== null; 
         const isWaitingFinal = !!gameState.waitingSecondHandFinalChoice; 
-        const canUse = window.GAME_CONFIG.enableAbilities && isWaitingMinute && !isWaitingFinal && 
-                       !humanPlayer.specialAbilityUsed && humanPlayer.mana >= COST && humanPlayer.hand.length >= 2;
+
+        // 判斷是否可用 (增加 !isAbilityLocked 檢查)
+        const canUse = window.GAME_CONFIG.enableAbilities && 
+                       !isAbilityLocked &&
+                       isWaitingMinute && 
+                       !isWaitingFinal && 
+                       !humanPlayer.specialAbilityUsed && 
+                       humanPlayer.mana >= COST && 
+                       humanPlayer.hand.length >= 2;
 
         if (isWaitingFinal) {
             const desc = document.createElement('div');
@@ -1217,18 +1239,29 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         } else {
             const btn = document.createElement('button');
             btn.className = 'evo-btn';
-            btn.style.backgroundColor = '#00d2d3';
-            btn.innerHTML = `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
-            if (uiState.isSecondHandSelectingTwo) {
-                btn.style.backgroundColor = '#ff6b6b';
-                btn.style.color = '#fff';
-                btn.textContent = '取消選擇';
-                btn.onclick = () => { uiState.isSecondHandSelectingTwo = false; uiState.selectedCardValues = []; updateUI(globalGameState); };
+
+            if (isAbilityLocked) {
+                // ✅ 封鎖狀態樣式
+                btn.innerHTML = `🚫 能力被封鎖`;
+                btn.style.backgroundColor = '#555';
+                btn.style.color = '#999';
+                btn.disabled = true;
             } else {
-                btn.disabled = !canUse;
-                btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
+                // 正常 / 取消選擇狀態
+                if (uiState.isSecondHandSelectingTwo) {
+                    btn.style.backgroundColor = '#ff6b6b';
+                    btn.style.color = '#fff';
+                    btn.textContent = '取消選擇';
+                    btn.onclick = () => { uiState.isSecondHandSelectingTwo = false; uiState.selectedCardValues = []; updateUI(globalGameState); };
+                } else {
+                    btn.style.backgroundColor = '#00d2d3';
+                    btn.innerHTML = `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
+                    btn.disabled = !canUse;
+                    btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
+                }
             }
             container.appendChild(btn);
+            
             if (uiState.isSecondHandSelectingTwo) {
                 const hint = document.createElement('div');
                 hint.className = 'evo-desc';
