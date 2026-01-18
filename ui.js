@@ -204,6 +204,11 @@ const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
 const UI_HISTORY_LIMIT = window.UI_CONFIG?.HISTORY_LIMIT || 12;
 let uiMinuteHistory = {};
 let uiLastRecordedTurnKey = null;
+const minuteHistoryRenderCache = {
+    order: [],
+    rows: new Map(),
+    historySignature: new Map()
+};
 // 追蹤目前輪數，用於偵測換輪時重置歷史
 let uiTrackedGameRound = 1;
 
@@ -245,43 +250,101 @@ function recordMinuteHistoryIfNew(gameState, choices) {
     });
 }
 
+function buildMinuteHistoryRow(player) {
+    const row = document.createElement('div');
+    row.className = 'player-history-row';
+    row.dataset.playerId = player.id;
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'player-history-name';
+
+    const cardsEl = document.createElement('div');
+    cardsEl.className = 'player-history-cards';
+
+    const chips = [];
+    for (let i = 0; i < UI_HISTORY_LIMIT; i++) {
+        const chip = document.createElement('span');
+        chip.className = 'minute-chip empty';
+        chip.textContent = '—';
+        cardsEl.appendChild(chip);
+        chips.push(chip);
+    }
+
+    row.appendChild(nameEl);
+    row.appendChild(cardsEl);
+
+    return { row, nameEl, chips };
+}
+
+function getMinuteHistorySignature(arr) {
+    return arr.map(val => (val == null ? '—' : String(val))).join('|');
+}
+
 function renderMinuteHistory(gameState) {
     const list = document.getElementById('player-history-list');
     if (!list) return;
-    list.innerHTML = '';
 
     const orderedPlayers = (gameState.players || []).slice().reverse();
-    orderedPlayers.forEach(p => {
-        const row = document.createElement('div');
-        row.className = 'player-history-row';
-        const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
-        const color = ROLE_COLORS[roleKey] || '#ccc';
+    const orderedIds = orderedPlayers.map(player => player.id);
+    const activeIds = new Set(orderedIds);
 
-        const nameEl = document.createElement('span');
-        nameEl.className = 'player-history-name';
-        nameEl.style.color = color;
-        nameEl.textContent = p.name;
-
-        const cardsEl = document.createElement('div');
-        cardsEl.className = 'player-history-cards';
-        const arr = uiMinuteHistory[p.id] || [];
-        for (let i = 0; i < UI_HISTORY_LIMIT; i++) {
-            const val = arr[i];
-            const chip = document.createElement('span');
-            chip.className = 'minute-chip' + (val == null ? ' empty' : '');
-            chip.textContent = (val == null ? '—' : String(val));
-            cardsEl.appendChild(chip);
+    for (const [playerId, entry] of minuteHistoryRenderCache.rows.entries()) {
+        if (!activeIds.has(playerId)) {
+            entry.row.remove();
+            minuteHistoryRenderCache.rows.delete(playerId);
+            minuteHistoryRenderCache.historySignature.delete(playerId);
         }
-        row.appendChild(nameEl);
-        row.appendChild(cardsEl);
-        list.appendChild(row);
+    }
+
+    orderedPlayers.forEach(player => {
+        let entry = minuteHistoryRenderCache.rows.get(player.id);
+        if (!entry) {
+            entry = buildMinuteHistoryRow(player);
+            minuteHistoryRenderCache.rows.set(player.id, entry);
+        }
+
+        const roleKey = (player.roleCard && player.roleCard.includes('時魔')) ? '時魔' : player.roleCard;
+        const color = ROLE_COLORS[roleKey] || '#ccc';
+        if (entry.nameEl.textContent !== player.name) {
+            entry.nameEl.textContent = player.name;
+        }
+        if (entry.nameEl.style.color !== color) {
+            entry.nameEl.style.color = color;
+        }
+
+        const historyArr = uiMinuteHistory[player.id] || [];
+        const signature = getMinuteHistorySignature(historyArr);
+        if (minuteHistoryRenderCache.historySignature.get(player.id) !== signature) {
+            for (let i = 0; i < UI_HISTORY_LIMIT; i++) {
+                const val = historyArr[i];
+                const chip = entry.chips[i];
+                const isEmpty = val == null;
+                const nextText = isEmpty ? '—' : String(val);
+                if (chip.textContent !== nextText) {
+                    chip.textContent = nextText;
+                }
+                chip.classList.toggle('empty', isEmpty);
+            }
+            minuteHistoryRenderCache.historySignature.set(player.id, signature);
+        }
     });
+
+    const fragment = document.createDocumentFragment();
+    orderedIds.forEach(id => {
+        const entry = minuteHistoryRenderCache.rows.get(id);
+        if (entry) fragment.appendChild(entry.row);
+    });
+    list.appendChild(fragment);
+    minuteHistoryRenderCache.order = orderedIds;
 }
 
 function resetRightPanels(gameState) {
     uiLastRecordedTurnKey = null;
     lastPlayerStats = {}; 
     for (const k of Object.keys(uiMinuteHistory)) delete uiMinuteHistory[k];
+    minuteHistoryRenderCache.order = [];
+    minuteHistoryRenderCache.rows.clear();
+    minuteHistoryRenderCache.historySignature.clear();
     if (!gameState) return;
     gameState.players.forEach(p => { uiMinuteHistory[p.id] = []; });
     const histEl = document.getElementById('player-history-list');
