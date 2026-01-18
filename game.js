@@ -1278,7 +1278,7 @@ function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
     
-    appLogger.log(`--- 步驟 5: 扣除齒輪卡/護盾 (當前規則: ${modeText}) ---`);
+    appLogger.log(`--扣除齒輪/護盾 (當前規則: ${modeText}) --`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     // 若時之惡不在場，無人受罰 (直接檢查勝利條件)
