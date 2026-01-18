@@ -1,7 +1,8 @@
 // game.js
-const appLogger = window.appLogger || {
+const appLogger = (typeof window !== 'undefined' && window.appLogger) || {
     log: (...args) => console.log(...args)
 };
+
 // ✅ 人類玩家 ID：改為可動態設定（支援角色選擇/測試），預設讀取設定檔。
 let HUMAN_PLAYER_ID = (typeof window !== 'undefined' && window.GAME_CONFIG?.defaultHumanId)
     ? window.GAME_CONFIG.defaultHumanId
@@ -1708,4 +1709,5 @@ try {
         window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
         window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
     }
+
 } catch (_) {}
