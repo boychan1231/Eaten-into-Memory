@@ -303,7 +303,7 @@ if (typeof window !== 'undefined') {
 
 // abilities.js (請加在檔案最下方)
 
-// === 時之惡能力：時間凍結 (封印全場) ===
+// === 時之惡能力：封鎖 ===
 function activateSinSealAbility(gameState, playerId) {
     if (!GAME_CONFIG.enableAbilities) return false;
 
@@ -338,7 +338,7 @@ function activateSinSealAbility(gameState, playerId) {
     player.specialAbilityUsed = true;
     gameState.abilityMarker = true; // ✅ 開啟封印標記
 
-    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
+    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
     return true;
 }
 

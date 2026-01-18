@@ -413,7 +413,7 @@ function activateSinSealAI(gameState) {
         sinPlayer.specialAbilityUsed = true; // 標記已使用能力
         gameState.abilityMarker = true;      // ✅ 設定封印標記 (重點)
         
-        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
+        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
     }
 }
 

@@ -1273,7 +1273,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     }
     container.appendChild(btnPull);
 
-    // --- 按鈕 B：時間凍結/封印 (4 Mana) ---
+    // --- 按鈕 B：封鎖 (4 Mana) ---
 	
     // 計算已進化數量
     //const evolvedCount = gameState.players.filter(p => 
@@ -1629,6 +1629,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof handleHumanAbilityChoice === 'function') {
                     handleHumanAbilityChoice(globalGameState, 'skip');
                 }
+				// 略過後，若遊戲未結束，自動執行 startRound 進入下一回合
+                // 這樣玩家就不需要再按一次按鈕了
+                if (!globalGameState.gameEnded) {
+                    startRound(globalGameState);
+                    updateUI(globalGameState);
+                }
+
                 return; // 執行完略過後就結束，不繼續執行 startRound
             }
 			
@@ -1647,6 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!globalGameState.gameEnded) {
                 startRound(globalGameState);
                 updateUI(globalGameState);
+				
             } else {
                 appLogger.log("遊戲已結束。");
                 nextBtn.disabled = true;
