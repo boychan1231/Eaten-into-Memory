@@ -1267,37 +1267,48 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
 
 // F-3. 時之惡 (已更新：新增封印按鈕)
+// ui.js - renderSinAbilityPanel 修正版 (左右並排)
+
 function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
     container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡</div>`;
 
     // 1. 顯示當前規則狀態
-    const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (變更)' : '小時值最大 (預設)';
+    const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
     const statusDiv = document.createElement('div');
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
     statusDiv.innerHTML = `<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
     container.appendChild(statusDiv);
 
+    // ✅ 建立按鈕群組容器 (Flex Row)
+    const btnGroup = document.createElement('div');
+    btnGroup.style.display = 'flex';
+    btnGroup.style.gap = '8px';    // 按鈕之間的間距
+    btnGroup.style.width = '100%'; // 填滿寬度
+
     // 共用變數
     const canAct = window.GAME_CONFIG.enableAbilities && !gameState.gameEnded && !humanPlayer.specialAbilityUsed;
     
-    // --- 按鈕 A：惡之牽引 (2 Mana) ---
+    // --- 按鈕 A：惡之牽引 (左) ---
     const pullCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     const btnPull = document.createElement('button');
     btnPull.className = 'evo-btn';
-    btnPull.style.marginBottom = '5px'; // 按鈕間距
+    btnPull.style.flex = '1';           // ✅ 設定 flex: 1 讓兩顆按鈕平均分配寬度
     btnPull.style.backgroundColor = '#feca57';
     btnPull.style.color = '#000';
+    // btnPull.style.marginBottom = '0'; // 移除原本的底部間距
 
     if (humanPlayer.specialAbilityUsed) {
-        btnPull.textContent = "本回合已發動能力";
+        btnPull.textContent = "已行動";
         btnPull.disabled = true;
     } else if (humanPlayer.mana < pullCost) {
-        btnPull.textContent = `Mana 不足 (${humanPlayer.mana}/${pullCost})`;
+        btnPull.textContent = `缺 Mana (${pullCost})`; // 精簡文字
         btnPull.disabled = true;
     } else {
-        btnPull.innerHTML = `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">懲罰「距離最近」者</span>`;
+        // 精簡描述以適應較窄的寬度
+        btnPull.innerHTML = `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
+        btnPull.title = "改為懲罰「距離最近」者"; // 將詳細說明移至 Tooltip
         btnPull.onclick = () => {
             if (typeof activateSinAbility === 'function') {
                 const success = activateSinAbility(globalGameState, humanPlayer.id);
@@ -1305,35 +1316,31 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
             }
         };
     }
-    container.appendChild(btnPull);
+    btnGroup.appendChild(btnPull); // 加入群組
 
-    // --- 按鈕 B：封鎖 (4 Mana) ---
-	
-    // 計算已進化數量
-    //const evolvedCount = gameState.players.filter(p => 
-    //    p.type === '時魔' && !p.isEjected && ['時針', '分針', '秒針'].includes(p.roleCard)
-    //).length;
-    
+    // --- 按鈕 B：封鎖 (右) ---
     const sealCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     const btnSeal = document.createElement('button');
     btnSeal.className = 'evo-btn';
-    btnSeal.style.backgroundColor = '#ff6b6b'; // 紅色系，代表危險/封印
+    btnSeal.style.flex = '1';           // ✅ 設定 flex: 1
+    btnSeal.style.backgroundColor = '#ff6b6b'; 
     btnSeal.style.color = '#fff';
 
     if (gameState.abilityMarker) {
-        btnSeal.textContent = "🚫 全場能力已封印";
+        btnSeal.textContent = "已封鎖";
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else if (humanPlayer.specialAbilityUsed) {
-        btnSeal.textContent = "本回合已發動能力";
+        btnSeal.textContent = "已行動";
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else if (humanPlayer.mana < sealCost) {
-        btnSeal.textContent = `Mana 不足 (${humanPlayer.mana}/${sealCost})`;
+        btnSeal.textContent = `缺 Mana (${sealCost})`;
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else {
-        btnSeal.innerHTML = `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔技能</span>`;
+        btnSeal.innerHTML = `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖</span>`;
+        btnSeal.title = "本回合封鎖時魔技能"; // Tooltip
         btnSeal.onclick = () => {
             if (typeof activateSinSealAbility === 'function') {
                 const success = activateSinSealAbility(globalGameState, humanPlayer.id);
@@ -1341,7 +1348,10 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
             }
         };
     }
-    container.appendChild(btnSeal);
+    btnGroup.appendChild(btnSeal); // 加入群組
+
+    // 將整組按鈕加入主容器
+    container.appendChild(btnGroup);
 
     parent.appendChild(container);
 }
