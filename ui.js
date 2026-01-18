@@ -1273,7 +1273,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡</div>`;
 
     // 1. 顯示當前規則狀態
-    const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
+    const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (變更)' : '小時值最大 (預設)';
     const statusDiv = document.createElement('div');
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
     statusDiv.innerHTML = `<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
@@ -1297,7 +1297,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
         btnPull.textContent = `Mana 不足 (${humanPlayer.mana}/${pullCost})`;
         btnPull.disabled = true;
     } else {
-        btnPull.innerHTML = `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">改為懲罰「距離最近」者</span>`;
+        btnPull.innerHTML = `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">懲罰「距離最近」者</span>`;
         btnPull.onclick = () => {
             if (typeof activateSinAbility === 'function') {
                 const success = activateSinAbility(globalGameState, humanPlayer.id);
@@ -1333,7 +1333,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else {
-        btnSeal.innerHTML = `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">本回合封印所有時魔技能</span>`;
+        btnSeal.innerHTML = `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔技能</span>`;
         btnSeal.onclick = () => {
             if (typeof activateSinSealAbility === 'function') {
                 const success = activateSinSealAbility(globalGameState, humanPlayer.id);
