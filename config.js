@@ -40,13 +40,13 @@ window.GAME_DATA = {
         { id: 'SCZ', name: '受詛者', type: '受詛者' }
     ],
     
-    // ✅ 新增：能力消耗與參數設定 (集中管理平衡數值)
+    // 能力消耗與參數設定 (集中管理平衡數值)
     ABILITY_COSTS: {
         TIME_HAND_MOVE: 1,      // 時針：移牌到底部
         MINUTE_HAND_MOVE: 2,    // 分針：移動一格
         SECOND_HAND_SELECT: 3,  // 秒針：二選一
         SIN_PULL: 2,            // 時之惡：惡之牽引
-        SIN_SEAL: 4,            // 時之惡：全場封印
+        SIN_SEAL: 3,            // 時之惡：全場封印
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
 

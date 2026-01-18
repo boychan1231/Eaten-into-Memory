@@ -1747,3 +1747,33 @@ body {
 .radio-label:hover {
     color: #fff;
 }
+
+/* --- 時之惡封印標記 (Ability Seal Badge) --- */
+@keyframes pulse-red-border {
+    0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 107, 107, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+}
+
+.seal-badge {
+    background-color: rgba(60, 10, 10, 0.8); /* 深紅黑底色 */
+    border: 1px solid #ff6b6b;                /* 亮紅邊框 */
+    color: #ff6b6b;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    animation: pulse-red-border 2s infinite; /* 呼吸燈特效 */
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.2);
+}
+
+.seal-badge::before {
+    content: '🔒';
+    font-size: 1.1rem;
+}

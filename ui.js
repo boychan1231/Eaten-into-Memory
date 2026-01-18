@@ -1098,6 +1098,16 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
     container.className = 'evo-ability-panel';
     container.innerHTML = `<div class="evo-role-title" style="color:${ROLE_COLORS[role]}">${role}</div>`;
 
+// 檢查封印狀態，若被封印則顯示提示符號
+    if (gameState.abilityMarker) {
+        const sealDiv = document.createElement('div');
+        sealDiv.className = 'seal-badge';
+        sealDiv.textContent = '能力已被封印';
+        sealDiv.title = '時之惡發動了「時間凍結」，本回合無法使用特殊能力。';
+        container.appendChild(sealDiv);
+    }
+
+
     if (role === '時針') {
 		const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
         
@@ -1280,7 +1290,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     //    p.type === '時魔' && !p.isEjected && ['時針', '分針', '秒針'].includes(p.roleCard)
     //).length;
     
-    const sealCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+    const sealCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     const btnSeal = document.createElement('button');
     btnSeal.className = 'evo-btn';
     btnSeal.style.backgroundColor = '#ff6b6b'; // 紅色系，代表危險/封印

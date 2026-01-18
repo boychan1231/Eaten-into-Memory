@@ -290,8 +290,8 @@ function activateSinAbility(gameState, playerId) {
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
-    appLogger.log(`😈【時之惡】玩家發動能力！消耗 ${COST} Mana。`);
-    appLogger.log(`⚠️ 本回合懲罰規則已變更為：距離「時之惡」最近者受罰。`);
+    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} Mana。`);
+    appLogger.log(`⚠️ 本回合懲罰規則變更為：距離「時之惡」最近者受罰。`);
 
     return true;
 }
@@ -316,8 +316,8 @@ function activateSinSealAbility(gameState, playerId) {
         return false;
     }
     
-    // 2. 讀取消耗 (預設 4 Mana)
-    const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+    // 2. 讀取消耗 (預設 3 Mana)
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     if (player.mana < COST) {
         appLogger.log(`Mana 不足 (需 ${COST})，無法發動封印。`);
         return false;

@@ -399,7 +399,7 @@ function activateSinSealAI(gameState) {
     if (sinPlayer.specialAbilityUsed) return;
 
     // 3. 條件檢查
-    const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     
     // 計算場上「已進化」的時魔數量
     const evolvedCount = gameState.players.filter(p => 
@@ -407,7 +407,7 @@ function activateSinSealAI(gameState) {
         ['時針', '分針', '秒針'].includes(p.roleCard)
     ).length;
 
-    // 觸發條件：Mana >= 4, 進化時魔 >= 2, 機率 50%
+    // 觸發條件：Mana >= 3, 進化時魔 >= 2, 機率 50%
     if (sinPlayer.mana >= COST && evolvedCount >= 2 && checkChance(0.5)) {
         sinPlayer.mana -= COST;
         sinPlayer.specialAbilityUsed = true; // 標記已使用能力
@@ -1450,10 +1450,10 @@ function inRoundEndActions(gameState) {
     //    ['時針', '分針', '秒針'].includes(p.roleCard)
     //).length;
 	// 條件：
-    // 1. Mana >= 4
+    // 1. Mana >= 3
     // 2. 進化時魔 >= 2
     // 3. 機率 50% (0.5)
-	//const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;//讀取mana設定
+	//const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;//讀取mana設定
     //if (GAME_CONFIG.enableAbilities && 
     //    sinPlayer && 
     //    sinPlayer.mana >= COST && 
