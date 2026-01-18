@@ -1,4 +1,7 @@
 // game.js
+const appLogger = window.appLogger || {
+    log: (...args) => console.log(...args)
+};
 // ✅ 人類玩家 ID：改為可動態設定（支援角色選擇/測試），預設讀取設定檔。
 let HUMAN_PLAYER_ID = (typeof window !== 'undefined' && window.GAME_CONFIG?.defaultHumanId)
     ? window.GAME_CONFIG.defaultHumanId
@@ -263,7 +266,7 @@ function initializeGame(roles = PLAYER_ROLES) {
 
 	// 存起本局配置（方便日後 UI 顯示或除錯）
 	gameState.hourPreciousConfig = hourConfig;
-	console.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
+	appLogger.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
 
 
     const numCards = 12;
@@ -292,7 +295,7 @@ function initializeGame(roles = PLAYER_ROLES) {
             }
             __testHandCards = __testHandCards.slice(0, 12);
 
-            console.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 輪起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
+            appLogger.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 輪起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
         } else {
             console.warn(`🧪【測試模式】找不到人類玩家 id=${__humanIdForTest}，未套用固定手牌。`);
         }
@@ -337,16 +340,16 @@ function initializeGame(roles = PLAYER_ROLES) {
     const sinPlayerStart = gameState.players.find(p => p.type === '時之惡');
     if (sinPlayerStart) {
         sinPlayerStart.currentClockPosition = 12;
-        console.log("【初始設定】時之惡 位於位置 12");
+        appLogger.log("【初始設定】時之惡 位於位置 12");
     }
 
     const sczPlayerStart = gameState.players.find(p => p.type === '受詛者');
     if (sczPlayerStart) {
         sczPlayerStart.currentClockPosition = 1;
-        console.log("【初始設定】受詛者 位於位置 1");
+        appLogger.log("【初始設定】受詛者 位於位置 1");
     }
     
-    console.log("遊戲初始化完成！");
+    appLogger.log("遊戲初始化完成！");
     return gameState;
 }
 
@@ -372,10 +375,10 @@ function activateSinTargetingAbility(gameState) {
     if (sinPlayer.mana >= COST && checkChance(0.6)) {
         sinPlayer.mana -= COST;
         gameState.sinTargetingMode = 'sin';
-        console.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
+        appLogger.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
     } else {
         gameState.sinTargetingMode = 'default';
-        console.log(`【時之惡】鐘面數值最大者受罰 (接近12)。`);
+        appLogger.log(`【時之惡】鐘面數值最大者受罰 (接近12)。`);
     }
 }
 
@@ -409,7 +412,7 @@ function activateSinSealAI(gameState) {
         sinPlayer.specialAbilityUsed = true; // 標記已使用能力
         gameState.abilityMarker = true;      // ✅ 設定封印標記 (重點)
         
-        console.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
+        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
     }
 }
 
@@ -423,7 +426,7 @@ function startRound(gameState) {
 
     //防呆：若仍在等待人類輸入（出牌/選卡/能力），禁止直接進入下一回合
     if (waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
-        console.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
+        appLogger.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
         return;
     }
 	
@@ -450,7 +453,7 @@ function startRound(gameState) {
             // 4. 重新洗牌
             if (cardsToRemove.length > 0) {
                 shuffle(gameState.hourDeck);
-                console.log(`⚖️【第4輪平衡】牌庫>26，強制移除 ${cardsToRemove.length} 張「非珍貴 1 號卡」。`);
+                appLogger.log(`⚖️【第4輪平衡】牌庫>26，強制移除 ${cardsToRemove.length} 張「非珍貴 1 號卡」。`);
             }
         }
     }
@@ -483,7 +486,7 @@ function startRound(gameState) {
             shuffle(gameState.hourDeck);
             
             const maxRemovedNum = cardsToRemove.length > 0 ? cardsToRemove[cardsToRemove.length - 1].number : '?';
-            console.log(`⚖️【第5輪平衡】牌庫過厚 (${gameState.hourDeck.length + cardsToRemove.length}張)，系統已移除 ${cardsToRemove.length} 張非珍貴卡 (數字 1~${maxRemovedNum})，修正為 24 張。`);
+            appLogger.log(`⚖️【第5輪平衡】牌庫過厚 (${gameState.hourDeck.length + cardsToRemove.length}張)，系統已移除 ${cardsToRemove.length} 張非珍貴卡 (數字 1~${maxRemovedNum})，修正為 24 張。`);
         }
     }
 	
@@ -492,7 +495,7 @@ function startRound(gameState) {
 	// 每回合開始：重置「每回合一次」能力使用狀態（含時針頂牌放底）
 	gameState.players.forEach(p => { p.specialAbilityUsed = false; });
 
-    console.log(`--- 開始第 ${gameState.gameRound} 輪 第 ${gameState.roundMarker} 回合 ---`);
+    appLogger.log(`--- 開始第 ${gameState.gameRound} 輪 第 ${gameState.roundMarker} 回合 ---`);
 
 	// === 每回合重置：特殊能力使用狀態 & 本回合拿到的小時卡記錄 ===
 	gameState.abilityMarker = false; 
@@ -538,8 +541,8 @@ function startRound(gameState) {
 		hourHandPreMinuteAI(gameState);
 }
         
-    console.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
-    console.log("等待玩家打出分鐘卡...");
+    appLogger.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
+    appLogger.log("等待玩家打出分鐘卡...");
     processMinuteCardSelection(gameState); 
 }
 
@@ -652,16 +655,16 @@ function makeAIChoice(player, gameState) {
     //        const stolenCardIndex = Math.floor(Math.random() * sinPlayer.hand.length);
     //        const stolenCard = sinPlayer.hand.splice(stolenCardIndex, 1)[0];
             
-    //        console.log(`【秒針】偷看了 時之惡 的手牌 (${stolenCard.value})。`);
+    //        appLogger.log(`【秒針】偷看了 時之惡 的手牌 (${stolenCard.value})。`);
             
     //        if (stolenCard.value > chosenCard.value) {
     //            sinPlayer.hand.push(chosenCard); 
     //            gameState.minuteDiscard.push(stolenCard); 
-    //            console.log(`【秒針】使用時之惡的卡 (${stolenCard.value})。`);
+    //            appLogger.log(`【秒針】使用時之惡的卡 (${stolenCard.value})。`);
     //            return stolenCard; 
     //        } else {
     //            sinPlayer.hand.push(stolenCard); 
-    //            console.log(`【秒針】使用自己的卡 (${chosenCard.value})。`);
+    //            appLogger.log(`【秒針】使用自己的卡 (${chosenCard.value})。`);
     //            return chosenCard; 
     //        }
     //    }
@@ -697,7 +700,7 @@ function makeAIChoice(player, gameState) {
 				player.hand.splice(altIdx, 1);
 			} else {
 				// 如果找不到第二張牌，取消發動能力，把第一張牌放回去或直接當作普通出牌
-				console.log("AI 秒針能力發動失敗：找不到第二張牌");
+				appLogger.log("AI 秒針能力發動失敗：找不到第二張牌");
 				// 這裡可以選擇不 return special type，直接 return chosenCard;
 			}
 		}
@@ -714,17 +717,17 @@ function processMinuteCardSelection(gameState) {
         const card = makeAIChoice(player, gameState);
         if (card) {
             choices.push({ playerId: player.id, playerName: player.name, card, roleType: player.type });
-            console.log(`${player.name} (AI) 已蓋牌。`);
+            appLogger.log(`${player.name} (AI) 已蓋牌。`);
         }
     });
 
     if (humanPlayer && !humanPlayer.isEjected && humanPlayer.hand.length > 0) {
-        console.log(`\n🚨${humanPlayer.name} 回合！請選擇您的卡牌。 🚨`);
+        appLogger.log(`\n🚨${humanPlayer.name} 回合！請選擇您的卡牌。 🚨`);
         gameState.currentRoundAIChoices = choices; 
         document.getElementById('next-step-btn').disabled = true;
         return; 
     } else if (humanPlayer && humanPlayer.hand.length === 0) {
-        console.log(`\n⚠️${humanPlayer.name} 已無手牌，本回合自動略過。`);
+        appLogger.log(`\n⚠️${humanPlayer.name} 已無手牌，本回合自動略過。`);
     }
     
     resolveMinuteCardSelection(gameState, choices);
@@ -791,10 +794,10 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     // 清掉等待出牌（人類已完成「蓋牌」）
     gameState.currentRoundAIChoices = null;
 
-    console.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
-    console.log("--- ✋ 翻牌時刻！ 🤚 ---");
-    aiChoices.forEach(c => console.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`));
-    console.log("⏳【秒針】請從 2 張蓋牌中選 1 張打出。");
+    appLogger.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+    appLogger.log("--- ✋ 翻牌時刻！ 🤚 ---");
+    aiChoices.forEach(c => appLogger.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`));
+    appLogger.log("⏳【秒針】請從 2 張蓋牌中選 1 張打出。");
 
     if (typeof updateUI === 'function') updateUI(gameState);
     return true;
@@ -841,7 +844,7 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
     gameState.secondHandPendingCards = null;
     gameState.secondHandRevealedChoices = null;
 
-    console.log(`🔸 ${humanPlayer.name} (秒針) 從 2 張中選擇翻開：[ ${chosen.value} ]`);
+    appLogger.log(`🔸 ${humanPlayer.name} (秒針) 從 2 張中選擇翻開：[ ${chosen.value} ]`);
 
     // ✅ 進入既有流程，但跳過翻牌 log（避免重複顯示）
     resolveMinuteCardSelection(gameState, allChoices, { skipRevealLog: true });
@@ -867,7 +870,7 @@ function handleHumanChoice(gameState, chosenCardValue) {
         card: chosenCard, 
         roleType: humanPlayer.type 
     });
-    console.log(`你打出了 ${chosenCard.value} 號分鐘卡。`);
+    appLogger.log(`你打出了 ${chosenCard.value} 號分鐘卡。`);
 
     resolveMinuteCardSelection(gameState, allChoices);
     gameState.currentRoundAIChoices = null;
@@ -884,12 +887,12 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
     }
 
     if (!skipRevealLog) {
-        console.log("--- ✋ 翻牌時刻！ 🤚 ---");
+        appLogger.log("--- ✋ 翻牌時刻！ 🤚 ---");
         choices.forEach(c => {
             if (c.card && c.card.type === 'seconds_pending') {
-                console.log(`🔸 ${c.playerName} (秒針) 蓋放了 2 張卡牌。`);
+                appLogger.log(`🔸 ${c.playerName} (秒針) 蓋放了 2 張卡牌。`);
             } else {
-                console.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`);
+                appLogger.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`);
             }
         });
     }
@@ -914,7 +917,7 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
             pc.card = chosen;
 
             if (!skipRevealLog) {
-                console.log(`🔸 ${pc.playerName} (秒針) 從 2 張中選擇翻開：[ ${chosen.value} ]`);
+                appLogger.log(`🔸 ${pc.playerName} (秒針) 從 2 張中選擇翻開：[ ${chosen.value} ]`);
             }
         });
     }
@@ -973,7 +976,7 @@ function processNextHourPicker(gameState) {
     if (player.id === HUMAN_PLAYER_ID) {
         gameState.waitingHourChoice = true;
         gameState.waitingHourChoicePlayerId = player.id;
-        console.log(`👉 ${player.name} 請在右側選擇一張小時卡。`);
+        appLogger.log(`👉 ${player.name} 請在右側選擇一張小時卡。`);
         if (typeof updateUI === 'function') {
             updateUI(gameState);
         }
@@ -1081,7 +1084,7 @@ function checkAndLockPreciousCards(gameState) {
         if (card.isPrecious && !card.isLocked) {
             card.isLocked = true; // 🔒 加上鎖定標記 (永久保留在鐘面)
             newLockedCount++;
-            console.log(`🔒【受詛者】接觸並固定了珍貴小時卡 [${card.number}★]！`);
+            appLogger.log(`🔒【受詛者】接觸並固定了珍貴小時卡 [${card.number}★]！`);
         }
     });
 }
@@ -1103,7 +1106,7 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
          cardToPlace.number === gameState.roundMinHourNumber);
 
     const label = playerNameForLog || player.name;
-    console.log(`${label} 挑選小時卡 [${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}]，移動到 ${cardToPlace.number} 格。`);
+    appLogger.log(`${label} 挑選小時卡 [${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}]，移動到 ${cardToPlace.number} 格。`);
 
     // 2) 幼體時魔：持有卡片
     const isTimeDemon = player.type === '時魔' && !player.isEjected;
@@ -1114,7 +1117,7 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 
     if (isYoungTimeDemon) {
         player.hourCards.push(cardToPlace);
-        console.log(`${label} 取得小時卡 ${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}`);
+        appLogger.log(`${label} 取得小時卡 ${cardToPlace.number}${cardToPlace.isPrecious ? '★' : ''}`);
         return;
     }
 
@@ -1200,7 +1203,7 @@ function finishHourSelection(gameState) {
         // 設定專屬等待狀態
         gameState.waitingMinuteHandChoice = true;
         
-        console.log(`⏱️【分針觸發】條件達成 (取得小時卡 ${humanPlayer.pickedHourCardThisTurnNumber})，暫停遊戲，顯示能力面板。`);
+        appLogger.log(`⏱️【分針觸發】條件達成 (取得小時卡 ${humanPlayer.pickedHourCardThisTurnNumber})，暫停遊戲，顯示能力面板。`);
 
         if (typeof updateUI === 'function') updateUI(gameState);
         return; // ⛔ 暫停流程，等待玩家操作
@@ -1215,7 +1218,7 @@ function handleHumanAbilityChoice(gameState, choice) {
     // 如果不是在等待分針選擇，就忽略
     if (!gameState || !gameState.waitingMinuteHandChoice) return;
 
-    console.log(`收到分針選擇: ${choice}`);
+    appLogger.log(`收到分針選擇: ${choice}`);
 
     if (choice === 'ccw' || choice === 'cw') {
         // 呼叫 abilities.js 的函式 (需確保已載入)
@@ -1223,7 +1226,7 @@ function handleHumanAbilityChoice(gameState, choice) {
             activateMinuteHandAbility(gameState, HUMAN_PLAYER_ID, choice);
         }
     } else {
-        console.log("分針選擇略過能力。");
+        appLogger.log("分針選擇略過能力。");
     }
 
     // ✅ 清除等待狀態
@@ -1246,13 +1249,13 @@ function handleDiceDeduction(player) {
 		
         if (player.d6Die < 1) { 
             player.gearCards--;
-			console.log(`【${player.type}】 扣除 1 護盾。`);
+			appLogger.log(`【${player.type}】 扣除 1 護盾。`);
 			 
             if (player.mana > player.gearCards) {
                 player.mana = player.gearCards;
             }
             gearCardDeducted = true;
-            console.log(`【${player.type}】護盾耗盡，扣除 1 齒輪。`);
+            appLogger.log(`【${player.type}】護盾耗盡，扣除 1 齒輪。`);
 
             if (player.type === '時之惡') {
                 player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
@@ -1263,7 +1266,7 @@ function handleDiceDeduction(player) {
             }
         }else {
             // (選用) 可以在這裡補一個 log
-            console.log(`🛡️【${player.name}】護盾抵消懲罰 (剩餘: ${player.d6Die})`);
+            appLogger.log(`🛡️【${player.name}】護盾抵消懲罰 (剩餘: ${player.d6Die})`);
         }
     }
     return gearCardDeducted;
@@ -1274,7 +1277,7 @@ function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
     
-    console.log(`--- 步驟 5: 扣除齒輪卡/護盾 (當前規則: ${modeText}) ---`);
+    appLogger.log(`--- 步驟 5: 扣除齒輪卡/護盾 (當前規則: ${modeText}) ---`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     // 若時之惡不在場，無人受罰 (直接檢查勝利條件)
@@ -1330,7 +1333,7 @@ function deductGearCards(gameState) {
                 const spent = player.mana;
                 player.shieldUsed = true;
                 player.mana = 0;
-                console.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
+                appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
                 return; // 成功抵擋，不扣齒輪
             }
 
@@ -1340,7 +1343,7 @@ function deductGearCards(gameState) {
             // Mana 不能超過當前齒輪數
             if (player.mana > player.gearCards) player.mana = Math.max(0, player.gearCards);
             
-            console.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒輪 (剩餘: ${player.gearCards})。`);
+            appLogger.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒輪 (剩餘: ${player.gearCards})。`);
 
         } else if (player.type === '受詛者' || player.type === '時之惡') {
             handleDiceDeduction(player);
@@ -1369,7 +1372,7 @@ function checkEjectionAndWinCondition(gameState) {
                 gameState.roundHadTimeDemonEjection = true;
             }
 
-            console.log(`⚠️【逐出】${player.name} 的齒輪耗盡 (${player.gearCards})，被逐出遊戲。`);
+            appLogger.log(`⚠️【逐出】${player.name} 的齒輪耗盡 (${player.gearCards})，被逐出遊戲。`);
         }
     });
 
@@ -1385,16 +1388,16 @@ function checkEjectionAndWinCondition(gameState) {
     if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
-            console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
+            appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
         } else if (sinAlive && (aliveTimeDemons.length === 0 || allDemonsEverEjected)) {
             // ✅ 修改訊息：明確指出獲勝原因
             if (allDemonsEverEjected) {
-                console.log('🎉 遊戲結束：所有時魔皆曾被逐出，時之惡完成「完全狩獵」，時之惡陣營勝利！');
+                appLogger.log('🎉 遊戲結束：所有時魔皆曾被逐出，時之惡完成「完全狩獵」，時之惡陣營勝利！');
             } else {
-                console.log('🎉 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
+                appLogger.log('🎉 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
             }
         } else {
-            console.log('🎉 遊戲結束。');
+            appLogger.log('🎉 遊戲結束。');
         }
     }
 
@@ -1430,7 +1433,7 @@ function inRoundEndActions(gameState) {
 		}
 
 		player.hourCards.push(collectedCard);
-		console.log(`【時魔】${player.name} 取得小時卡 (${collectedCard.number})。`);
+		appLogger.log(`【時魔】${player.name} 取得小時卡 (${collectedCard.number})。`);
 	  });
 
 
@@ -1458,7 +1461,7 @@ function inRoundEndActions(gameState) {
     //) { 
     //    sinPlayer.mana -= COST; 
     //    gameState.abilityMarker = true; 
-    //    console.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
+    //    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
     //}
 
     // 受詛者保護卡片
@@ -1469,7 +1472,7 @@ function inRoundEndActions(gameState) {
         if (currentSpot && preciousCardIndex !== -1) {
             const preciousCard = currentSpot.cards.splice(preciousCardIndex, 1)[0];
             currentSpot.cards.unshift(preciousCard); 
-            console.log(`🛡️【受詛者】將珍貴小時卡 [${preciousCard.number}] 移至鐘面最底部保護。`);
+            appLogger.log(`🛡️【受詛者】將珍貴小時卡 [${preciousCard.number}] 移至鐘面最底部保護。`);
         }
     }
     
@@ -1491,7 +1494,7 @@ function moveRoundMarker(gameState) {
     if (gameState.roundMarker > 12) {
         endGameRound(gameState);
     } else {
-        console.log(`--- 回合結束，準備進入第 ${gameState.roundMarker} 回合 ---`);
+        appLogger.log(`--- 回合結束，準備進入第 ${gameState.roundMarker} 回合 ---`);
         if (typeof updateUI === 'function') updateUI(gameState);
     }
 }
@@ -1508,13 +1511,13 @@ function checkSCZMissionSuccess(gameState) {
 }
 
 function endGameRound(gameState) {
-    console.log(`=== 第 ${gameState.gameRound} 輪結束 ===`);
+    appLogger.log(`=== 第 ${gameState.gameRound} 輪結束 ===`);
     const numPlayers = gameState.players.length;
 
     // 1. 計算分數（以本輪結束時的齒輪數為準）
     gameState.players.forEach(player => {
         player.score += player.gearCards;
-        console.log(`【${player.name}】得分: ${player.gearCards}. 總分: ${player.score}`);
+        appLogger.log(`【${player.name}】得分: ${player.gearCards}. 總分: ${player.score}`);
     });
 
     // 2. 「時之惡懲罰」：以「輪」為單位
@@ -1524,7 +1527,7 @@ function endGameRound(gameState) {
     if (sinPlayer) {
         if (currentRoundSafe && gameState.previousRoundSafe) {
             sinPlayer.gearCards--;
-            console.log(`【時之惡懲罰】連續 2 輪無人被逐出，${sinPlayer.name} 扣除 1 齒輪。`);
+            appLogger.log(`【時之惡懲罰】連續 2 輪無人被逐出，${sinPlayer.name} 扣除 1 齒輪。`);
 
             if (sinPlayer.gearCards < 0) {
                 sinPlayer.isEjected = true;
@@ -1532,8 +1535,8 @@ function endGameRound(gameState) {
                 sinPlayer.mana = 0;
                 sinPlayer.currentClockPosition = null;
                 if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
-                console.log(`⚠️【逐出】${sinPlayer.name} 齒輪耗盡，被逐出遊戲。`);
-                console.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
+                appLogger.log(`⚠️【逐出】${sinPlayer.name} 齒輪耗盡，被逐出遊戲。`);
+                appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
                 endGame(gameState);
                 return;
             }
@@ -1555,22 +1558,22 @@ function endGameRound(gameState) {
         if (isMissionSuccess) {
             if (gameState.gameRound === 2) {
                 sczPlayer.score += 9;
-                console.log("🎉【受詛者】第 2 輪任務達成！獲得額外 9 分！");
+                appLogger.log("🎉【受詛者】第 2 輪任務達成！獲得額外 9 分！");
             } else if (gameState.gameRound === 3) {
                 sczPlayer.score += 5;
-                console.log("🎉【受詛者】第 3 輪任務達成！獲得額外 5 分！");
+                appLogger.log("🎉【受詛者】第 3 輪任務達成！獲得額外 5 分！");
             } else if (gameState.gameRound === 4) {
                 sczPlayer.score += 2;
-                console.log("🎉【受詛者】第 4 輪任務達成！獲得額外 2 分！");
+                appLogger.log("🎉【受詛者】第 4 輪任務達成！獲得額外 2 分！");
             }
         }
 	
         // 【5P 專用】第 5 輪結算
         if (numPlayers === 5 && gameState.gameRound === 5) {
             if (isMissionSuccess) {
-                console.log("🎉【受詛者】最終任務達成！");
+                appLogger.log("🎉【受詛者】最終任務達成！");
             } else {
-                console.log("⚠️【受詛者】最終任務失敗。");
+                appLogger.log("⚠️【受詛者】最終任務失敗。");
                 sczPlayer.score -= 999;
             }
         }
@@ -1597,7 +1600,7 @@ function endGameRound(gameState) {
 	if (returnedFromYoungDemons.length > 0) {
 	  shuffle(returnedFromYoungDemons);
 	  gameState.hourDeck.push(...returnedFromYoungDemons);
-	  console.log(`🔁 幼體時魔交還 ${returnedFromYoungDemons.length} 張小時卡。`);
+	  appLogger.log(`🔁 幼體時魔交還 ${returnedFromYoungDemons.length} 張小時卡。`);
 	}
 
     // 3. 重置鐘面
@@ -1629,7 +1632,7 @@ function endGameRound(gameState) {
         // 重置鎖定狀態？不，新規則是永久固定，所以回收的卡片必定是沒被鎖過的，不用清除 isLocked
         shuffle(cardsToReturnToDeck);
         gameState.hourDeck.push(...cardsToReturnToDeck);
-        console.log(`♻️ 回收了 ${cardsToReturnToDeck.length} 張鐘面卡片回牌庫。`);
+        appLogger.log(`♻️ 回收了 ${cardsToReturnToDeck.length} 張鐘面卡片回牌庫。`);
     }
     
     // 4. 傳遞狀態 (手牌/齒輪)
@@ -1653,7 +1656,7 @@ function endGameRound(gameState) {
         player.isEjected = false;
         player.hourCards = []; 
     });
-    console.log("🔄 玩家已接收新一輪的手牌與齒輪。");
+    appLogger.log("🔄 玩家已接收新一輪的手牌與齒輪。");
 
     // 5. 重置護盾
     gameState.players.forEach(player => {
@@ -1672,12 +1675,12 @@ function endGameRound(gameState) {
     gameState.uiMinuteChoicesTurnKey = null;
     gameState.sinTargetingMode = 'default';
     
-    console.log(`--- 準備開始第 ${gameState.gameRound} 輪遊戲 ---`);
+    appLogger.log(`--- 準備開始第 ${gameState.gameRound} 輪遊戲 ---`);
     if (typeof updateUI === 'function') updateUI(gameState);
 }
 
 function endGame(gameState) {
-    console.log("=== 遊戲結束 ===");
+    appLogger.log("=== 遊戲結束 ===");
     gameState.players
         .filter(p => p.type === '時魔' && ['時針', '分針', '秒針'].includes(p.roleCard))
         .forEach(player => {
@@ -1686,7 +1689,7 @@ function endGame(gameState) {
 		
     const finalScores = gameState.players.slice().sort((a, b) => b.score - a.score);
     finalScores.forEach((p, index) => {
-        console.log(`#${index + 1}: ${p.name} (總分: ${p.score})`);
+        appLogger.log(`#${index + 1}: ${p.name} (總分: ${p.score})`);
     });
 
     gameState.gameEnded = true;
