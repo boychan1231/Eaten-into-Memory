@@ -1101,15 +1101,6 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
     // 1. 檢查封印狀態
     const isAbilityLocked = !!gameState.abilityMarker;
 
-    // 若被封印，顯示頂部警告條
-    if (isAbilityLocked) {
-        const sealDiv = document.createElement('div');
-        sealDiv.className = 'seal-badge';
-        sealDiv.textContent = '能力已被封印';
-        sealDiv.title = '時之惡發動「封鎖」，本回合無法使用特殊能力。';
-        container.appendChild(sealDiv);
-    }
-
     // --- 時針 (Time Hand) ---
     if (role === '時針') {
         const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
