@@ -203,13 +203,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     width: 100%;
 }
 
-/* ✅ 新增：RWD 防呆 (當螢幕變窄時，自動切換回原本的堆疊模式) */
-@media (max-width: 1100px) {
-    .main-area {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-}
-
 /* --- 鐘面區域 --- */
 .clock-section {
     width: min(500px, 90vw); 
@@ -445,11 +438,46 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* 右側資訊面板群組 */
 .side-panel-group {
-	width: 260px;
+    width: 260px;
     flex: 0 0 320px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    border-radius: 8px;
+    background: rgba(15, 52, 96, 0.25);
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.side-panel-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(15, 52, 96, 0.7);
+    color: #ffd27f;
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.25);
+    user-select: none;
+}
+
+.side-panel-summary::marker {
+    content: '';
+}
+
+.side-panel-summary::before {
+    content: '▾';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.side-panel-group:not([open]) .side-panel-summary::before {
+    transform: rotate(-90deg);
+}
+
+.side-panel-group:not([open]) > :not(.side-panel-summary) {
+    display: none;
 }
 
 .log-side-info {
@@ -509,6 +537,29 @@ input:checked + .slider:before { transform: translateX(16px); }
 .score-panel,
 .history-panel {
     display: none;
+}
+
+@media (max-width: 1100px) {
+    .main-area {
+        grid-template-columns: 1fr;
+    }
+
+    .side-panel-group {
+        width: 100%;
+        flex: 1 1 auto;
+        order: 2;
+    }
+
+    .clock-section {
+        order: 3;
+        width: min(420px, 90vw);
+        height: min(420px, 90vw);
+        margin-top: 10px;
+    }
+
+    .log-section {
+        order: 1;
+    }
 }
 
 #played-cards-list, #player-history-list {
