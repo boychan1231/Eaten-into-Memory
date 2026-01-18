@@ -231,15 +231,43 @@ input:checked + .slider:before { transform: translateX(16px); }
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 280px; height: 280px;
+
+    /* width: 280px; height: 280px; 移除原本的固定大小 */
+    /* ✅ 改用百分比 (建議 40% ~ 46%) */
+    /* 500px * 46% = 230px (比原本 280px 小，且會隨視窗縮放) */
+    width: 45%;
+    height: 45%;
     border-radius: 50%;
-    background-color: var(--bg-color);
     box-shadow: 0 0 20px rgba(0,0,0,0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px; 
+    gap: clamp(5px, 2vw, 15px); /* ✅ 改用 gap 屬性控制卡片間距 (也可以用 clamp 動態調整) */
     z-index: 30;
+	
+	/* --- 👇 修改這裡來改變設計 👇 --- */
+/* 深色背景，帶有微弱的紅色漸層 */
+    background: radial-gradient(circle at center, #1a0505 0%, #000000 70%);
+    
+    /* 多層邊框：內圈紅光 + 外圈金屬灰 */
+    border: 4px solid #333;
+    outline: 2px solid #e94560; /* 第二層邊框 */
+    outline-offset: -6px;       /* 讓紅線縮進去 */
+
+    /* 強烈的紅色光暈，帶有呼吸感 */
+    box-shadow: 
+        0 0 30px rgba(0, 0, 0, 0.9),       /* 內部深影 */
+        0 0 20px rgba(233, 69, 96, 0.4),   /* 外部紅光 */
+        inset 0 0 40px rgba(0, 0, 0, 1);   /* 內部凹陷感 */
+    
+    animation: pulse-glow 3s infinite alternate;
+
+}
+
+/* 呼吸燈動畫 */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px rgba(233, 69, 96, 0.3), inset 0 0 40px #000; border-color: #333; }
+    100% { box-shadow: 0 0 40px rgba(233, 69, 96, 0.6), inset 0 0 20px #200; border-color: #555; }
 }
 
 /* 鐘面格子 */
@@ -333,7 +361,13 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card {
-    width: 50px; height: 75px;
+    /* 🔴 移除原本的固定大小 */
+    /* width: 50px; height: 75px; */
+    /* ✅ 改用 clamp 動態縮放 */
+    /* 最小 36px (手機)，最大 50px (電腦) */
+    width: clamp(36px, 10vw, 55px);
+    height: clamp(54px, 15vw, 80px);
+    
     background: linear-gradient(to bottom right, #f7f7f7, #ddd);
     color: #000;
     border-radius: 4px;
@@ -342,14 +376,19 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    
+    /* ✅ 字體大小也需要跟著縮放，否則會爆版 */
+    font-size: clamp(0.8rem, 2vw, 1rem);
     font-weight: bold;
     line-height: 1.05;
 }
 .drawn-hour-card.precious { border: 3px solid gold; box-shadow: 0 0 10px gold; }
-.drawn-hour-card .hour-num { font-size: 1.05rem; font-weight: 800; }
-.drawn-hour-card .hour-age { font-size: 0.62rem; font-weight: 600; color: #222; margin-top: 2px; }
-.drawn-hour-card .hour-star { font-size: 0.9rem; margin-top: 2px; }
+
+/* 讓裡面的數字微調 */
+.drawn-hour-card .hour-num { font-size: 1.1em; font-weight: 800; }
+.drawn-hour-card .hour-age { font-size: 0.6em; font-weight: 600; color: #222; margin-top: 2px; }
+.drawn-hour-card .hour-star { font-size: 0.9em; margin-top: 2px; }
+
 .drawn-hour-card.clickable {
     cursor: pointer;
     border: 3px solid #e94560;
@@ -1397,24 +1436,7 @@ body {
 }
 
 /* --- 2. 鐘面中心：能量核心 (Magic Core) --- */
-.clock-center {
-    /* 深邃的中心底色 */
-    background-color: #0f0c15; 
-    
-    /* 多層漸層模擬魔法陣 */
-    background-image: 
-        /* 最內層的亮光 */
-        radial-gradient(circle, rgba(233, 69, 96, 0.8) 0%, transparent 40%),
-        /* 內圈環 */
-        radial-gradient(circle, transparent 45%, var(--accent-color) 46%, transparent 47%),
-        /* 外圈環 */
-        radial-gradient(circle, transparent 55%, #ffd27f 56%, transparent 57%),
-        /* 旋轉的光暈感 */
-        conic-gradient(from 0deg, transparent 0%, rgba(233, 69, 96, 0.1) 25%, transparent 50%, rgba(255, 210, 127, 0.1) 75%, transparent 100%);
-    
-    border: 2px solid #333;
-    box-shadow: 0 0 30px rgba(233, 69, 96, 0.2); /* 增加外發光 */
-}
+
 
 /* --- 3. 分鐘卡：金屬紋理 --- */
 .minute-card {
