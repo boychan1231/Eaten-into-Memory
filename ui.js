@@ -699,6 +699,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     
     if (humanHandEl) {
         humanHandEl.innerHTML = '';
+		const sortOrder = window.UI_CONFIG?.HAND_SORT_ORDER || 'asc'; //根據設定決定排序方向
         const sortedHand = [...humanPlayer.hand].sort((a, b) => a.value - b.value);
 
         sortedHand.forEach(card => {
@@ -1672,6 +1673,32 @@ document.addEventListener('DOMContentLoaded', () => {
         speedSlider.addEventListener('input', (e) => {
             updateSpeedText(e.target.value);
         });
+		
+		
+		// ✅ 新增：手牌排序設定監聽
+		const handSortRadios = document.querySelectorAll('input[name="hand-sort"]');
+		if (handSortRadios.length > 0) {
+			// 1. 初始化選取狀態
+			const currentSort = window.UI_CONFIG?.HAND_SORT_ORDER || 'asc';
+			handSortRadios.forEach(radio => {
+				if (radio.value === currentSort) radio.checked = true;
+				
+				// 2. 監聽變更
+				radio.addEventListener('change', (e) => {
+					if (e.target.checked) {
+						// 更新設定
+						if (window.UI_CONFIG) window.UI_CONFIG.HAND_SORT_ORDER = e.target.value;
+						
+						console.log(`[UI] 手牌排序已切換為: ${e.target.value}`);
+						
+						// 如果遊戲正在進行中，立即刷新 UI 以套用新排序
+						if (globalGameState) {
+							updateUI(globalGameState);
+						}
+					}
+				});
+			});
+		}
     }
 
     // ✅ 新增：日誌保留量滑桿控制
