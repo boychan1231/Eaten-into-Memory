@@ -1,9 +1,29 @@
 // ui.js 
-const appLogger = window.appLogger || {
-    log: (...args) => console.log(...args),
-    logToConsole: (...args) => console.log(...args),
-    setUiSink: () => {}
-};
+if (typeof window !== 'undefined') {
+    window.appLogger = window.appLogger || {
+        log: (...args) => console.log(...args)
+    };
+}
+
+(function extendLogger() {
+    const logger = window.appLogger;
+    
+    if (!logger.logToConsole) {
+        logger.logToConsole = (...args) => console.log(...args);
+    }
+
+    if (!logger.setUiSink) {
+        logger.setUiSink = (sink) => {
+            // 攔截原本的 log 函式，加入 UI 輸出
+            const originalLog = logger.log;
+            logger.log = (...args) => {
+                originalLog(...args); // 照常輸出到 console
+                if (sink) sink(args); // 額外輸出到 UI
+            };
+        };
+    }
+})();
+
 const logList = document.getElementById('log-list');
 let globalGameState = null;
 // 新增：記錄玩家上一狀態，用於比對數值變化
