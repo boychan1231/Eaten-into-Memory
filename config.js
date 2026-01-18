@@ -12,6 +12,8 @@ window.UI_CONFIG = {
     LOG_SPEED: 360,          // 日誌顯示速度 (毫秒，越小越快)
     LOG_RETENTION_LIMIT: 200, // 日誌保留上限 (DOM)
     HISTORY_LIMIT: 12,       // 右側歷史記錄顯示的回合數
+    LOG_TO_UI: true,         // 是否輸出日誌到 UI
+    LOG_TO_CONSOLE: true,    // 是否輸出日誌到瀏覽器 Console
 	
 	// 手牌排序預設值 ('asc' = 由小到大, 'desc' = 由大到小)
     HAND_SORT_ORDER: 'asc',

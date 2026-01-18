@@ -1,5 +1,9 @@
 // ui.js 
-const originalLog = console.log;
+const appLogger = window.appLogger || {
+    log: (...args) => console.log(...args),
+    logToConsole: (...args) => console.log(...args),
+    setUiSink: () => {}
+};
 const logList = document.getElementById('log-list');
 let globalGameState = null;
 // 新增：記錄玩家上一狀態，用於比對數值變化
@@ -13,7 +17,6 @@ let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360;
 let currentLogRetentionLimit = window.UI_CONFIG?.LOG_RETENTION_LIMIT || 200;
 const LOG_ACCEL_THRESHOLD = window.UI_CONFIG?.LOG_ACCEL_THRESHOLD ?? 5;
 const LOG_ACCEL_DELAY = window.UI_CONFIG?.LOG_ACCEL_DELAY ?? 30;
-const shouldMirrorConsole = window.UI_CONFIG?.MIRROR_CONSOLE ?? true;
 let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
 const modalFocusMap = new WeakMap();
 const modalOpenOrder = [];
@@ -138,19 +141,18 @@ function safeStringify(value) {
     }
 }
 
-if (shouldMirrorConsole) {
-    console.log = function(...args) {
-        originalLog.apply(console, args);
+if (typeof appLogger.setUiSink === 'function') {
+    appLogger.setUiSink((args) => {
         const message = args.map(arg => safeStringify(arg)).join(' ');
         logToUI(message);
-    };
+    });
 }
 
 
 // 1. 錯誤監控
 window.addEventListener("error", (e) => {
     try {
-        originalLog("[JS Error]", e.message);
+        appLogger.logToConsole("[JS Error]", e.message);
         const li = document.createElement('li');
         li.style.color = '#ff6b6b';
         li.textContent = `❌ 錯誤: ${e.message}`;
@@ -276,7 +278,7 @@ function updateUI(gameState) {
     if (gameState.gameRound > uiTrackedGameRound) {
         resetMinuteHistory(gameState);
         uiTrackedGameRound = gameState.gameRound;
-        console.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
+        appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
     }
 	
     // 1. 準備共用變數
@@ -1334,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeTopModal();
         }
     });
-    try { console.log('[UI] 已載入，等待開始遊戲。'); } catch (_) {}
+    try { appLogger.log('[UI] 已載入，等待開始遊戲。'); } catch (_) {}
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
@@ -1343,21 +1345,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmMoveBtn) {
         confirmMoveBtn.addEventListener('click', () => {
             if (!globalGameState) {
-                console.log('請先按「開始遊戲」。');
+                appLogger.log('請先按「開始遊戲」。');
                 return;
             }
             
             // 檢查是否處於等待秒針最終選擇階段
             const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
             if (waitingSecondFinal) {
-                console.log('請先完成「秒針二選一」。');
+                appLogger.log('請先完成「秒針二選一」。');
                 return;
             }
 
             // --- 分支 1：秒針能力 (選 2 張) ---
             if (uiState.isSecondHandSelectingTwo) {
                 if (!Array.isArray(uiState.selectedCardValues) || uiState.selectedCardValues.length !== 2) {
-                    console.log('秒針能力：請先選擇 2 張分鐘卡！');
+                    appLogger.log('秒針能力：請先選擇 2 張分鐘卡！');
                     return;
                 }
                 if (typeof handleHumanSecondHandCommit !== 'function') {
@@ -1384,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- 分支 2：一般出牌 (選 1 張) ---
             if (uiState.selectedCardValue === null) {
-                console.log('請先選擇一張分鐘卡！');
+                appLogger.log('請先選擇一張分鐘卡！');
                 return;
             }
             if (typeof handleHumanChoice !== 'function') {
@@ -1516,7 +1518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			
 			// 若處於「分針能力選擇中」，點擊此按鈕等同於「略過」
             if (globalGameState.waitingMinuteHandChoice) {
-                console.log("【UI】玩家直接點擊下一回合，視為略過分針能力。");
+                appLogger.log("【UI】玩家直接點擊下一回合，視為略過分針能力。");
                 if (typeof handleHumanAbilityChoice === 'function') {
                     handleHumanAbilityChoice(globalGameState, 'skip');
                 }
@@ -1530,7 +1532,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
             if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
-                console.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
+                appLogger.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
                 updateUI(globalGameState);
                 return;
             }
@@ -1539,7 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startRound(globalGameState);
                 updateUI(globalGameState);
             } else {
-                console.log("遊戲已結束。");
+                appLogger.log("遊戲已結束。");
                 nextBtn.disabled = true;
             }
         };
@@ -1577,7 +1579,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					uiState.isSecondHandSelectingTwo = false;
 					const humanId = getCurrentHumanPlayerId();
 					const humanPlayer = globalGameState.players.find(p => p.id === humanId);
-					if (humanPlayer) console.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+					if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
 					updateUI(globalGameState);
 					bindNextStepButton();
 				};
@@ -1606,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 				startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
 			} catch (err) {
-				console.log('[UI] 開始遊戲時發生錯誤：', err);
+				appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
 			}
 		});
 		
@@ -1689,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						// 更新設定
 						if (window.UI_CONFIG) window.UI_CONFIG.HAND_SORT_ORDER = e.target.value;
 						
-						console.log(`[UI] 手牌排序已切換為: ${e.target.value}`);
+						appLogger.log(`[UI] 手牌排序已切換為: ${e.target.value}`);
 						
 						// 如果遊戲正在進行中，立即刷新 UI 以套用新排序
 						if (globalGameState) {

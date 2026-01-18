@@ -1,4 +1,7 @@
 // abilities.js (特殊能力定義檔 - 新版進化規則)
+const appLogger = window.appLogger || {
+    log: (...args) => console.log(...args)
+};
 
 // 定義可進化的目標身份 (僅保留名稱，不再綁定特定數字)
 const AVAILABLE_ROLES = ['時針', '分針', '秒針'];
@@ -60,7 +63,7 @@ function activateHourHandAbility(gameState) {
                 
                 const movedCard = gameState.hourDeck.splice(cardIndex, 1)[0];
                 gameState.hourDeck.unshift(movedCard); 
-                console.log(`【時針】將卡牌 [${movedCard.number}${movedCard.isPrecious ? 'P' : ''}] 移到牌庫底部。`);
+                appLogger.log(`【時針】將卡牌 [${movedCard.number}${movedCard.isPrecious ? 'P' : ''}] 移到牌庫底部。`);
             }
         }
     }
@@ -76,12 +79,12 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
 
     // 基本檢查
     if (gameState.abilityMarker) {
-        console.log("【分針】能力被封鎖，無法發動。");
+        appLogger.log("【分針】能力被封鎖，無法發動。");
         return false;
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
     if (player.mana < COST) {
-        console.log("【分針】Mana 不足 (需要 2)，無法發動。");
+        appLogger.log("【分針】Mana 不足 (需要 2)，無法發動。");
         return false;
     }
     
@@ -96,12 +99,12 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         // 逆時針 (Counter-Clockwise) -1
         newPos = oldPos - 1;
         if (newPos < 1) newPos = 12;
-        console.log(`⏱️【分針能力】${player.name} 耗用 ${COST}Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
+        appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST}Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
     } else {
         // 順時針 (Clockwise) +1
         newPos = oldPos + 1;
         if (newPos > 12) newPos = 1;
-        console.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
+        appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
     }
 
     player.currentClockPosition = newPos;
@@ -168,7 +171,7 @@ function attemptRoleUpgrade(player, gameState) {
 
     player.name = `時魔 ${idxText} (${targetRole})`;
 
-    console.log(`🎉【進化成功】${oldRole} 達成條件「${checkResult.type}」！變身為：${targetRole}`);
+    appLogger.log(`🎉【進化成功】${oldRole} 達成條件「${checkResult.type}」！變身為：${targetRole}`);
 
     // 5. 歸還小時卡 (珍貴放上層，普通放下層)
     player.hourCards.forEach(card => {
@@ -235,7 +238,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     }
 
     const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 Mana 發動一次)" : " (次數已達上限)";
-    console.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} Mana，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
+    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} Mana，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
     
     return true;
 }
@@ -254,12 +257,12 @@ function activateSinAbility(gameState, playerId) {
 
     // 檢查限制
     if (player.specialAbilityUsed) {
-        console.log("本回合已經發動過能力了。");
+        appLogger.log("本回合已經發動過能力了。");
         return false;
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
-        console.log("Mana 不足，無法發動。");
+        appLogger.log("Mana 不足，無法發動。");
         return false;
     }
 
@@ -268,8 +271,8 @@ function activateSinAbility(gameState, playerId) {
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
-    console.log(`😈【時之惡】玩家發動能力！消耗 ${COST} Mana。`);
-    console.log(`⚠️ 本回合懲罰規則已變更為：距離「時之惡」最近者受罰。`);
+    appLogger.log(`😈【時之惡】玩家發動能力！消耗 ${COST} Mana。`);
+    appLogger.log(`⚠️ 本回合懲罰規則已變更為：距離「時之惡」最近者受罰。`);
 
     return true;
 }
@@ -290,14 +293,14 @@ function activateSinSealAbility(gameState, playerId) {
 
     // 1. 基本檢查
     if (player.specialAbilityUsed) {
-        console.log("本回合已經發動過能力了。");
+        appLogger.log("本回合已經發動過能力了。");
         return false;
     }
     
     // 2. 讀取消耗 (預設 4 Mana)
     const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 4;
     if (player.mana < COST) {
-        console.log(`Mana 不足 (需 ${COST})，無法發動封印。`);
+        appLogger.log(`Mana 不足 (需 ${COST})，無法發動封印。`);
         return false;
     }
 
@@ -308,7 +311,7 @@ function activateSinSealAbility(gameState, playerId) {
     //    ['時針', '分針', '秒針'].includes(p.roleCard)
     //).length;
     //if (evolvedCount < 2) {
-    //    console.log(`條件未達成：場上已進化時魔僅 ${evolvedCount} 名 (需 >= 2)。`);
+    //    appLogger.log(`條件未達成：場上已進化時魔僅 ${evolvedCount} 名 (需 >= 2)。`);
     //    return false;}
 
     // 4. 執行效果
@@ -316,7 +319,7 @@ function activateSinSealAbility(gameState, playerId) {
     player.specialAbilityUsed = true;
     gameState.abilityMarker = true; // ✅ 開啟封印標記
 
-    console.log(`😈【時之惡】耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
+    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 發動「時間凍結」！本回合所有時魔能力已被封印。`);
     return true;
 }
 
