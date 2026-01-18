@@ -82,32 +82,51 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         appLogger.log("【分針】能力被封鎖，無法發動。");
         return false;
     }
-	const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
     if (player.mana < COST) {
-        appLogger.log("【分針】Mana 不足 (需要 2)，無法發動。");
+        appLogger.log(`【分針】Mana 不足 (需要 ${COST})，無法發動。`);
         return false;
     }
     
-    // 執行消耗
-    player.mana -= COST;
-    player.specialAbilityUsed = true; // 標記本回合已用過
-
     const oldPos = player.currentClockPosition;
-    let newPos = oldPos;
+    let checkPos = oldPos;
+    let newPos = null;
+    let found = false;
 
-    if (direction === 'ccw') {
-        // 逆時針 (Counter-Clockwise) -1
-        newPos = oldPos - 1;
-        if (newPos < 1) newPos = 12;
-        appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST}Mana，逆時針移動 (${oldPos} ➝ ${newPos})。`);
-    } else {
-        // 順時針 (Clockwise) +1
-        newPos = oldPos + 1;
-        if (newPos > 12) newPos = 1;
-        appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，順時針移動 (${oldPos} ➝ ${newPos})。`);
+    // 搜尋迴圈：最多找 11 次 (排除自己原本的位置)
+    for (let i = 0; i < 11; i++) {
+        if (direction === 'ccw') {
+            // 逆時針 -1
+            checkPos--;
+            if (checkPos < 1) checkPos = 12;
+        } else {
+            // 順時針 +1
+            checkPos++;
+            if (checkPos > 12) checkPos = 1;
+        }
+
+        // 檢查該鐘面位置是否有卡片
+        const spot = gameState.clockFace.find(s => s.position === checkPos);
+        if (spot && spot.cards && spot.cards.length > 0) {
+            newPos = checkPos;
+            found = true;
+            break; // 找到了，跳出迴圈
+        }
     }
 
+    if (!found) {
+        appLogger.log(`【分針】發動失敗：${direction === 'ccw' ? '逆' : '順'}時針方向找不到其他有牌的格子。`);
+        return false;
+    }
+
+    // 執行消耗與移動
+    player.mana -= COST;
+    player.specialAbilityUsed = true; // 標記本回合已用過
     player.currentClockPosition = newPos;
+
+    const dirText = direction === 'ccw' ? '逆時針' : '順時針';
+    appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
+
     return true;
 }
 

@@ -1021,7 +1021,7 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
 
         const roleDescriptions = {
             '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知牌頂 + ⚡1 Mana：牌頂移底</div>`,
-            '分針': `<div style="color:#f368e0; margin-top:4px;">⚡2 Mana：取卡後移動 1 格</div>`,
+            '分針': `<div style="color:#f368e0; margin-top:4px;">⚡2 Mana：移至下一個有小時卡的格子</div>`,
             '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡3 Mana：出牌二選一</div>`
         };
 
@@ -1139,11 +1139,12 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         container.appendChild(btn);
 
     } else if (role === '分針') {
-		const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+        const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
         if (gameState.waitingMinuteHandChoice) {
             const desc = document.createElement('div');
             desc.className = 'evo-desc';
-            desc.innerHTML = `<span style="color:#f368e0">⚡請選擇移動方向：`;
+            // 修改提示文字
+            desc.innerHTML = `<span style="color:#f368e0">⚡選擇移動方向 (跳至下一個小時卡格子)：`;
             container.appendChild(desc);
 
             const btnGroup = document.createElement('div');
@@ -1157,14 +1158,15 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                 b.onclick = () => handleHumanAbilityChoice(globalGameState, val);
                 return b;
             }
-            btnGroup.appendChild(makeBtn('↺ 逆時針', 'ccw', '#00d2d3'));
-            btnGroup.appendChild(makeBtn('↻ 順時針', 'cw', '#ff9ff3'));
+            btnGroup.appendChild(makeBtn('↺ 逆時針搜尋', 'ccw', '#00d2d3')); // 修改按鈕文字
+            btnGroup.appendChild(makeBtn('↻ 順時針搜尋', 'cw', '#ff9ff3')); // 修改按鈕文字
             btnGroup.appendChild(makeBtn('略過', false, '#777'));
             container.appendChild(btnGroup);
         } else {
             const info = document.createElement('div');
             info.className = 'evo-desc';
-            info.innerHTML = `取得小時卡時，可消耗 ${COST} Mana 移動一步。`;
+            // 修改靜態描述
+            info.innerHTML = `取得小時卡時，可消耗 ${COST} Mana 移至下一個順/逆時針的小時卡格子。`;
             container.appendChild(info);
         }
 

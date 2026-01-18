@@ -184,8 +184,7 @@
                         <br><span class="rules-subhint">└ 可再消耗 <strong>2 Mana</strong> 再次執行 (每回合 1 次)。</span>
                     </li>
                     <li><strong>分針：</strong>
-                        <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動 1 格。
-                    </li>
+                        <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動下一個有小時卡的格子。</li>
                     <li><strong>秒針：</strong>
                         <br>⚡ <strong>主動 3 Mana：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
                     </li>
@@ -213,7 +212,7 @@
 		<div class="setting-item">
 			<h4>日誌速度</h4>
 			<div class="settings-range-row">
-				<input type="range" id="log-speed-slider" min="0" max="999" step="50" value="360" class="log-speed-slider">
+				<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" class="log-speed-slider">
 				<span id="log-speed-value" class="log-speed-value">360 ms</span>
 			</div>
 			<p class="setting-note">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
@@ -224,7 +223,7 @@
 		<div class="setting-item">
 			<h4>日誌保留量</h4>
 			<div class="settings-range-row">
-				<input type="range" id="log-retention-slider" min="50" max="999" step="50" value="200" class="log-speed-slider">
+				<input type="range" id="log-retention-slider" min="50" max=1000" step="50" value="200" class="log-speed-slider">
 				<span id="log-retention-value" class="log-speed-value">200 則</span>
 			</div>
 			<p class="setting-note">限制日誌清單保留的最大數量，避免長局造成 DOM 過大。</p>
