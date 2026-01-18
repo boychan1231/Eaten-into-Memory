@@ -532,9 +532,14 @@ function renderScorePanel(gameState) {
 
 // --- B. 鐘面繪製 (修改版：箭頭指向玩家) ---
 function renderClockFace(gameState, flags) {
-    const radius = 190;
-    const centerX = 250;
-    const centerY = 250;
+	// 移除舊的像素設定
+    // const radius = 190;
+    // const centerX = 250;
+    // const centerY = 250;
+    // ✅ 改用百分比設定 (基於 500px 容器：190/500 = 38%, 240/500 = 48%)
+    const radiusPercent = 38; 
+    const arrowRadiusPercent = 48;
+	
     const clockFaceEl = document.getElementById('clock-face');
     if (!clockFaceEl) return;
 
@@ -552,27 +557,44 @@ function renderClockFace(gameState, flags) {
     gameState.clockFace.forEach((spot) => {
         const angleDeg = spot.position * 30 - 90;
         const angleRad = angleDeg * (Math.PI / 180);
-        const x = centerX + radius * Math.cos(angleRad);
-        const y = centerY + radius * Math.sin(angleRad);
+		
+		// ✅ 計算百分比座標 (50% 是中心點)
+        const leftPercent = 50 + radiusPercent * Math.cos(angleRad);
+        const topPercent = 50 + radiusPercent * Math.sin(angleRad);
+	
+        //const x = centerX + radius * Math.cos(angleRad);
+        //const y = centerY + radius * Math.sin(angleRad);
 
         const spotEl = document.createElement('div');
         spotEl.className = 'clock-spot';
-        spotEl.style.left = `${x}px`;
-        spotEl.style.top = `${y}px`;
+		
+		// ✅ 使用百分比定位
+        spotEl.style.left = `${leftPercent}%`;
+        spotEl.style.top = `${topPercent}%`;
 
-        // ✅ 修改：浮標箭頭現在指向「人類玩家的位置」
+        // 浮標箭頭現在指向「人類玩家的位置」
         if (humanPos !== null && spot.position === humanPos) {
             spotEl.classList.add('active-round'); // 借用這個 class 來做高亮效果
             
             // 繪製箭頭
             const arrowEl = document.createElement('div');
             arrowEl.className = 'active-round-arrow';
-            const arrowRadius = 240;
-            const arrowX = centerX + arrowRadius * Math.cos(angleRad);
-            const arrowY = centerY + arrowRadius * Math.sin(angleRad);
-            arrowEl.style.left = `${arrowX}px`;
-            arrowEl.style.top = `${arrowY}px`;
-            const rotation = angleDeg + 90;
+            
+			//const arrowRadius = 240;
+            //const arrowX = centerX + arrowRadius * Math.cos(angleRad);
+            //const arrowY = centerY + arrowRadius * Math.sin(angleRad);
+			
+			// ✅ 箭頭也改用百分比定位
+            const arrowLeftPct = 50 + arrowRadiusPercent * Math.cos(angleRad);
+            const arrowTopPct = 50 + arrowRadiusPercent * Math.sin(angleRad);
+            
+			//arrowEl.style.left = `${arrowX}px`;
+            //arrowEl.style.top = `${arrowY}px`;
+			
+			arrowEl.style.left = `${arrowLeftPct}%`;
+            arrowEl.style.top = `${arrowTopPct}%`;
+            
+			const rotation = angleDeg + 90;
             arrowEl.style.setProperty('--arrow-rotation', `${rotation}deg`);
             arrowEl.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
             clockFaceEl.appendChild(arrowEl);

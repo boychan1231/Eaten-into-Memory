@@ -245,7 +245,11 @@ input:checked + .slider:before { transform: translateX(16px); }
 /* 鐘面格子 */
 .clock-spot {
     position: absolute;
-    width: 70px; height: 70px;
+	
+    /* 最小 45px，理想值為容器寬度的 14%，最大 70px */
+    width: clamp(45px, 14%, 70px);
+    height: clamp(45px, 14%, 70px);
+	
     background: transparent;
     background-image: none;
     border: 2px solid rgba(255, 255, 255, 0.15);
@@ -256,9 +260,11 @@ input:checked + .slider:before { transform: translateX(16px); }
     align-items: center;
     justify-content: center;
     font-size: 0.8rem;
+	
+/* ✅關鍵：這行確保定位點是在格子的「正中心」，配合 JS 的百分比座標 */
     transform: translate(-50%, -50%);
+	
     transition: all 0.3s;
-    backdrop-filter: none;
     z-index: 10;
 }
 
@@ -300,6 +306,8 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     z-index: 2;
+/* 讓內容稍微縮放以適應變小的格子 */
+    transform: scale(0.9);	
 }
 .cp-num { font-size: 0.72rem; font-weight: 800; }
 .cp-age { font-size: 0.52rem; font-weight: 700; opacity: 0.9; }
