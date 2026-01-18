@@ -1,5 +1,5 @@
 // abilities.js (特殊能力定義檔 - 新版進化規則)
-const appLogger = window.appLogger || {
+var appLogger = window.appLogger || {
     log: (...args) => console.log(...args)
 };
 

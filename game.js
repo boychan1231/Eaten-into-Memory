@@ -1,5 +1,5 @@
 // game.js
-const appLogger = (typeof window !== 'undefined' && window.appLogger) || {
+var appLogger = (typeof window !== 'undefined' && window.appLogger) || {
     log: (...args) => console.log(...args)
 };
 
