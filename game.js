@@ -359,8 +359,8 @@ function initializeGame(roles = null) {
                 if (idx >= 0) __testHandCards.push(gameState.minuteDeck.splice(idx, 1)[0]);
             });
 
-            // 若因任何原因缺牌，使用剩餘牌庫補齊至本模式手牌上限（仍避免中斷遊戲）
-            while (__testHandCards.length < numCards && gameState.minuteDeck.length > 0) {
+            // 若因任何原因缺牌，使用剩餘牌庫補齊 12 張（仍避免中斷遊戲）
+            while (__testHandCards.length < 12 && gameState.minuteDeck.length > 0) {
                 __testHandCards.push(gameState.minuteDeck.pop());
             }
             __testHandCards = __testHandCards.slice(0, numCards);
