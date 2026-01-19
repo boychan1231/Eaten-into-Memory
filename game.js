@@ -1350,26 +1350,26 @@ function handleDiceDeduction(player) {
 function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
+    const currentMode = gameState.gameMode || getGameMode();
     
     appLogger.log(`--扣除齒輪/護盾 (當前規則: ${modeText}) --`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-    // 若時之惡不在場，無人受罰 (直接檢查勝利條件)
-    if (!sinPlayer || !sinPlayer.currentClockPosition) {
+    // 若時之惡不在場且非 3P 模式，無人受罰 (直接檢查勝利條件)
+    if (currentMode !== '3P' && (!sinPlayer || !sinPlayer.currentClockPosition)) {
         checkEjectionAndWinCondition(gameState);
         return;
     }
     
-    const sinPosition = sinPlayer.currentClockPosition;
+    const sinPosition = sinPlayer?.currentClockPosition ?? null;
     let playersToDeduct = [];
 
     // 1. 決定受罰對象
-    if (targetingMode === 'default') {
-        const candidates = gameState.players.filter(p =>
-            (p.type === '時魔' || p.type === '受詛者' || p.type === '時之惡') &&
-            !p.isEjected &&
-            p.currentClockPosition
-        );
+    if (targetingMode === 'default' || currentMode === '3P') {
+        const candidates = gameState.players.filter(p => {
+            const allowedTypes = (currentMode === '3P') ? (p.type === '時魔') : (p.type === '時魔' || p.type === '受詛者' || p.type === '時之惡');
+            return allowedTypes && !p.isEjected && p.currentClockPosition;
+        });
 
         if (candidates.length > 0) {
             let maxPos = 0;
