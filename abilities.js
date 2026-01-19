@@ -241,8 +241,8 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     }
 
     // 4. 執行移動
-    const topCard = gameState.hourDeck.shift();
-    gameState.hourDeck.push(topCard);
+    const topCard = gameState.hourDeck.pop();
+    gameState.hourDeck.unshift(topCard);
     
     // 5. 扣除消耗並更新計數
     player.mana -= currentCost;
