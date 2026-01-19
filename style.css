@@ -693,7 +693,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 .human-stats-row {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 }
-.human-stats-row > div:not(.resource-chip) {
+.human-stats-row div {
     background: #1f1424;
     border: 1px solid #4a3b52;
     border-radius: 4px;
@@ -701,7 +701,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #dccae5; font-size: 0.95rem;
     display: flex; align-items: center; white-space: nowrap;
 }
-.human-stats-row > div:not(.resource-chip) span {
+.human-stats-row span {
     color: #ff6b6b; font-weight: bold; margin-left: 6px; font-size: 1.1rem;
 }
 
