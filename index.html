@@ -282,6 +282,47 @@
 
 		<hr class="settings-divider">
 
+		<div class="setting-item">
+			<h4>遊戲模式</h4>
+			<div class="settings-radio-group">
+				<label class="radio-label">
+					<input type="radio" name="game-mode" value="5P" checked>
+					<span class="radio-custom"></span>
+					<span>5P 模式 (原設定)</span>
+				</label>
+				<label class="radio-label">
+					<input type="radio" name="game-mode" value="3P">
+					<span class="radio-custom"></span>
+					<span>3P 模式</span>
+				</label>
+			</div>
+			<p class="setting-note">3P 模式僅有時魔玩家，遊戲輪數為 3 輪，且不使用珍貴小時卡。</p>
+
+			<div id="threep-role-section" class="settings-subgroup">
+				<h5>3P 初始身份</h5>
+				<div class="settings-radio-group">
+					<label class="radio-label">
+						<input type="radio" name="threep-role" value="時針" checked>
+						<span class="radio-custom"></span>
+						<span>時針</span>
+					</label>
+					<label class="radio-label">
+						<input type="radio" name="threep-role" value="分針">
+						<span class="radio-custom"></span>
+						<span>分針</span>
+					</label>
+					<label class="radio-label">
+						<input type="radio" name="threep-role" value="秒針">
+						<span class="radio-custom"></span>
+						<span>秒針</span>
+					</label>
+				</div>
+				<p class="setting-note">3P 模式下請先選擇人類玩家的初始身份。</p>
+			</div>
+		</div>
+
+		<hr class="settings-divider">
+
 			<div class="setting-item">
 				<h4>除錯資訊</h4>
 				<p class="setting-muted">

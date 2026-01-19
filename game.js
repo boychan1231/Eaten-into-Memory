@@ -47,6 +47,8 @@ const GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG)
 
 if (GAME_CONFIG.enableAbilities === undefined) GAME_CONFIG.enableAbilities = false;
 if (GAME_CONFIG.testMode === undefined) GAME_CONFIG.testMode = false;
+if (GAME_CONFIG.gameMode === undefined) GAME_CONFIG.gameMode = '5P';
+if (GAME_CONFIG.threePStartingRole === undefined) GAME_CONFIG.threePStartingRole = '時針';
 
 try { if (typeof window !== 'undefined') window.GAME_CONFIG = GAME_CONFIG; } catch (_) {}
 
@@ -82,6 +84,7 @@ for (let i = 1; i <= 60; i++) {
 // 珍貴仍然是 12 張（每個數字 1~12 各 1 張是珍貴）。
 
 const HOUR_AGE_GROUPS = ['少年', '青年', '中年'];
+const THREE_PLAYER_HAND_ROLES = ['時針', '分針', '秒針'];
 
 function createHourCard(number, ageGroup, isPrecious = false) {
     return { type: 'hour', number, ageGroup, isPrecious };
@@ -138,6 +141,62 @@ function buildHourDeckWithRandomPrecious() {
     }
 
     return { deck, config };
+}
+
+function buildHourDeckForThreePlayer() {
+    const deck = [];
+    for (let i = 0; i < 2; i++) {
+        for (let n = 1; n <= 12; n++) {
+            deck.push(createHourCard(n, null, false));
+        }
+    }
+    return { deck, config: null };
+}
+
+function getGameMode() {
+    const mode = GAME_CONFIG?.gameMode || (typeof window !== 'undefined' ? window.GAME_CONFIG?.gameMode : null);
+    return mode === '3P' ? '3P' : '5P';
+}
+
+function getRolesForMode(mode) {
+    if (mode === '3P') {
+        return PLAYER_ROLES.filter(role => role.type === '時魔');
+    }
+    return PLAYER_ROLES;
+}
+
+function formatTimeDemonName(player, roleName) {
+    const name = String(player.name || '').trim();
+    let m = name.match(/時魔\s*幼體\s*(\d+)/);
+    if (!m) m = name.match(/時魔\s*(\d+)/);
+    if (!m) m = String(player.id || '').match(/SM_(\d+)/);
+    const idxText = m ? m[1] : (String(player.id || '').replace(/^SM_/, '') || '');
+    return `時魔 ${idxText} (${roleName})`;
+}
+
+function assignThreePlayerRoles(gameState) {
+    if (!gameState || !Array.isArray(gameState.players)) return;
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = gameState.players.find(p => p.id === humanId) || gameState.players[0];
+    const preferredRole = (GAME_CONFIG?.threePStartingRole || window.GAME_CONFIG?.threePStartingRole);
+    const rolePool = [...THREE_PLAYER_HAND_ROLES];
+    const humanRole = rolePool.includes(preferredRole) ? preferredRole : rolePool[0];
+
+    if (humanPlayer) {
+        humanPlayer.roleCard = humanRole;
+        humanPlayer.name = formatTimeDemonName(humanPlayer, humanRole);
+    }
+
+    const remainingRoles = rolePool.filter(role => role !== humanRole);
+    shuffle(remainingRoles);
+
+    gameState.players
+        .filter(p => p !== humanPlayer)
+        .forEach((player, idx) => {
+            const roleName = remainingRoles[idx % remainingRoles.length];
+            player.roleCard = roleName;
+            player.name = formatTimeDemonName(player, roleName);
+        });
 }
 
 // --- 2. 玩家/角色定義 ---
@@ -253,24 +312,34 @@ function getCircularDistance(pos1, pos2) {
 
 // --- 5. 遊戲初始化邏輯 ---
 
-function initializeGame(roles = PLAYER_ROLES) {
+function initializeGame(roles = null) {
+    const resolvedGameMode = roles ? (roles.length === 3 ? '3P' : '5P') : getGameMode();
+    const resolvedRoles = roles || getRolesForMode(resolvedGameMode);
     const minuteDeckCopy = [...DECK_MINUTE_CARDS];
 	shuffle(minuteDeckCopy);
 
 	// 生成「本局」小時牌庫（含隨機珍貴配置）
-	const { deck: hourDeckCopy, config: hourConfig } = buildHourDeckWithRandomPrecious();
+	const { deck: hourDeckCopy, config: hourConfig } = (resolvedGameMode === '3P')
+        ? buildHourDeckForThreePlayer()
+        : buildHourDeckWithRandomPrecious();
 	shuffle(hourDeckCopy);
 
-	const gameState = new GameState(roles);
+	const gameState = new GameState(resolvedRoles);
+    gameState.gameMode = resolvedGameMode;
 	gameState.minuteDeck = minuteDeckCopy;
 	gameState.hourDeck = hourDeckCopy;
 
 	// 存起本局配置（方便日後 UI 顯示或除錯）
 	gameState.hourPreciousConfig = hourConfig;
-	appLogger.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
+	if (hourConfig && hourConfig.id) {
+	    appLogger.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
+	} else {
+	    appLogger.log("【小時卡設定】3P 模式：不使用珍貴小時卡。");
+	}
 
 
-    const numCards = 12;
+    const numCards = (resolvedGameMode === '3P') ? 13 : 12;
+    const numPlayers = gameState.players.length;
 	
 	// --- 測試模式：固定人類玩家第 1 輪起始手牌 ---
     const __humanIdForTest = getEffectiveHumanPlayerId();
@@ -294,7 +363,7 @@ function initializeGame(roles = PLAYER_ROLES) {
             while (__testHandCards.length < 12 && gameState.minuteDeck.length > 0) {
                 __testHandCards.push(gameState.minuteDeck.pop());
             }
-            __testHandCards = __testHandCards.slice(0, 12);
+            __testHandCards = __testHandCards.slice(0, numCards);
 
             appLogger.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 輪起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
         } else {
@@ -303,7 +372,7 @@ function initializeGame(roles = PLAYER_ROLES) {
     }
 
     
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < numPlayers; i++) {
         const handSet = [];
 
         // 測試模式：指定人類玩家固定手牌（僅第 1 輪）
@@ -348,6 +417,10 @@ function initializeGame(roles = PLAYER_ROLES) {
     if (sczPlayerStart) {
         sczPlayerStart.currentClockPosition = 1;
         appLogger.log("【初始設定】受詛者 位於位置 1");
+    }
+
+    if (resolvedGameMode === '3P') {
+        assignThreePlayerRoles(gameState);
     }
     
     appLogger.log("遊戲初始化完成！");
@@ -433,7 +506,7 @@ function startRound(gameState) {
 	
 	// ✅ 新增：第 4 輪開局平衡機制 (僅在第4輪且第1回合時觸發)
     // 若牌庫 > 26 張，優先移除「非珍貴的 1」
-    if (gameState.gameRound === 4 && gameState.roundMarker === 1) {
+    if (gameState.gameMode !== '3P' && gameState.gameRound === 4 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 26) {
             
             // 1. 找出所有「非珍貴」且數字為「1」的卡
@@ -461,7 +534,7 @@ function startRound(gameState) {
 	
 		// 第 5 輪開局平衡機制 (僅在第5輪且第1回合時觸發)
     // 如果牌庫大於 24 張，優先移除數字小的非珍貴卡，直到剩下 24 張
-    if (gameState.gameRound === 5 && gameState.roundMarker === 1) {
+    if (gameState.gameMode !== '3P' && gameState.gameRound === 5 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 24) {
             const targetCount = 24;
             const removeCount = gameState.hourDeck.length - targetCount;
@@ -1380,13 +1453,19 @@ function checkEjectionAndWinCondition(gameState) {
 	// 2. 勝利判定
 	const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
+    const currentMode = gameState.gameMode || getGameMode();
 
 	// 檢查是否「所有時魔都曾被逐出過」
     const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
     const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
 	
 	// 判斷：時之惡死亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被逐出 (累計全滅)
-    if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
+    if (currentMode === '3P') {
+        if (aliveTimeDemons.length === 0) {
+            gameState.gameEnded = true;
+            appLogger.log('🎉 遊戲結束：所有時魔被逐出。');
+        }
+    } else if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
             appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
@@ -1411,12 +1490,12 @@ function checkEjectionAndWinCondition(gameState) {
 
 function inRoundEndActions(gameState) {
 
+	const shouldCollectHourCards = (gameState.gameMode === '3P');
 	gameState.players.filter(p =>
 		p.type === '時魔' &&
 		!p.isEjected &&
 		p.currentClockPosition &&
-		typeof p.roleCard === 'string' &&
-		p.roleCard.includes('幼')
+		(shouldCollectHourCards || (typeof p.roleCard === 'string' && p.roleCard.includes('幼')))
 	  )
 	  .forEach(player => {
 		const currentSpot = gameState.clockFace.find(s => s.position === player.currentClockPosition);
@@ -1592,7 +1671,8 @@ function endGameRound(gameState) {
 	// 2.5 幼體時魔交還小時卡
 	let returnedFromYoungDemons = [];
 	gameState.players.forEach(player => {
-	  if (player.type === '時魔' && typeof player.roleCard === 'string' && player.roleCard.includes('幼') && Array.isArray(player.hourCards) && player.hourCards.length > 0) {
+	  const shouldReturnHourCards = (gameState.gameMode === '3P') || (typeof player.roleCard === 'string' && player.roleCard.includes('幼'));
+	  if (player.type === '時魔' && shouldReturnHourCards && Array.isArray(player.hourCards) && player.hourCards.length > 0) {
 		returnedFromYoungDemons.push(...player.hourCards);
 		player.hourCards = [];
 	  }
@@ -1682,11 +1762,13 @@ function endGameRound(gameState) {
 
 function endGame(gameState) {
     appLogger.log("=== 遊戲結束 ===");
-    gameState.players
-        .filter(p => p.type === '時魔' && ['時針', '分針', '秒針'].includes(p.roleCard))
-        .forEach(player => {
-			player.score += 3;
-        });
+    if (gameState.gameMode !== '3P') {
+        gameState.players
+            .filter(p => p.type === '時魔' && ['時針', '分針', '秒針'].includes(p.roleCard))
+            .forEach(player => {
+			    player.score += 3;
+            });
+    }
 		
     const finalScores = gameState.players.slice().sort((a, b) => b.score - a.score);
     finalScores.forEach((p, index) => {

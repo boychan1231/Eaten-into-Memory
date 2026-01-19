@@ -1626,6 +1626,17 @@ body {
     color: #888;
 }
 
+.settings-subgroup {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px dashed #333;
+    border-radius: 6px;
+}
+
+.settings-subgroup.hidden {
+    display: none;
+}
+
 .setting-muted {
     font-size: 0.8rem;
     color: #666;

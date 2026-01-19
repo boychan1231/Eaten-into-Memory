@@ -4,7 +4,9 @@
 window.GAME_CONFIG = {
     enableAbilities: false, // 預設是否啟用特殊能力 (可被 UI 開關覆蓋)
     testMode: false,        // 預設是否開啟測試模式 (可被 UI 開關覆蓋)
-    defaultHumanId: 'SM_1'  // 預設人類玩家 ID
+    defaultHumanId: 'SM_1',  // 預設人類玩家 ID
+    gameMode: '5P',          // 遊戲模式: '5P' (預設) 或 '3P'
+    threePStartingRole: '時針' // 3P 模式下人類玩家初始身份
 };
 
 // 2. 介面外觀 (UI Appearance)
