@@ -1506,6 +1506,18 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
+    const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
+    const threePRoleSection = document.getElementById('threep-role-section');
+    const syncThreePSection = () => {
+        const mode = document.querySelector('input[name="game-mode"]:checked')?.value || '5P';
+        if (!threePRoleSection) return;
+        threePRoleSection.classList.toggle('hidden', mode !== '3P');
+    };
+    gameModeRadios.forEach(radio => {
+        radio.addEventListener('change', syncThreePSection);
+    });
+    syncThreePSection();
+
 	// 4A. 出牌（分鐘卡）按鈕事件修正
     const confirmMoveBtn = document.getElementById('confirm-move-btn');
     if (confirmMoveBtn) {
@@ -1734,9 +1746,15 @@ document.addEventListener('DOMContentLoaded', () => {
 				const cfgTestMode = !!testToggleEl?.checked;
 				window.GAME_CONFIG.enableAbilities = cfgEnableAbilities;
 				window.GAME_CONFIG.testMode = cfgTestMode;
+                const selectedMode = document.querySelector('input[name="game-mode"]:checked')?.value || '5P';
+                const selectedThreePRole = document.querySelector('input[name="threep-role"]:checked')?.value || '時針';
+                window.GAME_CONFIG.gameMode = selectedMode;
+                window.GAME_CONFIG.threePStartingRole = selectedThreePRole;
                 if (typeof GAME_CONFIG !== 'undefined') {
                     GAME_CONFIG.enableAbilities = cfgEnableAbilities;
                     GAME_CONFIG.testMode = cfgTestMode;
+                    GAME_CONFIG.gameMode = selectedMode;
+                    GAME_CONFIG.threePStartingRole = selectedThreePRole;
                 }
 
 				const doInitialize = () => {
@@ -1772,6 +1790,11 @@ document.addEventListener('DOMContentLoaded', () => {
 					}
 					doInitialize();
 				};
+
+                    if (selectedMode === '3P') {
+                        startWithRole('SM_1');
+                        return;
+                    }
 
 					if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
 						openModal(roleOverlay, btnTimeDemon);
