@@ -370,7 +370,11 @@ function updateUI(gameState) {
         : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1'));
     
     // 全域變數更新 (供事件使用)
-    window.HUMAN_PLAYER_ID = humanId; 
+    if (typeof window.setHumanPlayerId === 'function') {
+        window.setHumanPlayerId(humanId);
+    } else {
+        window.HUMAN_PLAYER_ID = humanId;
+    }
     
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
