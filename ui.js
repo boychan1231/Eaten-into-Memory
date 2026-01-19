@@ -698,7 +698,11 @@ function renderAIPlayers(gameState, humanId) {
         
         let diceInfo = '';
         if (player.d6Die !== null) {
-            diceInfo = `<div>護盾: <strong>${player.d6Die}</strong></div>`;
+            diceInfo = `
+                <div class="resource-chip resource-chip--shield">
+                    <span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
+                    護盾: <strong>${player.d6Die}</strong>
+                </div>`;
         }
         const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
 		
@@ -727,7 +731,14 @@ function renderAIPlayers(gameState, humanId) {
 
             <div class="player-stats">
                 <div>手牌: ${player.hand.length}</div>
-                <div>Mana / 齒輪: ${player.mana} / ${player.gearCards}</div>
+                <div class="resource-chip resource-chip--mana">
+                    <span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
+                    Mana: <strong>${player.mana}</strong>
+                </div>
+                <div class="resource-chip resource-chip--gear">
+                    <span class="resource-chip__icon icon-gear-css" aria-hidden="true"></span>
+                    齒輪: <strong>${player.gearCards}</strong>
+                </div>
                 <div>分數: ${player.score}</div>
                 ${diceInfo}
                 <div>位置: ${posDisplay}</div>
@@ -766,7 +777,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     }
 
     setText('h-hand-count', String(humanPlayer.hand.length));
-    setText('h-mana', `${humanPlayer.mana} / ${humanPlayer.gearCards}`);
+    setText('h-mana', String(humanPlayer.mana));
     setText('h-gear', String(humanPlayer.gearCards));
     setText('h-score', String(humanPlayer.score));
     setText('h-pos', humanPlayer.isEjected ? '驅逐' : String(humanPlayer.currentClockPosition || '未上場'));
