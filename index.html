@@ -95,8 +95,18 @@
                         <div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
                             <div>手牌: <span id="h-hand-count">0</span></div>
-                            <div>Mana / 齒輪: <span id="h-mana">0</span></div>
-                            <div>護盾: <span id="h-dice">--</span></div>
+                            <div class="resource-chip resource-chip--mana">
+                                <span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
+                                Mana: <span id="h-mana">0</span>
+                            </div>
+                            <div class="resource-chip resource-chip--gear">
+                                <span class="resource-chip__icon icon-gear-css" aria-hidden="true"></span>
+                                齒輪: <span id="h-gear">0</span>
+                            </div>
+                            <div class="resource-chip resource-chip--shield">
+                                <span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
+                                護盾: <span id="h-dice">--</span>
+                            </div>
                             <div>位置: <span id="h-pos">--</span></div>
                             <div>收集小時卡: 
 								<span id="h-hour">0</span>

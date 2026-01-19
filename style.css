@@ -705,6 +705,59 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ff6b6b; font-weight: bold; margin-left: 6px; font-size: 1.1rem;
 }
 
+/* --- 資源識別色塊 --- */
+.resource-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.resource-chip__icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.resource-chip span:not(.resource-chip__icon),
+.resource-chip strong {
+    color: inherit;
+    font-weight: 700;
+}
+
+.human-stats-row .resource-chip span:not(.resource-chip__icon),
+.human-stats-row .resource-chip strong {
+    margin-left: 4px;
+    font-size: 0.98rem;
+}
+
+.resource-chip.resource-chip--mana {
+    background: rgba(174, 108, 255, 0.18);
+    border: 1px solid rgba(174, 108, 255, 0.6);
+    color: #f3d9ff;
+    box-shadow: 0 0 8px rgba(174, 108, 255, 0.25);
+}
+
+.resource-chip.resource-chip--gear {
+    background: rgba(255, 198, 94, 0.16);
+    border: 1px solid rgba(255, 198, 94, 0.6);
+    color: #ffe7b6;
+    box-shadow: 0 0 8px rgba(255, 198, 94, 0.2);
+}
+
+.resource-chip.resource-chip--shield {
+    background: rgba(0, 210, 211, 0.18);
+    border: 1px solid rgba(0, 210, 211, 0.65);
+    color: #d3ffff;
+    box-shadow: 0 0 8px rgba(0, 210, 211, 0.2);
+}
+
+.player-stats .resource-chip {
+    font-size: 0.8rem;
+}
+
 /* 人類玩家分頁 */
 .human-tabs {
     display: flex;
