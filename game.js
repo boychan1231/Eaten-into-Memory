@@ -808,7 +808,8 @@ function processMinuteCardSelection(gameState) {
 }
 
 function handleHumanSecondHandCommit(gameState, chosenCardValues) {
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
     if (!humanPlayer || humanPlayer.isEjected) return false;
 
     if (!GAME_CONFIG.enableAbilities || humanPlayer.roleCard !== '秒針') {
@@ -856,7 +857,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     // 保存兩張備選卡
     gameState.secondHandPendingCards = [card1, card2];
     gameState.waitingSecondHandFinalChoice = true;
-    gameState.waitingSecondHandFinalChoicePlayerId = HUMAN_PLAYER_ID;
+    gameState.waitingSecondHandFinalChoicePlayerId = humanId;
 
     // 翻開其他玩家（AI）的牌
     const aiChoices = gameState.currentRoundAIChoices || [];
@@ -878,10 +879,11 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 }
 
 function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
     if (!humanPlayer || humanPlayer.isEjected) return false;
 
-    if (!gameState.waitingSecondHandFinalChoice || gameState.waitingSecondHandFinalChoicePlayerId !== HUMAN_PLAYER_ID) {
+    if (!gameState.waitingSecondHandFinalChoice || gameState.waitingSecondHandFinalChoicePlayerId !== humanId) {
         return false;
     }
 
@@ -929,7 +931,8 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
 
 
 function handleHumanChoice(gameState, chosenCardValue) {
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
     const chosenCardIndex = humanPlayer.hand.findIndex(c => c.value === chosenCardValue);
     if (chosenCardIndex === -1) {
         console.warn("無效卡牌選擇，請重新選擇。");
@@ -1047,7 +1050,8 @@ function processNextHourPicker(gameState) {
         return;
     }
 
-    if (player.id === HUMAN_PLAYER_ID) {
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    if (player.id === humanId) {
         gameState.waitingHourChoice = true;
         gameState.waitingHourChoicePlayerId = player.id;
         appLogger.log(`👉 ${player.name} 請在右側選擇一張小時卡。`);
@@ -1214,11 +1218,12 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 }
 
 function handleHumanHourCardChoice(gameState, chosenIndex) {
-    if (!gameState || !gameState.waitingHourChoice || gameState.waitingHourChoicePlayerId !== HUMAN_PLAYER_ID) {
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    if (!gameState || !gameState.waitingHourChoice || gameState.waitingHourChoicePlayerId !== humanId) {
         return;
     }
 
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
     if (!humanPlayer) return;
 
     const drawnCards = gameState.currentDrawnHourCards || [];
@@ -1256,7 +1261,8 @@ function finishHourSelection(gameState) {
     choices.forEach(c => gameState.minuteDiscard.push(c.card));
 
     // 2. 檢查分針觸發條件
-    const humanPlayer = gameState.players.find(p => p.id === HUMAN_PLAYER_ID);
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = gameState.players.find(p => p.id === humanId);
     
     // 定義基礎條件
     const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
@@ -1297,7 +1303,8 @@ function handleHumanAbilityChoice(gameState, choice) {
     if (choice === 'ccw' || choice === 'cw') {
         // 呼叫 abilities.js 的函式 (需確保已載入)
         if (typeof activateMinuteHandAbility === 'function') {
-            activateMinuteHandAbility(gameState, HUMAN_PLAYER_ID, choice);
+            const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+            activateMinuteHandAbility(gameState, humanId, choice);
         }
     } else {
         appLogger.log("分針選擇略過能力。");
