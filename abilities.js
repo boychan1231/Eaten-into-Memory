@@ -89,6 +89,10 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
     }
     
     const oldPos = player.currentClockPosition;
+    if (typeof oldPos !== 'number' || !Number.isFinite(oldPos)) {
+        appLogger.log("【分針】尚未在鐘面上定位，無法發動移動能力。");
+        return false;
+    }
     let checkPos = oldPos;
     let newPos = null;
     let found = false;
