@@ -1506,17 +1506,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
-    const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
-    const threePRoleSection = document.getElementById('threep-role-section');
-    const syncThreePSection = () => {
-        const mode = document.querySelector('input[name="game-mode"]:checked')?.value || '5P';
-        if (!threePRoleSection) return;
-        threePRoleSection.classList.toggle('hidden', mode !== '3P');
+    const startModeRadios = document.querySelectorAll('input[name="start-game-mode"]');
+    const startModeNote = document.getElementById('start-mode-note');
+    const syncStartModeNote = () => {
+        if (!startModeNote) return;
+        const mode = document.querySelector('input[name="start-game-mode"]:checked')?.value || '5P';
+        startModeNote.style.display = mode === '3P' ? 'block' : 'none';
     };
-    gameModeRadios.forEach(radio => {
-        radio.addEventListener('change', syncThreePSection);
+    startModeRadios.forEach(radio => {
+        radio.addEventListener('change', syncStartModeNote);
     });
-    syncThreePSection();
+    syncStartModeNote();
 
 	// 4A. 出牌（分鐘卡）按鈕事件修正
     const confirmMoveBtn = document.getElementById('confirm-move-btn');
@@ -1735,91 +1735,129 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startGameBtn = document.getElementById('start-game-btn');
     const roleOverlay = document.getElementById('role-choice-overlay');
+    const gameModeOverlay = document.getElementById('game-mode-overlay');
+    const gameModeConfirm = document.getElementById('game-mode-confirm');
+    const gameModeCloseBtn = document.getElementById('game-mode-close-btn');
+
+    const setStartModalDefaults = () => {
+        const selectedMode = window.GAME_CONFIG?.gameMode || '5P';
+        const selectedRole = window.GAME_CONFIG?.threePStartingRole || '時針';
+        const modeInput = document.querySelector(`input[name="start-game-mode"][value="${selectedMode}"]`);
+        const roleInput = document.querySelector(`input[name="start-time-demon-role"][value="${selectedRole}"]`);
+        if (modeInput) modeInput.checked = true;
+        if (roleInput) roleInput.checked = true;
+        if (typeof syncStartModeNote === 'function') syncStartModeNote();
+    };
+
+    const getStartModalSelection = () => ({
+        selectedMode: document.querySelector('input[name="start-game-mode"]:checked')?.value || '5P',
+        selectedThreePRole: document.querySelector('input[name="start-time-demon-role"]:checked')?.value || '時針'
+    });
+
+    const applyStartConfig = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
+        window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
+        window.GAME_CONFIG.enableAbilities = cfgEnableAbilities;
+        window.GAME_CONFIG.testMode = cfgTestMode;
+        window.GAME_CONFIG.gameMode = selectedMode;
+        window.GAME_CONFIG.threePStartingRole = selectedThreePRole;
+        if (typeof GAME_CONFIG !== 'undefined') {
+            GAME_CONFIG.enableAbilities = cfgEnableAbilities;
+            GAME_CONFIG.testMode = cfgTestMode;
+            GAME_CONFIG.gameMode = selectedMode;
+            GAME_CONFIG.threePStartingRole = selectedThreePRole;
+        }
+    };
+
+    const doInitialize = () => {
+        const logListEl = document.getElementById('log-list');
+        if (logListEl) logListEl.innerHTML = '';
+        const initFn = (typeof window.initializeGame === 'function') ? window.initializeGame : (typeof initializeGame === 'function' ? initializeGame : null);
+        if (!initFn) throw new ReferenceError('initializeGame is not defined');
+        globalGameState = initFn();
+        resetMinuteHistory(globalGameState);
+        resetRightPanels(globalGameState);
+        uiTrackedGameRound = 1;// 重置輪數追蹤變數
+        uiState.selectedCardValue = null;
+        uiState.selectedCardValues = [];
+        uiState.isSecondHandSelectingTwo = false;
+        const humanId = getCurrentHumanPlayerId();
+        const humanPlayer = globalGameState.players.find(p => p.id === humanId);
+        if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+        updateUI(globalGameState);
+        bindNextStepButton();
+    };
+
+    const startWithRole = (roleId) => {
+        if (roleOverlay) closeModal(roleOverlay);
+        if (typeof window.setHumanPlayerId === 'function') {
+            window.setHumanPlayerId(roleId);
+        } else {
+            try { window.HUMAN_PLAYER_ID = roleId; } catch (_) {}
+        }
+        doInitialize();
+    };
+
+    const beginStartFlow = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
+        applyStartConfig({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode });
+        const btnTimeDemon = document.getElementById('role-choice-timeDemon');
+        const btnSin = document.getElementById('role-choice-sin');
+        const btnScz = document.getElementById('role-choice-scz');
+
+        if (selectedMode === '3P') {
+            startWithRole('SM_1');
+            return;
+        }
+
+        if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
+            openModal(roleOverlay, btnTimeDemon);
+            btnTimeDemon.onclick = () => startWithRole('SM_1');
+            btnSin.onclick = () => startWithRole('sin');
+            btnScz.onclick = () => startWithRole('SCZ');
+            return;
+        }
+        startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
+    };
 
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
-			try {
-				window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
-				const abilityToggleEl = document.getElementById('ability-toggle');
-				const testToggleEl = document.getElementById('test-toggle');
-				const cfgEnableAbilities = !!abilityToggleEl?.checked;
-				const cfgTestMode = !!testToggleEl?.checked;
-				window.GAME_CONFIG.enableAbilities = cfgEnableAbilities;
-				window.GAME_CONFIG.testMode = cfgTestMode;
-                const selectedMode = document.querySelector('input[name="game-mode"]:checked')?.value || '5P';
-                const selectedThreePRole = document.querySelector('input[name="threep-role"]:checked')?.value || '時針';
-                window.GAME_CONFIG.gameMode = selectedMode;
-                window.GAME_CONFIG.threePStartingRole = selectedThreePRole;
-                if (typeof GAME_CONFIG !== 'undefined') {
-                    GAME_CONFIG.enableAbilities = cfgEnableAbilities;
-                    GAME_CONFIG.testMode = cfgTestMode;
-                    GAME_CONFIG.gameMode = selectedMode;
-                    GAME_CONFIG.threePStartingRole = selectedThreePRole;
-                }
-
-				const doInitialize = () => {
-					const logListEl = document.getElementById('log-list');
-					if (logListEl) logListEl.innerHTML = '';
-					const initFn = (typeof window.initializeGame === 'function') ? window.initializeGame : (typeof initializeGame === 'function' ? initializeGame : null);
-					if (!initFn) throw new ReferenceError('initializeGame is not defined');
-					globalGameState = initFn();
-					resetMinuteHistory(globalGameState);
-					resetRightPanels(globalGameState);
-                    uiTrackedGameRound = 1;// 重置輪數追蹤變數
-					uiState.selectedCardValue = null;
-					uiState.selectedCardValues = [];
-					uiState.isSecondHandSelectingTwo = false;
-					const humanId = getCurrentHumanPlayerId();
-					const humanPlayer = globalGameState.players.find(p => p.id === humanId);
-					if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
-					updateUI(globalGameState);
-					bindNextStepButton();
-				};
-
-				const roleOverlay = document.getElementById('role-choice-overlay');
-				const btnTimeDemon = document.getElementById('role-choice-timeDemon');
-				const btnSin = document.getElementById('role-choice-sin');
-				const btnScz = document.getElementById('role-choice-scz');
-
-					const startWithRole = (roleId) => {
-						if (roleOverlay) closeModal(roleOverlay);
-						if (typeof window.setHumanPlayerId === 'function') {
-							window.setHumanPlayerId(roleId);
-						} else {
-						try { window.HUMAN_PLAYER_ID = roleId; } catch (_) {}
-					}
-					doInitialize();
-				};
-
-                    if (selectedMode === '3P') {
-                        startWithRole('SM_1');
-                        return;
-                    }
-
-					if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
-						openModal(roleOverlay, btnTimeDemon);
-						btnTimeDemon.onclick = () => startWithRole('SM_1');
-						btnSin.onclick = () => startWithRole('sin');
-						btnScz.onclick = () => startWithRole('SCZ');
-					return;
-				}
-				startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
-			} catch (err) {
-				appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
-			}
-		});
-		
-		// ✅ 綁定「選擇角色」視窗的關閉按鈕事件
-		const roleCloseBtn = document.getElementById('role-choice-close-btn');
-		const roleOverlayEl = document.getElementById('role-choice-overlay');
-		
-			if (roleCloseBtn && roleOverlayEl) {
-				roleCloseBtn.addEventListener('click', () => {
-					closeModal(roleOverlayEl);
-				});
-			}
-		
+            try {
+                setStartModalDefaults();
+                if (gameModeOverlay) openModal(gameModeOverlay, gameModeConfirm || undefined);
+            } catch (err) {
+                appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
+            }
+        });
     }
+
+    if (gameModeConfirm) {
+        gameModeConfirm.addEventListener('click', () => {
+            try {
+                const abilityToggleEl = document.getElementById('ability-toggle');
+                const testToggleEl = document.getElementById('test-toggle');
+                const cfgEnableAbilities = !!abilityToggleEl?.checked;
+                const cfgTestMode = !!testToggleEl?.checked;
+                const { selectedMode, selectedThreePRole } = getStartModalSelection();
+                if (gameModeOverlay) closeModal(gameModeOverlay);
+                beginStartFlow({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode });
+            } catch (err) {
+                appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
+            }
+        });
+    }
+
+    if (gameModeCloseBtn && gameModeOverlay) {
+        gameModeCloseBtn.addEventListener('click', () => closeModal(gameModeOverlay));
+    }
+		
+	// ✅ 綁定「選擇角色」視窗的關閉按鈕事件
+	const roleCloseBtn = document.getElementById('role-choice-close-btn');
+	const roleOverlayEl = document.getElementById('role-choice-overlay');
+	
+		if (roleCloseBtn && roleOverlayEl) {
+			roleCloseBtn.addEventListener('click', () => {
+				closeModal(roleOverlayEl);
+			});
+		}
 
     // 分針能力按鈕
     const btnMinCCW = document.getElementById('btn-minute-ccw');
