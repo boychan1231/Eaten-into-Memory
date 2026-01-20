@@ -1107,10 +1107,16 @@ input:checked + .slider:before { transform: translateX(16px); }
     overflow-x: auto;
 }
 .player-card {
-    flex: 1; min-width: 180px;
+    flex: 1; 
+	min-width: 150px;
+	min-height: 145px;
     background-color: var(--card-bg);
-    border: 1px solid #444; border-radius: 6px; padding: 10px;
-    display: flex; flex-direction: column; position: relative;
+    border: 1px solid #444; 
+	border-radius: 6px; 
+	padding: 10px;
+    display: flex; 
+	flex-direction: column; 
+	position: relative;
 }
 .player-card.ejected { opacity: 0.5; border: 2px solid red; }
 .player-card h4 { margin: 0 0 5px 0; font-size: 1rem; color: #8ec5fc; }
