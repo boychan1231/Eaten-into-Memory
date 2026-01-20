@@ -1506,16 +1506,51 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	 setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
-    const startModeRadios = document.querySelectorAll('input[name="start-game-mode"]');
     const startModeNote = document.getElementById('start-mode-note');
+    const getSelectionValue = (groupName, fallback) => {
+        const groupEl = document.querySelector(`[data-selection-group="${groupName}"]`);
+        const activeBtn = groupEl?.querySelector('.selection-btn.is-selected');
+        return activeBtn?.dataset.value || fallback;
+    };
+    const setSelectionValue = (groupName, value) => {
+        const groupEl = document.querySelector(`[data-selection-group="${groupName}"]`);
+        if (!groupEl) return;
+        const buttons = Array.from(groupEl.querySelectorAll('.selection-btn'));
+        let didMatch = false;
+        buttons.forEach(btn => {
+            const isActive = btn.dataset.value === value;
+            btn.classList.toggle('is-selected', isActive);
+            btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            if (isActive) didMatch = true;
+        });
+        if (!didMatch && buttons[0]) {
+            buttons.forEach(btn => {
+                const isActive = btn === buttons[0];
+                btn.classList.toggle('is-selected', isActive);
+                btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
+    };
+    const bindSelectionButtons = (groupName, onChange) => {
+        const groupEl = document.querySelector(`[data-selection-group="${groupName}"]`);
+        if (!groupEl) return;
+        groupEl.querySelectorAll('.selection-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const value = btn.dataset.value;
+                setSelectionValue(groupName, value);
+                if (typeof onChange === 'function') onChange(value);
+            });
+        });
+    };
     const syncStartModeNote = () => {
         if (!startModeNote) return;
-        const mode = document.querySelector('input[name="start-game-mode"]:checked')?.value || '5P';
+        const mode = getSelectionValue('start-game-mode', '5P');
         startModeNote.style.display = mode === '3P' ? 'block' : 'none';
     };
-    startModeRadios.forEach(radio => {
-        radio.addEventListener('change', syncStartModeNote);
-    });
+    bindSelectionButtons('start-game-mode', syncStartModeNote);
+    bindSelectionButtons('start-time-demon-role');
     syncStartModeNote();
 
 	// 4A. 出牌（分鐘卡）按鈕事件修正
@@ -1742,16 +1777,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const setStartModalDefaults = () => {
         const selectedMode = window.GAME_CONFIG?.gameMode || '5P';
         const selectedRole = window.GAME_CONFIG?.threePStartingRole || '時針';
-        const modeInput = document.querySelector(`input[name="start-game-mode"][value="${selectedMode}"]`);
-        const roleInput = document.querySelector(`input[name="start-time-demon-role"][value="${selectedRole}"]`);
-        if (modeInput) modeInput.checked = true;
-        if (roleInput) roleInput.checked = true;
+        setSelectionValue('start-game-mode', selectedMode);
+        setSelectionValue('start-time-demon-role', selectedRole);
         if (typeof syncStartModeNote === 'function') syncStartModeNote();
     };
 
     const getStartModalSelection = () => ({
-        selectedMode: document.querySelector('input[name="start-game-mode"]:checked')?.value || '5P',
-        selectedThreePRole: document.querySelector('input[name="start-time-demon-role"]:checked')?.value || '時針'
+        selectedMode: getSelectionValue('start-game-mode', '5P'),
+        selectedThreePRole: getSelectionValue('start-time-demon-role', '時針')
     });
 
     const applyStartConfig = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
