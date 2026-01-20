@@ -1801,6 +1801,40 @@ body {
     margin-top: 10px;
 }
 
+.settings-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.selection-btn {
+    border: 1px solid #555;
+    border-radius: 10px;
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #ddd;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.selection-btn:hover {
+    color: #fff;
+    border-color: #888;
+}
+
+.selection-btn.is-selected {
+    border-color: var(--accent-color);
+    background: rgba(0, 210, 255, 0.15);
+    color: #fff;
+}
+
+.selection-btn:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
 .radio-label {
     display: flex;
     align-items: center;
