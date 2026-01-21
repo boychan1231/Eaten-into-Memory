@@ -900,9 +900,13 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: 0.9rem;
 }
 
+/* 分鐘卡 */
 .minute-card {
-    width: 55px; height: 80px;
-    font-size: 1.3rem; font-weight: 800;
+    width: clamp(30px, 8vw, 55px);/* 最小 30px，理想寬度為視窗的 8%，最大 55px */
+    height: clamp(50px, 12vw, 80px);    /* 依比例設定高度 */
+    font-size: clamp(1rem, 2.5vw, 1.4rem);    /* 字體也跟著縮放 */
+	
+	font-weight: 800;
     background-color: #e0e0e0;
     color: #333;
     border: 2px solid #888; border-radius: 6px;
@@ -1137,8 +1141,8 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 .player-card {
     flex: 1; 
-	min-width: 150px;
-	min-height: 145px;
+	min-width: 180px;
+	min-height: 100px;
     background-color: var(--card-bg);
     border: 1px solid #444; 
 	border-radius: 6px; 
@@ -1534,7 +1538,7 @@ body {
 }
 
 /* --- 2. 鐘面中心：能量核心 (Magic Core) --- */
-
+/* DEL*/
 
 /* --- 3. 分鐘卡：金屬紋理 --- */
 .minute-card {
@@ -1587,17 +1591,17 @@ body {
 
 /* --- 5. 角色頭像 Placeholder --- */
 
-/* 基礎頭像圓框 */
-.avatar-circle {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.3);
-    margin-right: 10px;
-    display: inline-block;
-    vertical-align: middle;
-    background-size: cover;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
+	/* 基礎頭像圓框 */
+	/* .avatar-circle {
+		width: 40px; height: 40px;
+		border-radius: 50%;
+		border: 2px solid rgba(255,255,255,0.3);
+		margin-right: 10px;
+		display: inline-block;
+		vertical-align: middle;
+		background-size: cover;
+		box-shadow: 0 0 10px rgba(0,0,0,0.5);
+	} */
 
 /* 時魔 (Time Demon) - 紅黑漸層 */
 .avatar-demon {

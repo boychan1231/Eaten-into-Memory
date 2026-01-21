@@ -720,9 +720,11 @@ function renderAIPlayers(gameState, humanId) {
 		
 		// ✅ 2. 調整 HTML 結構，加入頭像 div
         // 注意：我們把原本 absolute定位的 role-badge 改為 static，讓它乖乖排在名字旁邊
+		//從第二行移除<div class="avatar-circle ${avatarClass}"></div>//
+		
         contentDiv.innerHTML = `
             <div style="display:flex; align-items:center; margin-bottom:8px; border-bottom:1px solid #444; padding-bottom:5px;">
-                <div class="avatar-circle ${avatarClass}"></div>
+
                 <div style="flex:1;">
                     <h4 style="color:${color}; margin:0; font-size:1rem; line-height:1.2;">${player.name}</h4>
                 </div>
