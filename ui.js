@@ -2250,7 +2250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 展開時，自動捲動到底部確保看到最新訊息
                 logContainer.scrollTop = logContainer.scrollHeight;
             } else {
-                expandBtn.textContent = "[ 展開日誌 ]";
+                expandBtn.textContent = "[ ▼ 展開日誌 ]";
                 // 收合時，也捲動到底部 (顯示最新的 8 行)
                 logContainer.scrollTop = logContainer.scrollHeight;
             }

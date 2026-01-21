@@ -30,7 +30,7 @@ body {
     max-width: 1500px;
     width: 100%;
     margin: 0 auto;
-    padding: 10px;
+    padding: 5px;
     box-sizing: border-box;
 	overflow-y: auto;        /* 內容過多時顯示滾輪 */
     overflow-x: hidden;
@@ -44,7 +44,7 @@ header {
     padding: 10px 10px;/* 内边距创建元素内部的额外空间*/
     background-color: var(--clock-bg);
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 1px;
     border-bottom: 2px solid var(--accent-color);
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
@@ -107,7 +107,7 @@ header h1 {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-top: 10px;
+    padding-top: 1px;
     position: relative;
     overflow: hidden;
 }
@@ -522,7 +522,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: 12px;
     border-radius: 8px;
     background: rgba(15, 52, 96, 0.25);
-    padding: 6px;
+    padding: 5px;
     box-sizing: border-box;
 }
 
@@ -568,6 +568,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 #deck-info {
+	margin: 3px;
     height: 120px;
     display: flex;
     flex-direction: column;
@@ -577,6 +578,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     user-select: none;
 }
 .deck-title { font-size: 0.8rem; color: #bbb; margin-bottom: 2px; }
+
 .deck-count { font-size: 1.5rem; font-weight: bold; color: white; }
 
 /* 出牌列表與歷史記錄 */
@@ -928,7 +930,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: linear-gradient(180deg, rgba(21, 16, 25, 0.95), rgba(21, 16, 25, 0.6));
     border: 1px solid #4a3b52;
     border-radius: 8px;
-    padding: 12px;
+    padding: 8px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
