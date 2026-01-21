@@ -691,14 +691,14 @@ input:checked + .slider:before { transform: translateX(16px); }
 .minute-chip.empty { opacity: 0.35; }
 
 
-/* --- 人類玩家區域 (整合重構版) --- */
+/* --- 人類玩家區域 --- */
 .human-area {
     display: flex;
     flex-direction: column;
     gap: 15px;
     background-color: #2b1d30; /* 深紫色背景 */
     border-top: 3px solid #6b4c7b;
-    padding: 15px 20px;
+    padding: 10px 15px;
     margin-top: 10px;
     border-radius: 8px;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
