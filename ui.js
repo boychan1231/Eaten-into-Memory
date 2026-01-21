@@ -730,7 +730,6 @@ function renderAIPlayers(gameState, humanId) {
             </div>
 
             <div class="player-stats">
-                <div>手牌: ${player.hand.length}</div>
                 <div class="resource-chip resource-chip--mana">
                     <span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
                     Mana: <strong>${player.mana}</strong>
