@@ -1563,7 +1563,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // 檢查是否處於等待秒針最終選擇階段
-            const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === HUMAN_PLAYER_ID;
+            const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+                ? window.getEffectiveHumanPlayerId()
+                : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
+            const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
             if (waitingSecondFinal) {
                 appLogger.log('請先完成「秒針二選一」。');
                 return;
