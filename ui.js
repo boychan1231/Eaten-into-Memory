@@ -2230,9 +2230,33 @@ function renderGameOverPanel(gameState) {
     openModal(overlay, document.getElementById('btn-restart-game') || undefined);
 }
 
-// 綁定按鈕事件 (加在 DOMContentLoaded 內)
+// 綁定按鈕事件
 document.addEventListener('DOMContentLoaded', () => {
+	
+	// ui.js - 在 DOMContentLoaded 內加入
 
+    // --- 日誌展開/收合功能 ---
+    const logContainer = document.getElementById('game-log-container');
+    const expandBtn = document.getElementById('log-expand-btn');
+
+    if (logContainer && expandBtn) {
+        expandBtn.onclick = () => {
+            // 切換 class
+            logContainer.classList.toggle('expanded');
+            
+            // 改變按鈕文字
+            if (logContainer.classList.contains('expanded')) {
+                expandBtn.textContent = "[ ▲ 收起日誌 ]";
+                // 展開時，自動捲動到底部確保看到最新訊息
+                logContainer.scrollTop = logContainer.scrollHeight;
+            } else {
+                expandBtn.textContent = "[ 展開日誌 ]";
+                // 收合時，也捲動到底部 (顯示最新的 8 行)
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        };
+    }
+	
     // 綁定遊戲結束面板按鈕
     const btnRestart = document.getElementById('btn-restart-game');
     const btnCloseGO = document.getElementById('btn-close-gameover');

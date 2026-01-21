@@ -483,7 +483,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* 柔和的底線 */
     background-color: rgba(0, 0, 0, 0.2); /* 深色背景，與面板區隔 */
     border-left: 4px solid #555;     /* 左側視覺引導線 (灰色預設) */
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     line-height: 1.5;
     color: #ccc;
     transition: background-color 0.2s; /* 懸停時平滑過渡 */
@@ -952,7 +952,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: flex; flex-direction: column; gap: 8px;
 }
 #evolution-progress-area {
-    margin: 10px;
+    margin: 3px;
     flex: 0 0 auto;
     border-radius: 3px;
 }
@@ -1930,4 +1930,45 @@ body {
 .seal-badge::before {
     content: '🔒';
     font-size: 1.1rem;
+}
+
+/* 1. 日誌容器：預設狀態 (收合) */
+#game-log-container {
+    /* 設定固定高度，大約容納 8 條 (視字體大小微調) */
+    height: 250px; 
+    
+    /* 隱藏超出的內容與捲軸 */
+    overflow: hidden; 
+    
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px;
+    border: 1px solid #444;
+    transition: height 0.3s ease; /* 增加滑動動畫 */
+}
+
+/* 2. 日誌容器：展開狀態 (透過 JS 切換 class) */
+#game-log-container.expanded {
+    /* 展開後的高度 (或者使用 max-height) */
+    height: 400px; 
+    
+    /* 顯示捲軸讓玩家可以回顧歷史 */
+    overflow-y: auto; 
+}
+
+/* 3. 按鈕樣式 */
+.log-expand-btn {
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    font-size: 0.9rem;
+    padding: 4px 0;
+    border-radius: 0 0 4px 4px; /* 圓角接在日誌下方 */
+    transition: all 0.2s;
+}
+
+.log-expand-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
