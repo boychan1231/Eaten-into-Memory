@@ -1534,18 +1534,6 @@ body {
 
 /* --- 4. 資源圖示 CSS 繪製 --- */
 
-/* 齒輪 (Gear) 替代圖示 */
-.icon-gear-css {
-    display: inline-block;
-    width: 16px; height: 16px;
-    background: #ccc;
-    border-radius: 50%;
-    border: 2px dashed #555; /* 虛線邊框模擬齒輪 */
-    vertical-align: middle;
-    margin-right: 4px;
-    box-shadow: 0 0 2px #fff;
-}
-
 /* 護盾 (Shield) 替代圖示 */
 .icon-shield-css {
     display: inline-block;
