@@ -724,7 +724,6 @@ function renderAIPlayers(gameState, humanId) {
             <div style="display:flex; align-items:center; margin-bottom:8px; border-bottom:1px solid #444; padding-bottom:5px;">
                 <div class="avatar-circle ${avatarClass}"></div>
                 <div style="flex:1;">
-                    <div class="role-badge" style="color:${color}; position:static; display:inline-block; margin-bottom:2px;">${player.roleCard}</div>
                     <h4 style="color:${color}; margin:0; font-size:1rem; line-height:1.2;">${player.name}</h4>
                 </div>
             </div>
