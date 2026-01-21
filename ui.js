@@ -736,7 +736,7 @@ function renderAIPlayers(gameState, humanId) {
                     Mana: <strong>${player.mana}</strong>
                 </div>
                 <div class="resource-chip resource-chip--gear">
-                    <span class="resource-chip__icon icon-gear-css" aria-hidden="true"></span>
+                    <span class="resource-chip__icon" aria-hidden="true">⚙️</span>
                     齒輪: <strong>${player.gearCards}</strong>
                 </div>
                 <div>分數: ${player.score}</div>
