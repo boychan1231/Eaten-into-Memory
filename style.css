@@ -425,7 +425,36 @@ input:checked + .slider:before { transform: translateX(16px); }
     height: 100%;
 }
 
-.log-section h3 { padding: 10px; margin: 0; background: #222; border-radius: 8px 8px 0 0; }
+.log-section-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px;
+    margin: 0;
+    background: #222;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #ffd27f;
+    user-select: none;
+}
+
+.log-section-summary::marker {
+    content: '';
+}
+
+.log-section-summary::before {
+    content: '▾';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.log-section:not([open]) .log-section-summary::before {
+    transform: rotate(-90deg);
+}
+
+.log-section:not([open]) > :not(.log-section-summary) {
+    display: none;
+}
 #game-log-container {
     flex: 1;
     min-height: 100px;
