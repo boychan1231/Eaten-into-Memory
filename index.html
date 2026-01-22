@@ -148,79 +148,122 @@
 
             </div> 
 			
-			<div id="rules-content" class="tab-content">
-				<h1>E<del>tched</del>aten into Memory</h1>
-                <h3>📜 遊戲規則簡介</h3>
+<div id="rules-content" class="tab-content">
+    <div class="rules-container" style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
+        
+        <h2 style="color: var(--accent-color); border-bottom: 2px solid #444; padding-bottom: 10px; margin-top: 0;">遊戲規則說明</h2>
+        
+        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444;">
+            <h3 style="color: #feca57; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                <span>⏳</span> 核心機制
+            </h3>
+            <p><strong>目標：</strong> 在時間的洪流中，利用手中的「分鐘卡」競標行動順序，搶奪鐘面上的「小時卡」。</p>
+            <ul style="padding-left: 20px; margin-bottom: 0;">
+                <li style="margin-bottom: 8px;"><strong>分鐘卡 (手牌)：</strong> 用於競標。數字大者先行動，但數字大也代表消耗更多「齒輪」。</li>
+                <li style="margin-bottom: 8px;"><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>「珍貴(★)」</strong>小時卡。</li>
+                <li><strong>齒輪 (生命/分數/Mana)：</strong> 是角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪。齒輪歸零則<strong>被逐出 (出局)，每回合剩餘的齒輪成為玩家的分數。</strong>。</li>
+            </ul>
+        </div>
 
-                <h4>🎴 卡牌種類</h4>
-                <ul>
-                    <li><strong>齒輪卡 (生命/Mana)：</strong>代表角色的生命值與能量上限。歸零時角色將被「驅逐」。</li>
-                    <li><strong>分鐘卡 (1-60)：</strong>手牌。數值越大，回合結算時越優先行動。</li>
-                    <li><strong>小時卡 (1-12)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>「珍貴(★)」</strong>小時卡。</li>
-                </ul>
-
-                <h4>🔄 回合流程</h4>
-                <ol>
-                    <li><strong>抽卡：</strong>每回合抽出 2 張小時卡。</li>
-                    <li><strong>出牌：</strong>所有玩家打出 1 張分鐘卡 (數字大者先行動)。</li>
-                    <li><strong>移動與收集：</strong>
-                        <ul>
-                            <li>依順序選擇場上的小時卡，並移動到該數字的位置。</li>
-                            <li><strong>幼體時魔：</strong>可將卡片收為己有（用於進化）。</li>
-                            <li><strong>其他角色：</strong>卡片將留在此鐘面位置上（堆疊）。</li>
-                        </ul>
-                    </li>
-                    <li><strong>審判 (扣除齒輪)：</strong>結算後，位置最接近 12 (數值最大) 的角色受到懲罰，扣除 1 齒輪。</li>
-                </ol>
-
-                <h4>🧬 進化機制 (時魔專屬)</h4>
-                <p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
-                <ul>
-                    <li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
-                    <li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
-                    <li><strong>漫長生涯：</strong>5 張任意卡 + 當中至少 2 張珍貴。</li>
-                    <li><strong>銘記珍重：</strong>3 張珍貴。</li>					
-                </ul>
-
-                <h4>⚔ 角色能力</h4>
-                <ul>
-                    <li><strong>幼體時魔：</strong>
-                        <br>🛡️ <strong>防禦：</strong>受罰時，若 Mana ≥ 3，可消耗所有 Mana 抵擋傷害。
-                    </li>
-                    <li><strong>時之惡 (Boss)：</strong>
-                        <br>😈 <strong>主動 2 Mana：</strong>惡之牽引 - 本回合改為懲罰「距離最近」者。
-                        <br>🚫 <strong>主動 4 Mana：</strong>封鎖- 封印本回合所有時魔能力 。
-                        <br>⚠️ 被動懲罰：若連續 2 輪沒有時魔被逐出，時之惡將自損 1 齒輪。
-                    </li>
-					
-                    <li><strong>時針：</strong>
-                        <br>👁️ <strong>被動：</strong>預知牌庫頂的小時卡。
-						<br>⚡ <strong>主動 1 Mana：</strong>將牌庫頂的卡移至底部。
-                        <br><span class="rules-subhint">└ 可再消耗 <strong>2 Mana</strong> 再次執行 (每回合 1 次)。</span>
-                    </li>
-                    <li><strong>分針：</strong>
-                        <br>⚡ <strong>主動 2 Mana：</strong>取得任意小時卡後，可順/逆時針移動下一個有小時卡的格子。</li>
-                    <li><strong>秒針：</strong>
-                        <br>⚡ <strong>主動 3 Mana：</strong>出牌時蓋放 2 張，看過對手出牌後再二選一。
-                    </li>
-                </ul>
-
-                <h4>🏁 勝負判定</h4>
-				<ul>
-					<li><strong>受詛者：</strong>遊戲結束時，鐘面上須保留 <strong>12 張</strong> 珍貴小時卡，否則落敗（除非觸發「不可能的救贖」）。</li>
-					<li><strong>時之惡：</strong>若所有時魔都曾被驅逐，時之惡勝利。</li>	
-					<li><strong>不可能的救贖：</strong>時之惡的齒輪耗盡被驅逐時，時魔立即取勝。</li>
-
-					<li><strong>計分：</strong>
-						<ul>
-							<li>主要分數：每輪結束時剩餘齒輪數。</li>
-							<li>時魔進化加分：已進化的時魔 (時/分/秒針) 在遊戲結束時 +3 分。</li>
-							<li>受詛者加分：若提早在第 2/ 3/ 4 輪達成 12 張珍貴小時卡目標，分別獲得 <strong>9 / 5 / 2</strong> 分。</li>
-						</ul>
-					</li>
-				</ul>
-            </div>
+        <h3 style="color: #00d2d3; margin-bottom: 15px;">🎮 遊戲模式</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 0.9rem; background: rgba(255,255,255,0.05);">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.1);">
+                        <th style="padding: 12px; border: 1px solid #555; text-align: left;">項目</th>
+                        <th style="padding: 12px; border: 1px solid #555; color: #ff9ff3;">🚀 3P 對抗模式</th>
+                        <th style="padding: 12px; border: 1px solid #555; color: #ff6b6b;">⚔️ 5P 扮演模式</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #555;"><strong>玩家人數</strong></td>
+                        <td style="padding: 10px; border: 1px solid #555;">3 人 (時、分、秒針時魔)</td>
+                        <td style="padding: 10px; border: 1px solid #555;">5 人 (3幼體時魔 vs 1時之惡 vs 1受詛者)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #555;"><strong>遊戲長度</strong></td>
+                        <td style="padding: 10px; border: 1px solid #555;">3 輪 (每輪 12 回合)</td>
+                        <td style="padding: 10px; border: 1px solid #555;">5 輪 (每輪 12 回合)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #555;"><strong>角色狀態</strong></td>
+                        <td style="padding: 10px; border: 1px solid #555;">直接扮演 <strong>進化形態</strong><br><span style="color:#aaa; font-size:0.85em;">(擁有特殊能力)</span></td>
+                        <td style="padding: 10px; border: 1px solid #555;">時魔由 <strong>幼體</strong> 開始<br><span style="color:#aaa; font-size:0.85em;">(需收集卡片進化)</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #555;"><strong>勝利條件</strong></td>
+                        <td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong style="color:#ff9ff3;">齒輪積分</strong>最高者勝</td>
+                        <td style="padding: 10px; border: 1px solid #555;">齒輪積分<strong>＋</strong>特殊條件<br>
+                            <strong>受詛者：</strong>必須在遊戲結束前於鐘面上保留 12 張`珍貴小時卡<br>
+                            <strong>時魔 特殊勝利：</strong>逐出時之惡<br>
+                            <strong>時之惡 特殊勝利：</strong>驅逐所有各一次時魔
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 		
+		<h4>🧬 進化機制 (時魔專屬)</h4>
+        <p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
+        <ul>
+        <li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
+        <li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
+        <li><strong>漫長生涯：</strong>5 張任意卡 + 當中至少 2 張珍貴。</li>
+        <li><strong>銘記珍重：</strong>3 張珍貴。</li>					
+        </ul>
+		
+
+        <h3 style="color: #ff9ff3; border-top: 1px solid #444; padding-top: 20px; margin-bottom: 15px;">⚡ 角色特殊能力</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            
+            <div style="background: rgba(255, 159, 243, 0.08); padding: 15px; border-left: 4px solid #ff9ff3; border-radius: 0 8px 8px 0;">
+                <strong style="color: #ff9ff3; font-size: 1.1em;">👁️ 時針 (Time Hand)</strong>
+                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+                    <strong>被動：</strong> 每回合預知小時牌庫頂牌。<br>
+                    <strong>主動 (1 Mana)：</strong> 將牌庫頂的牌移至底部，每回合促可以 2 mana再執行一次。
+                </p>
+            </div>
+
+            <div style="background: rgba(243, 104, 224, 0.08); padding: 15px; border-left: 4px solid #f368e0; border-radius: 0 8px 8px 0;">
+                <strong style="color: #f368e0; font-size: 1.1em;">👟 分針 (Minute Hand)</strong>
+                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+                    <strong>主動 (2 Mana)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
+                </p>
+            </div>
+
+            <div style="background: rgba(0, 210, 211, 0.08); padding: 15px; border-left: 4px solid #00d2d3; border-radius: 0 8px 8px 0;">
+                <strong style="color: #00d2d3; font-size: 1.1em;">🃏 秒針 (Second Hand)</strong>
+                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+                    <strong>主動 (3 Mana)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
+                </p>
+            </div>
+
+            <div style="background: rgba(254, 202, 87, 0.08); padding: 15px; border-left: 4px solid #feca57; border-radius: 0 8px 8px 0;">
+                <strong style="color: #feca57; font-size: 1.1em;">😈 時之惡 (Time Evil) - 僅 5P</strong>
+                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+                    <strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的人。<br>
+                    <strong>封鎖 (3 Mana)：</strong> 封印本回合所有特殊能力。
+                </p>
+            </div>
+
+            <div style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
+                <strong style="color: #54a0ff; font-size: 1.1em;">👻 受詛者 (Cursed One) - 僅 5P</strong>
+                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+                    <strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其鎖定。<br>
+                    <strong>勝利：</strong> 場上累積 12 張鎖定的珍貴卡。
+                </p>
+            </div>
+
+        </div>
+
+        <p style="margin-top: 30px; color: #888; font-size: 0.85rem; text-align: center; border-top: 1px solid #333; padding-top: 10px;">
+            * Mana (能量) = 目前擁有的齒輪數量。<br>若齒輪歸零，角色將被逐出遊戲。
+        </p>
+    </div>
+</div>
+
 			<div id="settings-content" class="tab-content">
 			<h3>⚙️ 遊戲設定</h3>
 			
