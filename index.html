@@ -24,7 +24,7 @@
     <div class="tab-wrapper">
         <div id="game-content" class="tab-content active-tab">  
             <div class="main-area">
-                <details class="log-section" open>
+                <details class="log-section game-panel" open>
 					<summary class="log-section-summary">📜 遊戲日誌</summary>
 					<div id="log-expand-btn" class="log-expand-btn" title="展開/收合日誌">
 						[ ▼ 展開日誌 ]
@@ -37,15 +37,18 @@
 					
 					<div id="evolution-progress-area" class="progress-area"></div>
 				</details>
-                <div class="clock-section">
+                <section class="clock-panel game-panel">
+                    <div class="clock-panel__title">⏳ 鐘面</div>
+                    <div class="clock-section">
                     <div id="clock-face">
 						<img src="clock-bg.png" class="clock-bg-img" alt="鐘面">
 						<svg id="connection-lines" class="connection-lines-svg"></svg>
                         <div class="clock-center"></div>
                     </div>
                 </div>
+                </section>
 
-				<details id="side-panel-details" class="side-panel-group" open>
+				<details id="side-panel-details" class="side-panel-group game-panel" open>
 					<summary class="side-panel-summary">資訊面板</summary>
 					<div id="deck-info" class="log-side-info no-click">
 						<div class="info-block">
@@ -93,7 +96,11 @@
                 
 			</div>
 
-                <div id="human-player-area" class="human-area">
+                <div id="human-player-area" class="human-area game-panel">
+                        <div class="panel-header">
+                            <span class="panel-header__icon" aria-hidden="true">👤</span>
+                            人類玩家
+                        </div>
                         
                     <div class="human-top-bar">
                         <div class="human-stats-row">
@@ -138,14 +145,21 @@
 					</div>
 				</div> 
 				
-				<div id="players-section" class="players-grid">
+				<div class="players-block">
+                    <div class="panel-header">
+                        <span class="panel-header__icon" aria-hidden="true">🤖</span>
+                        AI 玩家
+                    </div>
+                    <div id="players-section" class="players-grid game-panel">
                     <div class="player-card placeholder">
                         <p>等待遊戲開始...</p>
                     </div>
                 </div>
-            </div> 
-			
-<div id="rules-content" class="tab-content">
+            </div>
+
+        </div>
+
+            <div id="rules-content" class="tab-content">
     <div class="rules-container" style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
         
         <h2 style="color: var(--accent-color); border-bottom: 2px solid #444; padding-bottom: 10px; margin-top: 0;">遊戲規則說明</h2>
