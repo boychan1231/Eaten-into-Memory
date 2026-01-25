@@ -437,7 +437,11 @@ function activateSinTargetingAbility(gameState) {
 	
 	// 如果是人類扮演時之惡，直接退出，不執行 AI 自動判定(人類玩家需透過 UI 按鈕手動發動)
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
-    if (sinPlayer.id === humanId) return;
+    if (sinPlayer.id === humanId) {
+        // ✅ 保險：人類未手動觸發能力時，回合預設規則應回到接近 12
+        gameState.sinTargetingMode = 'default';
+        return;
+    }
 
     // 場上必須有存活的時魔
     const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
