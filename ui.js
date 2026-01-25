@@ -33,8 +33,8 @@ let lastPlayerStats = {};
 const logQueue = [];
 let isLogProcessing = false;
 // ✅ 修改：讀取 config.js
-let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED || 360;
-let currentLogRetentionLimit = window.UI_CONFIG?.LOG_RETENTION_LIMIT || 200;
+let currentLogSpeed = window.UI_CONFIG?.LOG_SPEED ?? 360;
+let currentLogRetentionLimit = window.UI_CONFIG?.LOG_RETENTION_LIMIT ?? 200;
 const LOG_ACCEL_THRESHOLD = window.UI_CONFIG?.LOG_ACCEL_THRESHOLD ?? 5;
 const LOG_ACCEL_DELAY = window.UI_CONFIG?.LOG_ACCEL_DELAY ?? 30;
 let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
