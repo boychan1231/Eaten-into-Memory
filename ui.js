@@ -1551,6 +1551,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     bindSelectionButtons('start-game-mode', syncStartModeNote);
     bindSelectionButtons('start-time-demon-role');
+    bindSelectionButtons('start-five-player-role');
     syncStartModeNote();
 
 	// 4A. 出牌（分鐘卡）按鈕事件修正
@@ -1773,18 +1774,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameModeOverlay = document.getElementById('game-mode-overlay');
     const gameModeConfirm = document.getElementById('game-mode-confirm');
     const gameModeCloseBtn = document.getElementById('game-mode-close-btn');
+    const roleChoiceConfirm = document.getElementById('role-choice-confirm');
+    const roleChoiceTitle = document.getElementById('role-choice-title');
+    const roleChoiceHint = document.getElementById('role-choice-hint');
+    const roleChoiceSection5p = document.getElementById('role-choice-5p');
+    const roleChoiceSection3p = document.getElementById('role-choice-3p');
+    let pendingStartConfig = null;
 
     const setStartModalDefaults = () => {
         const selectedMode = window.GAME_CONFIG?.gameMode || '5P';
         const selectedRole = window.GAME_CONFIG?.threePStartingRole || '時針';
+        const selectedFivePRole = window.GAME_CONFIG?.defaultHumanId || 'SM_1';
         setSelectionValue('start-game-mode', selectedMode);
         setSelectionValue('start-time-demon-role', selectedRole);
+        setSelectionValue('start-five-player-role', selectedFivePRole);
         if (typeof syncStartModeNote === 'function') syncStartModeNote();
     };
 
     const getStartModalSelection = () => ({
-        selectedMode: getSelectionValue('start-game-mode', '5P'),
-        selectedThreePRole: getSelectionValue('start-time-demon-role', '時針')
+        selectedMode: getSelectionValue('start-game-mode', '5P')
     });
 
     const applyStartConfig = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
@@ -1830,25 +1838,16 @@ document.addEventListener('DOMContentLoaded', () => {
         doInitialize();
     };
 
-    const beginStartFlow = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
-        applyStartConfig({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode });
-        const btnTimeDemon = document.getElementById('role-choice-timeDemon');
-        const btnSin = document.getElementById('role-choice-sin');
-        const btnScz = document.getElementById('role-choice-scz');
-
-        if (selectedMode === '3P') {
-            startWithRole('SM_1');
-            return;
+    const syncRoleChoiceModal = (selectedMode) => {
+        const isThreeP = selectedMode === '3P';
+        if (roleChoiceTitle) roleChoiceTitle.textContent = isThreeP ? '選擇時魔身份' : '選擇角色';
+        if (roleChoiceHint) {
+            roleChoiceHint.textContent = isThreeP
+                ? '請選擇 3P 模式下的時魔身份。'
+                : '請選擇 5P 模式要扮演的角色。';
         }
-
-        if (roleOverlay && btnTimeDemon && btnSin && btnScz) {
-            openModal(roleOverlay, btnTimeDemon);
-            btnTimeDemon.onclick = () => startWithRole('SM_1');
-            btnSin.onclick = () => startWithRole('sin');
-            btnScz.onclick = () => startWithRole('SCZ');
-            return;
-        }
-        startWithRole((typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1');
+        if (roleChoiceSection5p) roleChoiceSection5p.classList.toggle('is-hidden', isThreeP);
+        if (roleChoiceSection3p) roleChoiceSection3p.classList.toggle('is-hidden', !isThreeP);
     };
 
     if (startGameBtn) {
@@ -1869,9 +1868,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 const testToggleEl = document.getElementById('test-toggle');
                 const cfgEnableAbilities = !!abilityToggleEl?.checked;
                 const cfgTestMode = !!testToggleEl?.checked;
-                const { selectedMode, selectedThreePRole } = getStartModalSelection();
+                const { selectedMode } = getStartModalSelection();
+                pendingStartConfig = { selectedMode, cfgEnableAbilities, cfgTestMode };
                 if (gameModeOverlay) closeModal(gameModeOverlay);
-                beginStartFlow({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode });
+                syncRoleChoiceModal(selectedMode);
+                if (roleOverlay) openModal(roleOverlay, roleChoiceConfirm || undefined);
+            } catch (err) {
+                appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
+            }
+        });
+    }
+
+    if (roleChoiceConfirm) {
+        roleChoiceConfirm.addEventListener('click', () => {
+            try {
+                if (!pendingStartConfig) return;
+                const selectedMode = pendingStartConfig.selectedMode || '5P';
+                const selectedThreePRole = getSelectionValue('start-time-demon-role', '時針');
+                const selectedFivePRole = getSelectionValue(
+                    'start-five-player-role',
+                    window.GAME_CONFIG?.defaultHumanId || 'SM_1'
+                );
+                applyStartConfig({
+                    selectedMode,
+                    selectedThreePRole,
+                    cfgEnableAbilities: pendingStartConfig.cfgEnableAbilities,
+                    cfgTestMode: pendingStartConfig.cfgTestMode
+                });
+                if (selectedMode === '3P') {
+                    startWithRole('SM_1');
+                } else {
+                    startWithRole(selectedFivePRole);
+                }
             } catch (err) {
                 appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
             }
