@@ -1082,6 +1082,10 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #f4f1f7;
 }
 
+.modal-section.is-hidden {
+    display: none;
+}
+
 .modal-title-seconds {
     color: #00d2d3;
 }
