@@ -203,6 +203,53 @@ input:checked + .slider:before { transform: translateX(16px); }
     width: 100%;
 }
 
+/* --- 通用面板與區塊標題 --- */
+.game-panel {
+    background: rgba(24, 17, 34, 0.85);
+    border: 1px solid rgba(107, 76, 123, 0.6);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.panel-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #ffd27f;
+    text-shadow: 0 0 6px rgba(255, 210, 127, 0.3);
+    margin-bottom: 10px;
+}
+
+.panel-header__icon {
+    font-size: 1.1rem;
+}
+
+.clock-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.clock-panel__title {
+    font-weight: 700;
+    color: #ffd27f;
+    text-shadow: 0 0 8px rgba(255, 210, 127, 0.35);
+}
+
+.clock-panel .clock-section {
+    margin: 20px auto 10px auto;
+}
+
+.players-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 /* --- 鐘面區域 --- */
 .clock-section {
     width: min(500px, 90vw); 
@@ -418,9 +465,9 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex: 1;/* ✅ 關鍵修正：flex: 1 讓它自動填滿剩餘空間，但允許縮小 */
     min-height: 0;     /* 必須設定 min-height: 0 否則 flex 子元素捲軸會失效 */
     margin-bottom: 10px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.35);
     border-radius: 8px;
-    padding: 5px;
+    padding: 8px;
     overflow-y: auto; /* 內容多時出現捲軸 */
     /* 視覺優化 */
     border: 1px solid #333;
@@ -520,9 +567,9 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: flex;
     flex-direction: column;
     gap: 12px;
-    border-radius: 8px;
-    background: rgba(15, 52, 96, 0.25);
-    padding: 5px;
+    border-radius: 10px;
+    background: rgba(15, 52, 96, 0.35);
+    padding: 10px;
     box-sizing: border-box;
 }
 
@@ -698,12 +745,12 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: flex;
     flex-direction: column;
     gap: 15px;
-    background-color: #2b1d30; /* 深紫色背景 */
-    border-top: 3px solid #6b4c7b;
+    background-color: transparent;
+    border-top: none;
     padding: 10px 15px;
     margin-top: 10px;
     border-radius: 8px;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: none;
 }
 
 /* 上層：標題與數據列 */
