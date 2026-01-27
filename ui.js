@@ -422,6 +422,7 @@ function updateNextStepButton(gameState, flags) {
     if (flags.gameEnded) {
         nextStepBtn.disabled = true;
         nextStepBtn.textContent = '遊戲結束';
+	    return;	
     } 
 	
 	// 分針能力等待時，允許點擊按鈕 (視為略過)
