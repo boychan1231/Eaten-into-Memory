@@ -51,8 +51,36 @@ window.GAME_DATA = {
         SIN_SEAL: 3,            // 時之惡：全場封印
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
+	
+	// 進化規則配置 (將邏輯參數化)	
+	EVOLUTION_RULES: [
+        {
+            id: 'long_life',
+            name: '久遠一生',
+            desc: '3時代 + 1珍貴',
+            condition: { type: 'age_count', minUnique: 3, minPrecious: 1 }
+        },
+        {
+            id: 'fate_excerpt',
+            name: '命途節錄',
+            desc: '4不同數 + 1珍貴',
+            condition: { type: 'number_count', minUnique: 4, minPrecious: 1 }
+        },
+        {
+            id: 'long_career',
+            name: '漫長生涯',
+            desc: '5張卡 + 2珍貴',
+            condition: { type: 'total_count', minTotal: 5, minPrecious: 2 }
+        },
+        {
+            id: 'cherish_memory',
+            name: '銘記珍重',
+            desc: '3張珍貴',
+            condition: { type: 'precious_only', minPrecious: 3 }
+        }
+    ],
 
-    // ✅ 新增：小時卡珍貴配置 (原本在 game.js)
+    // 小時卡珍貴配置 (原本在 game.js)
     HOUR_PRECIOUS_CONFIGS: [
         {   id: 'CFG_1', label: 'hour123',
             mapping: { '少年': [1, 5, 8, 10], '青年': [2, 6, 7, 11], '中年': [3, 4, 9, 12] }
