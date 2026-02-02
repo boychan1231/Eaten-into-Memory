@@ -80,7 +80,7 @@ window.GAME_DATA = {
         }
     ],
 
-    // 小時卡珍貴配置 (原本在 game.js)
+    // 小時卡珍貴配置 
     HOUR_PRECIOUS_CONFIGS: [
         {   id: 'CFG_1', label: 'hour123',
             mapping: { '少年': [1, 5, 8, 10], '青年': [2, 6, 7, 11], '中年': [3, 4, 9, 12] }
@@ -96,4 +96,15 @@ window.GAME_DATA = {
     // 卡牌基礎設定 (保持不變)
     HOUR_CARDS: { ageGroups: ['少年', '青年', '中年'], countsPerGroup: 12 },
     MINUTE_CARDS: { total: 60 }
+
+    // === ✅ 新增：音效資源配置 ===
+    AUDIO_FILES: {
+        BGM: 'bgm.mp3',          // 背景音樂 (建議找低沉的時鐘/齒輪環境音)
+        CLICK: 'click.mp3',      // 按鈕點擊
+        FLIP: 'flip.mp3',        // 翻牌/出牌
+        DAMAGE: 'damage.mp3',    // 扣除齒輪/受傷
+        EVOLVE: 'evolve.mp3',    // 進化成功
+        WIN: 'win.mp3',          // 勝利
+        GAME_OVER: 'gameover.mp3'// 失敗
+    }
 };
