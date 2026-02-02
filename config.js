@@ -51,36 +51,8 @@ window.GAME_DATA = {
         SIN_SEAL: 3,            // 時之惡：全場封印
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
-	
-	// 進化規則配置 (將邏輯參數化)	
-	EVOLUTION_RULES: [
-        {
-            id: 'long_life',
-            name: '久遠一生',
-            desc: '3時代 + 1珍貴',
-            condition: { type: 'age_count', minUnique: 3, minPrecious: 1 }
-        },
-        {
-            id: 'fate_excerpt',
-            name: '命途節錄',
-            desc: '4不同數 + 1珍貴',
-            condition: { type: 'number_count', minUnique: 4, minPrecious: 1 }
-        },
-        {
-            id: 'long_career',
-            name: '漫長生涯',
-            desc: '5張卡 + 2珍貴',
-            condition: { type: 'total_count', minTotal: 5, minPrecious: 2 }
-        },
-        {
-            id: 'cherish_memory',
-            name: '銘記珍重',
-            desc: '3張珍貴',
-            condition: { type: 'precious_only', minPrecious: 3 }
-        }
-    ],
 
-    // 小時卡珍貴配置 
+    // ✅ 新增：小時卡珍貴配置 (原本在 game.js)
     HOUR_PRECIOUS_CONFIGS: [
         {   id: 'CFG_1', label: 'hour123',
             mapping: { '少年': [1, 5, 8, 10], '青年': [2, 6, 7, 11], '中年': [3, 4, 9, 12] }
@@ -96,15 +68,4 @@ window.GAME_DATA = {
     // 卡牌基礎設定 (保持不變)
     HOUR_CARDS: { ageGroups: ['少年', '青年', '中年'], countsPerGroup: 12 },
     MINUTE_CARDS: { total: 60 }
-
-    // === ✅ 新增：音效資源配置 ===
-    AUDIO_FILES: {
-        BGM: 'bgm.mp3',          // 背景音樂 (建議找低沉的時鐘/齒輪環境音)
-        CLICK: 'click.mp3',      // 按鈕點擊
-        FLIP: 'flip.mp3',        // 翻牌/出牌
-        DAMAGE: 'damage.mp3',    // 扣除齒輪/受傷
-        EVOLVE: 'evolve.mp3',    // 進化成功
-        WIN: 'win.mp3',          // 勝利
-        GAME_OVER: 'gameover.mp3'// 失敗
-    }
 };

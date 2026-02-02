@@ -6,61 +6,37 @@ var appLogger = window.appLogger || {
 // 定義可進化的目標身份 (僅保留名稱，不再綁定特定數字)
 const AVAILABLE_ROLES = ['時針', '分針', '秒針'];
 
-// --- 輔助：檢查是否滿足進化條件 ---
+// --- 輔助：檢查是否滿足進化條件 (3選1) ---
 function checkEvolutionCondition(player) {
     if (!player || !Array.isArray(player.hourCards)) return { met: false, type: null };
 
     const cards = player.hourCards;
     const preciousCount = cards.filter(c => c.isPrecious).length;
     
-    // 讀取設定檔，如果沒有則使用空陣列防呆
-    const rules = window.GAME_DATA?.EVOLUTION_RULES || [];
+    // 條件 1: 3張不同時代 (少年/青年/中年)，至少 1 張珍貴
+    const ageGroups = new Set(cards.map(c => c.ageGroup).filter(g => g));
+    if (ageGroups.size >= 3 && preciousCount >= 1) {
+        return { met: true, type: '久遠一生 (3時代 + 1珍貴)' };
+    }
 
-    for (const rule of rules) {
-        const cond = rule.condition;
-        let isMet = false;
+    // 條件 2: 4張不同數字，至少 1 張珍貴
+    const uniqueNumbers = new Set(cards.map(c => c.number));
+    if (uniqueNumbers.size >= 4 && preciousCount >= 1) {
+        return { met: true, type: '命途節錄(4不同數 + 1珍貴)' };
+    }
 
-        switch (cond.type) {
-            case 'age_count':
-                // 邏輯：N 個不同時代 + M 張珍貴
-                const ageGroups = new Set(cards.map(c => c.ageGroup).filter(g => g));
-                if (ageGroups.size >= cond.minUnique && preciousCount >= cond.minPrecious) {
-                    isMet = true;
-                }
-                break;
-
-            case 'number_count':
-                // 邏輯：N 個不同數字 + M 張珍貴
-                const uniqueNumbers = new Set(cards.map(c => c.number));
-                if (uniqueNumbers.size >= cond.minUnique && preciousCount >= cond.minPrecious) {
-                    isMet = true;
-                }
-                break;
-
-            case 'total_count':
-                // 邏輯：總張數 N + M 張珍貴
-                if (cards.length >= cond.minTotal && preciousCount >= cond.minPrecious) {
-                    isMet = true;
-                }
-                break;
-            
-            case 'precious_only':
-                // 邏輯：純粹看珍貴卡數量
-                if (preciousCount >= cond.minPrecious) {
-                    isMet = true;
-                }
-                break;
-        }
-
-        if (isMet) {
-            // 回傳滿足的條件名稱
-            return { met: true, type: `${rule.name} (${rule.desc})` };
-        }
+    // 條件 3: 5張任意卡，至少 2 張珍貴
+    if (cards.length >= 5 && preciousCount >= 2) {
+        return { met: true, type: '漫長生涯 (5張卡 + 2珍貴)' };
+    }
+	
+	// 條件 4: 3 張任意珍貴卡
+    if (preciousCount >= 3) {
+        return { met: true, type: '銘記珍重 (3張珍貴)' };
     }
 
     return { met: false, type: null };
 }
-
 
 // --- 特殊能力函式 ---
 

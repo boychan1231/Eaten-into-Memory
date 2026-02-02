@@ -1008,23 +1008,17 @@ function renderEvolutionPanel(gameState, humanPlayer) {
 function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
     if (typeof window.checkEvolutionCondition === 'function') {
         const cards = humanPlayer.hourCards || [];
+        const preciousCount = cards.filter(c => c.isPrecious).length;
+        const uniqueAges = new Set(cards.map(c => c.ageGroup).filter(g => g)).size;
+        const uniqueNumbers = new Set(cards.map(c => c.number)).size;
+        const totalCount = cards.length;
+
+        const cond1 = (uniqueAges >= 3 && preciousCount >= 1);
+        const cond2 = (uniqueNumbers >= 4 && preciousCount >= 1);
+        const cond3 = (totalCount >= 5 && preciousCount >= 2);
+        const cond4 = (preciousCount >= 3);
         
-        // 1. 讀取規則並判斷是否達成
-        const rules = window.GAME_DATA?.EVOLUTION_RULES || [];
-        let isReady = false;
-        let conditionsListHtml = '';
-        
-        rules.forEach((rule, index) => {
-            // 使用 abilities.js 剛剛新增的輔助函式檢查單條規則
-            const isMet = (typeof window.checkSingleEvolutionRule === 'function') 
-                ? window.checkSingleEvolutionRule(cards, rule.condition)
-                : false; // 防呆
-                
-            if (isMet) isReady = true;
-            
-            // 動態生成 HTML
-            conditionsListHtml += renderConditionRow(isMet, `${index + 1}. ${rule.name} (${rule.desc})`);
-        });
+        const isReady = cond1 || cond2 || cond3 || cond4;
         
         //過濾已被佔用的身份 ---
         // 1. 找出已被「其他存活玩家」佔用的身份
@@ -1078,11 +1072,13 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
                 </select>
                 <div style="font-size:0.8rem; line-height:1.4; color:#ddd;">${roleDescriptions[currentTarget] || ''}</div>
             </div>
-			<div style="margin-top:10px;">
-                ${conditionsListHtml}
+            <div style="margin-top:10px;">
+                ${renderConditionRow(cond1, `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`)}
+                ${renderConditionRow(cond2, `2. 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`)}
+                ${renderConditionRow(cond3, `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`)}
+                ${renderConditionRow(cond4, `4. 珍貴 ${preciousCount}/3 (任意)`)}
             </div>
         `;
-		
         if (isReady) {
             html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px dashed #ffd27f; padding:4px;">✨ 條件達成！回合結束時進化</div>`;
         }
