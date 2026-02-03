@@ -1609,7 +1609,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 			
-			// --- 新增：播放確認音效 ---
+			// 播放確認音效 ---
 			if (window.gameAudio) window.gameAudio.playConfirm();
 			
             confirmMoveBtn.disabled = true;
