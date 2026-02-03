@@ -2044,8 +2044,35 @@ document.addEventListener('DOMContentLoaded', () => {
 			window.gameAudio.setVolume(val / 100);
 		});
 	}
+	
+	// 音效總開關邏輯
+	const audioToggle = document.getElementById('audio-toggle');
+	if (audioToggle && window.gameAudio) {
+		// 1. 初始化：確保 UI 狀態與 Audio Manager 同步
+		audioToggle.checked = !window.gameAudio.isMuted;
 
-	// --- 新增：全域按鈕點擊音效 ---
+		// 2. 監聽切換事件
+		audioToggle.addEventListener('change', (e) => {
+			const isEnabled = e.target.checked;
+			// 如果勾選(Enabled) => 靜音設為 false
+			// 如果取消(Disabled) => 靜音設為 true
+			window.gameAudio.setMuted(!isEnabled);
+			
+			if (isEnabled) {
+				appLogger.log('[System] 音效已開啟');
+				// 如果音樂之前是暫停的（例如剛進入遊戲），可以嘗試播放
+				// window.gameAudio.playBGM(); 
+			} else {
+				appLogger.log('[System] 音效已關閉');
+			}
+		});
+	}
+	
+	
+	
+	
+
+	// 全域按鈕點擊音效 ---
 	// 這樣不用幫每個按鈕加監聽器，只要是 button 標籤被點擊就會有聲音
 	document.body.addEventListener('click', (e) => {
 		// 如果點擊的是按鈕，或按鈕內部的元素

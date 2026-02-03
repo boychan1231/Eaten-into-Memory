@@ -4,7 +4,7 @@ const AudioConfig = {
     // 請將您的音樂檔案放入專案資料夾，並在此替換檔名
     BGM_PATH: 'BGM.mp3', // 建議找一段低沉的環境音 Loop
     SFX_CLICK_PATH: 'sfx_click.wav', // 按鈕點擊聲
-    SFX_CONFIRM_PATH: 'sfx_confirm.wav'' // 確認/成功聲
+    SFX_CONFIRM_PATH: 'sfx_confirm.wav' // 確認/成功聲
 };
 
 class AudioManager {
@@ -39,6 +39,12 @@ class AudioManager {
         this.isMuted = !this.isMuted;
         this.updateVolume();
         return this.isMuted;
+    }
+	
+    // 明確設定靜音狀態 (mute: true 為靜音, false 為開啟)
+    setMuted(mute) {
+        this.isMuted = mute;
+        this.updateVolume();
     }
 
     // 播放背景音樂 (需由使用者操作觸發)
