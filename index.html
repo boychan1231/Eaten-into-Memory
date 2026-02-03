@@ -286,7 +286,17 @@
 				<input type="range" id="log-retention-slider" min="50" max="1000" step="50" value="200" class="log-speed-slider">
 				<span id="log-retention-value" class="log-speed-value">200 則</span>
 			</div>
-			<p class="setting-note">限制日誌清單保留的最大數量，避免長局造成 DOM 過大。</p>
+			<p class="setting-note">限制日誌清單保留最大數量，避免造成 DOM 過大。</p>
+		</div>
+		
+		<hr class="settings-divider">
+
+		<div class="setting-item">
+			<h4>🔊 音樂/音效音量</h4>
+			<div class="settings-range-row">
+				<input type="range" id="volume-slider" min="0" max="100" step="1" value="50" class="log-speed-slider">
+				<span id="volume-value" class="log-speed-value">50%</span>
+			</div>
 		</div>
 
 		<hr class="settings-divider">
@@ -435,6 +445,7 @@
 <script src="logger.js"></script>
 <script src="abilities.js"></script>
 <script src="game.js"></script>
+<script src="audio.js"></script>
 <script src="ui.js"></script>
 </body>
 </html>

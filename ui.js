@@ -1608,7 +1608,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("找不到 handleHumanChoice 函式");
                 return;
             }
-            
+			
+			// --- 新增：播放確認音效 ---
+			if (window.gameAudio) window.gameAudio.playConfirm();
+			
             confirmMoveBtn.disabled = true;
             const success = handleHumanChoice(globalGameState, uiState.selectedCardValue);
             
@@ -1854,6 +1857,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
             try {
+				// --- 新增：使用者第一次互動時播放 BGM ---
+				if (window.gameAudio) {
+                window.gameAudio.playBGM();
+                // 也可以在這裡播放一個確認音效
+                window.gameAudio.playConfirm();
+				}
+				
+				
                 setStartModalDefaults();
                 if (gameModeOverlay) openModal(gameModeOverlay, gameModeConfirm || undefined);
             } catch (err) {
@@ -2020,8 +2031,33 @@ document.addEventListener('DOMContentLoaded', () => {
             updateRetentionText(e.target.value);
         });
     }
+	
+	// --- 新增：音量拉桿控制 ---
+	const volSlider = document.getElementById('volume-slider');
+	const volDisplay = document.getElementById('volume-value');
 
-    // ✅ 新增：點擊日誌區域「瞬間顯示」
+	if (volSlider && volDisplay && window.gameAudio) {
+		volSlider.addEventListener('input', (e) => {
+			const val = e.target.value;
+			volDisplay.textContent = `${val}%`;
+			// 將 0-100 轉換為 0.0-1.0
+			window.gameAudio.setVolume(val / 100);
+		});
+	}
+
+	// --- 新增：全域按鈕點擊音效 ---
+	// 這樣不用幫每個按鈕加監聽器，只要是 button 標籤被點擊就會有聲音
+	document.body.addEventListener('click', (e) => {
+		// 如果點擊的是按鈕，或按鈕內部的元素
+		if (e.target.closest('button') || e.target.classList.contains('minute-card')) {
+			if (window.gameAudio) {
+				window.gameAudio.playClick();
+			}
+		}
+	});
+	
+
+    // 點擊日誌區域「瞬間顯示」
     const logContainer = document.getElementById('game-log-container');
     if (logContainer) {
         logContainer.addEventListener('click', () => {
