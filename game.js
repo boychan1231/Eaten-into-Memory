@@ -618,6 +618,9 @@ function startRound(gameState) {
 	if (typeof hourHandPreMinuteAI === 'function') {
 		hourHandPreMinuteAI(gameState);
 }
+
+	// 每個新回合開始播放鐘聲
+    if (window.gameAudio) window.gameAudio.playChime();
         
     appLogger.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
     appLogger.log("等待玩家打出分鐘卡...");
@@ -854,6 +857,9 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 
     // ✅ 只在成功蓋牌後扣 Mana
     humanPlayer.mana -= COST;
+	
+	if (window.gameAudio) window.gameAudio.playAbility();
+	
     humanPlayer.specialAbilityUsed = true;
 
     gameState.phase = 'postMinute';
@@ -1787,6 +1793,19 @@ function endGame(gameState) {
     });
 
     gameState.gameEnded = true;
+	
+	if (window.gameAudio) {
+        // 判斷人類玩家是否獲勝
+        const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+        const human = gameState.players.find(p => p.id === humanId);
+        
+        // 簡單判定：如果人類沒被逐出，視為勝利 (或是您可以根據 score 排名判定)
+        // 這裡示範：只要沒被逐出就算 Win 音效，被逐出算 Lose 音效
+        const isWin = human && !human.isEjected;
+        
+        window.gameAudio.playGameOver(isWin);
+    }
+	
     if (typeof updateUI === 'function') updateUI(gameState);
 }
 

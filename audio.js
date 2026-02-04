@@ -2,9 +2,14 @@
 
 const AudioConfig = {
     // 請將您的音樂檔案放入專案資料夾，並在此替換檔名
-    BGM_PATH: 'BGM.mp3', // 建議找一段低沉的環境音 Loop
-    SFX_CLICK_PATH: 'sfx_click.wav', // 按鈕點擊聲
-    SFX_CONFIRM_PATH: 'sfx_confirm.wav' // 確認/成功聲
+    BGM_PATH: 'BGM.mp3', 					// 建議找一段低沉的環境音 Loop
+    SFX_CLICK_PATH: 'sfx_click.wav', 		// 按鈕點擊聲
+    SFX_CONFIRM_PATH: 'sfx_confirm.wav' 	// 確認/成功聲
+	SFX_EVOLVE_PATH: 'sfx_evolve.mp3',  	 // 進化/升級音效
+    SFX_ABILITY_PATH: 'sfx_spell.mp3',  	 // 特殊能力發動音效
+    SFX_CHIME_PATH: 'sfx_chime.mp3',    	 // 回合開始/鐘聲
+    SFX_WIN_PATH: 'sfx_win.mp3',        	 // 勝利音效
+    SFX_LOSE_PATH: 'sfx_lose.mp3'       	 // 失敗/被逐出音效
 };
 
 class AudioManager {
@@ -14,7 +19,12 @@ class AudioManager {
         
         this.sfxClick = new Audio(AudioConfig.SFX_CLICK_PATH);
         this.sfxConfirm = new Audio(AudioConfig.SFX_CONFIRM_PATH);
-
+		this.sfxEvolve = new Audio(AudioConfig.SFX_EVOLVE_PATH);
+        this.sfxAbility = new Audio(AudioConfig.SFX_ABILITY_PATH);
+        this.sfxChime = new Audio(AudioConfig.SFX_CHIME_PATH);
+        this.sfxWin = new Audio(AudioConfig.SFX_WIN_PATH);
+        this.sfxLose = new Audio(AudioConfig.SFX_LOSE_PATH);
+		
         this.masterVolume = 0.5; // 預設音量 50%
         this.isMuted = false;
         
@@ -27,6 +37,11 @@ class AudioManager {
         this.bgm.volume = effectiveVolume;
         this.sfxClick.volume = effectiveVolume;
         this.sfxConfirm.volume = effectiveVolume;
+		this.sfxEvolve.volume = effectiveVolume;
+        this.sfxAbility.volume = effectiveVolume;
+        this.sfxChime.volume = effectiveVolume;
+        this.sfxWin.volume = effectiveVolume;
+        this.sfxLose.volume = effectiveVolume;
     }
 
     setVolume(value) {
@@ -75,6 +90,25 @@ class AudioManager {
         this.sfxConfirm.currentTime = 0;
         this.sfxConfirm.play().catch(() => {});
     }
+	
+	// 播放通用音效的輔助函式
+    _playSfx(audioObj) {
+        if (!audioObj) return;
+        audioObj.currentTime = 0;
+        audioObj.play().catch(() => {});
+    }
+	
+	playEvolve() { this._playSfx(this.sfxEvolve); }
+    playAbility() { this._playSfx(this.sfxAbility); }
+    playChime() { this._playSfx(this.sfxChime); }
+    
+    playGameOver(isWin) {
+        // 停止背景音樂，營造結算氛圍
+        this.stopBGM();
+        if (isWin) this._playSfx(this.sfxWin);
+        else this._playSfx(this.sfxLose);
+    }
+	
 }
 
 // 建立全域實例

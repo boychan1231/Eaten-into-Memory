@@ -127,6 +127,8 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
     player.mana -= COST;
     player.specialAbilityUsed = true; // 標記本回合已用過
     player.currentClockPosition = newPos;
+	
+	if (window.gameAudio) window.gameAudio.playAbility();
 
     const dirText = direction === 'ccw' ? '逆時針' : '順時針';
     appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
@@ -139,9 +141,8 @@ if (typeof window !== 'undefined') {
     window.activateMinuteHandAbility = activateMinuteHandAbility;
 }
 
-// -----------------------------------------------------------
-// 核心修改：嘗試進化
-// -----------------------------------------------------------
+
+// 進化檢查
 function attemptRoleUpgrade(player, gameState) {
     if (!player || !gameState) return false;
 
@@ -193,6 +194,8 @@ function attemptRoleUpgrade(player, gameState) {
     const idxText = m ? m[1] : (String(player.id || '').replace(/^SM_/, '') || '');
 
     player.name = `時魔 ${idxText} (${targetRole})`;
+
+    if (window.gameAudio) window.gameAudio.playEvolve();
 
     appLogger.log(`🎉【進化成功】${oldRole} 達成條件「${checkResult.type}」！變身為：${targetRole}`);
 
@@ -251,6 +254,8 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     // 5. 扣除消耗並更新計數
     player.mana -= currentCost;
     player.hourHandMoveCount = moveCount + 1;
+	
+	if (window.gameAudio) window.gameAudio.playAbility(); //音效
 
     // ✅ 關鍵：如果是第 2 次使用，才將 specialAbilityUsed 設為 true (鎖定)
     // 如果是第 1 次使用，保持 false，讓 UI 允許玩家按第二次
@@ -291,6 +296,7 @@ function activateSinAbility(gameState, playerId) {
 
     // 執行能力
     player.mana -= COST;
+	if (window.gameAudio) window.gameAudio.playAbility();
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
@@ -339,6 +345,7 @@ function activateSinSealAbility(gameState, playerId) {
 
     // 4. 執行效果
     player.mana -= COST;
+	if (window.gameAudio) window.gameAudio.playAbility();
     player.specialAbilityUsed = true;
     gameState.abilityMarker = true; // ✅ 開啟封印標記
 
