@@ -1,10 +1,9 @@
 // audio.js - 音效與背景音樂管理器
 
 const AudioConfig = {
-    // 請將您的音樂檔案放入專案資料夾，並在此替換檔名
-    BGM_PATH: 'BGM.mp3', 					// 建議找一段低沉的環境音 Loop
+    BGM_PATH: 'BGM.mp3', 					
     SFX_CLICK_PATH: 'sfx_click.wav', 		// 按鈕點擊聲
-    SFX_CONFIRM_PATH: 'sfx_confirm.wav' 	// 確認/成功聲
+    SFX_CONFIRM_PATH: 'sfx_confirm.wav', 	// 確認/成功聲
 	SFX_EVOLVE_PATH: 'sfx_evolve.mp3',  	 // 進化/升級音效
     SFX_ABILITY_PATH: 'sfx_spell.mp3',  	 // 特殊能力發動音效
     SFX_CHIME_PATH: 'sfx_chime.mp3',    	 // 回合開始/鐘聲
@@ -94,8 +93,13 @@ class AudioManager {
 	// 播放通用音效的輔助函式
     _playSfx(audioObj) {
         if (!audioObj) return;
-        audioObj.currentTime = 0;
-        audioObj.play().catch(() => {});
+        // 如果音效還沒載入好，可能 readyState 不夠，加個 catch 防止報錯
+        try {
+            audioObj.currentTime = 0;
+            audioObj.play().catch(e => console.warn("音效播放失敗(可能檔案損毀或格式不支援):", e));
+        } catch (e) {
+            console.warn("音效物件錯誤:", e);
+        }
     }
 	
 	playEvolve() { this._playSfx(this.sfxEvolve); }
