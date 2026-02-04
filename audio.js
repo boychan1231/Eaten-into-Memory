@@ -25,22 +25,27 @@ class AudioManager {
         this.sfxLose = new Audio(AudioConfig.SFX_LOSE_PATH);
 		
         this.masterVolume = 0.5; // 預設音量 50%
-        this.isMuted = false;
+		
+		this.isBGMMuted = false; // 背景音樂靜音狀態
+        this.isSFXMuted = false; // 音效靜音狀態
         
         this.updateVolume();
     }
 
     // 更新所有音軌的音量
     updateVolume() {
-        const effectiveVolume = this.isMuted ? 0 : this.masterVolume;
-        this.bgm.volume = effectiveVolume;
-        this.sfxClick.volume = effectiveVolume;
-        this.sfxConfirm.volume = effectiveVolume;
-		this.sfxEvolve.volume = effectiveVolume;
-        this.sfxAbility.volume = effectiveVolume;
-        this.sfxChime.volume = effectiveVolume;
-        this.sfxWin.volume = effectiveVolume;
-        this.sfxLose.volume = effectiveVolume;
+		const bgmVol = this.isBGMMuted ? 0 : this.masterVolume;
+        const sfxVol = this.isSFXMuted ? 0 : this.masterVolume;
+
+        this.bgm.volume = bgmVol;
+        
+        this.sfxClick.volume = sfxVol;
+        this.sfxConfirm.volume = sfxVol;
+        this.sfxEvolve.volume = sfxVol;
+        this.sfxAbility.volume = sfxVol;
+        this.sfxChime.volume = sfxVol;
+        this.sfxWin.volume = sfxVol;
+        this.sfxLose.volume = sfxVol;
     }
 
     setVolume(value) {
@@ -49,15 +54,18 @@ class AudioManager {
         this.updateVolume();
     }
 
-    toggleMute() {
-        this.isMuted = !this.isMuted;
+    setBGMMuted(muted) {
+        this.isBGMMuted = muted;
         this.updateVolume();
-        return this.isMuted;
+        // 如果取消靜音且音樂暫停中，嘗試播放 (因為這是使用者點擊觸發的，瀏覽器允許)
+        if (!muted && this.bgm.paused) {
+            this.playBGM();
+        }
     }
-	
-    // 明確設定靜音狀態 (mute: true 為靜音, false 為開啟)
-    setMuted(mute) {
-        this.isMuted = mute;
+
+    // 設定音效靜音
+    setSFXMuted(muted) {
+        this.isSFXMuted = muted;
         this.updateVolume();
     }
 
