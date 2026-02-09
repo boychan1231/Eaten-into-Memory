@@ -1057,7 +1057,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 #next-step-btn:disabled { background-color: #333; color: #666; cursor: not-allowed; }
 
 .action-hint {
-    min-height: 32px;
+    min-height: 20px;
     font-size: 0.85rem;
     line-height: 1.4;
     color: #c7b6cf;
