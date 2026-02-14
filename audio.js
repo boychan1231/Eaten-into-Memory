@@ -3,7 +3,7 @@
 const AudioConfig = {
     BGM_PATH: 'BGM.mp3', 					
     SFX_CLICK_PATH: 'sfx_click.wav', 		// 按鈕點擊聲
-    SFX_CONFIRM_PATH: 'sfx_confirm.wav', 	// 確認/成功聲
+    SFX_CONFIRM_PATH: 'sfx_confirm.wav', 	// 確認/成功聲（e.g. 出牌確認）
 	SFX_EVOLVE_PATH: 'sfx_evolve.mp3',  	 // 進化/升級音效
     SFX_ABILITY_PATH: 'sfx_spell.mp3',  	 // 特殊能力發動音效
     SFX_CHIME_PATH: 'sfx_chime.mp3',    	 // 回合開始/鐘聲
