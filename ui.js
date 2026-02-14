@@ -649,7 +649,7 @@ function renderClockFace(gameState, flags) {
             spotEl.appendChild(inspector);
         }
 
-        // 棋子
+// 棋子
         const tokensContainer = document.createElement('div');
         tokensContainer.className = 'tokens';
         gameState.players.forEach(player => {
@@ -657,8 +657,22 @@ function renderClockFace(gameState, flags) {
                 const token = document.createElement('div');
                 token.className = 'token';
                 token.title = player.name;
+                
+                // 1. 判斷角色，加入對應的 CSS 圖片類別
+                let roleClass = 'token-demon'; // 預設：幼體時魔
+                if (player.type === '時之惡') roleClass = 'token-sin';
+                else if (player.type === '受詛者') roleClass = 'token-scz';
+                else if (player.roleCard === '時針') roleClass = 'token-hour';
+                else if (player.roleCard === '分針') roleClass = 'token-min';
+                else if (player.roleCard === '秒針') roleClass = 'token-sec';
+                
+                token.classList.add(roleClass);
+                
+                // 2. 移除原本的實心背景，改用 filter 幫 GIF 加上陣營專屬的發光特效
                 const roleKey = player.roleCard.includes('時魔') ? '時魔' : player.roleCard;
-                token.style.backgroundColor = ROLE_COLORS[roleKey] || '#ccc';
+                const glowColor = ROLE_COLORS[roleKey] || '#ccc';
+                token.style.filter = `drop-shadow(0 0 5px ${glowColor})`;
+
                 tokensContainer.appendChild(token);
             }
         });

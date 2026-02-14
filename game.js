@@ -611,16 +611,18 @@ function startRound(gameState) {
 	gameState.roundMinHourNumber = nums.length ? Math.min(...nums) : null;
 
 	
-	// 進入「出分鐘卡前」階段（時針能力可用）
+// 進入「出分鐘卡前」階段（時針能力可用）
 	gameState.phase = 'preMinute';
 
 	// AI 時針：回合前自動偷看/決策（人類時針由 UI 按鈕觸發）
 	if (typeof hourHandPreMinuteAI === 'function') {
 		hourHandPreMinuteAI(gameState);
-}
+    }
 
-	// 每個新回合開始播放鐘聲
-    if (window.gameAudio) window.gameAudio.playChime();
+	// ✅ 修改：每個「新遊戲輪」(也就是第 1 回合) 開始時才播放鐘聲
+    if (gameState.roundMarker === 1) {
+        if (window.gameAudio) window.gameAudio.playChime();
+    }
         
     appLogger.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
     appLogger.log("等待玩家打出分鐘卡...");

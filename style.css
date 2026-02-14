@@ -398,13 +398,30 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: -5px;
 }
 .token {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 5px rgba(0,0,0,0.8);
+    /* 加大尺寸以清楚顯示 GIF 細節 */
+    width: 40px; 
+    height: 40px;
     transition: transform 0.2s;
+    
+    /* 新增：確保像素 GIF 清晰且置中 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated; 
 }
-.token:hover { transform: scale(1.5); z-index: 20; }
+.token:hover { 
+    /* 懸停時稍微放大並往上飄 */
+    transform: scale(1.8) translateY(-3px); 
+    z-index: 20; 
+}
+
+/* --- 針對不同角色設定專屬的靈魂 GIF --- */
+.token-demon { background-image: url('assets/soul_demon.png'); } /* 幼體時魔 */
+.token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 */
+.token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 */
+.token-hour  { background-image: url('assets/soul_hour.png'); }  /* 時針 */
+.token-min   { background-image: url('assets/soul_min.png'); }   /* 分針 */
+.token-sec   { background-image: url('assets/soul_sec.png'); }   /* 秒針 */
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card {
