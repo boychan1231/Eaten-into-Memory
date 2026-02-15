@@ -801,7 +801,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     const diceEl = document.getElementById('h-dice');
     if (diceEl) diceEl.textContent = (humanPlayer.d6Die === null) ? '--' : String(humanPlayer.d6Die);
 
-    // 2. 更新收集列表 (小時卡) - 帶有分類樣式
+    // 2. 更新收集列表 (小時卡) - 帶有分類樣式與點擊功能
     const hourCollectionEl = document.getElementById('human-hour-collection');
     if (hourCollectionEl) {
         hourCollectionEl.innerHTML = '';
@@ -813,16 +813,47 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             hourCollectionEl.appendChild(ph);
         } else {
             const groups = { '少年': [], '青年': [], '中年': [] };
+            
+            // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
                 const g = card.ageGroup || '未知';
                 if (!groups[g]) groups[g] = [];
-                groups[g].push(`${card.number}${card.isPrecious ? '★' : ''}`);
+                groups[g].push(card);
             });
+
             ['少年', '青年', '中年'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
-                    row.innerHTML = `<span class="col-label">${label}：</span><span class="col-values">${groups[label].join(', ')}</span>`;
+                    
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = 'col-label';
+                    labelSpan.textContent = `${label}：`;
+                    row.appendChild(labelSpan);
+
+                    const valuesContainer = document.createElement('div');
+                    valuesContainer.style.display = 'inline-flex';
+                    valuesContainer.style.gap = '8px';
+                    valuesContainer.style.flexWrap = 'wrap';
+                    valuesContainer.style.marginTop = '4px';
+
+                    // 繪製單張可點擊的卡片
+                    groups[label].forEach(card => {
+                        const cardBtn = document.createElement('div');
+                        cardBtn.className = `hour-collection-card ${card.isPrecious ? 'precious' : ''}`;
+                        cardBtn.textContent = `${card.number}${card.isPrecious ? '★' : ''}`;
+                        cardBtn.title = '點擊查看故事';
+                        
+                        // ✅ 綁定點擊事件
+                        cardBtn.onclick = () => {
+                            if (window.gameAudio) window.gameAudio.playClick(); // 播放點擊音效
+                            showCardStory(card);
+                        };
+                        
+                        valuesContainer.appendChild(cardBtn);
+                    });
+
+                    row.appendChild(valuesContainer);
                     hourCollectionEl.appendChild(row);
                 }
             });
@@ -2129,7 +2160,24 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(colOverlay);
         });
     }
-
+	
+	// 👇 新增：故事視窗的關閉控制 👇
+    const storyOverlay = document.getElementById('story-overlay');
+    const storyCloseBtn = document.getElementById('story-close-btn');
+    
+    if (storyCloseBtn && storyOverlay) {
+        storyCloseBtn.addEventListener('click', () => {
+            closeModal(storyOverlay);
+        });
+    }
+    
+    // 點擊視窗外部也可以關閉故事
+    if (storyOverlay) {
+        storyOverlay.addEventListener('click', (e) => {
+            if (e.target === storyOverlay) closeModal(storyOverlay);
+        });
+    }
+	
     // 點擊視窗外部也可以關閉 (選用)
     if (colOverlay) {
         colOverlay.addEventListener('click', (e) => {
@@ -2380,3 +2428,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// --- 顯示卡片故事視窗 ---
+function showCardStory(card) {
+    const overlay = document.getElementById('story-overlay');
+    const titleEl = document.getElementById('story-title');
+    const contentEl = document.getElementById('story-content');
+    
+    if (!overlay || !titleEl || !contentEl) return;
+    
+    const age = card.ageGroup || '未知';
+    const num = card.number;
+    const isPrecious = card.isPrecious ? '<span style="color:#ffd27f;">★ 珍貴</span>' : '';
+    
+    titleEl.innerHTML = `📖 ${age} ${num} ${isPrecious}`;
+    
+    // 從資料庫取得故事
+    const stories = window.GAME_DATA?.HOUR_STORIES || {};
+    const ageStories = stories[age] || {};
+    const storyText = ageStories[num] || `這是一張尚未被發掘記憶的卡片... \n\n(開發者提示：請至 config.js 中填寫 ${age} - ${num} 號的故事)`;
+    
+    // 替換換行符號為 <br>
+    contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
+    
+    openModal(overlay, document.getElementById('story-close-btn') || undefined);
+}
+
+
+
+

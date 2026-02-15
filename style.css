@@ -958,6 +958,19 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ffd27f;
 }
 
+/* 👇 新增這段：滑鼠懸停時的發光與放大效果 👇 */
+.hour-collection-card {
+    transition: all 0.2s ease;
+    cursor: pointer; /* 讓滑鼠變成手指形狀 */
+}
+
+.hour-collection-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border-color: #fff;
+}
+
 .hour-collection-placeholder {
     opacity: 0.6;
     font-size: 0.9rem;
