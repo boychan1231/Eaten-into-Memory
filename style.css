@@ -390,14 +390,32 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 .clock-spot .tokens {
     position: absolute;
-    bottom: -5px;
+    
+    /* 目前設定是在格子的「正下方」重疊。 
+       如果你希望棋子飄在卡片的「頭頂上」，可以把 bottom: -5px; 刪掉，改成 top: -20px; */
+    bottom: -5px; 
+    
     display: flex;
     justify-content: center;
     width: 100%;
     flex-wrap: wrap;
     gap: -5px;
+    
+    /* ✅ 新增：將圖層層級拉高，確保它永遠蓋在小時卡 (z-index: 2) 的上面 */
+    z-index: 30; 
+    
+    /* ✅ 新增：讓滑鼠點擊可以穿透容器，避免擋住小時卡的堆疊提示 (Stack Inspector) */
+    pointer-events: none; 
 }
+
+
 .token {
+
+}
+
+.token {
+	/* 確保棋子本身依然可以被滑鼠碰到 (觸發放大效果) */
+	pointer-events: auto;
     /* 加大尺寸以清楚顯示 GIF 細節 */
     width: 40px; 
     height: 40px;
