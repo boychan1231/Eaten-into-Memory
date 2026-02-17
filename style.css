@@ -408,11 +408,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     pointer-events: none; 
 }
 
-
-.token {
-
-}
-
 .token {
 	/* 確保棋子本身依然可以被滑鼠碰到 (觸發放大效果) */
 	pointer-events: auto;
