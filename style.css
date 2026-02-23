@@ -207,8 +207,8 @@ input:checked + .slider:before { transform: translateX(16px); }
 .game-panel {
     background: rgba(24, 17, 34, 0.85);
     border: 1px solid rgba(107, 76, 123, 0.6);
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 10px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
@@ -1031,7 +1031,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: #151019;
     border: 1px solid #4a3b52;
     border-radius: 6px;
-    padding: 12px;
+    padding: 10px;
 }
 
 /* 進化面板 (黑色區塊) */
@@ -1039,7 +1039,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     background-color: #151019;
     border: 1px solid #4a3b52;
     border-radius: 6px;
-    padding: 12px;
+    padding: 10px;
     color: #ccc; font-size: 0.85rem;
     display: flex; flex-direction: column; gap: 8px;
 }
@@ -1925,7 +1925,7 @@ body {
 .selection-btn {
     border: 1px solid #555;
     border-radius: 10px;
-    padding: 8px 14px;
+    padding: 8px 12px;
     background: rgba(0, 0, 0, 0.35);
     color: #ddd;
     font-size: 0.95rem;

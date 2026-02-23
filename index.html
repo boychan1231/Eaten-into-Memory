@@ -158,12 +158,28 @@
                 <span>⏳</span> 核心機制
             </h3>
             <p><strong>目標：</strong> 玩家利用手中的「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護手中的「齒輪」。</p>
+			
             <ul style="padding-left: 20px; margin-bottom: 0;">	
 			    <li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 			    <li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
                 <li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
                 <li><strong>齒輪 (生命/分數/Mana)：</strong> 角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪，齒輪歸零則<strong>被驅逐 (下個遊戲輪返回)。每回合剩餘的齒輪成為玩家的分數。</strong>。</li>
             </ul>
+        </div>
+		
+		<h3 style="color: #4cd137; margin-bottom: 15px;">🔄 遊戲流程</h3>
+        <div style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
+            <ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
+                <li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
+                <li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+                <li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1 張小時卡，並將靈魂移至該鐘面位置。</li>
+                <li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪。</li>
+                <li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
+                <li><strong>輪次結算：</strong>12 回合結束後，將剩餘齒輪轉為分數。重新派發 12 張手牌進入下一輪。</li>
+            </ol>
+            <div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
+                <em>*註：若齒輪歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+            </div>
         </div>
 
         <h3 style="color: #00d2d3; margin-bottom: 15px;">🎮 遊戲模式</h3>
@@ -366,6 +382,7 @@
 				</p>
 			</div>
 		</div>
+		
 			
 		<div id="role-choice-overlay" class="modal-overlay hidden">
 			<div class="modal">
@@ -374,9 +391,15 @@
 				<p id="role-choice-hint" class="modal-desc">請選擇要扮演的角色。</p>
 				<div id="role-choice-5p" class="modal-section">
 					<div class="settings-button-group" data-selection-group="start-five-player-role" role="radiogroup" aria-label="5P 身份選擇">
-						<button class="selection-btn is-selected" type="button" data-value="SM_1" role="radio" aria-checked="true" aria-pressed="true">時魔</button>
-						<button class="selection-btn" type="button" data-value="sin" role="radio" aria-checked="false" aria-pressed="false">時之惡</button>
-						<button class="selection-btn" type="button" data-value="SCZ" role="radio" aria-checked="false" aria-pressed="false">受詛者</button>
+						<button class="selection-btn is-selected" type="button" data-value="SM_1" role="radio" aria-checked="true" aria-pressed="true">
+							<img src="assets/soul_demon.png" width="50" height="50"><br>時魔
+						</button>
+						<button class="selection-btn" type="button" data-value="sin" role="radio" aria-checked="false" aria-pressed="false">
+							<img src="assets/soul_sin.png" width="50" height="50"><br>時之惡
+						</button>
+						<button class="selection-btn" type="button" data-value="SCZ" role="radio" aria-checked="false" aria-pressed="false">
+							<img src="assets/soul_scz.png" width="50" height="50"><br>受詛者
+						</button>
 					</div>
 					<p class="setting-note">5P 模式中時魔玩家將扮演<b>幼體時魔</b>。</p>
 				</div>
@@ -405,7 +428,7 @@
 						<button class="selection-btn" type="button" data-value="3P" role="radio" aria-checked="false" aria-pressed="false">3P 模式</button>
 					</div>
 					<p id="start-mode-note" class="setting-note">3P 模式： 3 輪/13張手牌，24張小時卡。</p>
-					<p id="start-mode-note" class="setting-note">5P 模式： 5 輪/12張手牌。</p>
+					<p id="start-mode-note" class="setting-note">5P 模式： 5 輪/12張手牌，24張小時卡 + 12張珍貴小時卡。</p>
 				</div>
 				<div class="modal-actions">
 					
