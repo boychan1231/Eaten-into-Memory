@@ -41,7 +41,7 @@ header {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
-    padding: 10px 10px;/* 内边距创建元素内部的额外空间*/
+    padding: 8px 8px;
     background-color: var(--clock-bg);
     border-radius: 8px;
     margin-bottom: 1px;
@@ -176,6 +176,7 @@ button:disabled { background-color: #555; cursor: not-allowed; }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(16px); }
 
+
 /* --- 規則與設定頁 --- */
 #rules-content, #settings-content {
     background-color: var(--bg-color);
@@ -194,6 +195,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 .toggle-switch.toggle-switch-spaced {
     margin-bottom: 15px;
 }
+
 
 /* --- 主遊戲區域 (鐘面 + 日誌) --- */
 .main-area {
@@ -494,10 +496,9 @@ input:checked + .slider:before { transform: translateX(16px); }
 .log-section {
     flex: 1;/* ✅ 關鍵修正：flex: 1 讓它自動填滿剩餘空間，但允許縮小 */
     min-height: 0;     /* 必須設定 min-height: 0 否則 flex 子元素捲軸會失效 */
-    margin-bottom: 10px;
     background: rgba(0, 0, 0, 0.35);
     border-radius: 8px;
-    padding: 8px;
+    padding: 3px;
     overflow-y: auto; /* 內容多時出現捲軸 */
     /* 視覺優化 */
     border: 1px solid #333;
@@ -599,7 +600,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: 12px;
     border-radius: 10px;
     background: rgba(15, 52, 96, 0.35);
-    padding: 10px;
+    padding: 3px;
     box-sizing: border-box;
 }
 
@@ -645,7 +646,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 #deck-info {
-	margin: 3px;
+	margin: 2px 0px;
     height: 120px;
     display: flex;
     flex-direction: column;
@@ -1044,7 +1045,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: flex; flex-direction: column; gap: 8px;
 }
 #evolution-progress-area {
-    margin: 3px;
+    margin: 3px 0px;
     flex: 0 0 auto;
     border-radius: 3px;
 }
@@ -1237,12 +1238,14 @@ input:checked + .slider:before { transform: translateX(16px); }
 	min-width: 180px;
 	min-height: 100px;
     background-color: var(--card-bg);
-    border: 1px solid #444; 
+    /*border: 1px solid #444; */
 	border-radius: 6px; 
 	padding: 10px;
     display: flex; 
 	flex-direction: column; 
 	position: relative;
+	/* 💡 建議：因為移除了邊框，可以給它一個非常淡的背景色來輕微區隔 */
+    background: rgba(255, 255, 255, 0.03); 
 }
 .player-card.ejected { opacity: 0.5; border: 2px solid red; }
 .player-card h4 { margin: 0 0 5px 0; font-size: 1rem; color: #8ec5fc; }
