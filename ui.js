@@ -224,6 +224,11 @@ function resetMinuteHistory(gameState) {
 
 function recordMinuteHistoryIfNew(gameState, choices) {
     if (!gameState || !Array.isArray(choices) || choices.length === 0) return;
+	
+	// ✅ 修正：如果遊戲正處於「等待秒針最終選擇」階段，代表出牌清單還不完整，先不要寫入歷史記錄。
+    // 等到秒針選定最後一張牌時，才會將完整的紀錄寫入。
+    if (gameState.waitingSecondHandFinalChoice) return;
+	
     const turnKey = gameState.uiMinuteChoicesTurnKey || `${gameState.gameRound}-${gameState.roundMarker}`;
     if (uiLastRecordedTurnKey === turnKey) return;
     uiLastRecordedTurnKey = turnKey;
@@ -471,7 +476,14 @@ function renderPlayedCardsPanel(gameState) {
     if (playedList) {
         playedList.innerHTML = '';
         if (choices.length > 0) {
-            const sortedChoices = [...choices].sort((a, b) => b.card.value - a.card.value);
+			
+			// ✅ 修正：排序時加入防呆，避免 pending 卡片 (沒有 value 屬性) 造成排序錯亂 (NaN)
+            const sortedChoices = [...choices].sort((a, b) => {
+                const valA = typeof a.card.value === 'number' ? a.card.value : 999;
+                const valB = typeof b.card.value === 'number' ? b.card.value : 999;
+                return valB - valA;
+            });
+            
             sortedChoices.forEach(choice => {
                 const row = document.createElement('div');
                 row.className = 'played-card-row';

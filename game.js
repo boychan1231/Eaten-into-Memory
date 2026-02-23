@@ -875,8 +875,13 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     const aiChoices = gameState.currentRoundAIChoices || [];
     gameState.secondHandRevealedChoices = [...aiChoices];
 
-    // UI 的「本回合出牌」先顯示其他玩家翻牌
-    gameState.currentMinuteChoices = [...aiChoices];
+    // ✅ 修正：UI 的「本回合出牌」加入秒針的待選狀態，這樣介面上會顯示 "??"
+    gameState.currentMinuteChoices = [...aiChoices, {
+        playerId: humanPlayer.id,
+        playerName: humanPlayer.name,
+        card: { type: 'seconds_pending' },
+        roleType: humanPlayer.type
+    }];
 
     // 清掉等待出牌（人類已完成「蓋牌」）
     gameState.currentRoundAIChoices = null;
