@@ -282,15 +282,21 @@ function activateSinAbility(gameState, playerId) {
 
     const player = gameState.players.find(p => p.id === playerId);
     if (!player || player.isEjected || player.type !== '時之惡') return false;
+	
+	// --- 限制只能在出牌前使用 ---
+    if (gameState.phase !== 'preMinute') {
+        appLogger.log("⚠️「惡之牽引」只能在選擇分鐘卡（出牌）前使用");
+        return false;
+    }
 
     // 檢查限制
     if (player.specialAbilityUsed) {
-        appLogger.log("本回合已經發動過能力了。");
+        appLogger.log("⚠️本回合已經發動過能力了");
         return false;
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
-        appLogger.log("Mana 不足，無法發動。");
+        appLogger.log("⚠️Mana 不足，無法發動。");
         return false;
     }
 
@@ -322,14 +328,14 @@ function activateSinSealAbility(gameState, playerId) {
 
     // 1. 基本檢查
     if (player.specialAbilityUsed) {
-        appLogger.log("本回合已經發動過能力了。");
+        appLogger.log("⚠️本回合已經發動過能力了");
         return false;
     }
     
     // 2. 讀取消耗 (預設 3 Mana)
     const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     if (player.mana < COST) {
-        appLogger.log(`Mana 不足 (需 ${COST})，無法發動封印。`);
+        appLogger.log(`⚠️Mana 不足 (需 ${COST})，無法發動封印。`);
         return false;
     }
 

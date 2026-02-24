@@ -1375,7 +1375,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡</div>`;
 
     // 1. 顯示當前規則狀態
-    const currentMode = gameState.sinTargetingMode === 'sin' ? '距離最近 (已變更)' : '數值最大 (預設)';
+    const currentMode = gameState.sinTargetingMode === 'sin' ? '扣滅目標：距離最近 (已變更)' : '扣滅目標：數值最大 (預設)';
     const statusDiv = document.createElement('div');
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
     statusDiv.innerHTML = `<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
