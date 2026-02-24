@@ -2071,3 +2071,48 @@ body {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
 }
+
+/* 棋子的基礎狀態 (沒有動畫時，預設完全顯示) */
+.token {
+    opacity: 1; 
+    transform: scale(1) translateY(0);
+}
+
+/* 獨立的動畫 class (只有加上這個 class 才會播放特效) */
+.token-animate {
+    animation: soulAppear 0.6s ease-out forwards;
+}
+
+/* 定義靈魂出現的關鍵影格動畫 */
+@keyframes soulAppear {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.5) translateY(-15px); /* 一開始透明、縮小且稍微向上浮起 */
+    }
+    100% { 
+        opacity: 1; 
+        transform: scale(1) translateY(0);       /* 最終恢復正常大小與位置 */
+    }
+}
+
+/* --- 新增 (Add)：設定頁雙欄佈局 --- */
+.settings-two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 切分成等寬的兩欄 */
+    gap: 40px;                      /* 兩欄之間的間距 */
+    margin-top: 15px;
+}
+
+.settings-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 響應式設計：當螢幕寬度小於 800px 時，自動折疊回單欄 */
+@media (max-width: 800px) {
+    .settings-two-column {
+        grid-template-columns: 1fr; 
+        gap: 0;
+    }
+}
+

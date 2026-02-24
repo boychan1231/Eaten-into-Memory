@@ -8,11 +8,12 @@
 </head>
 
 <body>
+
 <div class="game-wrapper">
     <header>
 		<div class="tab-nav">
             <button class="tab-btn active" data-target="game-content">遊戲</button>
-                <button class="tab-btn" data-target="rules-content">規則</button>
+            <button class="tab-btn" data-target="rules-content">規則</button>
             <button class="tab-btn" data-target="settings-content">設定</button>
         </div>
 		
@@ -58,7 +59,7 @@
 						<div class="info-divider"></div>	
 						
 						<div class="info-block">
-							<div class="deck-title">遊戲輪次</div>
+							<div class="deck-title">遊戲局次</div>
 							<div class="deck-count" id="game-round-num">--</div>
 						</div>
 						
@@ -106,7 +107,7 @@
                             </div>
                             <div class="resource-chip resource-chip--gear">
                                 <span class="resource-chip__icon" aria-hidden="true">⚙️</span>
-                                齒輪：<span id="h-gear">0</span>
+                                齒輪（分數）：<span id="h-gear">0</span>
                             </div>
                             <div class="resource-chip resource-chip--shield">
                                 <span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
@@ -148,8 +149,9 @@
 
         </div>
 
-            <div id="rules-content" class="tab-content">
-    <div class="rules-container" style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
+    <div id="rules-content" class="tab-content">
+	
+		<div class="rules-container" style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
         
         <h2 style="color: var(--accent-color); border-bottom: 2px solid #444; padding-bottom: 10px; margin-top: 0;">遊戲規則說明</h2>
         
@@ -157,13 +159,13 @@
             <h3 style="color: #feca57; margin-top: 0; display: flex; align-items: center; gap: 8px;">
                 <span>⏳</span> 核心機制
             </h3>
-            <p><strong>目標：</strong> 玩家利用手中的「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護手中的「齒輪」。</p>
+            <p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 			
             <ul style="padding-left: 20px; margin-bottom: 0;">	
 			    <li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 			    <li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
                 <li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-                <li><strong>齒輪 (生命/分數/Mana)：</strong> 角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪，齒輪歸零則<strong>被驅逐 (下個遊戲輪返回)。每回合剩餘的齒輪成為玩家的分數。</strong>。</li>
+                <li><strong>齒輪（分數） (生命/分數/Mana)：</strong> 角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
             </ul>
         </div>
 		
@@ -172,13 +174,13 @@
             <ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
                 <li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
                 <li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
-                <li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1 張小時卡，並將靈魂移至該鐘面位置。</li>
-                <li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪。</li>
+                <li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1 張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
+                <li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
                 <li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-                <li><strong>輪次結算：</strong>12 回合結束後，將剩餘齒輪轉為分數。重新派發 12 張手牌進入下一輪。</li>
+                <li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
             </ol>
             <div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-                <em>*註：若齒輪歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+                <em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
             </div>
         </div>
 
@@ -188,15 +190,15 @@
                 <thead>
                     <tr style="background: rgba(255,255,255,0.1);">
                         <th style="padding: 12px; border: 1px solid #555; text-align: left;">項目</th>
-                        <th style="padding: 12px; border: 1px solid #555; color: #ff9ff3;">🚀 3P 對抗模式</th>
+                        <th style="padding: 12px; border: 1px solid #555; color: #ff9ff3;">⚔️ 3P 對抗模式</th>
                         <th style="padding: 12px; border: 1px solid #555; color: #ff6b6b;">⚔️ 5P 扮演模式</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="padding: 10px; border: 1px solid #555;"><strong>玩家人數 及<br>遊戲輪數(每輪 12 回合)</strong></td>
-                        <td style="padding: 10px; border: 1px solid #555;">3 人 (時、分、秒針時魔)，<br>3 輪遊戲</td>
-                        <td style="padding: 10px; border: 1px solid #555;">5 人 (3幼體時魔 vs 1時之惡 vs 1受詛者)，<br>5 輪遊戲</td>
+                        <td style="padding: 10px; border: 1px solid #555;"><strong>玩家人數 及<br>遊戲局數(每局 12 回合)</strong></td>
+                        <td style="padding: 10px; border: 1px solid #555;">3 人 (時、分、秒針時魔)，<br>3 局遊戲</td>
+                        <td style="padding: 10px; border: 1px solid #555;">5 人 (3幼體時魔 vs 1時之惡 vs 1受詛者)，<br>5 局遊戲</td>
                     </tr>
                     <tr>
                         <td style="padding: 10px; border: 1px solid #555;"><strong>角色狀態</strong></td>
@@ -205,8 +207,8 @@
                     </tr>
                     <tr>
                         <td style="padding: 10px; border: 1px solid #555;"><strong>勝利條件</strong></td>
-                        <td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong style="color:#ff9ff3;">齒輪積分</strong>最高者勝</td>
-                        <td style="padding: 10px; border: 1px solid #555;"><u><strong style="color:#ff9ff3;">齒輪積分</strong>＋ 特殊條件<br></u>
+                        <td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong style="color:#ff9ff3;">齒輪（分數）積分</strong>最高者勝</td>
+                        <td style="padding: 10px; border: 1px solid #555;"><u><strong style="color:#ff9ff3;">齒輪（分數）積分</strong>＋ 特殊條件<br></u>
                             <strong>受詛者：</strong>必須在遊戲結束前於鐘面上保留 12 張`珍貴小時卡<br>
                             <strong>時魔 特殊勝利：</strong>驅逐時之惡<br>
                             <strong>時之惡 特殊勝利：</strong>遊戲結束前驅逐所有時魔各一次
@@ -233,7 +235,7 @@
 			<div style="background: rgba(254, 202, 87, 0.08); padding: 15px; border-left: 4px solid #feca57; border-radius: 0 8px 8px 0;">
                 <strong style="color: #feca57; font-size: 1.1em;">😈 時之惡 (Time Evil) - 僅 5P</strong>
                 <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-                    <strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的人。<br>
+                    <strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的角色。<br>
                     <strong>封鎖 (3 Mana)：</strong> 封印本回合所有特殊能力。
                 </p>
             </div>
@@ -270,119 +272,134 @@
                 </p>
             </div>
 			
-			<div style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
+				<div style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
                 <strong style="color: #54a0ff; font-size: 1.1em;"> 時魔幼體 (YOUNG) - 僅 5P</strong>
-                <p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-                    <strong>被動 (3 Mana >)：整場遊戲一次，如果Mana >= 3 ，可以消耗所有Mana抵擋一次懲罰。</strong>
-                </p>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-			<div id="settings-content" class="tab-content">
-			<h3>⚙️ 遊戲設定</h3>
-			
-		<div class="setting-item">
-			<h4>日誌速度</h4>
-			<div class="settings-range-row">
-				<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" class="log-speed-slider">
-				<span id="log-speed-value" class="log-speed-value">360 ms</span>
+					<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
+						<strong>被動 (3 Mana >)：整場遊戲一次，如果Mana >= 3 ，可以消耗所有Mana抵擋一次懲罰。</strong>
+					</p>
+				</div>
 			</div>
-			<p class="setting-note">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
 		</div>
+	</div>
 
-        <hr class="settings-divider">
-
-		<div class="setting-item">
-			<h4>日誌保留量</h4>
-			<div class="settings-range-row">
-				<input type="range" id="log-retention-slider" min="50" max="1000" step="50" value="200" class="log-speed-slider">
-				<span id="log-retention-value" class="log-speed-value">200 則</span>
-			</div>
-			<p class="setting-note">限制日誌清單保留最大數量，避免造成 DOM 過大。</p>
-		</div>
 		
-		<hr class="settings-divider">
-
-		<div class="setting-item">
-			<h4>🔊 音樂/音效音量</h4>
-			
-			<div style="display: flex; gap: 20px; margin-bottom: 15px;">
-				<label class="toggle-switch">
-					<input type="checkbox" id="bgm-toggle" checked>
-					<span class="slider"></span>
-					<span>開啟音樂 (BGM)</span>
-				</label>
-
-				<label class="toggle-switch">
-					<input type="checkbox" id="sfx-toggle" checked>
-					<span class="slider"></span>
-					<span>開啟音效 (SFX)</span>
-				</label>
-			</div>
-			<div class="settings-range-row">
-				<input type="range" id="volume-slider" min="0" max="100" step="1" value="50" class="log-speed-slider">
-				<span id="volume-value" class="log-speed-value">50%</span>
-			</div>
-		</div>
-
-		<hr class="settings-divider">
 		
-		<div class="setting-item">
-            <h4>手牌排列順序</h4>
-            <div class="settings-radio-group">
-                <label class="radio-label">
-                    <input type="radio" name="hand-sort" value="asc">
-                    <span class="radio-custom"></span>
-                    <span>由小到大 (1 ➝ 60)</span>
-                </label>
-                <label class="radio-label">
-                    <input type="radio" name="hand-sort" value="desc">
-                    <span class="radio-custom"></span>
-                    <span>由大到小 (60 ➝ 1)</span>
-                </label>
-            </div>
-            <p class="setting-note">調整下方手牌區域的卡片顯示順序。</p>
-        </div>
-
-		<hr class="settings-divider">
-
-		<div class="setting-item">
-			<h3>設定選項</h3>
+		
+	<div id="settings-content" class="tab-content">
+		<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;">⚙️ 遊戲設定</h3>
 			
-				<label class="toggle-switch toggle-switch-spaced">
-				<input type="checkbox" id="ability-toggle" checked>
-				<span class="slider"></span>
-				<span>啟用特殊能力 </span>
-			</label>
+		<div class="settings-two-column">
+			<div class="settings-column">
+				<div class="setting-item">
+					<h4>日誌速度</h4>
+					<div class="settings-range-row">
+						<input type="range" id="log-speed-slider" min="0" max="1000" step="50" value="360" class="log-speed-slider">
+						<span id="log-speed-value" class="log-speed-value">360 ms</span>
+					</div>
+					<p class="setting-note">調整遊戲訊息顯示的快慢。設為 0 可瞬間顯示。</p>
+				</div>
 
-			<label class="toggle-switch">
-				<input type="checkbox" id="test-toggle">
-				<span class="slider"></span>
-				<span>測試模式</span>
-			</label>
-			    <div class="setting-hint">
-                開啟後人類玩家第 1 輪起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配（會先從牌庫移除上述卡）。
+					<hr class="settings-divider">
+
+					<div class="setting-item">
+						<h4>日誌保留量</h4>
+						<div class="settings-range-row">
+							<input type="range" id="log-retention-slider" min="50" max="1000" step="50" value="200" class="log-speed-slider">
+							<span id="log-retention-value" class="log-speed-value">200 則</span>
+						</div>
+						<p class="setting-note">限制日誌清單保留最大數量，避免造成 DOM 過大。</p>
+					</div>
+					
+					<hr class="settings-divider">
+					
+					<div class="setting-item">
+						<h4>手牌排列順序</h4>
+						<div class="settings-radio-group">
+							<label class="radio-label">
+								<input type="radio" name="hand-sort" value="asc">
+								<span class="radio-custom"></span>
+								<span>由小到大 (1 ➝ 60)</span>
+							</label>
+							<label class="radio-label">
+								<input type="radio" name="hand-sort" value="desc">
+								<span class="radio-custom"></span>
+								<span>由大到小 (60 ➝ 1)</span>
+							</label>
+						</div>
+						<p class="setting-note">調整下方手牌區域的卡片顯示順序。</p>
+					</div>
+			</div>
+
+			<div class="settings-column">
+				<div class="setting-item">
+					<h4>🔊 音樂/音效設定</h4>
+                    <div style="margin-bottom: 20px;">
+						<label class="toggle-switch" style="margin-bottom: 8px; display: flex;">
+							<input type="checkbox" id="bgm-toggle" checked>
+							<span class="slider"></span>
+							<span>開啟音樂 (BGM)</span>
+						</label>
+						<div class="settings-range-row">
+							<input type="range" id="bgm-volume-slider" min="0" max="100" step="1" value="50" class="log-speed-slider">
+							<span id="bgm-volume-value" class="log-speed-value">50%</span>
+						</div>
+					</div>
+
+                    <div>
+						<label class="toggle-switch" style="margin-bottom: 8px; display: flex;">
+							<input type="checkbox" id="sfx-toggle" checked>
+							<span class="slider"></span>
+							<span>開啟音效 (SFX)</span>
+						</label>
+						<div class="settings-range-row">
+							<input type="range" id="sfx-volume-slider" min="0" max="100" step="1" value="50" class="log-speed-slider">
+							<span id="sfx-volume-value" class="log-speed-value">50%</span>
+						</div>
+					</div>
                 </div>
-		</div>
 
-		<hr class="settings-divider">
+				<hr class="settings-divider">
 
-			<div class="setting-item">
-				<h4>資訊</h4>
-				<p class="setting-muted">
-					Build Ver: 2026.02.23<br>
-					BGM: Maybe Peaceful Sound - MessySloth<br>
-					SFX: CLOCKTick - designerschoice,<br>
-						 Click6b - stijn,<br>
-						 Ambient Groove 002 - striptheband, <br>
-						 Clocking In Machine (1920) - PMBROWNE
-				</p>
+					<div class="setting-item">
+						<h4>設定選項</h4>
+						<label class="toggle-switch toggle-switch-spaced">
+							<input type="checkbox" id="ability-toggle" checked>
+							<span class="slider"></span>
+							<span>啟用特殊能力 </span>
+						</label>
+
+						<label class="toggle-switch">
+							<input type="checkbox" id="test-toggle">
+							<span class="slider"></span>
+							<span>測試模式</span>
+						</label>
+						<div class="setting-hint" style="margin-top: 5px; font-size: 0.85rem; color: #888;">
+							開啟後人類玩家第 1 局起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配。
+						</div>
+					</div>
+
+					<hr class="settings-divider">
+
+				<div class="setting-item">
+					<h4>資訊</h4>
+					<p class="setting-muted">
+						Build Ver: 2026.02.24<br>
+						<br>
+						BGM: <br>
+						Maybe Peaceful Sound - MessySloth<br>
+						Erokia ambient-wave-69<br>
+						Yellowtree ambient-loop<br>
+						<br>
+						SFX: <br>
+						CLOCKTick - designerschoice,<br>
+						Click6b - stijn,<br>
+						Ambient Groove 002 - striptheband, <br>
+						Clocking In Machine (1920) - PMBROWNE
+						</p>
+				</div>
 			</div>
 		</div>
-		
+	</div>
 			
 		<div id="role-choice-overlay" class="modal-overlay hidden">
 			<div class="modal">
@@ -405,11 +422,17 @@
 				</div>
 				<div id="role-choice-3p" class="modal-section">
 					<div class="settings-button-group" data-selection-group="start-time-demon-role" role="radiogroup" aria-label="時魔身份">
-						<button class="selection-btn is-selected" type="button" data-value="時針" role="radio" aria-checked="true" aria-pressed="true">時針</button>
-						<button class="selection-btn" type="button" data-value="分針" role="radio" aria-checked="false" aria-pressed="false">分針</button>
-						<button class="selection-btn" type="button" data-value="秒針" role="radio" aria-checked="false" aria-pressed="false">秒針</button>
+						<button class="selection-btn is-selected" type="button" data-value="時針" role="radio" aria-checked="true" aria-pressed="true">
+							<img src="assets/soul_hour.png" width="50" height="50"><br>時針
+						</button>
+						<button class="selection-btn" type="button" data-value="分針" role="radio" aria-checked="false" aria-pressed="false">
+							<img src="assets/soul_min.png" width="50" height="50"><br>分針
+						</button>
+						<button class="selection-btn" type="button" data-value="秒針" role="radio" aria-checked="false" aria-pressed="false">
+							<img src="assets/soul_sec.png" width="50" height="50"><br>秒針
+						</button>
 					</div>
-					<p class="setting-note">3P 模式僅有時魔玩家。</p>
+					<p class="setting-note">3P 模式僅有時魔玩家</p>
 				</div>
 				<div class="modal-actions">
 					<button id="role-choice-confirm" class="primary" type="button">開始遊戲</button>
@@ -427,8 +450,8 @@
 						<button class="selection-btn is-selected" type="button" data-value="5P" role="radio" aria-checked="true" aria-pressed="true">5P 模式 (原設定)</button>
 						<button class="selection-btn" type="button" data-value="3P" role="radio" aria-checked="false" aria-pressed="false">3P 模式</button>
 					</div>
-					<p id="start-mode-note" class="setting-note">3P 模式： 3 輪/13張手牌，24張小時卡。</p>
-					<p id="start-mode-note" class="setting-note">5P 模式： 5 輪/12張手牌，24張小時卡 + 12張珍貴小時卡。</p>
+					<p id="start-mode-note" class="setting-note">3P 模式： 3 局/13張手牌，24張小時卡</p>
+					<p id="start-mode-note" class="setting-note">5P 模式： 5 局/12張手牌，24張小時卡 + 12張珍貴小時卡</p>
 				</div>
 				<div class="modal-actions">
 					

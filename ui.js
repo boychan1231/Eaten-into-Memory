@@ -209,8 +209,10 @@ const minuteHistoryRenderCache = {
     rows: new Map(),
     historySignature: new Map()
 };
-// 追蹤目前輪數，用於偵測換輪時重置歷史
-let uiTrackedGameRound = 1;
+
+let uiTrackedGameRound = 1;// 追蹤目前輪數，用於偵測換輪時重置歷史
+let uiTokenMemory = {}; // 用來記憶棋子動畫的時間戳記
+
 
 function resetMinuteHistory(gameState) {
     uiMinuteHistory = {};
@@ -679,7 +681,32 @@ function renderClockFace(gameState, flags) {
                 else if (player.roleCard === '秒針') roleClass = 'token-sec';
                 
                 token.classList.add(roleClass);
+				
+				// ---動畫條件判定 ---
+				const mem = uiTokenMemory[player.id];
+                const now = Date.now();
                 
+                // 如果是新出現，或是位置改變了，紀錄新的動畫結束時間
+                if (!mem || mem.pos !== player.currentClockPosition) {
+                    uiTokenMemory[player.id] = {
+                        pos: player.currentClockPosition,
+                        animEndTime: now + 600 // 動畫長度需對應 CSS 的 0.6s (600ms)
+                    };
+                }
+
+                // 檢查是否在動畫有效期間內
+                const currentMem = uiTokenMemory[player.id];
+                if (now < currentMem.animEndTime) {
+                    token.classList.add('token-animate');
+                    // 計算已流逝時間，利用負 delay 讓新建的 DOM 接續播放動畫，避免重製造成的閃爍！
+                    const elapsed = 600 - (currentMem.animEndTime - now);
+                    token.style.animationDelay = `-${elapsed}ms`;
+                } else {
+                    // 若動畫已播完，確保殘留的 delay 設定被清除
+                    token.style.animationDelay = '0ms';
+                }
+				
+				
                 // 2. 移除原本的實心背景，改用 filter 幫 GIF 加上陣營專屬的發光特效
                 const roleKey = player.roleCard.includes('時魔') ? '時魔' : player.roleCard;
                 const glowColor = ROLE_COLORS[roleKey] || '#ccc';
@@ -1879,6 +1906,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetMinuteHistory(globalGameState);
         resetRightPanels(globalGameState);
         uiTrackedGameRound = 1;// 重置輪數追蹤變數
+		uiTokenMemory = {}; // 重新開始遊戲時清空記憶
         uiState.selectedCardValue = null;
         uiState.selectedCardValues = [];
         uiState.isSecondHandSelectingTwo = false;
@@ -2025,7 +2053,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (val === 0) text = "⚡ 瞬間 (0ms)";
             else if (val <= 100) text = "⏩ 極快";
             else if (val <= 300) text = "▶ 一般";
-            else text = "🐢 慢速阅读";
+            else text = "🐢慢速閱讀";
             speedValDisplay.textContent = `${text} (${val}ms)`;
             
             // 如果滑桿被拖動，取消目前的略過狀態，改用新速度
@@ -2068,7 +2096,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
     }
 
-    // ✅ 新增：日誌保留量滑桿控制
+    // ✅ 日誌保留量滑桿控制
     const retentionSlider = document.getElementById('log-retention-slider');
     const retentionValDisplay = document.getElementById('log-retention-value');
 
@@ -2089,19 +2117,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 	
-	// --- 新增：音量拉桿控制 ---
-	const volSlider = document.getElementById('volume-slider');
-	const volDisplay = document.getElementById('volume-value');
+	// --- 獨立的音量拉桿邏輯 (Add) ---
+    // 1. BGM 音量
+    const bgmVolSlider = document.getElementById('bgm-volume-slider');
+    const bgmVolDisplay = document.getElementById('bgm-volume-value');
+    if (bgmVolSlider && bgmVolDisplay && window.gameAudio) {
+        bgmVolSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            bgmVolDisplay.textContent = `${val}%`;
+            window.gameAudio.setBGMVolume(val / 100);
+        });
+    }
 
-	if (volSlider && volDisplay && window.gameAudio) {
-		volSlider.addEventListener('input', (e) => {
-			const val = e.target.value;
-			volDisplay.textContent = `${val}%`;
-			// 將 0-100 轉換為 0.0-1.0
-			window.gameAudio.setVolume(val / 100);
-		});
-	}
-	
+    // 2. SFX 音量
+    const sfxVolSlider = document.getElementById('sfx-volume-slider');
+    const sfxVolDisplay = document.getElementById('sfx-volume-value');
+    if (sfxVolSlider && sfxVolDisplay && window.gameAudio) {
+        sfxVolSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            sfxVolDisplay.textContent = `${val}%`;
+            window.gameAudio.setSFXVolume(val / 100);
+        });
+    }
+
 	// 1. 背景音樂 (BGM) 開關
     const bgmToggle = document.getElementById('bgm-toggle');
     if (bgmToggle && window.gameAudio) {
@@ -2174,19 +2212,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 	
 	// 👇 新增：故事視窗的關閉控制 👇
-    const storyOverlay = document.getElementById('story-overlay');
+	const storyOverlay = document.getElementById('story-overlay');
     const storyCloseBtn = document.getElementById('story-close-btn');
     
     if (storyCloseBtn && storyOverlay) {
         storyCloseBtn.addEventListener('click', () => {
             closeModal(storyOverlay);
+            // ✅ 新增：點擊按鈕關閉時，切換回主遊戲 BGM
+            if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
+                window.gameAudio.switchBGM('main');
+            }
         });
     }
     
     // 點擊視窗外部也可以關閉故事
     if (storyOverlay) {
         storyOverlay.addEventListener('click', (e) => {
-            if (e.target === storyOverlay) closeModal(storyOverlay);
+            if (e.target === storyOverlay) {
+                closeModal(storyOverlay);
+                // ✅ 新增：點擊視窗外部關閉時，切換回主遊戲 BGM
+                if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
+                    window.gameAudio.switchBGM('main');
+                }
+            }
         });
     }
 	
@@ -2237,7 +2285,10 @@ function processFloatingText(gameState) {
         lastPlayerStats[player.id] = { 
             mana: player.mana, 
             gearCards: player.gearCards,
-            d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0
+            d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0,
+			
+			// --- 新增 (Add)：將位置也存入紀錄中 ---
+            currentClockPosition: player.currentClockPosition		
         };
     });
 }
@@ -2461,11 +2512,14 @@ function showCardStory(card) {
     const storyText = ageStories[num] || `這是一張尚未被發掘記憶的卡片... \n\n(開發者提示：請至 config.js 中填寫 ${age} - ${num} 號的故事)`;
     
     // 替換換行符號為 <br>
-    contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
-    
+	contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
+
     openModal(overlay, document.getElementById('story-close-btn') || undefined);
+
+    // ✅ 新增：打開故事時切換為故事 BGM
+    if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
+        window.gameAudio.switchBGM('story');
+    }
 }
-
-
 
 
