@@ -368,7 +368,7 @@ function updateUI(gameState) {
     if (gameState.gameRound > uiTrackedGameRound) {
         resetMinuteHistory(gameState);
         uiTrackedGameRound = gameState.gameRound;
-        appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
+        //appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
     }
 	
     // 1. 準備共用變數
