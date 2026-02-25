@@ -2522,4 +2522,51 @@ function showCardStory(card) {
     }
 }
 
+// --- 新增 (Add)：局數過場與結算動畫函式 ---
+window.showRoundTransition = function(titleText, subtitleText, callback) {
+    const overlay = document.getElementById('round-transition-overlay');
+    const titleEl = document.getElementById('transition-title');
+    const subTitleEl = document.getElementById('transition-subtitle');
+    const contentEl = overlay?.querySelector('.transition-content');
+    
+    if (!overlay || !titleEl || !contentEl) {
+        if (callback) callback();
+        return;
+    }
+
+    // 1. 設定文字
+    titleEl.textContent = titleText;
+    if (subTitleEl) subTitleEl.textContent = subtitleText;
+    
+    // 2. 顯示遮罩 (覆蓋整個畫面)
+    overlay.classList.remove('hidden');
+    overlay.style.display = 'flex';
+    contentEl.classList.remove('show', 'fade-out');
+
+    // 3. 播放過場音效 (如果有鐘聲)
+    if (window.gameAudio && typeof window.gameAudio.playChime === 'function') {
+        window.gameAudio.playChime();
+    }
+
+    // 4. 延遲一幀觸發 CSS 彈出動畫
+    requestAnimationFrame(() => {
+        contentEl.classList.add('show');
+    });
+
+    // 5. 畫面停留 2.5 秒後開始淡出，並在背景重置下一局
+    setTimeout(() => {
+        contentEl.classList.remove('show');
+        contentEl.classList.add('fade-out');
+        
+        // 提早一點點執行 callback (也就是 startRound)，讓鐘面在背景偷偷重置
+        if (callback) callback(); 
+
+        // 動畫完全消失後，隱藏遮罩，揭曉新局！
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }, 600); 
+    }, 2500);
+};
+// ----------------------------------------
 

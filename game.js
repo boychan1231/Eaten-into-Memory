@@ -262,10 +262,10 @@ class GameState {
 
         // 時之惡（sin）目標模式：default = 接近12；sin = 距離時之惡最近
         this.sinTargetingMode = 'default';
-		// 記錄上一輪是否「安全」(沒有時魔被逐出)
-        // 初始設為 false，確保第一輪就算安全也不會觸發「連續兩輪」的條件
+		// 記錄上一局是否「安全」(沒有時魔被逐出)
+        // 初始設為 false，確保第一局就算安全也不會觸發「連續兩局」的條件
         this.previousRoundSafe = false;
-		// 記錄本輪是否有「時魔被逐出」事件（用於連續兩輪懲罰判定）
+		// 記錄本局是否有「時魔被逐出」事件（用於連續兩局懲罰判定）
         this.roundHadTimeDemonEjection = false;
     }
 }
@@ -341,7 +341,7 @@ function initializeGame(roles = null) {
     const numCards = (resolvedGameMode === '3P') ? 13 : 12;
     const numPlayers = gameState.players.length;
 	
-	// --- 測試模式：固定人類玩家第 1 輪起始手牌 ---
+	// --- 測試模式：固定人類玩家第 1 局起始手牌 ---
     const __humanIdForTest = getEffectiveHumanPlayerId();
     const __shouldApplyTestHand = !!(GAME_CONFIG.testMode && __humanIdForTest && gameState.gameRound === 1);
     let __testHandCards = null;
@@ -365,7 +365,7 @@ function initializeGame(roles = null) {
             }
             __testHandCards = __testHandCards.slice(0, numCards);
 
-            appLogger.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 輪起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
+            appLogger.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 局起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
         } else {
             console.warn(`🧪【測試模式】找不到人類玩家 id=${__humanIdForTest}，未套用固定手牌。`);
         }
@@ -375,7 +375,7 @@ function initializeGame(roles = null) {
     for (let i = 0; i < numPlayers; i++) {
         const handSet = [];
 
-        // 測試模式：指定人類玩家固定手牌（僅第 1 輪）
+        // 測試模式：指定人類玩家固定手牌（僅第 1 局）
         if (__testHandCards && i === __testHumanIndex) {
             handSet.push(...__testHandCards);
         } else {
@@ -508,7 +508,7 @@ function startRound(gameState) {
         return;
     }
 	
-	// ✅ 新增：第 4 輪開局平衡機制 (僅在第4輪且第1回合時觸發)
+	// ✅ 新增：第 4 局開局平衡機制 (僅在第4局且第1回合時觸發)
     // 若牌庫 > 26 張，優先移除「非珍貴的 1」
     if (gameState.gameMode !== '3P' && gameState.gameRound === 4 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 26) {
@@ -531,12 +531,12 @@ function startRound(gameState) {
             // 4. 重新洗牌
             if (cardsToRemove.length > 0) {
                 shuffle(gameState.hourDeck);
-                appLogger.log(`⚖️【第4輪平衡】牌庫>26，強制移除 ${cardsToRemove.length} 張「非珍貴 1 號卡」。`);
+                appLogger.log(`⚖️【第4局平衡】牌庫>26，強制移除 ${cardsToRemove.length} 張「非珍貴 1 號卡」。`);
             }
         }
     }
 	
-		// 第 5 輪開局平衡機制 (僅在第5輪且第1回合時觸發)
+		// 第 5 局開局平衡機制 (僅在第5局且第1回合時觸發)
     // 如果牌庫大於 24 張，優先移除數字小的非珍貴卡，直到剩下 24 張
     if (gameState.gameMode !== '3P' && gameState.gameRound === 5 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 24) {
@@ -564,7 +564,7 @@ function startRound(gameState) {
             shuffle(gameState.hourDeck);
             
             const maxRemovedNum = cardsToRemove.length > 0 ? cardsToRemove[cardsToRemove.length - 1].number : '?';
-            appLogger.log(`⚖️【第5輪平衡】牌庫過厚 (${gameState.hourDeck.length + cardsToRemove.length}張)，系統已移除 ${cardsToRemove.length} 張非珍貴卡 (數字 1~${maxRemovedNum})，修正為 24 張。`);
+            appLogger.log(`⚖️【第5局平衡】牌庫過厚 (${gameState.hourDeck.length + cardsToRemove.length}張)，系統已移除 ${cardsToRemove.length} 張非珍貴卡 (數字 1~${maxRemovedNum})，修正為 24 張。`);
         }
     }
 	
@@ -573,7 +573,7 @@ function startRound(gameState) {
 	// 每回合開始：重置「每回合一次」能力使用狀態（含時針頂牌放底）
 	gameState.players.forEach(p => { p.specialAbilityUsed = false; });
 
-    appLogger.log(`--- 開始第 ${gameState.gameRound} 輪 第 ${gameState.roundMarker} 回合 ---`);
+    appLogger.log(`--- 開始第 ${gameState.gameRound} 局 第 ${gameState.roundMarker} 回合 ---`);
 
 	// === 每回合重置：特殊能力使用狀態 & 本回合拿到的小時卡記錄 ===
 	gameState.abilityMarker = false; 
@@ -619,7 +619,7 @@ function startRound(gameState) {
 		hourHandPreMinuteAI(gameState);
     }
 
-	// ✅ 修改：每個「新遊戲輪」(也就是第 1 回合) 開始時才播放鐘聲
+	// ✅ 修改：每個「新遊戲局」(也就是第 1 回合) 開始時才播放鐘聲
     if (gameState.roundMarker === 1) {
         if (window.gameAudio) window.gameAudio.playChime();
     }
@@ -1353,7 +1353,7 @@ function handleDiceDeduction(player) {
                 player.mana = player.gearCards;
             }
             gearCardDeducted = true;
-            appLogger.log(`【${player.type}】護盾耗盡，扣除 1 齒輪。`);
+            appLogger.log(`【${player.type}】護盾耗盡，扣除 1 齒局。`);
 
             if (player.type === '時之惡') {
                 player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
@@ -1370,13 +1370,13 @@ function handleDiceDeduction(player) {
     return gearCardDeducted;
 }
 
-// --- 5. 扣除齒輪卡邏輯 (確認版) ---
+// --- 5. 扣除齒局卡邏輯 (確認版) ---
 function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
     const currentMode = gameState.gameMode || getGameMode();
     
-    appLogger.log(`--扣除齒輪/護盾 (當前規則: ${modeText}) --`);
+    appLogger.log(`--扣除齒局/護盾 (當前規則: ${modeText}) --`);
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     // 若時之惡不在場且非 3P 模式，無人受罰 (直接檢查勝利條件)
@@ -1432,16 +1432,16 @@ function deductGearCards(gameState) {
                 player.shieldUsed = true;
                 player.mana = 0;
                 appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
-                return; // 成功抵擋，不扣齒輪
+                return; // 成功抵擋，不扣齒局
             }
 
-            // 若已進化 (非幼體) 或 Mana 不足，直接扣齒輪
+            // 若已進化 (非幼體) 或 Mana 不足，直接扣齒局
             player.gearCards--;
             
-            // Mana 不能超過當前齒輪數
+            // Mana 不能超過當前齒局數
             if (player.mana > player.gearCards) player.mana = Math.max(0, player.gearCards);
             
-            appLogger.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒輪 (剩餘: ${player.gearCards})。`);
+            appLogger.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒局 (剩餘: ${player.gearCards})。`);
 
         } else if (player.type === '受詛者' || player.type === '時之惡') {
             handleDiceDeduction(player);
@@ -1456,7 +1456,7 @@ function deductGearCards(gameState) {
 function checkEjectionAndWinCondition(gameState) {
     if (!gameState || !gameState.players) return;
 
-    // 1. 檢查齒輪 < 0（即 -1）才逐出。 0 是安全的。
+    // 1. 檢查齒局 < 0（即 -1）才逐出。 0 是安全的。
     gameState.players.forEach(player => {
         if (!player.isEjected && player.gearCards < 0) {
             player.isEjected = true;
@@ -1465,12 +1465,12 @@ function checkEjectionAndWinCondition(gameState) {
             player.currentClockPosition = null;
             if (typeof player.d6Die === 'number') player.d6Die = 0;
 
-            // 標記本輪有時魔死亡 (影響時之惡懲罰判定)
+            // 標記本局有時魔死亡 (影響時之惡懲罰判定)
             if (player.type === '時魔') {
                 gameState.roundHadTimeDemonEjection = true;
             }
 
-            appLogger.log(`⚠️【逐出】${player.name} 的齒輪耗盡 (${player.gearCards})，被逐出遊戲。`);
+            appLogger.log(`⚠️【逐出】${player.name} 的齒局耗盡 (${player.gearCards})，被逐出遊戲。`);
         }
     });
 
@@ -1615,23 +1615,23 @@ function checkSCZMissionSuccess(gameState) {
 }
 
 function endGameRound(gameState) {
-    appLogger.log(`=== 第 ${gameState.gameRound} 輪結束 ===`);
+    appLogger.log(`=== 第 ${gameState.gameRound} 局結束 ===`);
     const numPlayers = gameState.players.length;
 
-    // 1. 計算分數（以本輪結束時的齒輪數為準）
+    // 1. 計算分數（以本局結束時的齒局數為準）
     gameState.players.forEach(player => {
         player.score += player.gearCards;
         appLogger.log(`【${player.name}】得分: ${player.gearCards}. 總分: ${player.score}`);
     });
 
-    // 2. 「時之惡懲罰」：以「輪」為單位
+    // 2. 「時之惡懲罰」：以「局」為單位
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     const currentRoundSafe = !gameState.roundHadTimeDemonEjection;
 
     if (sinPlayer) {
         if (currentRoundSafe && gameState.previousRoundSafe) {
             sinPlayer.gearCards--;
-            appLogger.log(`【時之惡懲罰】連續 2 輪無人被逐出，${sinPlayer.name} 扣除 1 齒輪。`);
+            appLogger.log(`【時之惡懲罰】連續 2 局無人被逐出，${sinPlayer.name} 扣除 1 齒局。`);
 
             if (sinPlayer.gearCards < 0) {
                 sinPlayer.isEjected = true;
@@ -1639,7 +1639,7 @@ function endGameRound(gameState) {
                 sinPlayer.mana = 0;
                 sinPlayer.currentClockPosition = null;
                 if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
-                appLogger.log(`⚠️【逐出】${sinPlayer.name} 齒輪耗盡，被逐出遊戲。`);
+                appLogger.log(`⚠️【逐出】${sinPlayer.name} 齒局耗盡，被逐出遊戲。`);
                 appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
                 endGame(gameState);
                 return;
@@ -1662,17 +1662,17 @@ function endGameRound(gameState) {
         if (isMissionSuccess) {
             if (gameState.gameRound === 2) {
                 sczPlayer.score += 9;
-                appLogger.log("🎉【受詛者】第 2 輪任務達成！獲得額外 9 分！");
+                appLogger.log("🎉【受詛者】第 2 局任務達成！獲得額外 9 分！");
             } else if (gameState.gameRound === 3) {
                 sczPlayer.score += 5;
-                appLogger.log("🎉【受詛者】第 3 輪任務達成！獲得額外 5 分！");
+                appLogger.log("🎉【受詛者】第 3 局任務達成！獲得額外 5 分！");
             } else if (gameState.gameRound === 4) {
                 sczPlayer.score += 2;
-                appLogger.log("🎉【受詛者】第 4 輪任務達成！獲得額外 2 分！");
+                appLogger.log("🎉【受詛者】第 4 局任務達成！獲得額外 2 分！");
             }
         }
 	
-        // 【5P 專用】第 5 輪結算
+        // 【5P 專用】第 5 局結算
         if (numPlayers === 5 && gameState.gameRound === 5) {
             if (isMissionSuccess) {
                 appLogger.log("🎉【受詛者】最終任務達成！");
@@ -1683,14 +1683,14 @@ function endGameRound(gameState) {
         }
     }
 
-    // ✅ 重點修正 1：在此處檢查是否達到最後一輪 (例如第 5 輪結束)
+    // ✅ 重點修正 1：在此處檢查是否達到最後一局 (例如第 5 局結束)
     // 如果是，直接結束遊戲，不再進行後續的手牌分發 (避免 Bug)
     if (gameState.gameRound >= numPlayers) {
         endGame(gameState);
         return;
     }
 
-    // --- 以下為「準備下一輪」的邏輯 (只有遊戲繼續時才執行) ---
+    // --- 以下為「準備下一局」的邏輯 (只有遊戲繼續時才執行) ---
 
 	// 2.5 幼體時魔交還小時卡
 	let returnedFromYoungDemons = [];
@@ -1740,7 +1740,7 @@ function endGameRound(gameState) {
         appLogger.log(`♻️ 回收了 ${cardsToReturnToDeck.length} 張鐘面卡片回牌庫。`);
     }
     
-    // 4. 傳遞狀態 (手牌/齒輪)
+    // 4. 傳遞狀態 (手牌/齒局)
     gameState.players.forEach((player, index) => {
         // ✅ 重點修正 2：修復 JavaScript 負數取餘數的 Bug
         // 原本的寫法在特定情況下會產生負數索引導致崩潰
@@ -1761,7 +1761,7 @@ function endGameRound(gameState) {
         player.isEjected = false;
         player.hourCards = []; 
     });
-    appLogger.log("🔄 玩家已接收新一輪的手牌與齒輪。");
+    appLogger.log("🔄 玩家已接收新一局的手牌與齒局。");
 
     // 5. 重置護盾
     gameState.players.forEach(player => {
@@ -1772,7 +1772,10 @@ function endGameRound(gameState) {
         }
     });
 
-    // 6. 進入下一輪
+    // 6. 進入下一局
+	// --- 先記下剛結束的局數，給動畫使用 ---
+    const finishedRound = gameState.gameRound; 
+    // ----------------------------------------
 	gameState.gameRound++;
     gameState.roundMarker = 1;
     gameState.currentRoundAIChoices = null;
@@ -1780,8 +1783,22 @@ function endGameRound(gameState) {
     gameState.uiMinuteChoicesTurnKey = null;
     gameState.sinTargetingMode = 'default';
     
-    appLogger.log(`--- 準備開始第 ${gameState.gameRound} 輪遊戲 ---`);
-    if (typeof updateUI === 'function') updateUI(gameState);
+    appLogger.log(`--- 準備開始第 ${gameState.gameRound} 局遊戲 ---`);
+	
+	if (typeof window.showRoundTransition === 'function') {
+        window.showRoundTransition(
+            `第 ${finishedRound} 局結算`, 
+            `進入第 ${gameState.gameRound} 局`, 
+            () => {
+                // 這個 callback 會在動畫黑屏、準備淡出時執行
+                // 這時候重置 UI，玩家就能看到乾淨清爽的新局鐘面！
+                if (typeof updateUI === 'function') updateUI(gameState);
+            }
+        );
+    } else {
+        // 防呆機制：如果 UI 沒載入動畫函式，就照常執行
+        if (typeof updateUI === 'function') updateUI(gameState);
+    }
 }
 
 function endGame(gameState) {

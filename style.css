@@ -2116,3 +2116,48 @@ body {
     }
 }
 
+/* --- 過場動畫樣式 --- */
+#round-transition-overlay {
+    z-index: 4000; /* 確保在最上層 */
+    background: rgba(10, 15, 25, 0.95); /* 深色不透明背景 */
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;
+}
+
+.transition-content {
+    text-align: center; 
+    transform: scale(0.8); 
+    opacity: 0; 
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Q彈的縮放效果 */
+}
+
+/* 顯示時的狀態 */
+.transition-content.show {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 淡出時的狀態 */
+.transition-content.fade-out {
+    transform: scale(1.1); /* 微微放大並消失 */
+    opacity: 0;
+}
+
+#transition-title {
+    font-size: clamp(2.5rem, 5vw, 4rem); 
+    color: var(--accent-color, #ff6b6b); 
+    text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); 
+    margin-bottom: 10px;
+}
+
+#transition-subtitle {
+    font-size: clamp(1.2rem, 3vw, 1.8rem); 
+    color: var(--text-color, #e0e0e0); 
+    letter-spacing: 4px;
+}
+/* ------------------------------ */
+
+
+
+
