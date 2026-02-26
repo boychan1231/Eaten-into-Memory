@@ -1785,18 +1785,17 @@ function endGameRound(gameState) {
     
     appLogger.log(`--- 準備開始第 ${gameState.gameRound} 局遊戲 ---`);
 	
-	if (typeof window.showRoundTransition === 'function') {
-        window.showRoundTransition(
+	if (typeof window.showRoundReadyModal === 'function') {
+        window.showRoundReadyModal(
             `第 ${finishedRound} 局結算`, 
-            `進入第 ${gameState.gameRound} 局`, 
+            `已重新分配手牌，準備進入第 ${gameState.gameRound} 局`, 
             () => {
-                // 這個 callback 會在動畫黑屏、準備淡出時執行
-                // 這時候重置 UI，玩家就能看到乾淨清爽的新局鐘面！
+                // 玩家點擊「準備完成」後，這段才會執行
+                // 此時畫面才會瞬間刷新成下一局的狀態！
                 if (typeof updateUI === 'function') updateUI(gameState);
             }
         );
     } else {
-        // 防呆機制：如果 UI 沒載入動畫函式，就照常執行
         if (typeof updateUI === 'function') updateUI(gameState);
     }
 }

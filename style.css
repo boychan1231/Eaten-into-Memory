@@ -210,7 +210,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: rgba(24, 17, 34, 0.85);
     border: 1px solid rgba(107, 76, 123, 0.6);
     border-radius: 10px;
-    padding: 10px;
+    padding: 5px 10px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
@@ -504,47 +504,17 @@ input:checked + .slider:before { transform: translateX(16px); }
     border: 1px solid #333;
 }
 
-.log-section-summary {
-    list-style: none;
-    cursor: pointer;
+.log-section-title {
     padding: 10px;
-    margin: 0;
+    margin: 0 0 5px 0;
     background: #222;
     border-radius: 8px;
     font-weight: bold;
     color: #ffd27f;
     user-select: none;
-}
-
-.log-section-summary::marker {
-    content: '';
-}
-
-.log-section-summary::before {
-    content: '▾';
-    display: inline-block;
-    margin-right: 8px;
-    transition: transform 0.2s ease;
-}
-
-.log-section:not([open]) .log-section-summary::before {
-    transform: rotate(-90deg);
-}
-
-.log-section:not([open]) > :not(.log-section-summary) {
-    display: none;
-}
-#game-log-container {
-    flex: 1;
-    min-height: 100px;
-    max-height: 360px;
-    overflow-y: auto;
-    padding: 10px;
-    font-size: 0.9rem;
-    scrollbar-width: thin;
-    scrollbar-color: #444 #222;
     border-bottom: 1px solid #444;
 }
+
 
 /* 日誌列表容器 */
 #log-list { 
@@ -643,6 +613,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 10px;
     box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
     box-sizing: border-box;
+	margin: 1px 6px;
 }
 
 #deck-info {
@@ -678,6 +649,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
+	margin: 1px 5px;
 }
 .switch-btn:hover { background-color: rgba(15, 52, 96, 0.8); color: #fff; }
 .switch-btn.active {
@@ -1045,7 +1017,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: flex; flex-direction: column; gap: 8px;
 }
 #evolution-progress-area {
-    margin: 3px 0px;
+    margin: 20px 0px;
     flex: 0 0 auto;
     border-radius: 3px;
 }
@@ -2031,7 +2003,7 @@ body {
     font-size: 1.1rem;
 }
 
-/* 1. 日誌容器：預設狀態 (收合) */
+/* 日誌容器：預設狀態 (收合) */
 #game-log-container {
     /* 設定固定高度，大約容納 8 條 (視字體大小微調) */
     height: 250px; 
@@ -2046,30 +2018,16 @@ body {
     transition: height 0.3s ease; /* 增加滑動動畫 */
 }
 
-/* 2. 日誌容器：展開狀態 (透過 JS 切換 class) */
-#game-log-container.expanded {
-    /* 展開後的高度 (或者使用 max-height) */
-    height: 400px; 
-    
-    /* 顯示捲軸讓玩家可以回顧歷史 */
-    overflow-y: auto; 
-}
-
-/* 3. 按鈕樣式 */
-.log-expand-btn {
-    text-align: center;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.1);
-    color: #aaa;
-    font-size: 0.9rem;
-    padding: 4px 0;
-    border-radius: 0 0 4px 4px; /* 圓角接在日誌下方 */
-    transition: all 0.2s;
-}
-
-.log-expand-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+/* ---固定高度日誌容器設定 --- */
+#game-log-container {
+    height: 205px; /* 固定顯示大約 6 筆訊息的高度 */
+    overflow-y: auto; /* 永遠允許捲動以查看舊訊息 */
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px;
+    border: 1px solid #444;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #222;
 }
 
 /* 棋子的基礎狀態 (沒有動畫時，預設完全顯示) */
@@ -2116,46 +2074,6 @@ body {
     }
 }
 
-/* --- 過場動畫樣式 --- */
-#round-transition-overlay {
-    z-index: 4000; /* 確保在最上層 */
-    background: rgba(10, 15, 25, 0.95); /* 深色不透明背景 */
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center;
-}
-
-.transition-content {
-    text-align: center; 
-    transform: scale(0.8); 
-    opacity: 0; 
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Q彈的縮放效果 */
-}
-
-/* 顯示時的狀態 */
-.transition-content.show {
-    transform: scale(1);
-    opacity: 1;
-}
-
-/* 淡出時的狀態 */
-.transition-content.fade-out {
-    transform: scale(1.1); /* 微微放大並消失 */
-    opacity: 0;
-}
-
-#transition-title {
-    font-size: clamp(2.5rem, 5vw, 4rem); 
-    color: var(--accent-color, #ff6b6b); 
-    text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); 
-    margin-bottom: 10px;
-}
-
-#transition-subtitle {
-    font-size: clamp(1.2rem, 3vw, 1.8rem); 
-    color: var(--text-color, #e0e0e0); 
-    letter-spacing: 4px;
-}
 /* ------------------------------ */
 
 

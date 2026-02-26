@@ -2448,31 +2448,7 @@ function renderGameOverPanel(gameState) {
 
 // 綁定按鈕事件
 document.addEventListener('DOMContentLoaded', () => {
-	
-	// ui.js - 在 DOMContentLoaded 內加入
 
-    // --- 日誌展開/收合功能 ---
-    const logContainer = document.getElementById('game-log-container');
-    const expandBtn = document.getElementById('log-expand-btn');
-
-    if (logContainer && expandBtn) {
-        expandBtn.onclick = () => {
-            // 切換 class
-            logContainer.classList.toggle('expanded');
-            
-            // 改變按鈕文字
-            if (logContainer.classList.contains('expanded')) {
-                expandBtn.textContent = "[ ▲ 收起日誌 ]";
-                // 展開時，自動捲動到底部確保看到最新訊息
-                logContainer.scrollTop = logContainer.scrollHeight;
-            } else {
-                expandBtn.textContent = "[ ▼ 展開日誌 ]";
-                // 收合時，也捲動到底部 (顯示最新的 8 行)
-                logContainer.scrollTop = logContainer.scrollHeight;
-            }
-        };
-    }
-	
     // 綁定遊戲結束面板按鈕
     const btnRestart = document.getElementById('btn-restart-game');
     const btnCloseGO = document.getElementById('btn-close-gameover');
@@ -2490,6 +2466,45 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(goOverlay);
         });
     }
+	
+	const btnStartNextRound = document.getElementById('btn-start-next-round');
+    const readyOverlay = document.getElementById('round-ready-overlay');
+    const readyCloseBtn = document.getElementById('round-ready-close-btn');
+    
+    if (readyOverlay) {
+        // 建立共通的執行函式
+        const proceedToNextRound = () => {
+            // 播放確認音效
+            if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
+                window.gameAudio.playConfirm();
+            }
+            // 關閉視窗
+            closeModal(readyOverlay);
+            // 執行更新 UI 的動作 (揭曉新局)
+            if (nextRoundCallback) {
+                nextRoundCallback();
+                nextRoundCallback = null;
+            }
+        };
+
+        // 1. 點擊「準備完成」按鈕
+        if (btnStartNextRound) {
+            btnStartNextRound.addEventListener('click', proceedToNextRound);
+        }
+
+        // 2. 點擊右上角的「X」
+        if (readyCloseBtn) {
+            readyCloseBtn.addEventListener('click', proceedToNextRound);
+        }
+
+        // 3. 點擊視窗外圍背景 (半透明黑色遮罩)
+        readyOverlay.addEventListener('click', (e) => {
+            if (e.target === readyOverlay) {
+                proceedToNextRound();
+            }
+        });
+    }
+	
 });
 
 // --- 顯示卡片故事視窗 ---
@@ -2522,51 +2537,32 @@ function showCardStory(card) {
     }
 }
 
-// --- 新增 (Add)：局數過場與結算動畫函式 ---
-window.showRoundTransition = function(titleText, subtitleText, callback) {
-    const overlay = document.getElementById('round-transition-overlay');
-    const titleEl = document.getElementById('transition-title');
-    const subTitleEl = document.getElementById('transition-subtitle');
-    const contentEl = overlay?.querySelector('.transition-content');
+// ---局數準備彈窗邏輯 ---
+let nextRoundCallback = null;
+
+window.showRoundReadyModal = function(titleText, subtitleText, callback) {
+    const overlay = document.getElementById('round-ready-overlay');
+    const titleEl = document.getElementById('round-ready-title');
+    const contentEl = document.getElementById('round-ready-content');
     
-    if (!overlay || !titleEl || !contentEl) {
+    if (!overlay) {
         if (callback) callback();
         return;
     }
 
-    // 1. 設定文字
-    titleEl.textContent = titleText;
-    if (subTitleEl) subTitleEl.textContent = subtitleText;
-    
-    // 2. 顯示遮罩 (覆蓋整個畫面)
-    overlay.classList.remove('hidden');
-    overlay.style.display = 'flex';
-    contentEl.classList.remove('show', 'fade-out');
+    // 填入文字
+    if (titleEl) titleEl.textContent = titleText;
+    if (contentEl) contentEl.textContent = subtitleText;
+    nextRoundCallback = callback; // 記錄回呼函式，等待按鈕點擊後執行
 
-    // 3. 播放過場音效 (如果有鐘聲)
+    // 播放提示音效
     if (window.gameAudio && typeof window.gameAudio.playChime === 'function') {
         window.gameAudio.playChime();
     }
 
-    // 4. 延遲一幀觸發 CSS 彈出動畫
-    requestAnimationFrame(() => {
-        contentEl.classList.add('show');
-    });
-
-    // 5. 畫面停留 2.5 秒後開始淡出，並在背景重置下一局
-    setTimeout(() => {
-        contentEl.classList.remove('show');
-        contentEl.classList.add('fade-out');
-        
-        // 提早一點點執行 callback (也就是 startRound)，讓鐘面在背景偷偷重置
-        if (callback) callback(); 
-
-        // 動畫完全消失後，隱藏遮罩，揭曉新局！
-        setTimeout(() => {
-            overlay.classList.add('hidden');
-            overlay.style.display = 'none';
-        }, 600); 
-    }, 2500);
+    // 顯示彈窗
+    openModal(overlay, document.getElementById('btn-start-next-round'));
 };
+
 // ----------------------------------------
 

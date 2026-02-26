@@ -25,19 +25,16 @@
     <div class="tab-wrapper">
         <div id="game-content" class="tab-content active-tab">  
             <div class="main-area">
-                <details class="log-section game-panel" open>
-					<summary class="log-section-summary">📜 遊戲日誌</summary>
-					<div id="log-expand-btn" class="log-expand-btn" title="展開/收合日誌">
-						[ ▼ 展開日誌 ]
-					</div>
-					<div id="game-log-container">
-						<ul id="log-list">
-						<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
-						</ul>
-					</div>
-					
-					<div id="evolution-progress-area" class="progress-area"></div>
-				</details>
+                <div class="log-section game-panel">
+					<div class="log-section-title">📜 遊戲日誌</div>
+						<div id="game-log-container">
+							<ul id="log-list">
+								<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
+							</ul>
+						</div>
+							<div id="evolution-progress-area" class="progress-area"></div>		
+						</div>
+
                 <section class="clock-panel game-panel">
                     <div class="clock-section">
                     <div id="clock-face">
@@ -500,10 +497,14 @@
 			</div>
 		</div>
 		
-		<div id="round-transition-overlay" class="modal-overlay hidden" style="display: none;">
-			<div class="transition-content">
-				<h1 id="transition-title">第 X 局結束</h1>
-				<p id="transition-subtitle">鐘面重置中...</p>
+		<div id="round-ready-overlay" class="modal-overlay hidden">
+			<div class="modal" style="text-align: center;">
+				<span id="round-ready-close-btn" class="modal-close-btn">&times;</span>
+				<h2 id="round-ready-title" class="modal-title" style="color: #ffd27f; font-size: 2rem; margin-bottom: 10px;">第 X 局結算</h2>
+				<p id="round-ready-content" class="modal-desc" style="font-size: 1.2rem; margin-bottom: 25px;">準備進入第 Y 局</p>
+				<div class="modal-actions" style="justify-content: center;">
+					<button id="btn-start-next-round" class="primary" type="button" style="max-width: 200px; font-size: 1.2rem;">準備完成</button>
+				</div>
 			</div>
 		</div>
 
