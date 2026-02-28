@@ -753,6 +753,33 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
     if (humanHandEl) {
         humanHandEl.innerHTML = '';
+		
+		// 👇👇👇 動態建立排序按鈕，固定在手牌區上方空隙 (Add) 👇👇👇
+        const sortContainer = document.createElement('div');
+        sortContainer.style.width = '100%';       // 讓容器佔滿第一行，把卡牌往下推
+        sortContainer.style.textAlign = 'right';  // 靠右對齊 (緊貼著右側的控制區)
+        sortContainer.style.marginBottom = '5px'; // 與下方的卡牌保持一點呼吸空間
+
+        const btnToggleSort = document.createElement('button');
+        btnToggleSort.className = 'icon-btn';
+        btnToggleSort.innerHTML = '⇅ 切換排序';
+        btnToggleSort.title = '切換手牌排序';
+        btnToggleSort.style.padding = '4px 8px';  // 微調按鈕大小
+		
+		btnToggleSort.addEventListener('click', () => {
+            // 播放音效
+            if (window.gameAudio) window.gameAudio.playClick();
+            // 切換排序設定
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            const currentSort = window.UI_CONFIG.HAND_SORT_ORDER || 'asc';
+            window.UI_CONFIG.HAND_SORT_ORDER = currentSort === 'asc' ? 'desc' : 'asc';
+            // 重新渲染畫面
+            if (globalGameState) updateUI(globalGameState);
+        });
+        sortContainer.appendChild(btnToggleSort);
+        humanHandEl.appendChild(sortContainer);
+		//==========
+		
         const sortOrder = window.UI_CONFIG?.HAND_SORT_ORDER || 'asc'; //根據設定決定排序方向
         const sortedHand = [...humanPlayer.hand].sort((a, b) => sortOrder === 'asc' ? a.value - b.value : b.value - a.value);
 
