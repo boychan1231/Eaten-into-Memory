@@ -1,3 +1,8 @@
+
+
+
+
+
 // --- 6. 遊戲流程控制 ---
 
 function activateSinTargetingAbility(gameState) {
@@ -1140,14 +1145,16 @@ function inRoundEndActions(gameState) {
     //}
 
     // 受詛者保護卡片
-    const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
+	const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
     if (sczPlayer && sczPlayer.currentClockPosition) {
         const currentSpot = gameState.clockFace.find(s => s.position === sczPlayer.currentClockPosition);
-        const preciousCardIndex = currentSpot.cards.findIndex(c => c.isPrecious);
-        if (currentSpot && preciousCardIndex !== -1) {
-            const preciousCard = currentSpot.cards.splice(preciousCardIndex, 1)[0];
-            currentSpot.cards.unshift(preciousCard); 
-            appLogger.log(`🛡️【受詛者】將珍貴小時卡 [${preciousCard.number}] 移至鐘面最底部保護。`);
+        // ✅ 加上 currentSpot 與其陣列的安全防護
+        if (currentSpot && currentSpot.cards) {
+            const preciousCardIndex = currentSpot.cards.findIndex(c => c.isPrecious);
+            if (preciousCardIndex !== -1) {
+                const preciousCard = currentSpot.cards.splice(preciousCardIndex, 1)[0];
+                currentSpot.cards.unshift(preciousCard); 
+                appLogger.log(`🛡️【受詛者】將珍貴小時卡 [${preciousCard.number}] 移至鐘面最底部保護。`);
         }
     }
     
@@ -1415,5 +1422,4 @@ try {
         window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
         window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
     }
-
 } catch (_) {}

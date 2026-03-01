@@ -765,6 +765,27 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     if (humanHandEl) {
         humanHandEl.innerHTML = '';
 		
+		// 根據角色身份動態設定手牌區背景圖 
+        let bgUrl = "url('assets/background_hand.png')"; // 預設背景
+        
+        if (humanPlayer.type === '時之惡') {
+            bgUrl = "url('assets/soul_sin.png')";        // 時之惡專屬背景
+        } else if (humanPlayer.type === '受詛者') {
+            bgUrl = "url('assets/soul_scz.png')";        // 受詛者專屬背景
+        } else if (humanPlayer.roleCard === '時針') {
+            bgUrl = "url('assets/soul_hour.png')";       // 進化：時針專屬背景
+        } else if (humanPlayer.roleCard === '分針') {
+            bgUrl = "url('assets/soul_min.png')";        // 進化：分針專屬背景
+        } else if (humanPlayer.roleCard === '秒針') {
+            bgUrl = "url('assets/soul_sec.png')";        // 進化：秒針專屬背景
+        } else if (humanPlayer.type === '時魔') {
+            bgUrl = "url('assets/soul_demon.png')";      // 未進化：幼體時魔專屬背景
+        }
+        
+        // 將圖片路徑寫入 CSS 變數中
+        humanHandEl.style.setProperty('--hand-bg-image', bgUrl);
+        //
+		
         const sortOrder = window.UI_CONFIG?.HAND_SORT_ORDER || 'asc'; //根據設定決定排序方向
         const sortedHand = [...humanPlayer.hand].sort((a, b) => sortOrder === 'asc' ? a.value - b.value : b.value - a.value);
 

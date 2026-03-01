@@ -121,15 +121,13 @@
 							
 							<div>收集小時卡：
 								<span id="h-hour">0</span>
-								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片"
-									aria-label="查看已收集卡片">🔍</button>
+								 
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
 							</div>
-							
-								<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 1rem; padding: 2px 6px;">
-									⇅ 手牌排序</button>
-							
+								<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 1rem; padding: 2px 6px;">⇅ 手牌排序</button>
 						</div>
 					</div>
+					
 					<div class="human-tabs">
 						<div class="human-tab-panels">
 							<div id="human-tab-hand" class="human-tab-panel active">
@@ -529,15 +527,6 @@
 				</div>
 			</div>
 
-			<div id="collection-overlay" class="modal-overlay hidden">
-				<div class="modal">
-					<span id="collection-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-collection">已收集小時卡</h2>
-					<div id="human-hour-collection" class="hour-collection-list collection-list-scroll">
-					</div>
-				</div>
-			</div>
-
 			<div id="story-overlay" class="modal-overlay hidden">
 				<div class="modal" style="width: 90vw; max-width: 700px;">
 					<span id="story-close-btn" class="modal-close-btn">&times;</span>
@@ -590,10 +579,12 @@
 
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
-	<script src="game_setup.js"></script>
-	<script src="abilities.js"></script>
-	<script src="game.js"></script>
 	<script src="audio.js"></script>
+			
+	<script src="abilities.js"></script>	
+	<script src="game_setup.js"></script>
+	<script src="game.js"></script>
+
 	<script src="ui_modals.js"></script>
 	<script src="ui_components.js"></script>
 	<script src="ui.js"></script>

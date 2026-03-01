@@ -885,13 +885,45 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* 左側：手牌區 */
 .hand-display {
-    flex: 1; /* 自動填滿 */
+    flex: 1; 
     display: flex; 
-	flex-wrap: wrap; 
-	gap: 8px;
+    flex-wrap: wrap; 
+    gap: 8px;
     padding: 5px 0;
-	justify-content: flex-end; /* 將手牌排列方式改為靠右對齊 */
+    justify-content: flex-end;
+    
+    /* 1. 新增：相對定位與層級，作為背景圖的錨點 */
+    position: relative; 
+    isolation: isolate;
+    border-radius: 8px; /* 可選：讓背景邊緣平滑 */
 }
+
+/* 2. 新增：手牌區的半透明背景圖虛擬層 */
+.hand-display::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    
+    /* 👇 使用 var() 來接收 JS 傳來的變數，並保留預設圖 👇 */
+    background-image: var(--hand-bg-image, url('assets/soul_sin.png')); 
+    
+    background-size: contain;      /* 若希望圖片鋪滿，用 cover；若希望完整顯示用 contain */
+    background-position: left;
+    background-repeat: no-repeat;
+    
+    /* 👇 調整「圖片本身」的透明度 (0.0 完全透明 ~ 1.0 完全不透明) 👇 */
+    opacity: 0.3; 
+    
+    /* 核心：將層級設為 -1，確保它在所有卡牌的後方 */
+    z-index: -1; 
+    
+    /* 防呆：確保此層不會干擾滑鼠點擊卡牌 */
+    pointer-events: none; 
+    border-radius: inherit; /* 繼承父元素的圓角 */
+}
+/* --------------------------------- */
+
+
 
 /* 進化分頁雙欄 */
 .evolution-tab-body {
@@ -944,7 +976,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ffd27f;
 }
 
-/* 👇 新增這段：滑鼠懸停時的發光與放大效果 👇 */
+/* 滑鼠懸停時的發光與放大效果  */
 .hour-collection-card {
     transition: all 0.2s ease;
     cursor: pointer; /* 讓滑鼠變成手指形狀 */
@@ -1242,7 +1274,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     .hand-controls { width: 100%; flex: none; }
 }
 
-/* --- 新增：已收集小時卡 (文字列表樣式) --- */
+/* --- 已收集小時卡 (文字列表樣式) --- */
 
 /* 列表容器微調 */
 #human-hour-collection {
@@ -1284,7 +1316,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 4px 0;
 }
 
-/* --- style.css 新增：日誌逐條顯示動畫 --- */
+/* --- 日誌逐條顯示動畫 --- */
 .log-entry-new {
     animation: logFadeIn 0.5s ease-out forwards;
     opacity: 0; /* 初始透明，由動畫變為不透明 */
@@ -1471,7 +1503,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     to { stroke-dashoffset: 0; }
 }
 
-/* --- 新增：防禦護盾特效 (Suggestion C) --- */
+/* --- 防禦護盾特效 (Suggestion C) --- */
 .shield-indicator {
     position: absolute;
     top: -8px;
@@ -2053,7 +2085,7 @@ body {
     }
 }
 
-/* --- 新增 (Add)：設定頁雙欄佈局 --- */
+/* --- 設定頁雙欄佈局 --- */
 .settings-two-column {
     display: grid;
     grid-template-columns: 1fr 1fr; /* 切分成等寬的兩欄 */
