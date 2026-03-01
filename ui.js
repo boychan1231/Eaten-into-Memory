@@ -718,6 +718,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnViewCol = document.getElementById('btn-view-collection');
     const colOverlay = document.getElementById('collection-overlay');
     const colClose = document.getElementById('collection-close-btn');
+	
+	// 手牌排序切換按鈕邏輯==========
+    const btnToggleSort = document.getElementById('btn-toggle-sort');
+    if (btnToggleSort) {
+        btnToggleSort.addEventListener('click', () => {
+            // 播放點擊音效
+            if (window.gameAudio) window.gameAudio.playClick();
+            
+            // 判斷並切換排序
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            const currentSort = window.UI_CONFIG.HAND_SORT_ORDER || 'asc';
+            window.UI_CONFIG.HAND_SORT_ORDER = currentSort === 'asc' ? 'desc' : 'asc';
+            
+            // 同步更新「設定頁」裡的 Radio 勾選狀態
+            const radio = document.querySelector(`input[name="hand-sort"][value="${window.UI_CONFIG.HAND_SORT_ORDER}"]`);
+            if (radio) radio.checked = true;
+
+            appLogger.log(`[UI] 手牌排序已切換為: ${window.UI_CONFIG.HAND_SORT_ORDER === 'asc' ? '由小到大' : '由大到小'}`);
+            
+            // 重新渲染畫面
+            if (typeof updateUI === 'function' && globalGameState) {
+                updateUI(globalGameState);
+            }
+        });
+    }//============
 
     if (btnViewCol && colOverlay) {
         btnViewCol.addEventListener('click', () => {
