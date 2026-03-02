@@ -1145,7 +1145,8 @@ function inRoundEndActions(gameState) {
     //}
 
     // 受詛者保護卡片
-	const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
+	// 受詛者保護卡片
+    const sczPlayer = gameState.players.find(p => p.type === '受詛者' && !p.isEjected);
     if (sczPlayer && sczPlayer.currentClockPosition) {
         const currentSpot = gameState.clockFace.find(s => s.position === sczPlayer.currentClockPosition);
         // ✅ 加上 currentSpot 與其陣列的安全防護
@@ -1155,8 +1156,11 @@ function inRoundEndActions(gameState) {
                 const preciousCard = currentSpot.cards.splice(preciousCardIndex, 1)[0];
                 currentSpot.cards.unshift(preciousCard); 
                 appLogger.log(`🛡️【受詛者】將珍貴小時卡 [${preciousCard.number}] 移至鐘面最底部保護。`);
+            }
         }
     }
+
+    // 角色升級嘗試
     
     // 角色升級嘗試
     gameState.players.filter(p => p.type === '時魔' && !p.isEjected).forEach(player => {
@@ -1421,5 +1425,11 @@ try {
         window.handleHumanSecondHandCommit = handleHumanSecondHandCommit;
         window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
         window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
+		
+		if (typeof updateUI !== 'undefined') {
+            window.updateUI = updateUI;
+        }
     }
-} catch (_) {}
+} catch (e) {
+    console.error("[game.js] API 暴露失敗:", e);
+}

@@ -344,14 +344,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof handleHumanAbilityChoice === 'function') {
                     handleHumanAbilityChoice(globalGameState, 'skip');
                 }
-                // 略過後，若遊戲未結束，自動執行 startRound 進入下一回合
-                // 這樣玩家就不需要再按一次按鈕了
+                
                 if (!globalGameState.gameEnded) {
-                    startRound(globalGameState);
+                    try {
+                        if (typeof window.startRound === 'function') window.startRound(globalGameState);
+                        else if (typeof startRound === 'function') startRound(globalGameState);
+                        else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
+                    } catch (e) {
+                        appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
+                        console.error(e);
+                    }
                     updateUI(globalGameState);
                 }
-
-                return; // 執行完略過後就結束，不繼續執行 startRound
+                return; 
             }
 
             const humanId = getCurrentHumanPlayerId();
@@ -367,7 +372,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!globalGameState.gameEnded) {
-                startRound(globalGameState);
+                try {
+                    // 👇 改用 Try-Catch 捕捉真正的錯誤 👇
+                    if (typeof window.startRound === 'function') window.startRound(globalGameState);
+                    else if (typeof startRound === 'function') startRound(globalGameState);
+                    else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
+                } catch (e) {
+                    appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
+                    console.error(e);
+                }
                 updateUI(globalGameState);
 
             } else {
