@@ -602,7 +602,7 @@ function renderAIPlayers(gameState, humanId) {
             diceInfo = `
                 <div class="resource-chip resource-chip--shield">
                     <span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
-                    護盾: <strong>${player.d6Die}</strong>
+                    護盾： <strong>${player.d6Die}</strong>
                 </div>`;
         }
         const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
@@ -629,6 +629,7 @@ function renderAIPlayers(gameState, humanId) {
                 <div style="flex:1;">
                     <h4 style="color:${color}; margin:0; font-size:1rem; line-height:1.2;">${player.name}</h4>
                 </div>
+				<div>位置： ${posDisplay}</div>
             </div>
 
             <div class="player-stats">
@@ -638,12 +639,11 @@ function renderAIPlayers(gameState, humanId) {
                 </div>
                 <div class="resource-chip resource-chip--gear">
                     <span class="resource-chip__icon" aria-hidden="true">⚙️</span>
-                    齒輪: <strong>${player.gearCards}</strong>
+                    齒輪： <strong>${player.gearCards}</strong>
                 </div>
-                <div>分數: ${player.score}</div>
-                ${diceInfo}
-                <div>位置: ${posDisplay}</div>
-                <div>收集小時卡: ${player.hourCards.length}</div>
+				${diceInfo}
+                <div>收集： ${player.hourCards.length}</div>
+                <div>分數： ${player.score}</div>
             </div>
         `;
         pCard.appendChild(contentDiv);
