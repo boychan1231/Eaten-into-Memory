@@ -750,7 +750,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: 15px;
     background-color: transparent;
     border-top: none;
-    padding: 10px 15px;
+    padding: 8px 15px 10px 15px;
     margin-top: 10px;
     border-radius: 8px;
     box-shadow: none;
@@ -2120,6 +2120,30 @@ body {
         gap: 0;
     }
 }
+
+/* --- 新增：鐘面格子可選目標高亮特效 --- */
+.clock-spot.highlight-target {
+    border-color: #ffd27f;
+    background-color: rgba(255, 210, 127, 0.15); /* 微微的金色底 */
+    z-index: 25; /* 確保光暈不會被旁邊的格子蓋住 */
+    animation: pulse-target 1s infinite alternate;
+}
+
+@keyframes pulse-target {
+    0% { 
+        box-shadow: 0 0 10px rgba(255, 210, 127, 0.5), inset 0 0 5px rgba(255, 210, 127, 0.3); 
+        transform: translate(-50%, -50%) scale(1.05); 
+    }
+    100% { 
+        box-shadow: 0 0 25px rgba(255, 210, 127, 1), inset 0 0 15px rgba(255, 210, 127, 0.8); 
+        transform: translate(-50%, -50%) scale(1.15); 
+        border-color: #fff; 
+    }
+}
+
+
+
+
 
 /* ------------------------------ */
 

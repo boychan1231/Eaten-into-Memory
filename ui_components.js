@@ -419,7 +419,12 @@ function renderClockFace(gameState, flags) {
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
     const humanPlayer = gameState.players.find(p => p.id === humanId);
     const humanPos = humanPlayer ? humanPlayer.currentClockPosition : null;
-
+	
+	// 取得目前畫面上「可挑選的小時卡數字」 
+    const drawnNumbers = (flags.isWaitingHourInput && gameState.currentDrawnHourCards) 
+        ? gameState.currentDrawnHourCards.map(c => c.number) 
+        : [];
+	
     gameState.clockFace.forEach((spot) => {
         const angleDeg = spot.position * 30 - 90;
         const angleRad = angleDeg * (Math.PI / 180);
@@ -438,10 +443,14 @@ function renderClockFace(gameState, flags) {
         spotEl.style.left = `${leftPercent}%`;
         spotEl.style.top = `${topPercent}%`;
 
+		// 如果這個格子的數字在可選名單內，加上發光 Class 
+        if (drawnNumbers.includes(spot.position)) {
+            spotEl.classList.add('highlight-target');
+
         // 浮標箭頭現在指向「人類玩家的位置」
         if (humanPos !== null && spot.position === humanPos) {
             spotEl.classList.add('active-round'); // 借用這個 class 來做高亮效果
-
+		}
             // 繪製箭頭
             const arrowEl = document.createElement('div');
             arrowEl.className = 'active-round-arrow';
