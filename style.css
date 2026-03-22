@@ -907,7 +907,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     /* 👇 使用 var() 來接收 JS 傳來的變數，並保留預設圖 👇 */
     background-image: var(--hand-bg-image, url('assets/soul_sin.png')); 
     
-    background-size: 80%;     /* 若希望圖片鋪滿，用 cover；若希望完整顯示用 contain */
+    background-size: 5%;     /* 若希望圖片鋪滿，用 cover；若希望完整顯示用 contain */
     background-position: left;
     background-repeat: no-repeat;
     
