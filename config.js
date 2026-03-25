@@ -1,5 +1,13 @@
 // config.js - 遊戲全域設定檔
 
+window.globalGameState = null; 
+
+// 1. 系統開關 (System Toggles)
+window.GAME_CONFIG = {
+    enableAbilities: false, 
+    testMode: false,        
+    // ... 下面保持原樣 ...
+
 // 1. 系統開關 (System Toggles)
 window.GAME_CONFIG = {
     enableAbilities: false, // 預設是否啟用特殊能力 (可被 UI 開關覆蓋)

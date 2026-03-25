@@ -25,7 +25,9 @@ if (typeof window !== 'undefined') {
 })();
 
 const logList = document.getElementById('log-list');
-let globalGameState = null;
+
+// let globalGameState = null;  <-- (已經移至 config.js)
+
 // 新增：記錄玩家上一狀態，用於比對數值變化
 let lastPlayerStats = {};
 
