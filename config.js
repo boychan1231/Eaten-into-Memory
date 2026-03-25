@@ -4,12 +4,6 @@ window.globalGameState = null;
 
 // 1. 系統開關 (System Toggles)
 window.GAME_CONFIG = {
-    enableAbilities: false, 
-    testMode: false,        
-    // ... 下面保持原樣 ...
-
-// 1. 系統開關 (System Toggles)
-window.GAME_CONFIG = {
     enableAbilities: false, // 預設是否啟用特殊能力 (可被 UI 開關覆蓋)
     testMode: false,        // 預設是否開啟測試模式 (可被 UI 開關覆蓋)
     defaultHumanId: 'SM_1',  // 預設人類玩家 ID
@@ -77,7 +71,6 @@ window.GAME_DATA = {
     HOUR_CARDS: { ageGroups: ['少年', '青年', '中年'], countsPerGroup: 12 },
     MINUTE_CARDS: { total: 60 }
 };
-
 
     // ✅ 新增：小時卡故事文本庫
     window.GAME_DATA.HOUR_STORIES = {

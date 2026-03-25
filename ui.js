@@ -1084,7 +1084,7 @@ function showCardStory(card) {
     // 從資料庫取得故事
     const stories = window.GAME_DATA?.HOUR_STORIES || {};
     const ageStories = stories[age] || {};
-    const storyText = ageStories[num] || `這是一張尚未被發掘記憶的卡片... \n\n(開發者提示：請至 config.js 中填寫 ${age} - ${num} 號的故事)`;
+    const storyText = ageStories[num] || `這是一張尚未被發掘記憶的卡片...)`;
 
     // 替換換行符號為 <br>
     contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
