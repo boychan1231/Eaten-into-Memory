@@ -372,14 +372,21 @@ function processMinuteCardSelection(gameState) {
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
+    // 1. 讓所有 AI 決定出牌
     gameState.players.filter(p => p.id !== humanId && !p.isEjected).forEach(player => {
         const card = makeAIChoice(player, gameState);
         if (card) {
             choices.push({ playerId: player.id, playerName: player.name, card, roleType: player.type });
-            appLogger.log(`${player.name} (AI) 已蓋牌。`);
+            // 👇 刪除了原本這裡的 appLogger.log(`${player.name} (AI) 已蓋牌。`);
         }
     });
 
+    // 👇 新增：如果 AI 有出牌，統一在這裡顯示一行精簡的訊息
+    if (choices.length > 0) {
+        appLogger.log("其他玩家 (AI) 已蓋牌。");
+    }
+
+    // 2. 判斷人類玩家狀態
     if (humanPlayer && !humanPlayer.isEjected && humanPlayer.hand.length > 0) {
         appLogger.log(`\n🚨${humanPlayer.name} 回合！請選擇您的卡牌。 🚨`);
         gameState.currentRoundAIChoices = choices; 

@@ -2141,6 +2141,79 @@ body {
     }
 }
 
+/* 回合受罰標示器容器 */
+.penalty-display {
+    position: absolute;
+    bottom: 5px; /* 距離底部 */
+    right: 1px;  /* 距離右側 */
+    z-index: 10;   /* 確保在連接線上方 */
+    
+    background-color: rgba(26, 26, 46, 0.85); /* 半透明暗藍底色 */
+    border: 1px solid rgba(255, 210, 127, 0.3); /* 金色細邊框 */
+    border-radius: 6px;
+    padding: 10px 14px;
+    
+    font-family: var(--font-fancy), serif;
+    font-size: 0.8rem;
+    color: #e0e0e0;
+    
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    pointer-events: none; /* 防止遮擋滑鼠點擊下方的鐘面格子 */
+    transition: opacity 0.3s ease;
+}
+
+/* 受罰列表 */
+.penalty-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 列表項目 */
+.penalty-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+/* 「時間受罰」樣式 */
+.penalty-time {
+    color: #ff6b6b; /* 紅色醒目 */
+}
+
+/* 「距離受罰」樣式 */
+.penalty-action {
+    color: #feca57; /* 橘黃色醒目 */
+}
+
+/* 「時之惡鎖定」樣式 */
+.penalty-sin {
+    color: #ff9f43; /* 混沌橘醒目 */
+}
+
+/* --- 玩家目前位置格子的「幽藍靈魂」高亮特效 --- */
+.clock-spot.active-round {
+    border-color: #48dbfb; /* 幽藍/青綠色邊框 */
+    background-color: rgba(72, 219, 251, 0.2); /* 微微的幽藍底色 */
+    z-index: 15; /* 確保光暈在一般格子上方，但在挑選目標下方 */
+    animation: pulse-player-location 1.5s infinite alternate;
+}
+
+@keyframes pulse-player-location {
+    0% { 
+        /* 內外雙重光暈，帶有微微的縮放 */
+        box-shadow: 0 0 8px rgba(72, 219, 251, 0.6), inset 0 0 4px rgba(72, 219, 251, 0.4); 
+        transform: translate(-50%, -50%) scale(1.02); 
+    }
+    100% { 
+        box-shadow: 0 0 20px rgba(72, 219, 251, 1), inset 0 0 10px rgba(72, 219, 251, 0.8); 
+        transform: translate(-50%, -50%) scale(1.1); 
+        border-color: #fff; /* 頂點時邊框變白 */
+    }
+}
+/* ------------------------------------------- */
+
 
 
 

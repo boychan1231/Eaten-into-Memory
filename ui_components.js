@@ -396,7 +396,7 @@ function renderScorePanel(gameState) {
 
 
 
-// --- B. 鐘面繪製 (修改版：箭頭指向玩家) ---
+// --- B. 鐘面繪製 ---
 function renderClockFace(gameState, flags) {
     // 移除舊的像素設定
     // const radius = 190;
@@ -446,33 +446,11 @@ function renderClockFace(gameState, flags) {
 		// 如果這個格子的數字在可選名單內，加上發光 Class 
         if (drawnNumbers.includes(spot.position)) {
             spotEl.classList.add('highlight-target');
-
-        // 浮標箭頭現在指向「人類玩家的位置」
+		}
+		
+        // 人類玩家的位置
         if (humanPos !== null && spot.position === humanPos) {
             spotEl.classList.add('active-round'); // 借用這個 class 來做高亮效果
-		}
-            // 繪製箭頭
-            const arrowEl = document.createElement('div');
-            arrowEl.className = 'active-round-arrow';
-
-            //const arrowRadius = 240;
-            //const arrowX = centerX + arrowRadius * Math.cos(angleRad);
-            //const arrowY = centerY + arrowRadius * Math.sin(angleRad);
-
-            // ✅ 箭頭也改用百分比定位
-            const arrowLeftPct = 50 + arrowRadiusPercent * Math.cos(angleRad);
-            const arrowTopPct = 50 + arrowRadiusPercent * Math.sin(angleRad);
-
-            //arrowEl.style.left = `${arrowX}px`;
-            //arrowEl.style.top = `${arrowY}px`;
-
-            arrowEl.style.left = `${arrowLeftPct}%`;
-            arrowEl.style.top = `${arrowTopPct}%`;
-
-            const rotation = angleDeg + 90;
-            arrowEl.style.setProperty('--arrow-rotation', `${rotation}deg`);
-            arrowEl.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
-            clockFaceEl.appendChild(arrowEl);
         }
 
         // 卡牌顯示 (含 Stack Inspector)
@@ -575,6 +553,40 @@ function renderClockFace(gameState, flags) {
 
         clockFaceEl.appendChild(spotEl);
     });
+	
+	// 👇👇👇 回合受罰標示器邏輯 (簡化為只顯示當前受罰方式) 👇👇👇
+    const penaltyDisplay = document.getElementById('round-penalty-display');
+    if (penaltyDisplay) {
+        // 只要抽出小時卡就顯示
+        if (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) {
+            penaltyDisplay.classList.remove('hidden'); 
+            
+            // 清空舊內容
+            penaltyDisplay.innerHTML = '';
+            
+            // 創建單一項目的列表
+            const listEl = document.createElement('ul');
+            listEl.className = 'penalty-list';
+            const itemEl = document.createElement('li');
+            itemEl.className = 'penalty-item';
+            
+            // ✅ 核心修改：判斷全域受罰模式，二選一顯示
+            if (gameState.sinTargetingMode === 'sin' && gameState.gameMode !== '3P') {
+                // 如果時之惡發動牽引：顯示距離受罰
+                itemEl.innerHTML = `<span class="penalty-action">距離受罰</span>`;
+            } else {
+                // 預設模式：顯示時間受罰
+                itemEl.innerHTML = `<span class="penalty-time">時間值受罰</span>`;
+            }
+            
+            listEl.appendChild(itemEl);
+            penaltyDisplay.appendChild(listEl);
+            
+        } else {
+            // 不在回合進行中（例如回合結算時），隱藏
+            penaltyDisplay.classList.add('hidden');
+        }
+    }
 }
 
 // --- C. AI 玩家列表 ---
@@ -589,7 +601,7 @@ function renderAIPlayers(gameState, humanId) {
         pCard.dataset.id = player.id; // ID for Floating Text
         if (player.isEjected) pCard.classList.add('ejected');
 
-        // ✅ 新增：護盾可視化邏輯
+        // 護盾可視化邏輯
         // 條件：是幼體時魔 + Mana >= 3 + 護盾未使用
         const isYoung = player.roleCard && player.roleCard.includes('幼');
         // 讀取 config 中的護盾消耗，預設為 3
