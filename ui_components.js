@@ -446,6 +446,24 @@ function renderClockFace(gameState, flags) {
 		// 如果這個格子的數字在可選名單內，加上發光 Class 
         if (drawnNumbers.includes(spot.position)) {
             spotEl.classList.add('highlight-target');
+				
+			// 讓滑鼠游標變成手指狀，提示可以點擊
+            spotEl.style.cursor = 'pointer';
+            
+            // 點擊事件處理
+            spotEl.onclick = () => {
+                // 尋找當前抽出的小時卡中，哪一張的數字符合這個格子的位置
+                const cardIndex = gameState.currentDrawnHourCards.findIndex(c => c.number === spot.position);
+                
+                if (cardIndex !== -1) {
+                    // 呼叫 game.js 暴露出的選擇函式
+                    if (typeof window.handleHumanHourCardChoice === 'function') {
+                        window.handleHumanHourCardChoice(gameState, cardIndex);
+                    } else if (typeof handleHumanHourCardChoice === 'function') {
+                        handleHumanHourCardChoice(gameState, cardIndex);
+                    }
+                }
+            };
 		}
 		
         // 人類玩家的位置
@@ -935,7 +953,7 @@ function renderDrawnHourCards(gameState, flags) {
     if (flags.isWaitingHourInput) {
         const tipEl = document.createElement('div');
         tipEl.className = 'hour-choice-tip';
-        tipEl.textContent = '👇 點擊卡牌 👇';
+        tipEl.textContent = '請選擇小時卡';
         clockCenterEl.appendChild(tipEl);
     }
 
