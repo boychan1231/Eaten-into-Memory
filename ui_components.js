@@ -677,8 +677,7 @@ function renderAIPlayers(gameState, humanId) {
                     Mana: <strong>${player.mana}</strong>
                 </div>
                 <div class="resource-chip resource-chip--gear">
-                    <span class="resource-chip__icon" aria-hidden="true">⚙️</span>
-                    齒輪： <strong>${player.gearCards}</strong>
+                    生命值： <strong>${'⚙️'.repeat(Math.max(0, player.gearCards))}</strong>
                 </div>
 				${diceInfo}
                 <div>收集： ${player.hourCards.length}</div>
@@ -718,7 +717,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-mana', String(humanPlayer.mana));
-    setText('h-gear', String(humanPlayer.gearCards));
+    setText('h-gear', '⚙️'.repeat(Math.max(0, humanPlayer.gearCards)));
     setText('h-score', String(humanPlayer.score));
     setText('h-pos', humanPlayer.isEjected ? '驅逐' : String(humanPlayer.currentClockPosition || '未上場'));
     setText('h-hour', String(humanPlayer.hourCards.length));
