@@ -98,18 +98,18 @@
 
         // 階段 1：等待人類出牌 (分鐘卡)
         if (gameState.currentRoundAIChoices !== null) {
-            // 如果玩家尚未點選分鐘卡
             const hasSelected = document.querySelector('.minute-card.selected');
+            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             if (!hasSelected) {
                 showTutorialPointer(
                     '#human-hand',
-                    '<strong>步驟 1：點擊挑選一張分鐘卡</strong><br>數字越大越有機會取得優先挑選小時卡的位置！',
+                    turnPrefix + '<strong>步驟 1：點擊挑選一張分鐘卡</strong><br>數字越大越有機會取得優先挑選小時卡的位置！',
                     'top'
                 );
             } else {
                 showTutorialPointer(
                     '#confirm-move-btn',
-                    '<strong>步驟 2：點擊「確認出牌」</strong><br>將挑選的分鐘卡打出與其他玩家比大小。',
+                    turnPrefix + '<strong>步驟 2：點擊「確認出牌」</strong><br>將挑選的分鐘卡打出與其他玩家比大小。',
                     'left'
                 );
             }
@@ -122,18 +122,19 @@
             const penaltyHint = isSinDist
                 ? '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>'
                 : '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>';
+            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
 
             const highlightSpot = document.querySelector('.clock-spot.highlight-target');
             if (highlightSpot) {
                 showTutorialPointer(
                     highlightSpot,
-                    '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！' + penaltyHint,
+                    turnPrefix + '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！' + penaltyHint,
                     'top'
                 );
             } else {
                 showTutorialPointer(
                     '#round-penalty-display',
-                    '<strong>受罰提示：</strong>注意中央標示的受罰規則！' + penaltyHint,
+                    turnPrefix + '<strong>受罰提示：</strong>注意中央標示的受罰規則！' + penaltyHint,
                     'bottom'
                 );
             }
@@ -142,9 +143,10 @@
 
         // 階段 3：分針能力選擇中
         if (gameState.waitingMinuteHandChoice) {
+            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             showTutorialPointer(
                 '#minute-ability-panel',
-                '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。',
+                turnPrefix + '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。',
                 'top'
             );
             return;
@@ -152,9 +154,10 @@
 
         // 階段 4：秒針二選一
         if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId) {
+            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             showTutorialPointer(
                 '#seconds-choice-modal',
-                '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
+                turnPrefix + '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
                 'top'
             );
             return;
@@ -163,9 +166,10 @@
         // 階段 5：回合結束，準備進入下一回合
         const nextBtn = document.getElementById('next-step-btn');
         if (nextBtn && !nextBtn.disabled && nextBtn.offsetParent !== null) {
+            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             showTutorialPointer(
                 '#next-step-btn',
-                '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
+                turnPrefix + '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
                 'left'
             );
             return;
