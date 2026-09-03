@@ -262,6 +262,11 @@ function updateUI(gameState) {
     // 4. 特效處理
     processFloatingText(gameState); // 漂浮文字
     drawSinTargetLines(gameState);  // 時之惡紅線
+
+    // 5. 🎓 新手教學模式：自動調度動態引導與高亮指標
+    if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
+        window.TutorialModeManager.updateTutorialPointers(gameState);
+    }
 }
 
 // ==========================================

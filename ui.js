@@ -437,15 +437,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedMode: getSelectionValue('start-game-mode', '5P')
     });
 
-    const applyStartConfig = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode }) => {
-        window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
+    const applyStartConfig = ({ selectedMode, selectedThreePRole, cfgEnableAbilities, cfgTestMode, cfgTutorialMode }) => {
+        window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false, tutorialMode: true };
         window.GAME_CONFIG.enableAbilities = cfgEnableAbilities;
         window.GAME_CONFIG.testMode = cfgTestMode;
+        window.GAME_CONFIG.tutorialMode = cfgTutorialMode;
         window.GAME_CONFIG.gameMode = selectedMode;
         window.GAME_CONFIG.threePStartingRole = selectedThreePRole;
         if (typeof GAME_CONFIG !== 'undefined') {
             GAME_CONFIG.enableAbilities = cfgEnableAbilities;
             GAME_CONFIG.testMode = cfgTestMode;
+            GAME_CONFIG.tutorialMode = cfgTutorialMode;
             GAME_CONFIG.gameMode = selectedMode;
             GAME_CONFIG.threePStartingRole = selectedThreePRole;
         }
@@ -517,10 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const abilityToggleEl = document.getElementById('ability-toggle');
                 const testToggleEl = document.getElementById('test-toggle');
+                const tutorialToggleEl = document.getElementById('tutorial-toggle');
                 const cfgEnableAbilities = !!abilityToggleEl?.checked;
                 const cfgTestMode = !!testToggleEl?.checked;
+                const cfgTutorialMode = tutorialToggleEl ? !!tutorialToggleEl.checked : true;
                 const { selectedMode } = getStartModalSelection();
-                pendingStartConfig = { selectedMode, cfgEnableAbilities, cfgTestMode };
+                pendingStartConfig = { selectedMode, cfgEnableAbilities, cfgTestMode, cfgTutorialMode };
                 if (gameModeOverlay) closeModal(gameModeOverlay);
                 syncRoleChoiceModal(selectedMode);
                 if (roleOverlay) openModal(roleOverlay, roleChoiceConfirm || undefined);
@@ -544,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedMode,
                     selectedThreePRole,
                     cfgEnableAbilities: pendingStartConfig.cfgEnableAbilities,
-                    cfgTestMode: pendingStartConfig.cfgTestMode
+                    cfgTestMode: pendingStartConfig.cfgTestMode,
+                    cfgTutorialMode: pendingStartConfig.cfgTutorialMode
                 });
                 if (selectedMode === '3P') {
                     startWithRole('SM_1');
@@ -553,6 +558,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 appLogger.log('[UI] 開始遊戲時發生錯誤：', err);
+            }
+        });
+    }
+
+    // 監聽設定頁中的教學模式開關
+    const tutorialToggleEl = document.getElementById('tutorial-toggle');
+    if (tutorialToggleEl) {
+        tutorialToggleEl.checked = window.GAME_CONFIG?.tutorialMode !== false;
+        tutorialToggleEl.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            window.GAME_CONFIG = window.GAME_CONFIG || {};
+            window.GAME_CONFIG.tutorialMode = isEnabled;
+            if (typeof GAME_CONFIG !== 'undefined') GAME_CONFIG.tutorialMode = isEnabled;
+            appLogger.log(`[System] 教學模式已${isEnabled ? '開啟' : '關閉'}`);
+            if (window.TutorialModeManager) {
+                if (isEnabled && globalGameState) {
+                    window.TutorialModeManager.updateTutorialPointers(globalGameState);
+                } else {
+                    window.TutorialModeManager.clearTutorialPointers();
+                }
             }
         });
     }

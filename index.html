@@ -404,6 +404,12 @@
 								<span>啟用特殊能力 </span>
 							</label>
 
+							<label class="toggle-switch toggle-switch-spaced">
+								<input type="checkbox" id="tutorial-toggle" checked>
+								<span class="slider"></span>
+								<span>開啟教學模式（動態指標與操作提示）</span>
+							</label>
+
 							<label class="toggle-switch">
 								<input type="checkbox" id="test-toggle">
 								<span class="slider"></span>
@@ -578,6 +584,16 @@
 		</div>
 	</div>
 
+	<!-- 新手教學動態引導氣泡框 -->
+	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
+		<div class="tutorial-tooltip-header">
+			<span class="tutorial-badge">💡 教學指南</span>
+			<button id="tutorial-close-btn" class="tutorial-close-x" title="關閉教學" aria-label="關閉教學">&times;</button>
+		</div>
+		<div id="tutorial-tooltip-text" class="tutorial-tooltip-body"></div>
+		<div class="tutorial-pointer-arrow"></div>
+	</div>
+
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
 	<script src="audio.js"></script>
@@ -588,6 +604,7 @@
 
 	<script src="ui_modals.js"></script>
 	<script src="ui_components.js"></script>
+	<script src="tutorial_mode.js"></script>
 	<script src="ui.js"></script>
 </body>
 

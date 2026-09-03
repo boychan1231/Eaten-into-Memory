@@ -2228,7 +2228,132 @@ body {
 
 
 
-/* ------------------------------ */
+/* --- 🎓 新手教學動態引導指標與高亮視覺樣式 --- */
+
+/* 被引導焦點項目的脈衝高亮效果 */
+.tutorial-spotlight {
+    position: relative;
+    outline: 3px solid #feca57 !important;
+    outline-offset: 4px;
+    box-shadow: 0 0 20px rgba(254, 202, 87, 0.95), inset 0 0 10px rgba(254, 202, 87, 0.5) !important;
+    animation: tutorialPulse 1.2s ease-in-out infinite alternate !important;
+    z-index: 1000 !important;
+}
+
+@keyframes tutorialPulse {
+    0% {
+        box-shadow: 0 0 10px rgba(254, 202, 87, 0.6), inset 0 0 5px rgba(254, 202, 87, 0.3);
+        transform: scale(1.01);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(254, 202, 87, 1), inset 0 0 15px rgba(254, 202, 87, 0.7);
+        transform: scale(1.04);
+    }
+}
+
+/* 浮動氣泡提示框 */
+.tutorial-tooltip {
+    position: fixed;
+    width: min(320px, 85vw);
+    background: rgba(22, 33, 62, 0.96);
+    border: 2px solid #feca57;
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(254, 202, 87, 0.4);
+    color: #eee;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    z-index: 9999;
+    transition: left 0.25s ease-out, top 0.25s ease-out, opacity 0.2s ease-in-out;
+    pointer-events: auto;
+}
+
+.tutorial-tooltip.hidden {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tutorial-tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(254, 202, 87, 0.3);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.tutorial-badge {
+    font-weight: bold;
+    color: #feca57;
+    font-size: 0.92rem;
+    text-shadow: 0 0 6px rgba(254, 202, 87, 0.4);
+}
+
+.tutorial-close-x {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.tutorial-close-x:hover {
+    color: #ff6b6b;
+}
+
+.tutorial-tooltip-body {
+    color: #f1f2f6;
+    font-size: 0.88rem;
+}
+
+.tutorial-tooltip-body strong {
+    color: #ff9ff3;
+}
+
+.tutorial-pointer-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* 箭頭朝下 */
+.tutorial-tooltip[data-arrow="bottom"] .tutorial-pointer-arrow {
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0 10px;
+    border-color: #feca57 transparent transparent transparent;
+}
+
+/* 箭頭朝上 */
+.tutorial-tooltip[data-arrow="top"] .tutorial-pointer-arrow {
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #feca57 transparent;
+}
+
+/* 箭頭朝左 */
+.tutorial-tooltip[data-arrow="left"] .tutorial-pointer-arrow {
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 10px 10px 0;
+    border-color: transparent #feca57 transparent transparent;
+}
+
+/* 箭頭朝右 */
+.tutorial-tooltip[data-arrow="right"] .tutorial-pointer-arrow {
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent #feca57;
+}
 
 
 
