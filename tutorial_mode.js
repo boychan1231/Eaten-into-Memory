@@ -118,17 +118,22 @@
 
         // 階段 2：等待挑選小時卡 (輪到人類選卡)
         if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
+            const isSinDist = gameState.sinTargetingMode === 'sin' && gameState.gameMode !== '3P';
+            const penaltyHint = isSinDist
+                ? '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>'
+                : '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>';
+
             const highlightSpot = document.querySelector('.clock-spot.highlight-target');
             if (highlightSpot) {
                 showTutorialPointer(
                     highlightSpot,
-                    '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得該小時卡！',
+                    '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！' + penaltyHint,
                     'top'
                 );
             } else {
                 showTutorialPointer(
-                    '.clock-center',
-                    '<strong>步驟 3：選擇目標小時卡</strong><br>儘量避開最接近 12 的位置，維護生命值安全！',
+                    '#round-penalty-display',
+                    '<strong>受罰提示：</strong>注意中央標示的受罰規則！' + penaltyHint,
                     'bottom'
                 );
             }
@@ -197,11 +202,12 @@
         }
     });
 
-    // 綁定教學視窗 X 關閉按鈕
+    // 頁面載入與點擊視窗外部關閉處理
     document.addEventListener('DOMContentLoaded', () => {
         const closeBtn = document.getElementById('tutorial-close-btn');
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 disableTutorialMode();
             });
         }

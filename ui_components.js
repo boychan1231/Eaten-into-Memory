@@ -596,10 +596,10 @@ function renderClockFace(gameState, flags) {
             // ✅ 核心修改：判斷全域受罰模式，二選一顯示
             if (gameState.sinTargetingMode === 'sin' && gameState.gameMode !== '3P') {
                 // 如果時之惡發動牽引：顯示距離受罰
-                itemEl.innerHTML = `<span class="penalty-action">距離受罰</span>`;
+                itemEl.innerHTML = `<span class="penalty-action">受罰：距離最近</span>`;
             } else {
                 // 預設模式：顯示時間受罰
-                itemEl.innerHTML = `<span class="penalty-time">時間值受罰</span>`;
+                itemEl.innerHTML = `<span class="penalty-time">受罰：最高小時值</span>`;
             }
             
             listEl.appendChild(itemEl);
@@ -858,6 +858,9 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                         uiState.selectedCardValue = v;
                         uiState.selectedCardValues = [];
                         confirmBtn.disabled = false;
+                    }
+                    if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
+                        window.TutorialModeManager.updateTutorialPointers(gameState);
                     }
                 });
             } else {
