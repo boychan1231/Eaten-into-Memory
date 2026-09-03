@@ -153,6 +153,7 @@ function startRound(gameState) {
 
 	// === 每回合重置：特殊能力使用狀態 & 本回合拿到的小時卡記錄 ===
 	gameState.abilityMarker = false; 
+	gameState.sinTargetingMode = 'default';
 	gameState.players.forEach(p => {
 		p.specialAbilityUsed = false;        
 		p.pickedHourThisTurn = false;         

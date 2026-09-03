@@ -62,7 +62,6 @@ function logToUI(message) {
 // 核心函式：處理日誌佇列 (含動態變速與略過功能)
 function processLogQueue() {
     if (isLogProcessing || logQueue.length === 0) {
-        // 如果佇列空了，重置略過狀態，恢復正常速度
         if (logQueue.length === 0) {
             isSkippingLogs = false;
         }
@@ -70,35 +69,55 @@ function processLogQueue() {
     }
     isLogProcessing = true;
 
-    const message = logQueue.shift();
     const list = document.getElementById('log-list');
+    const logContainer = document.getElementById('game-log-container');
 
+    if (isSkippingLogs || logQueue.length > LOG_ACCEL_THRESHOLD) {
+        // 🚀 批次效能優化：當日誌積壓或處於略過模式時，使用 DocumentFragment 一次性渲染
+        const fragment = document.createDocumentFragment();
+        const batchSize = isSkippingLogs ? logQueue.length : Math.min(logQueue.length, 20);
+        const batchMessages = logQueue.splice(0, batchSize);
+
+        batchMessages.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = msg;
+            li.className = 'log-entry-new';
+            if (isSkippingLogs) {
+                li.style.animation = 'none';
+                li.style.opacity = '1';
+            }
+            fragment.appendChild(li);
+        });
+
+        if (list) {
+            list.appendChild(fragment);
+            enforceLogRetention(list);
+            if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        const nextDelay = isSkippingLogs ? 0 : LOG_ACCEL_DELAY;
+        setTimeout(() => {
+            isLogProcessing = false;
+            processLogQueue();
+        }, nextDelay);
+        return;
+    }
+
+    const message = logQueue.shift();
     if (list) {
         const li = document.createElement('li');
         li.textContent = message;
         li.className = 'log-entry-new';
 
-        // 如果正在略過模式，移除動畫 class 以便瞬間顯示
-        if (isSkippingLogs) {
-            li.style.animation = 'none';
-            li.style.opacity = '1';
-        }
-
         list.appendChild(li);
         enforceLogRetention(list);
-
-        const logContainer = document.getElementById('game-log-container');
         if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
     }
-
-    let nextDelay = currentLogSpeed;
-    if (isSkippingLogs) nextDelay = 0;
-    else if (logQueue.length > LOG_ACCEL_THRESHOLD) nextDelay = LOG_ACCEL_DELAY;
 
     setTimeout(() => {
         isLogProcessing = false;
         processLogQueue();
-    }, nextDelay);
+    }, currentLogSpeed);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
