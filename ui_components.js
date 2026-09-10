@@ -529,13 +529,14 @@ function renderClockFace(gameState, flags) {
                 token.className = 'token';
                 token.title = player.name;
 
-                // 1. 判斷角色，加入對應的 CSS 圖片類別
-                let roleClass = 'token-demon'; // 預設：幼體時魔
-                if (player.type === '時之惡') roleClass = 'token-sin';
-                else if (player.type === '受詛者') roleClass = 'token-scz';
-                else if (player.roleCard === '時針') roleClass = 'token-hour';
-                else if (player.roleCard === '分針') roleClass = 'token-min';
-                else if (player.roleCard === '秒針') roleClass = 'token-sec';
+                // 1. 判斷角色，加入對應的 CSS 圖片類別 (區分玩家與 NPC)
+                const isHuman = (player.id === humanId);
+                let roleClass = isHuman ? 'token-player-demon' : 'token-demon'; // 預設：幼體時魔
+                if (player.type === '時之惡') roleClass = isHuman ? 'token-player-sin' : 'token-sin';
+                else if (player.type === '受詛者') roleClass = isHuman ? 'token-player-scz' : 'token-scz';
+                else if (player.roleCard === '時針') roleClass = isHuman ? 'token-player-hour' : 'token-hour';
+                else if (player.roleCard === '分針') roleClass = isHuman ? 'token-player-min' : 'token-min';
+                else if (player.roleCard === '秒針') roleClass = isHuman ? 'token-player-sec' : 'token-sec';
 
                 token.classList.add(roleClass);
 

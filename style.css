@@ -392,61 +392,51 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 .clock-spot .tokens {
     position: absolute;
-    
-    /* 目前設定是在格子的「正下方」重疊。 
-       如果你希望棋子飄在卡片的「頭頂上」，可以把 bottom: -5px; 刪掉，改成 top: -20px; */
     bottom: -5px; 
-    
     display: flex;
     justify-content: center;
     width: 100%;
     flex-wrap: wrap;
     gap: -5px;
-    
-    /* ✅ 新增：將圖層層級拉高，確保它永遠蓋在小時卡 (z-index: 2) 的上面 */
     z-index: 30; 
-    
-    /* ✅ 新增：讓滑鼠點擊可以穿透容器，避免擋住小時卡的堆疊提示 (Stack Inspector) */
     pointer-events: none; 
 }
 
 .token {
-	/* 確保棋子本身依然可以被滑鼠碰到 (觸發放大效果) */
-	pointer-events: auto;
-    /* 加大尺寸以清楚顯示 GIF 細節 */
+    pointer-events: auto;
     width: 40px; 
     height: 40px;
     transition: transform 0.2s;
-    
-    /* 新增：確保像素 GIF 清晰且置中 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     image-rendering: pixelated; 
 }
 .token:hover { 
-    /* 懸停時稍微放大並往上飄 */
     transform: scale(1.8) translateY(-3px); 
     z-index: 20; 
 }
 
-/* --- 針對不同角色設定專屬的靈魂 GIF --- */
-.token-demon { background-image: url('assets/soul_demon.png'); } /* 幼體時魔 */
-.token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 */
-.token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 */
-.token-hour  { background-image: url('assets/soul_hour.png'); }  /* 時針 */
-.token-min   { background-image: url('assets/soul_min.png'); }   /* 分針 */
-.token-sec   { background-image: url('assets/soul_sec.png'); }   /* 秒針 */
+/* --- 針對不同角色設定專屬的靈魂 GIF / PNG --- */
+.token-demon { background-image: url('assets/soul_demon.png'); } /* 幼體時魔 (NPC) */
+.token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 (NPC) */
+.token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 (NPC) */
+.token-hour  { background-image: url('assets/soul_hour.png'); }  /* 時針 (NPC) */
+.token-min   { background-image: url('assets/soul_min.png'); }   /* 分針 (NPC) */
+.token-sec   { background-image: url('assets/soul_sec.png'); }   /* 秒針 (NPC) */
+
+/* --- 玩家專屬的靈魂棋子 (p_ 前綴) --- */
+.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); } /* 幼體時魔 (玩家) */
+.token-player-sin   { background-image: url('assets/player/P_soul_sin.png'); }   /* 時之惡 (玩家) */
+.token-player-scz   { background-image: url('assets/player/p_soul_scz.png'); }   /* 受詛者 (玩家) */
+.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); }  /* 時針 (玩家) */
+.token-player-min   { background-image: url('assets/player/p_soul_min.png'); }   /* 分針 (玩家) */
+.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); }   /* 秒針 (玩家) */
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card {
-    /* 🔴 移除原本的固定大小 */
-    /* width: 50px; height: 75px; */
-    /* ✅ 改用 clamp 動態縮放 */
-    /* 最小 36px (手機)，最大 50px (電腦) */
     width: clamp(36px, 10vw, 55px);
     height: clamp(54px, 15vw, 80px);
-    
     background: linear-gradient(to bottom right, #f7f7f7, #ddd);
     color: #000;
     border-radius: 4px;
@@ -455,15 +445,12 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
-    /* ✅ 字體大小也需要跟著縮放，否則會爆版 */
     font-size: clamp(0.8rem, 2vw, 1rem);
     font-weight: bold;
     line-height: 1.05;
 }
 .drawn-hour-card.precious { border: 3px solid gold; box-shadow: 0 0 10px gold; }
 
-/* 讓裡面的數字微調 */
 .drawn-hour-card .hour-num { font-size: 1.1em; font-weight: 800; }
 .drawn-hour-card .hour-age { font-size: 0.6em; font-weight: 600; color: #222; margin-top: 2px; }
 .drawn-hour-card .hour-star { font-size: 0.9em; margin-top: 2px; }
