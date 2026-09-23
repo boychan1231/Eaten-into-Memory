@@ -720,30 +720,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 1. 背景音樂 (BGM) 開關
+    // --- 音效與音樂控制 (Header 靜音開關與設定頁 Checkbox 同步) ---
     const bgmToggle = document.getElementById('bgm-toggle');
-    if (bgmToggle && window.gameAudio) {
-        // 初始化狀態 (Checked = 未靜音)
-        bgmToggle.checked = !window.gameAudio.isBGMMuted;
+    const sfxToggle = document.getElementById('sfx-toggle');
+    const headerMuteBtn = document.getElementById('header-mute-btn');
 
-        bgmToggle.addEventListener('change', (e) => {
-            const isEnabled = e.target.checked;
-            window.gameAudio.setBGMMuted(!isEnabled);
-            appLogger.log(`[System] 背景音樂已${isEnabled ? '開啟' : '關閉'}`);
-        });
+    function isAllMuted() {
+        if (!window.gameAudio) return false;
+        return window.gameAudio.isBGMMuted && window.gameAudio.isSFXMuted;
     }
 
-    // 2. 音效 (SFX) 開關
-    const sfxToggle = document.getElementById('sfx-toggle');
-    if (sfxToggle && window.gameAudio) {
-        // 初始化狀態
-        sfxToggle.checked = !window.gameAudio.isSFXMuted;
+    function syncAudioUI() {
+        if (!window.gameAudio) return;
+        const bgmMuted = window.gameAudio.isBGMMuted;
+        const sfxMuted = window.gameAudio.isSFXMuted;
+        const allMuted = bgmMuted && sfxMuted;
 
-        sfxToggle.addEventListener('change', (e) => {
-            const isEnabled = e.target.checked;
-            window.gameAudio.setSFXMuted(!isEnabled);
-            appLogger.log(`[System] 音效已${isEnabled ? '開啟' : '關閉'}`);
-        });
+        // 同步設定頁 Checkbox
+        if (bgmToggle) bgmToggle.checked = !bgmMuted;
+        if (sfxToggle) sfxToggle.checked = !sfxMuted;
+
+        // 同步 Header 靜音按鈕
+        if (headerMuteBtn) {
+            headerMuteBtn.classList.toggle('is-muted', allMuted);
+            headerMuteBtn.setAttribute('aria-pressed', allMuted.toString());
+            headerMuteBtn.title = allMuted
+                ? '聲音：已關閉（點擊開啟）'
+                : '聲音：開啟中（點擊靜音）';
+            const icon = headerMuteBtn.querySelector('.audio-icon');
+            if (icon) icon.textContent = allMuted ? '🔇' : '🔊';
+            const state = headerMuteBtn.querySelector('.audio-state');
+            if (state) state.textContent = allMuted ? '關' : '開';
+        }
+    }
+
+    if (window.gameAudio) {
+        // 初始化狀態
+        syncAudioUI();
+
+        // 1. 設定頁背景音樂 (BGM) 開關
+        if (bgmToggle) {
+            bgmToggle.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                window.gameAudio.setBGMMuted(!isEnabled);
+                syncAudioUI();
+                appLogger.log(`[System] 背景音樂已${isEnabled ? '開啟' : '關閉'}`);
+            });
+        }
+
+        // 2. 設定頁音效 (SFX) 開關
+        if (sfxToggle) {
+            sfxToggle.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                window.gameAudio.setSFXMuted(!isEnabled);
+                syncAudioUI();
+                appLogger.log(`[System] 音效已${isEnabled ? '開啟' : '關閉'}`);
+            });
+        }
+
+        // 3. Header 靜音快捷按鈕
+        if (headerMuteBtn) {
+            headerMuteBtn.addEventListener('click', () => {
+                const shouldMute = !isAllMuted();
+                window.gameAudio.setBGMMuted(shouldMute);
+                window.gameAudio.setSFXMuted(shouldMute);
+                syncAudioUI();
+                appLogger.log(`[System] 聲音已${shouldMute ? '關閉（靜音）' : '開啟'}`);
+            });
+        }
     }
 
     // 全域按鈕點擊音效 ---

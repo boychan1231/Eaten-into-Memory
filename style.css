@@ -144,6 +144,86 @@ button:disabled { background-color: #555; cursor: not-allowed; }
 
 .start-game-btn { margin-left: 15px; }
 
+/* --- 頂部快捷音效/音樂開關 --- */
+.header-audio-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-audio-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    background: rgba(15, 52, 96, 0.7);
+    border: 1px solid rgba(233, 69, 96, 0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    line-height: 1.2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-audio-btn:hover:not(:disabled) {
+    background: rgba(233, 69, 96, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+    filter: brightness(1.1);
+}
+
+.header-audio-btn .audio-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.header-audio-btn .audio-text {
+    letter-spacing: 0.5px;
+}
+
+.header-audio-btn .audio-state {
+    font-size: 0.75rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(46, 204, 113, 0.25);
+    color: #2ecc71;
+    font-weight: bold;
+    border: 1px solid rgba(46, 204, 113, 0.5);
+    transition: all 0.2s ease;
+}
+
+.header-audio-btn.is-muted {
+    background: rgba(30, 30, 45, 0.6);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #888;
+    box-shadow: none;
+}
+
+.header-audio-btn.is-muted .audio-state {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
+.header-audio-btn.is-muted:hover:not(:disabled) {
+    background: rgba(40, 40, 60, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+}
+
+@media (max-width: 900px) {
+    .header-audio-btn .audio-text {
+        display: none;
+    }
+    .header-audio-btn {
+        padding: 5px 8px;
+    }
+}
+
 .toggle-switch {
     display: flex;
     align-items: center;
