@@ -1137,7 +1137,7 @@ function showCardStory(card) {
 
     // ✅ 新增：打開故事時切換為故事 BGM
     if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
-        window.gameAudio.switchBGM('story');
+        window.gameAudio.switchBGM('story', card);
     }
 }
 

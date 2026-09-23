@@ -2,6 +2,7 @@
 
 const AudioConfig = {
     BGM_PATH: 'SFX/BGM.mp3', 
+    BGM_STORY_PATH: 'SFX/BGM_story.mp3',       
 	BGM_STORY_YOUTH_DEFAULT: 'SFX/BGM_story.mp3',       
     BGM_STORY_YOUNG_DEFAULT: 'SFX/BGM_story.mp3',       
     BGM_STORY_MIDDLE_DEFAULT: 'SFX/BGM_story.mp3',     
@@ -11,22 +12,22 @@ const AudioConfig = {
     SFX_CONFIRM_PATH: 'SFX/sfx_confirm.wav', 	// 確認/成功聲（e.g. 出牌確認）
 	SFX_EVOLVE_PATH: 'SFX/sfx_evolve.wav',  	 // 進化/升級音效
     SFX_ABILITY_PATH: 'SFX/sfx_spell.mp3',  	 // 特殊能力發動音效
-    SFX_CHIME_PATH: 'SFX/sfx_chime.mp3',    	 // 遊戲輪開始/鐘聲
+    SFX_CHIME_PATH: 'SFX/sfx_chime.wav',    	 // 遊戲輪開始/鐘聲
     SFX_WIN_PATH: 'SFX/sfx_win.mp3',        	 // 勝利音效
-    SFX_LOSE_PATH: 'SFX/sfx_lose.mp3'       	 // 失敗/被逐出音效
+    SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被逐出音效
 };
 
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
     '少年': {
-        4: 'BGM_emotional.mp3',  // 少年 4 號專屬音樂
+        4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
     },
     '青年': {
-        // 12: 'bgm_young_12.mp3'
+        // 12: 'SFX/bgm_young_12.mp3'
     },
     '中年': {
-        // 3: 'bgm_middle_3.mp3'
+        // 3: 'SFX/bgm_middle_3.mp3'
     }
 };
 
@@ -145,8 +146,27 @@ class AudioManager {
         else this._playSfx(this.sfxLose);
     }
 	
-	switchBGM(type) {
-        if (this.currentBgmType === type) return;  // 如果已經是這首音樂，就不用重新播放
+	switchBGM(type, card = null) {
+        let targetSrc = AudioConfig.BGM_PATH;
+        let newType = 'main';
+
+        if (type === 'story') {
+            newType = 'story';
+            targetSrc = AudioConfig.BGM_STORY_PATH;
+
+            if (card) {
+                const age = card.ageGroup;
+                const num = card.number;
+                if (card.isPrecious && AudioConfig.BGM_STORY_PRECIOUS) {
+                    targetSrc = AudioConfig.BGM_STORY_PRECIOUS;
+                } else if (age && num && StoryBgmMap[age] && StoryBgmMap[age][num]) {
+                    targetSrc = StoryBgmMap[age][num];
+                }
+            }
+        }
+
+        // 如果類型相同且音檔相同，不需重新加載
+        if (this.currentBgmType === newType && this.bgm.src && this.bgm.src.endsWith(targetSrc)) return;
 
         // 記錄切換前是否正在播放
         const wasPlaying = !this.bgm.paused;
@@ -154,16 +174,8 @@ class AudioManager {
         // 先暫停目前的音樂
         this.bgm.pause();
 
-        // 根據傳入的 type 切換音檔來源
-        if (type === 'story') {
-            this.bgm.src = AudioConfig.BGM_STORY_PATH;
-            this.currentBgmType = 'story';
-        } else {
-            // 預設切回主遊戲音樂
-            this.bgm.src = AudioConfig.BGM_PATH;
-            this.currentBgmType = 'main';
-        }
-
+        this.bgm.src = targetSrc;
+        this.currentBgmType = newType;
         this.bgm.load(); // 載入新音檔
 
         // 如果原本音樂有在播放，且 BGM 沒有被靜音，就自動播放新曲目
