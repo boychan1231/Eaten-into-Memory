@@ -39,8 +39,8 @@ window.GAME_DATA = {
     // 角色列表定義 (保持不變)
     PLAYER_ROLES: [
         { id: 'SM_1', name: '時魔幼體 1', type: '時魔' },
-        { id: 'SM_2', name: '時魔幼體 2 ', type: '時魔' },
-        { id: 'SM_3', name: '時魔幼體 3 ', type: '時魔' },
+        { id: 'SM_2', name: '時魔幼體 2', type: '時魔' },
+        { id: 'SM_3', name: '時魔幼體 3', type: '時魔' },
         { id: 'sin', name: '時之惡', type: '時之惡' },
         { id: 'SCZ', name: '受詛者', type: '受詛者' }
     ],
@@ -126,13 +126,13 @@ window.GAME_DATA = {
             // ... 請在此繼續填寫 4~12 號
         },
         '青年': {
-            1: `（working on）`,
-            2: `（working on）`,
-            // ... 請在此繼續填寫 3~12 號
+            // ... 請在此填寫 1~12 號故事文本
+
+
         },
         '中年': {
-            1: `（working on）`,
-            12: `（working on）`
-            // ... 請在此繼續填寫其他號碼
+            // ... 請在此填寫 1~12 號故事文本
+
+
         }
     };

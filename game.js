@@ -366,32 +366,7 @@ function makeAIChoice(player, gameState) {
     const originalIndex = player.hand.findIndex(c => c.value === targetCardValue);
     const chosenCard = player.hand.splice(originalIndex, 1)[0];
     
-    //舊秒能力
-	//if (GAME_CONFIG.enableAbilities && player.roleCard === '秒針' && !gameState.abilityMarker && player.mana >= 2) {
-    //    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-        
-    //    if (sinPlayer && sinPlayer.hand.length >= 3 && Math.random() < 0.5) { 
-    //        player.mana -= 2; 
-    //        const stolenCardIndex = Math.floor(Math.random() * sinPlayer.hand.length);
-    //        const stolenCard = sinPlayer.hand.splice(stolenCardIndex, 1)[0];
-            
-    //        appLogger.log(`【秒針】偷看了 時之惡 的手牌 (${stolenCard.value})。`);
-            
-    //        if (stolenCard.value > chosenCard.value) {
-    //            sinPlayer.hand.push(chosenCard); 
-    //            gameState.minuteDiscard.push(stolenCard); 
-    //            appLogger.log(`【秒針】使用時之惡的卡 (${stolenCard.value})。`);
-    //            return stolenCard; 
-    //        } else {
-    //            sinPlayer.hand.push(stolenCard); 
-    //            appLogger.log(`【秒針】使用自己的卡 (${chosenCard.value})。`);
-    //            return chosenCard; 
-    //        }
-    //    }
-    //}
-	
-	
-	// ✅ 秒針能力（新版）：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
+	// ✅ 秒針能力：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
 		//讀取秒針能力消耗
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;	
 	if (
@@ -1128,8 +1103,7 @@ function handleDiceDeduction(player) {
 		
         if (player.d6Die < 1) { 
             player.gearCards--;
-			appLogger.log(`【${player.type}】 扣除 1 護盾。`);
-			 
+ 
             if (player.mana > player.gearCards) {
                 player.mana = player.gearCards;
             }
@@ -1241,6 +1215,7 @@ function checkEjectionAndWinCondition(gameState) {
     gameState.players.forEach(player => {
         if (!player.isEjected && player.gearCards < 0) {
             player.isEjected = true;
+            player.hasEverBeenEjected = true;
             player.gearCards = 0; // 歸零僅為了 UI 顯示好看
             player.mana = 0;
             player.currentClockPosition = null;
@@ -1422,6 +1397,7 @@ function endGameRound(gameState) {
 
             if (sinPlayer.gearCards < 0) {
                 sinPlayer.isEjected = true;
+                sinPlayer.hasEverBeenEjected = true;
                 sinPlayer.gearCards = 0;
                 sinPlayer.mana = 0;
                 sinPlayer.currentClockPosition = null;

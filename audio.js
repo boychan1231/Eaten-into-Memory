@@ -10,10 +10,10 @@ const AudioConfig = {
 	
     SFX_CLICK_PATH: 'SFX/sfx_click.wav', 		// 按鈕點擊聲
     SFX_CONFIRM_PATH: 'SFX/sfx_confirm.wav', 	// 確認/成功聲（e.g. 出牌確認）
-	SFX_EVOLVE_PATH: 'SFX/sfx_evolve.wav',  	 // 進化/升級音效
-    SFX_ABILITY_PATH: 'SFX/sfx_spell.mp3',  	 // 特殊能力發動音效
+	SFX_EVOLVE_PATH: 'SFX/sfx_chime.wav',  	 // 進化/升級音效（暫以鐘聲提供反饋）
+    SFX_ABILITY_PATH: 'SFX/sfx_confirm.wav',  	 // 特殊能力發動音效（暫以確認音提供反饋）
     SFX_CHIME_PATH: 'SFX/sfx_chime.wav',    	 // 遊戲輪開始/鐘聲
-    SFX_WIN_PATH: 'SFX/sfx_win.mp3',        	 // 勝利音效
+    SFX_WIN_PATH: 'SFX/sfx_chime.wav',        	 // 勝利音效（暫以鐘聲提供反饋）
     SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被逐出音效
 };
 

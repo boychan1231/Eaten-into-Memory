@@ -132,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
-    const startModeNote = document.getElementById('start-mode-note');
     const getSelectionValue = (groupName, fallback) => {
         const groupEl = document.querySelector(`[data-selection-group="${groupName}"]`);
         const activeBtn = groupEl?.querySelector('.selection-btn.is-selected');

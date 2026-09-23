@@ -203,8 +203,8 @@ function assignThreePlayerRoles(gameState) {
 // ✅ 修改：從 config.js 讀取角色列表
 const PLAYER_ROLES = window.GAME_DATA?.PLAYER_ROLES || [
     { id: 'SM_1', name: '時魔幼體 1', type: '時魔' },
-    { id: 'SM_2', name: '時魔幼體 2 ', type: '時魔' },
-    { id: 'SM_3', name: '時魔幼體 3 ', type: '時魔' },
+    { id: 'SM_2', name: '時魔幼體 2', type: '時魔' },
+    { id: 'SM_3', name: '時魔幼體 3', type: '時魔' },
     { id: 'sin', name: '時之惡', type: '時之惡' },
     { id: 'SCZ', name: '受詛者', type: '受詛者' }
 ];
