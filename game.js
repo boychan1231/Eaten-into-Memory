@@ -70,6 +70,66 @@ function activateSinSealAI(gameState) {
     }
 }
 
+// ✅ AI 時針預知與移牌決策函式
+function hourHandPreMinuteAI(gameState) {
+    if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+
+    // 找出所有非人類、存活且身分為時針的玩家
+    const hourHandAIs = gameState.players.filter(p =>
+        p.id !== humanId &&
+        !p.isEjected &&
+        p.roleCard === '時針'
+    );
+
+    if (hourHandAIs.length === 0) return;
+
+    hourHandAIs.forEach(aiPlayer => {
+        // 時針每回合最多可發動 2 次
+        for (let i = 0; i < 2; i++) {
+            if (!Array.isArray(gameState.hourDeck) || gameState.hourDeck.length === 0) break;
+            const moveCount = aiPlayer.hourHandMoveCount || 0;
+            if (moveCount >= 2) break;
+
+            const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
+            const currentCost = (moveCount === 0) ? baseCost : 2;
+            if (aiPlayer.mana < currentCost) break;
+
+            // 查看牌庫頂牌（陣列末端）
+            const topCard = gameState.hourDeck[gameState.hourDeck.length - 1];
+            if (!topCard) break;
+
+            let shouldMove = false;
+
+            // 決策：
+            // 1. 若頂牌是珍貴卡，時魔視為關鍵獲勝目標，保留在牌頂以供下回合奪取
+            if (topCard.isPrecious) {
+                shouldMove = false;
+            } else if (topCard.number === 12) {
+                // 2. 12 號是最高危險區，極高風險，強烈建議移到底部
+                shouldMove = true;
+            } else if (topCard.number >= 10 && checkChance(0.6)) {
+                // 3. 高數值卡偏危險，有較大機率移開
+                shouldMove = true;
+            } else if (aiPlayer.currentClockPosition !== null && topCard.number === aiPlayer.currentClockPosition && checkChance(0.5)) {
+                // 4. 與自身位置相同，若抽出無法推進，考慮移開
+                shouldMove = true;
+            }
+
+            if (shouldMove && typeof hourHandMoveTopToBottom === 'function') {
+                const success = hourHandMoveTopToBottom(gameState, aiPlayer.id);
+                if (!success) break;
+            } else {
+                break; // 頂牌符合預期，不再繼續移
+            }
+        }
+    });
+}
+
+if (typeof window !== 'undefined') {
+    window.hourHandPreMinuteAI = hourHandPreMinuteAI;
+}
+
 function startRound(gameState) {
 	const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
 	// 當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
@@ -358,10 +418,16 @@ function makeAIChoice(player, gameState) {
 			const altIdx = player.hand.indexOf(altCard);
 			if (altIdx !== -1) {
 				player.hand.splice(altIdx, 1);
+				player.mana -= COST;
+				player.specialAbilityUsed = true;
+				if (window.gameAudio) window.gameAudio.playAbility();
+				appLogger.log(`⏱️【秒針】${player.name} (AI) 耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+				return {
+					type: 'seconds_pending',
+					options: [chosenCard, altCard]
+				};
 			} else {
-				// 如果找不到第二張牌，取消發動能力，把第一張牌放回去或直接當作普通出牌
 				appLogger.log("AI 秒針能力發動失敗：找不到第二張牌");
-				// 這裡可以選擇不 return special type，直接 return chosenCard;
 			}
 		}
 	}
@@ -472,7 +538,13 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 
     appLogger.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
     appLogger.log("--- ✋ 翻牌時刻！ 🤚 ---");
-    aiChoices.forEach(c => appLogger.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`));
+    aiChoices.forEach(c => {
+        if (c.card && c.card.type === 'seconds_pending') {
+            appLogger.log(`🔸 ${c.playerName} (秒針) 蓋放了 2 張卡牌。`);
+        } else {
+            appLogger.log(`🔸 ${c.playerName} 翻開了：[ ${c.card.value} ]`);
+        }
+    });
     appLogger.log("⏳【秒針】請從 2 張蓋牌中選 1 張打出。");
 
     if (typeof updateUI === 'function') updateUI(gameState);
@@ -585,8 +657,22 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
 
             const [a, b] = opts;
 
-            // 基本 AI 策略：選較大值（較可能先選小時卡/搶珍貴）
-            const chosen = (a.value >= b.value) ? a : b;
+            // AI 策略：依據當前翻出的小時卡及自身位置進行智能二選一
+            const drawnHours = gameState.currentDrawnHourCards || [];
+            const myPos = player ? player.currentClockPosition : null;
+            let wantsHourCard = true;
+            if (myPos !== null && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
+                // 全部小時卡都小於目前位置，拿了無法推進且易受罰，傾向選小牌防守
+                wantsHourCard = false;
+            }
+            if (drawnHours.some(c => c.isPrecious)) {
+                // 有珍貴卡，強烈想要搶先選牌
+                wantsHourCard = true;
+            }
+
+            const chosen = wantsHourCard
+                ? ((a.value >= b.value) ? a : b)
+                : ((a.value < b.value) ? a : b);
             const other = (chosen === a) ? b : a;
 
             // 未選擇者回到手牌
@@ -847,6 +933,112 @@ function handleHumanHourCardChoice(gameState, chosenIndex) {
     }
 }
 
+// ✅ AI 分針移動能力判定函式
+function minuteHandPostHourAI(gameState) {
+    if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+
+    const minuteHandAIs = gameState.players.filter(p =>
+        p.id !== humanId &&
+        !p.isEjected &&
+        p.roleCard === '分針' &&
+        p.mana >= COST &&
+        !p.specialAbilityUsed &&
+        p.pickedHourThisTurn === true &&
+        typeof p.currentClockPosition === 'number'
+    );
+
+    minuteHandAIs.forEach(aiPlayer => {
+        const oldPos = aiPlayer.currentClockPosition;
+
+        // 搜尋指定方向下一個有牌的格子
+        const findNextPos = (dir) => {
+            let pos = oldPos;
+            for (let i = 0; i < 11; i++) {
+                if (dir === 'ccw') {
+                    pos--;
+                    if (pos < 1) pos = 12;
+                } else {
+                    pos++;
+                    if (pos > 12) pos = 1;
+                }
+                const spot = gameState.clockFace.find(s => s.position === pos);
+                if (spot && spot.cards && spot.cards.length > 0) return pos;
+            }
+            return null;
+        };
+
+        const posCW = findNextPos('cw');
+        const posCCW = findNextPos('ccw');
+
+        if (posCW === null && posCCW === null) return;
+
+        // 計算受罰風險 (若會被判定為懲罰對象回傳 2，否則回傳 0)
+        const evaluatePenaltyRisk = (testPos) => {
+            const targetingMode = gameState.sinTargetingMode || 'default';
+            const currentMode = gameState.gameMode || (typeof getGameMode === 'function' ? getGameMode() : '5P');
+            const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+            const sinPos = sinPlayer?.currentClockPosition ?? null;
+
+            if (targetingMode === 'default' || currentMode === '3P') {
+                const candidates = gameState.players.filter(p => {
+                    const allowedTypes = (currentMode === '3P') ? (p.type === '時魔') : (p.type === '時魔' || p.type === '受詛者' || p.type === '時之惡');
+                    return allowedTypes && !p.isEjected && typeof p.currentClockPosition === 'number';
+                });
+                const otherMax = candidates.length > 0 ? Math.max(
+                    0,
+                    ...candidates.filter(p => p !== aiPlayer).map(p => p.currentClockPosition)
+                ) : 0;
+                return testPos >= otherMax ? 2 : 0;
+            } else {
+                if (sinPos === null) return 0;
+                const myDist = getCircularDistance(testPos, sinPos);
+                const targets = gameState.players.filter(p =>
+                    (p.type === '時魔' || p.type === '受詛者') &&
+                    !p.isEjected &&
+                    p !== aiPlayer &&
+                    typeof p.currentClockPosition === 'number'
+                );
+                if (targets.length === 0) return 2;
+                const otherMinDist = Math.min(...targets.map(p => getCircularDistance(p.currentClockPosition, sinPos)));
+                return myDist <= otherMinDist ? 2 : 0;
+            }
+        };
+
+        const currentRisk = evaluatePenaltyRisk(oldPos);
+        const riskCW = posCW !== null ? evaluatePenaltyRisk(posCW) : 999;
+        const riskCCW = posCCW !== null ? evaluatePenaltyRisk(posCCW) : 999;
+
+        let bestChoice = null;
+
+        if (currentRisk > 0) {
+            // 目前面臨受罰風險，優先尋找可脫離受罰的方向
+            if (riskCCW === 0 && riskCW === 0) {
+                // 兩邊都安全，優先選數字較小的（更靠近 1 遠離 12）
+                bestChoice = (posCCW < posCW) ? 'ccw' : 'cw';
+            } else if (riskCCW < currentRisk) {
+                bestChoice = 'ccw';
+            } else if (riskCW < currentRisk) {
+                bestChoice = 'cw';
+            }
+        } else {
+            // 目前安全：當 Mana 充足 (>= 4) 時，若逆時針能移到更小數值且安全的位置，有一定機率主動移以保持優勢
+            if (aiPlayer.mana >= 4 && posCCW !== null && posCCW < oldPos && riskCCW === 0 && checkChance(0.4)) {
+                bestChoice = 'ccw';
+            }
+        }
+
+        if (bestChoice && typeof activateMinuteHandAbility === 'function') {
+            activateMinuteHandAbility(gameState, aiPlayer.id, bestChoice);
+        }
+    });
+}
+
+if (typeof window !== 'undefined') {
+    window.minuteHandPostHourAI = minuteHandPostHourAI;
+}
+
 // game.js - finishHourSelection 函式 (已修改：分針取得任意小時卡皆可觸發)
 
 function finishHourSelection(gameState) {
@@ -860,6 +1052,11 @@ function finishHourSelection(gameState) {
     // 丟棄本回合分鐘卡
     const choices = gameState.currentMinuteChoices || [];
     choices.forEach(c => gameState.minuteDiscard.push(c.card));
+
+    // 1.5 AI 分針能力判定
+    if (typeof minuteHandPostHourAI === 'function') {
+        minuteHandPostHourAI(gameState);
+    }
 
     // 2. 檢查分針觸發條件
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
