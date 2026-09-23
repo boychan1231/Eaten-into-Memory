@@ -170,9 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     const syncStartModeNote = () => {
-        if (!startModeNote) return;
+        const startModeNote3P = document.getElementById('start-mode-note-3p');
+        const startModeNote5P = document.getElementById('start-mode-note-5p');
         const mode = getSelectionValue('start-game-mode', '5P');
-        startModeNote.style.display = mode === '3P' ? 'block' : 'none';
+        if (startModeNote3P) startModeNote3P.style.display = (mode === '3P') ? 'block' : 'none';
+        if (startModeNote5P) startModeNote5P.style.display = (mode === '5P') ? 'block' : 'none';
     };
     bindSelectionButtons('start-game-mode', syncStartModeNote);
     bindSelectionButtons('start-time-demon-role');
