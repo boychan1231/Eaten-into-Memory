@@ -267,6 +267,11 @@ function updateUI(gameState) {
     if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
         window.TutorialModeManager.updateTutorialPointers(gameState);
     }
+
+    // 6. 🎨 PixiJS 畫布渲染器同步更新 (若當前頁面有 Pixi 渲染器)
+    if (window.PixiClockRenderer && typeof window.PixiClockRenderer.render === 'function') {
+        window.PixiClockRenderer.render(gameState);
+    }
 }
 
 // ==========================================

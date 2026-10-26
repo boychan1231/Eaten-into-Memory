@@ -77,9 +77,20 @@
             left = rect.left - tooltipRect.width - 14;
         }
 
-        // 邊界防禦修正
+        // 邊界防禦與防遮擋修正
         left = Math.max(10, Math.min(left, viewportWidth - tooltipRect.width - 10));
         top = Math.max(10, Math.min(top, viewportHeight - tooltipRect.height - 10));
+
+        // 若計算出的框位與目標按鈕有重疊碰撞，向上挪移避開按鈕
+        if (
+            left < rect.right &&
+            left + tooltipRect.width > rect.left &&
+            top < rect.bottom &&
+            top + tooltipRect.height > rect.top
+        ) {
+            top = Math.max(10, rect.top - tooltipRect.height - 14);
+            tooltip.setAttribute('data-arrow', 'bottom');
+        }
 
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
@@ -110,7 +121,7 @@
                 showTutorialPointer(
                     '#confirm-move-btn',
                     turnPrefix + '<strong>步驟 2：點擊「確認出牌」</strong><br>將挑選的分鐘卡打出與其他玩家比大小。',
-                    'left'
+                    'bottom'
                 );
             }
             return;
