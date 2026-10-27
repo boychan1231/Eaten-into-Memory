@@ -368,7 +368,8 @@ details.hud-drawer[open] {
     overflow-y: auto !important;
 }
 #players-panel-details[open] {
-    width: min(350px, 90vw) !important;
+    width: min(280px, 84vw) !important;
+    padding: 8px 10px !important;
 }
 .side-panel-summary {
     list-style: none;
@@ -451,10 +452,10 @@ details.hud-drawer[open] > .side-panel-summary::after {
     display: flex !important;
     flex-direction: column !important;
     height: auto !important;
-    max-height: calc(100vh - 295px) !important;
+    max-height: calc(100vh - 275px) !important;
     margin-top: 0 !important;
-    padding: 2px !important;
-    gap: 8px !important;
+    padding: 1px !important;
+    gap: 6px !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
 }
@@ -463,10 +464,154 @@ details.hud-drawer[open] > .side-panel-summary::after {
     min-height: 0 !important;
     min-width: 0 !important;
     width: 100% !important;
+    background: rgba(14, 17, 26, 0.72) !important;
+    border: 1px solid rgba(255, 210, 127, 0.2) !important;
+    border-radius: 9px !important;
+    padding: 5px 7px !important;
+    position: relative !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.players-grid .player-card:hover {
+    border-color: rgba(255, 210, 127, 0.42) !important;
+}
+.players-grid .player-card.ejected {
+    opacity: 0.55 !important;
+    border-color: rgba(255, 71, 87, 0.5) !important;
+    filter: grayscale(0.5);
+}
+.player-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+.player-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.player-card-name-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+.player-card-name {
+    font-size: 0.84rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.player-you-pill {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: var(--gold);
+    color: #111;
+    font-size: 0.6rem;
+    font-weight: 900;
+    vertical-align: middle;
+    margin-left: 3px;
+}
+.player-card-pos {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.player-card-pos .pos-label {
+    color: var(--dim);
+}
+.player-card-pos .pos-val {
+    color: var(--gold);
+    font-weight: 800;
+}
+.player-card-pos.is-ejected .pos-val {
+    color: var(--danger);
+}
+.player-stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 3px 4px !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+.player-stats-grid .resource-chip,
+.player-stats-grid .stat-pill {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 2px !important;
+    padding: 1.5px 4px !important;
+    border-radius: 4px !important;
+    font-size: 0.65rem !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid var(--line) !important;
-    border-radius: 10px !important;
-    padding: 8px 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #e0e3ee !important;
+}
+.player-stats-grid .resource-chip strong,
+.player-stats-grid .stat-pill strong {
+    font-weight: 800 !important;
+    color: #fff !important;
+    margin-left: auto;
+}
+.player-stats-grid .resource-chip.resource-chip--mana {
+    background: rgba(174, 108, 255, 0.14) !important;
+    border-color: rgba(174, 108, 255, 0.45) !important;
+    color: #eedeff !important;
+}
+.player-stats-grid .resource-chip.resource-chip--mana strong {
+    color: #caa0ff !important;
+}
+.player-stats-grid .resource-chip.resource-chip--gear {
+    background: rgba(255, 210, 127, 0.12) !important;
+    border-color: rgba(255, 210, 127, 0.4) !important;
+    color: #ffecc6 !important;
+}
+.player-stats-grid .resource-chip.resource-chip--gear strong {
+    color: var(--gold) !important;
+}
+.player-stats-grid .resource-chip.resource-chip--shield {
+    background: rgba(0, 210, 211, 0.14) !important;
+    border-color: rgba(0, 210, 211, 0.45) !important;
+    color: #d7ffff !important;
+}
+.player-stats-grid .resource-chip.resource-chip--shield strong {
+    color: #00d2d3 !important;
+}
+.player-stats-grid .stat-pill--hours {
+    background: rgba(84, 160, 255, 0.1) !important;
+    border-color: rgba(84, 160, 255, 0.35) !important;
+    color: #dceaff !important;
+}
+.player-stats-grid .stat-pill--hours strong {
+    color: #54a0ff !important;
+}
+.player-stats-grid .stat-pill--score {
+    background: rgba(255, 159, 243, 0.1) !important;
+    border-color: rgba(255, 159, 243, 0.35) !important;
+    color: #ffebfc !important;
+}
+.player-stats-grid .stat-pill--score strong {
+    color: #ff9ff3 !important;
 }
 
 /* 右側抽屜內容：出牌/歷史/積分 */
@@ -973,6 +1118,42 @@ details.hud-drawer[open] > .side-panel-summary::after {
 .modal {
     background: rgba(6, 7, 10, 0.94) !important; border: 1px solid rgba(255, 210, 127, 0.22) !important;
     border-radius: 20px !important; backdrop-filter: blur(18px);
+}
+
+/* 遊戲模式與角色選擇按鈕：選中時的高亮邊框特效與脈衝光暈 */
+.selection-btn {
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    background: rgba(14, 17, 26, 0.75) !important;
+    color: #c9cfe8 !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    position: relative !important;
+    transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.selection-btn:hover {
+    color: #fff !important;
+    border-color: rgba(255, 210, 127, 0.5) !important;
+    background: rgba(255, 210, 127, 0.08) !important;
+    transform: translateY(-2px);
+}
+.selection-btn.is-selected {
+    border-color: var(--gold) !important;
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.18), rgba(124, 140, 255, 0.12)) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 2px rgba(255, 210, 127, 0.35), 0 0 22px rgba(255, 210, 127, 0.4), inset 0 0 14px rgba(255, 210, 127, 0.15) !important;
+    transform: translateY(-2px) scale(1.02);
+}
+.selection-btn.is-selected::after {
+    content: "✓";
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 6px rgba(255, 210, 127, 0.8);
 }
 .tutorial-tooltip {
     background: rgba(6, 7, 10, 0.92) !important;

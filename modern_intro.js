@@ -515,14 +515,24 @@
 
         skipToMenu() {
             if (this.state === 'ENTERING' || this.state === 'DONE') return;
-            this.selectedMode = '5P';
-            this.selectedRole5P = 'SM_1';
-            this.applySelectionToEngine();
             if (window.gameAudio && typeof window.gameAudio.playBGM === 'function') {
                 window.gameAudio.playBGM();
             }
             if (this.skipBtn) this.skipBtn.classList.add('is-hidden');
             this.closeIntroOverlay();
+
+            // 關閉進場動畫後，彈出原來的遊戲設定與選單（模式/角色選擇）
+            setTimeout(() => {
+                const startGameBtn = document.getElementById('start-game-btn');
+                if (startGameBtn) {
+                    startGameBtn.click();
+                } else {
+                    const gameModeOverlay = document.getElementById('game-mode-overlay');
+                    if (gameModeOverlay && typeof window.openModal === 'function') {
+                        window.openModal(gameModeOverlay);
+                    }
+                }
+            }, 250);
         },
 
         enterMenuState() {

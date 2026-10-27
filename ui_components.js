@@ -648,53 +648,57 @@ function renderAIPlayers(gameState, humanId) {
 
         const roleKey = player.roleCard.includes('時魔') ? '時魔' : player.roleCard;
         const color = ROLE_COLORS[roleKey] || '#fff';
+        const isHuman = (player.id === humanId);
 
-        let diceInfo = '';
+        let diceChip = '';
         if (player.d6Die !== null) {
-            diceInfo = `
-                <div class="resource-chip resource-chip--shield">
+            diceChip = `
+                <div class="resource-chip resource-chip--shield" title="受詛者/時之惡護盾值">
                     <span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
-                    護盾： <strong>${player.d6Die}</strong>
+                    護盾: <strong>${player.d6Die}</strong>
                 </div>`;
         }
-        const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition || '未上場');
+        const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition !== null && player.currentClockPosition !== undefined ? `${player.currentClockPosition} 點` : '未上場');
 
-        // ✅ 1. 新增：判斷頭像樣式 (Avatar Logic)
-        let avatarClass = 'avatar-demon'; // 預設：幼體時魔
-        if (player.type === '時之惡') avatarClass = 'avatar-sin';
-        else if (player.type === '受詛者') avatarClass = 'avatar-scz';
-        else if (player.roleCard === '時針') avatarClass = 'avatar-evo-hour';
-        else if (player.roleCard === '分針') avatarClass = 'avatar-evo-min';
-        else if (player.roleCard === '秒針') avatarClass = 'avatar-evo-sec';
+        // 齒輪生命顯示：數字為主，佐以單一齒輪圖示，超過 0 顆不橫向溢出
+        const gearCount = Math.max(0, player.gearCards || 0);
 
-        // 注意：這裡使用 += 附加內容，以免覆蓋掉剛加的 shieldEl
-        // 但為了排版簡單，我們將內容包在一個 div 裡，或者直接 append HTML
+        // 建立卡片內層內容
         const contentDiv = document.createElement('div');
-
-        // ✅ 2. 調整 HTML 結構，加入頭像 div
-        // 注意：我們把原本 absolute定位的 role-badge 改為 static，讓它乖乖排在名字旁邊
-        //從第二行移除<div class="avatar-circle ${avatarClass}"></div>//
+        contentDiv.className = 'player-card-inner';
 
         contentDiv.innerHTML = `
-            <div style="display:flex; align-items:center; margin-bottom:8px; border-bottom:1px solid #444; padding-bottom:5px;">
-
-                <div style="flex:1;">
-                    <h4 style="color:${color}; margin:0; font-size:1rem; line-height:1.2;">${player.name}</h4>
+            <div class="player-card-header">
+                <div class="player-card-name-group">
+                    <h4 style="color:${color}; margin:0;" class="player-card-name">
+                        ${player.name}
+                        ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
+                    </h4>
                 </div>
-				<div>位置： ${posDisplay}</div>
+                <div class="player-card-pos ${player.isEjected ? 'is-ejected' : ''}">
+                    <span class="pos-label">位置</span>
+                    <strong class="pos-val">${posDisplay}</strong>
+                </div>
             </div>
 
-            <div class="player-stats">
-                <div class="resource-chip resource-chip--mana">
+            <div class="player-stats-grid">
+                <div class="resource-chip resource-chip--mana" title="目前法力值">
                     <span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
                     Mana: <strong>${player.mana}</strong>
                 </div>
-                <div class="resource-chip resource-chip--gear">
-                    生命值： <strong>${'⚙️'.repeat(Math.max(0, player.gearCards))}</strong>
+                <div class="resource-chip resource-chip--gear" title="齒輪生命數">
+                    <span class="gear-icon">⚙️</span>
+                    齒輪: <strong>${gearCount}</strong>
                 </div>
-				${diceInfo}
-                <div>收集： ${player.hourCards.length}</div>
-                <div>分數： ${player.score}</div>
+                ${diceChip}
+                <div class="stat-pill stat-pill--hours" title="已收集的小時卡張數">
+                    <span class="stat-icon">⌛</span>
+                    小時卡: <strong>${player.hourCards.length}</strong>
+                </div>
+                <div class="stat-pill stat-pill--score" title="當前總得分">
+                    <span class="stat-icon">🏆</span>
+                    分數: <strong>${player.score}</strong>
+                </div>
             </div>
         `;
         pCard.appendChild(contentDiv);
@@ -1120,11 +1124,11 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     });
 }
 
-// --- 三階段「各玩家比較分鐘數值並分出大小次序」動態演出（6 秒完整版，等待玩家點擊畫面退場）---
-// 階段 1 (0.00s ~ 1.00s)：各玩家蓋牌匯聚於鐘面中央（原始座位次序）
-// 階段 2 (1.00s ~ 3.20s)：依序 3D 翻牌揭曉各玩家打出的分鐘卡數值與齒輪數
-// 階段 3 (3.20s ~ 6.00s)：依數值由大到小執行 FLIP 動態交錯換位並依序浮現 1st~5th 次序
-// 6.00s 後：常駐展示最終次序，並顯示「👆 點擊畫面任意處繼續」，待玩家點擊畫面時才退場
+// --- 三階段「各玩家比較分鐘數值並分出大小次序」動態演出（等待玩家點擊畫面退場）---
+// 階段 1 (0.00s ~ 0.80s)：各玩家蓋牌匯聚於鐘面中央（原始座位次序，停留 0.8 秒）
+// 階段 2 (0.80s ~ 3.00s)：依序 3D 翻牌揭曉各玩家打出的分鐘卡數值與齒輪數
+// 階段 3 (3.00s ~ 5.80s)：依數值由大到小執行 FLIP 動態交錯換位並依序浮現 1st~5th 次序
+// 5.80s 後：常駐展示最終次序，並顯示「👆 點擊畫面任意處繼續」，待玩家點擊畫面時才退場
 window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedChoices, onComplete) {
     const overlay = document.getElementById('minute-clash-overlay');
     if (!overlay || !Array.isArray(sortedChoices) || sortedChoices.length === 0) {
@@ -1237,7 +1241,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     overlay.appendChild(banner);
     overlay.classList.remove('hidden', 'is-leaving');
 
-    // 階段 2 (1.00s ~ 3.20s)：依序 3D 翻牌揭曉數值（每張間隔 300ms）
+    // 階段 2 (0.80s ~ 3.00s)：階段 1 蓋牌集結縮短至 0.8s，此時依序 3D 翻牌揭曉數值（每張間隔 300ms）
     timers.push(setTimeout(() => {
         if (finished) return;
         titleEl.textContent = '🃏 揭曉各玩家打出的分鐘卡…';
@@ -1251,9 +1255,9 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
                 }
             }, idx * 300));
         });
-    }, 1000));
+    }, 800));
 
-    // 階段 3 (3.20s ~ 6.00s)：比較數值大小，執行 FLIP 動態交錯換位並依序浮現 1st ~ 5th 名次
+    // 階段 3 (3.00s ~ 5.80s)：比較數值大小，執行 FLIP 動態交錯換位並依序浮現 1st ~ 5th 名次
     timers.push(setTimeout(() => {
         if (finished) return;
         titleEl.textContent = '⚡ 比較分鐘數值大小，排列行動次序…';
@@ -1291,7 +1295,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
                 slot.style.transform = 'translate3d(0, 0, 0)';
             }
 
-            // 待換位滑行接近定點時（約 4.30s 起，每張間隔 280ms），依名次 1st -> 5th 逐一彈出標章
+            // 待換位滑行接近定點時（約 4.10s 起，每張間隔 280ms），依名次 1st -> 5th 逐一彈出標章
             timers.push(setTimeout(() => {
                 if (!finished && slot) slot.classList.add('show-rank');
             }, 1100 + newIdx * 280));
@@ -1300,15 +1304,15 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
         }
-    }, 3200));
+    }, 3000));
 
-    // 6.00s：整套 6 秒動態演出完畢，畫面停留並提示玩家點擊畫面退場
+    // 5.80s：整套動態演出完畢，畫面停留並提示玩家點擊畫面退場
     timers.push(setTimeout(() => {
         if (finished) return;
         titleEl.textContent = '✨ 分鐘卡大小次序已確定！';
         footerEl.textContent = '👆 點擊畫面任意處繼續挑選小時卡';
         footerEl.classList.add('is-ready-prompt');
-    }, 6000));
+    }, 5800));
 };
 
 // --- 秒針 UI 控制 (輔助函式) ---

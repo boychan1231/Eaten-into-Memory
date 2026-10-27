@@ -34,6 +34,18 @@
         : p.type === '受詛者' ? '詛'
         : (String(p.roleCard).includes('幼') ? '幼' : String(p.roleCard).charAt(0));
 
+    // 棋子標籤顯示名稱：玩家顯示「我」，其他角色顯示完整身分（時魔、時之惡、受詛者、時針、分針、秒針）
+    const roleDisplayNameOf = (p, isHuman) => {
+        if (isHuman) return '我';
+        if (p.type === '時之惡') return '時之惡';
+        if (p.type === '受詛者') return '受詛者';
+        if (p.roleCard === '時針') return '時針';
+        if (p.roleCard === '分針') return '分針';
+        if (p.roleCard === '秒針') return '秒針';
+        if (p.type === '時魔' || String(p.roleCard).includes('幼') || String(p.roleCard).includes('時魔')) return '時魔';
+        return p.roleCard || p.type || '時魔';
+    };
+
     const Board = {
         app: null,
         stage: null,
@@ -351,24 +363,30 @@
             }
         },
 
-        // ---------- 5. 中央動態時鐘指針（隨局數與回合推進） ----------
+        // ---------- 5. 中央動態時鐘指針（顯示實際時間：時針、分針與秒針） ----------
         buildClockHands() {
             const container = new PIXI.Container();
             container.position.set(CX, CY);
 
-            // 時針（指向當前局數對應方位）
+            // 時針（顯示實際小時與分鐘平滑過渡）
             const hourHand = new PIXI.Graphics();
-            hourHand.lineStyle(2.5, PAL.gold, 0.75).beginFill(PAL.gold, 0.22);
-            hourHand.moveTo(0, 18).lineTo(-6, -28).lineTo(0, -132).lineTo(6, -28).closePath().endFill();
+            hourHand.lineStyle(2.5, PAL.gold, 0.85).beginFill(PAL.gold, 0.28);
+            hourHand.moveTo(0, 16).lineTo(-5, -26).lineTo(0, -118).lineTo(5, -26).closePath().endFill();
 
-            // 分針（指向當前回合 1~12 對應時辰格）
+            // 分針（顯示實際分鐘與秒鐘平滑過渡）
             const minHand = new PIXI.Graphics();
-            minHand.lineStyle(2, PAL.glow, 0.85).beginFill(PAL.glow, 0.25);
-            minHand.moveTo(0, 22).lineTo(-4, -36).lineTo(0, -186).lineTo(4, -36).closePath().endFill();
+            minHand.lineStyle(2, PAL.glow, 0.9).beginFill(PAL.glow, 0.32);
+            minHand.moveTo(0, 20).lineTo(-3.5, -34).lineTo(0, -165).lineTo(3.5, -34).closePath().endFill();
 
-            container.addChild(hourHand, minHand);
+            // 秒針（細長暗金色動態秒針，精準指向真實秒數）
+            const secHand = new PIXI.Graphics();
+            secHand.lineStyle(1.2, PAL.goldBright, 0.92);
+            secHand.moveTo(0, 28).lineTo(0, -195);
+            secHand.lineStyle(0).beginFill(PAL.goldBright, 0.95).drawCircle(0, 0, 3.5).endFill();
+
+            container.addChild(hourHand, minHand, secHand);
             this.L.hands.addChild(container);
-            this.hands = { hour: hourHand, min: minHand };
+            this.hands = { hour: hourHand, min: minHand, sec: secHand };
         },
 
         // ---------- 工具函式 ----------
@@ -406,14 +424,12 @@
             const drawn = gs.currentDrawnHourCards || [];
             const waitingHour = !!gs.waitingHourChoice && gs.waitingHourChoicePlayerId === humanId;
 
-            // 回合或局數推進時觸發齒輪短暫加速運轉，並更新指針目標角度
+            // 回合或局數推進時觸發齒輪短暫加速運轉
             const roundKey = `${gs.gameRound}-${gs.roundMarker}-${drawn.length}`;
             if (roundKey !== this.lastRoundKey) {
                 this.lastRoundKey = roundKey;
                 this.gearBoost = 4.2;
             }
-            this.targetHandAngle = ((gs.roundMarker || 12) * 30) * Math.PI / 180;
-            this.targetHourAngle = ((gs.gameRound || 1) * 60) * Math.PI / 180;
 
             this.drawSpots(gs, waitingHour ? drawn : []);
             this.drawCenter(gs, drawn, waitingHour);
@@ -603,22 +619,22 @@
             if (tex) {
                 sprite = new PIXI.Sprite(tex);
                 sprite.anchor.set(0.5);
-                sprite.width = 28;
-                sprite.height = 28;
+                // 縮小至原來的 90% (28px * 0.9 = 25.2px)
+                sprite.width = 25.2;
+                sprite.height = 25.2;
                 c.addChild(sprite);
             } else {
                 // 後備方案：文字符號標記
-                const fallbackTxt = this.text(labelOf(p), 13.5, col, '800');
+                const fallbackTxt = this.text(labelOf(p), 12, col, '800');
                 c.addChild(fallbackTxt);
             }
 
-            // 人類玩家專屬上方金色「你」標記與星芒徽章
-            let youTag = null;
-            if (isHuman) {
-                youTag = this.text('★你', 9, PAL.goldBright, '800');
-                youTag.y = -24;
-                c.addChild(youTag);
-            }
+            // 角色身分標籤：文字統一使用金色；player 顯示「我」，其他角色顯示對應身分（時魔、時之惡、受詛者、時針、分針、秒針）
+            const roleNameText = roleDisplayNameOf(p, isHuman);
+            const tagColor = isHuman ? PAL.goldBright : PAL.gold;
+            const youTag = this.text(isHuman ? '★我' : roleNameText, 8.5, tagColor, '800');
+            youTag.y = -23;
+            c.addChild(youTag);
 
             return { c, auraG, sprite, youTag, isHuman, key, tx: 0, ty: 0, phase: Math.random() * Math.PI * 2 };
         },
@@ -718,12 +734,25 @@
                 this.pendulumArm.rotation = Math.sin(this.t * 2.1) * 0.24;
             }
 
-            // 3. 中央時鐘指針平滑轉向當前回合與局數
+            // 3. 中央時鐘指針精準顯示真實世界時間（時、分、秒連續平滑轉動）
             if (this.hands) {
-                const diffMin = Math.atan2(Math.sin(this.targetHandAngle - this.hands.min.rotation), Math.cos(this.targetHandAngle - this.hands.min.rotation));
-                const diffHour = Math.atan2(Math.sin(this.targetHourAngle - this.hands.hour.rotation), Math.cos(this.targetHourAngle - this.hands.hour.rotation));
-                this.hands.min.rotation += diffMin * 0.1;
-                this.hands.hour.rotation += diffHour * 0.08;
+                const now = new Date();
+                const ms = now.getMilliseconds();
+                const s = now.getSeconds() + ms / 1000;
+                const m = now.getMinutes() + s / 60;
+                const h = (now.getHours() % 12) + m / 60;
+
+                const targetSec = (s / 60) * Math.PI * 2;
+                const targetMin = (m / 60) * Math.PI * 2;
+                const targetHour = (h / 12) * Math.PI * 2;
+
+                if (this.hands.sec) {
+                    this.hands.sec.rotation = targetSec;
+                }
+                const diffMin = Math.atan2(Math.sin(targetMin - this.hands.min.rotation), Math.cos(targetMin - this.hands.min.rotation));
+                const diffHour = Math.atan2(Math.sin(targetHour - this.hands.hour.rotation), Math.cos(targetHour - this.hands.hour.rotation));
+                this.hands.min.rotation += diffMin * 0.15;
+                this.hands.hour.rotation += diffHour * 0.1;
             }
 
             // 4. 星塵緩慢漂浮
@@ -751,8 +780,8 @@
                     n.auraG.alpha = 0.88 + 0.12 * Math.sin(this.t * 3.2 + n.phase);
                 }
                 if (n.youTag) {
-                    // 人類玩家專屬「★你」微幅躍動
-                    n.youTag.y = -24 + Math.sin(this.t * 3.5) * 1.0;
+                    // 棋子標籤隨呼吸輕微上下浮動
+                    n.youTag.y = -23 + Math.sin(this.t * 3.5 + n.phase) * 0.8;
                 }
             });
 
