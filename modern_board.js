@@ -618,6 +618,10 @@
         if (typeof window.updateUI === 'function' && !window.updateUI._hookedByModern) {
             const prevUpdateUI = window.updateUI;
             const wrappedUpdateUI = function (gs) {
+                if (gs && gs.waitingMinuteHandChoice) {
+                    const evoDetails = document.getElementById('evo-panel-details');
+                    if (evoDetails && !evoDetails.open) evoDetails.open = true;
+                }
                 if (typeof prevUpdateUI === 'function') prevUpdateUI(gs);
                 Board.render(gs);
             };

@@ -169,15 +169,21 @@
 				<div class="main-area">
 					<!-- 左側懸浮抽屜群（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-left">
+						<details id="evo-panel-details" class="side-panel-group hud-drawer">
+							<summary class="side-panel-summary">⚡ 能力與進化</summary>
+							<div class="hud-drawer-body">
+								<div id="evolution-progress-area" class="progress-area"></div>
+							</div>
+						</details>
+
 						<details id="log-panel-details" class="log-section side-panel-group hud-drawer">
-							<summary class="side-panel-summary">📜 日誌與進化</summary>
+							<summary class="side-panel-summary">📜 遊戲日誌</summary>
 							<div class="hud-drawer-body">
 								<div id="game-log-container">
 									<ul id="log-list">
 										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
 									</ul>
 								</div>
-								<div id="evolution-progress-area" class="progress-area"></div>
 							</div>
 						</details>
 

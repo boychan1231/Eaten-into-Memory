@@ -76,7 +76,6 @@
         init() {
             this.overlayEl = document.getElementById('modern-intro-overlay');
             const host = document.getElementById('intro-canvas-host');
-            this.promptEl = document.getElementById('intro-prompt');
             this.uiEl = document.getElementById('intro-ui-container');
             this.skipBtn = document.getElementById('intro-skip-btn');
 
@@ -945,7 +944,6 @@
             });
             this.clockHands.container.alpha = 0;
 
-            if (this.promptEl) this.promptEl.classList.remove('is-fading-out');
             if (this.skipBtn) this.skipBtn.classList.remove('is-hidden');
             if (this.uiEl) {
                 this.uiEl.classList.remove('is-visible');

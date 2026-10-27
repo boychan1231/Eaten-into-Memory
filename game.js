@@ -432,7 +432,8 @@ function processMinuteCardSelection(gameState) {
     if (humanPlayer && !humanPlayer.isEjected && humanPlayer.hand.length > 0) {
         appLogger.log(`\n🚨${humanPlayer.name} 回合！請選擇您的卡牌。 🚨`);
         gameState.currentRoundAIChoices = choices; 
-        document.getElementById('next-step-btn').disabled = true;
+        const nextStepBtn = document.getElementById('next-step-btn');
+        if (nextStepBtn) nextStepBtn.disabled = true;
         return; 
     } else if (humanPlayer && humanPlayer.hand.length === 0) {
         appLogger.log(`\n⚠️${humanPlayer.name} 已無手牌，本回合自動略過。`);

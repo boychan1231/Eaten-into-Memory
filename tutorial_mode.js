@@ -179,9 +179,9 @@
             const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             shownSteps.add('step_minute_ability');
             showTutorialPointer(
-                '#minute-ability-panel',
+                '#evolution-progress-area',
                 turnPrefix + '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。',
-                'top'
+                'right'
             );
             return;
         }
@@ -191,7 +191,7 @@
             const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
             shownSteps.add('step_second_ability');
             showTutorialPointer(
-                '#seconds-choice-modal',
+                '#seconds-choice-overlay .modal',
                 turnPrefix + '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
                 'top'
             );
