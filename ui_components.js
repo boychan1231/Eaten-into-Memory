@@ -942,6 +942,9 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     const DROP_UP_THRESHOLD = 75; // 向上拖離超過 75px 即進入可出牌狀態
 
     const checkIsInsideClock = (clientX, clientY) => {
+        if (window.Board && typeof window.Board.isInsideClock === 'function') {
+            return window.Board.isInsideClock(clientX, clientY);
+        }
         const clockEl = document.getElementById('clock-face');
         if (!clockEl || typeof clockEl.getBoundingClientRect !== 'function') return false;
         const r = clockEl.getBoundingClientRect();
@@ -984,11 +987,18 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
 
         // 飛入鐘面中心動畫後執行出牌
         const clockEl = document.getElementById('clock-face');
-        if (clockEl && typeof clockEl.getBoundingClientRect === 'function' && typeof cardEl.getBoundingClientRect === 'function') {
-            const clockRect = clockEl.getBoundingClientRect();
+        if (typeof cardEl.getBoundingClientRect === 'function') {
             const cardRect = cardEl.getBoundingClientRect();
-            const targetDx = (clockRect.left + clockRect.width / 2) - (cardRect.left + cardRect.width / 2);
-            const targetDy = (clockRect.top + clockRect.height / 2) - (cardRect.top + cardRect.height / 2);
+            let targetDx = 0, targetDy = 0;
+            if (window.Board && typeof window.Board.getClockCenter === 'function') {
+                const c = window.Board.getClockCenter();
+                targetDx = c.x - (cardRect.left + cardRect.width / 2);
+                targetDy = c.y - (cardRect.top + cardRect.height / 2);
+            } else if (clockEl && typeof clockEl.getBoundingClientRect === 'function') {
+                const clockRect = clockEl.getBoundingClientRect();
+                targetDx = (clockRect.left + clockRect.width / 2) - (cardRect.left + cardRect.width / 2);
+                targetDy = (clockRect.top + clockRect.height / 2) - (cardRect.top + cardRect.height / 2);
+            }
             const currentDx = parseFloat(cardEl.dataset.dragDx || '0');
             const currentDy = parseFloat(cardEl.dataset.dragDy || '0');
             cardEl.classList.remove('is-dragging', 'is-drop-ready');

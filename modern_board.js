@@ -66,6 +66,113 @@
         textures: {},
         texturesLoaded: false,
 
+        // ---------- 鐘面視角自由拖拉平移 (Pan / Drag) ----------
+        pan: {
+            x: 0,
+            y: 0,
+            targetX: 0,
+            targetY: 0,
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            startPanX: 0,
+            startPanY: 0,
+            hasMoved: false,
+            movedCooldown: 0
+        },
+
+        recenter() {
+            this.pan.targetX = 0;
+            this.pan.targetY = 0;
+            this.updateRecenterBtn();
+        },
+
+        updateRecenterBtn() {
+            const btn = document.getElementById('clock-recenter-btn');
+            if (!btn) return;
+            const isOffset = Math.hypot(this.pan.targetX, this.pan.targetY) > 18;
+            btn.classList.toggle('hidden', !isOffset);
+        },
+
+        isPanActive() {
+            return this.pan.hasMoved || (Date.now() < this.pan.movedCooldown);
+        },
+
+        getClockCenter() {
+            if (!this.app || !this.app.view) {
+                return { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 360 };
+            }
+            const rect = this.app.view.getBoundingClientRect();
+            const targetDiameter = Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
+            const s = targetDiameter / D;
+            const cx = rect.left + (this.app.screen.width) / 2 + this.pan.x;
+            const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y;
+            return { x: cx, y: cy, radius: (D * s) / 2 };
+        },
+
+        isInsideClock(clientX, clientY) {
+            const c = this.getClockCenter();
+            return Math.hypot(clientX - c.x, clientY - c.y) <= c.radius;
+        },
+
+        bindPanEvents(host) {
+            host.addEventListener('pointerdown', (e) => {
+                // 僅接受主要點擊（滑鼠左鍵或觸控單指）
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                // 若正在拖出手牌（避免衝突），不平移鐘面
+                if (window.isDraggingCard) return;
+
+                this.pan.isDragging = true;
+                this.pan.startX = e.clientX;
+                this.pan.startY = e.clientY;
+                this.pan.startPanX = this.pan.targetX;
+                this.pan.startPanY = this.pan.targetY;
+                this.pan.hasMoved = false;
+
+                try { host.setPointerCapture(e.pointerId); } catch (_) {}
+            });
+
+            host.addEventListener('pointermove', (e) => {
+                if (!this.pan.isDragging) return;
+                const dx = e.clientX - this.pan.startX;
+                const dy = e.clientY - this.pan.startY;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist > 5) {
+                    this.pan.hasMoved = true;
+                    host.classList.add('is-panning');
+
+                    // 平移邊界限制：允許鐘面最多移動至視野 85%
+                    const maxPanX = Math.max(300, (this.app?.screen?.width || 800) * 0.85);
+                    const maxPanY = Math.max(300, (this.app?.screen?.height || 800) * 0.85);
+
+                    this.pan.targetX = Math.max(-maxPanX, Math.min(maxPanX, this.pan.startPanX + dx));
+                    this.pan.targetY = Math.max(-maxPanY, Math.min(maxPanY, this.pan.startPanY + dy));
+                }
+            });
+
+            const onPanEnd = (e) => {
+                if (!this.pan.isDragging) return;
+                this.pan.isDragging = false;
+                host.classList.remove('is-panning');
+                try { host.releasePointerCapture(e.pointerId); } catch (_) {}
+
+                if (this.pan.hasMoved) {
+                    this.pan.movedCooldown = Date.now() + 160; // 拖曳結束後 160ms 內防點擊穿透
+                }
+                this.updateRecenterBtn();
+            };
+
+            host.addEventListener('pointerup', onPanEnd);
+            host.addEventListener('pointercancel', onPanEnd);
+
+            // 雙擊空白處平滑置中鐘面
+            host.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                this.recenter();
+            });
+        },
+
         // ---------- 載入各角色靈魂圖案貼圖 ----------
         async loadTextures() {
             const map = {
@@ -167,6 +274,18 @@
             this.buildBackgroundPendulum();
             this.buildAstralClockRings();
             this.buildClockHands();
+
+            // 鐘面自由拖拉平移視角綁定
+            this.bindPanEvents(host);
+
+            const recenterBtn = document.getElementById('clock-recenter-btn');
+            if (recenterBtn && !recenterBtn._bound) {
+                recenterBtn._bound = true;
+                recenterBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.recenter();
+                });
+            }
 
             this.app.ticker.add(dt => this.onTick(dt));
         },
@@ -509,11 +628,12 @@
                     node.eventMode = 'static';
                     node.cursor = 'pointer';
                     node.on('pointertap', () => {
+                        if (this.isPanActive()) return;
                         const gsNow = window.globalGameState;
                         const idx = (gsNow.currentDrawnHourCards || []).findIndex(c => c.number === spot.position);
                         if (idx >= 0) window.handleHumanHourCardChoice(gsNow, idx);
                     });
-                    node.on('pointerover', () => node.scale.set(1.1));
+                    node.on('pointerover', () => { if (!this.pan.isDragging) node.scale.set(1.1); });
                     node.on('pointerout', () => node.scale.set(1));
                     this.pulses.push(g);
                 }
@@ -558,9 +678,12 @@
                 if (waitingHour) {
                     c.eventMode = 'static';
                     c.cursor = 'pointer';
-                    c.on('pointerover', () => c.scale.set(1.07));
+                    c.on('pointerover', () => { if (!this.pan.isDragging) c.scale.set(1.07); });
                     c.on('pointerout', () => c.scale.set(1));
-                    c.on('pointertap', () => window.handleHumanHourCardChoice(window.globalGameState, i));
+                    c.on('pointertap', () => {
+                        if (this.isPanActive()) return;
+                        window.handleHumanHourCardChoice(window.globalGameState, i);
+                    });
                 }
                 L.addChild(c);
             });
@@ -718,10 +841,20 @@
             const deltaSec = dt / 60;
             this.t += deltaSec;
 
+            // 鐘面平移平滑插值 (Lerp)
+            this.pan.x += (this.pan.targetX - this.pan.x) * 0.22;
+            this.pan.y += (this.pan.targetY - this.pan.y) * 0.22;
+            if (Math.abs(this.pan.targetX - this.pan.x) < 0.15) this.pan.x = this.pan.targetX;
+            if (Math.abs(this.pan.targetY - this.pan.y) < 0.15) this.pan.y = this.pan.targetY;
+
             const app = this.app;
-            const s = Math.min(app.screen.width, app.screen.height) / D;
+            const targetDiameter = Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
+            const s = targetDiameter / D;
             this.stage.scale.set(s);
-            this.stage.position.set((app.screen.width - D * s) / 2, (app.screen.height - D * s) / 2);
+            this.stage.position.set(
+                (app.screen.width - D * s) / 2 + this.pan.x,
+                (app.screen.height - D * s) / 2 + this.pan.y
+            );
 
             // 1. 齒輪動態咬合旋轉（回合推進時帶有加速脈衝）
             this.gearBoost += (1 - this.gearBoost) * 0.06;
@@ -845,5 +978,6 @@
         }
     });
 
+    window.Board = Board;
     hookUpdateUI();
 })();

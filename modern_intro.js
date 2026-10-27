@@ -237,23 +237,16 @@
             specs.forEach((sp, idx) => {
                 const g = new PIXI.Graphics();
                 this.drawGearGraphic(g, sp.r, sp.teeth, sp.inner, sp.spokes, sp.col, idx < 2 ? 0.08 : 0.16);
-                // 起始位置從外圍遠處飛入
-                const angle = Math.atan2(sp.y || (idx % 2 ? 1 : -1), sp.x || (idx < 1 ? 1 : -1));
-                const startDist = 380 + idx * 35;
-                const startX = sp.x + Math.cos(angle + idx * 0.7) * startDist;
-                const startY = sp.y + Math.sin(angle + idx * 0.7) * startDist;
-
-                g.position.set(startX, startY);
-                g.scale.set(0.25);
+                // 歲輪直接定點於各自咬合座標，從原生位置原處淡入浮現（不再從外圍遠處飛入）
+                g.position.set(sp.x, sp.y);
+                g.scale.set(0.92);
                 g.alpha = 0;
 
                 this.gearLayer.addChild(g);
                 this.gears.push({
                     node: g,
-                    tx: sp.x,
-                    ty: sp.y,
-                    sx: startX,
-                    sy: startY,
+                    x: sp.x,
+                    y: sp.y,
                     speed: sp.speed,
                     dir: sp.dir,
                     delay: sp.delay,
@@ -621,13 +614,12 @@
                 const t = this.stateTime;
                 this.bgGlowG.alpha = Math.min(1, 0.5 + t * 0.3);
 
-                // A. 齒輪飛入咬合與旋轉
+                // A. 歲輪齒輪原處旋轉並淡入浮現
                 this.gears.forEach(gr => {
-                    const localT = Math.max(0, (t - gr.delay) / 1.25);
+                    const localT = Math.max(0, (t - gr.delay) / 1.15);
                     const p = easeOutCubic(localT);
-                    gr.node.x = gr.sx + (gr.tx - gr.sx) * p;
-                    gr.node.y = gr.sy + (gr.ty - gr.sy) * p;
-                    gr.node.scale.set(0.25 + 0.75 * p);
+                    gr.node.position.set(gr.x, gr.y);
+                    gr.node.scale.set(0.92 + 0.08 * p);
                     gr.node.alpha = gr.targetAlpha * p;
                     gr.node.rotation += gr.speed * gr.dir * deltaSec;
                 });
@@ -933,8 +925,8 @@
             this.pendulumBob.scale.set(1);
 
             this.gears.forEach(gr => {
-                gr.node.position.set(gr.sx, gr.sy);
-                gr.node.scale.set(0.25);
+                gr.node.position.set(gr.x, gr.y);
+                gr.node.scale.set(0.92);
                 gr.node.alpha = 0;
             });
             this.clockRingsG.alpha = 0;

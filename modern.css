@@ -650,29 +650,98 @@ details.hud-drawer[open] > .side-panel-summary::after {
     overflow-y: auto !important;
 }
 
-/* ---- 中央舞台：全視野動態鐘面（與純黑背景無縫融合） ---- */
+/* ---- 中央舞台：全視野動態鐘面（全寬全高透明畫布，徹底免除平移邊界裁切） ---- */
 .clock-panel,
 .clock-panel.game-panel {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     padding: 0 !important;
-    justify-content: center !important;
+    margin: 0 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+}
+.clock-panel .clock-section,
+.clock-section {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    aspect-ratio: auto !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
 }
 #clock-face {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     background: none !important;
     border: none !important;
     box-shadow: none !important;
+    pointer-events: none !important;
+    touch-action: none !important;
 }
 #clock-face > *:not(#modern-board) { display: none !important; }
-#modern-board { position: absolute; inset: 0; }
-.clock-panel .clock-section,
-.clock-section {
-    width: min(660px, 68vh, 92vw) !important;
-    height: min(660px, 68vh, 92vw) !important;
-    margin: 0 auto !important;
-    position: relative !important;
+#modern-board {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+    touch-action: none !important;
+    cursor: grab;
+}
+#modern-board.is-panning {
+    cursor: grabbing !important;
+}
+
+/* 鐘面置中快捷按鈕 */
+.clock-recenter-btn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    z-index: 85;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 15px;
+    border-radius: 999px;
+    background: rgba(9, 11, 20, 0.88);
+    border: 1px solid rgba(255, 210, 127, 0.5);
+    color: var(--gold);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75), 0 0 12px rgba(255, 210, 127, 0.22);
+    backdrop-filter: blur(10px);
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease, border-color 0.2s ease;
+    opacity: 1;
+    pointer-events: auto;
+}
+.clock-recenter-btn:hover {
+    background: rgba(255, 210, 127, 0.18);
+    border-color: rgba(255, 210, 127, 0.9);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.85), 0 0 18px rgba(255, 210, 127, 0.45);
+}
+.clock-recenter-btn.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(8px);
+}
+.clock-recenter-btn .recenter-icon {
+    font-size: 1.05rem;
+    line-height: 1;
 }
 
 /* =========================================================
