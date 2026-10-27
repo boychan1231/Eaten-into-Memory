@@ -662,6 +662,14 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
         });
     }
 
+    // 保留翻牌後的原始玩家出牌順序，供「分鐘卡比大小與次序排列動畫」對比換位使用
+    const preSortChoices = choices.map(c => ({
+        playerId: c.playerId,
+        playerName: c.playerName,
+        card: c.card,
+        roleType: c.roleType
+    }));
+
     choices.sort((a, b) => b.card.value - a.card.value);
 
     const drawnCards = gameState.currentDrawnHourCards || [];
@@ -690,6 +698,20 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
     gameState.nextHourPickerIndex = 0;
     gameState.waitingHourChoice = false;
     gameState.waitingHourChoicePlayerId = null;
+
+    // 若處於瀏覽器互動模式且存在「分鐘卡比大小與次序排列動畫」播放器，先演繹三階段比大小動畫再進入選小時卡
+    if (typeof window !== 'undefined' && typeof window.playMinuteClashAnimation === 'function') {
+        const clashEl = document.getElementById('minute-clash-overlay');
+        if (clashEl && clashEl.nodeType === 1) {
+            gameState.isPlayingMinuteClash = true;
+            if (typeof updateUI === 'function') updateUI(gameState);
+            window.playMinuteClashAnimation(gameState, preSortChoices, choices, () => {
+                gameState.isPlayingMinuteClash = false;
+                processNextHourPicker(gameState);
+            });
+            return;
+        }
+    }
 
     processNextHourPicker(gameState);
 }

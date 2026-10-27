@@ -51,6 +51,79 @@
         gearBoost: 1,
         lastRoundKey: '',
         t: 0,
+        textures: {},
+        texturesLoaded: false,
+
+        // ---------- 載入各角色靈魂圖案貼圖 ----------
+        async loadTextures() {
+            const map = {
+                // NPC 角色靈魂圖案
+                'demon': 'assets/soul_demon.png',
+                'sin': 'assets/soul_sin.png',
+                'scz': 'assets/soul_scz.png',
+                'hour': 'assets/soul_hour.png',
+                'min': 'assets/soul_min.png',
+                'sec': 'assets/soul_sec.png',
+                // 玩家專屬靈魂圖案
+                'p_demon': 'assets/player/p_soul_demon.png',
+                'p_sin': 'assets/player/P_soul_sin.png',
+                'p_scz': 'assets/player/p_soul_scz.png',
+                'p_hour': 'assets/player/p_soul_hour.png',
+                'p_min': 'assets/player/p_soul_min.png',
+                'p_sec': 'assets/player/p_soul_sec.png'
+            };
+
+            const base64Map = window.ROLE_SOUL_BASE64 || {};
+
+            const entries = Object.entries(map);
+
+            // 零延遲三重保證：優先使用內嵌 Base64 DataURI 直接同步建立 Texture，徹底免除本機跨域或延遲問題
+            await Promise.all(entries.map(([k, path]) => {
+                return new Promise(resolve => {
+                    const src = base64Map[k] || path;
+                    if (window.PIXI && PIXI.Texture && typeof PIXI.Texture.from === 'function') {
+                        try {
+                            const tex = PIXI.Texture.from(src);
+                            if (tex) {
+                                this.textures[k] = tex;
+                                resolve();
+                                return;
+                            }
+                        } catch (_) {}
+                    }
+                    if (typeof Image !== 'undefined') {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            try {
+                                if (window.PIXI && PIXI.Texture && typeof PIXI.Texture.from === 'function') {
+                                    this.textures[k] = PIXI.Texture.from(img);
+                                }
+                            } catch (_) {}
+                            resolve();
+                        };
+                        img.onerror = async () => {
+                            if (window.PIXI && PIXI.Assets && typeof PIXI.Assets.load === 'function') {
+                                try {
+                                    this.textures[k] = await PIXI.Assets.load(path);
+                                } catch (_) {}
+                            }
+                            resolve();
+                        };
+                        img.src = src;
+                    } else {
+                        resolve();
+                    }
+                });
+            }));
+
+            this.texturesLoaded = true;
+            // 貼圖就緒後強制重新建立所有棋子精靈節點，無縫替換為角色圖形
+            if (window.globalGameState) {
+                const humanId = (window.getEffectiveHumanPlayerId && window.getEffectiveHumanPlayerId()) || 'SM_1';
+                this.syncTokens(window.globalGameState, humanId, true);
+            }
+        },
 
         // ---------- 初始化 ----------
         init(host) {
@@ -76,6 +149,7 @@
             this.lineG = new PIXI.Graphics();
             this.L.lines.addChild(this.lineG);
 
+            this.loadTextures();
             this.buildAmbientAndDust();
             this.buildClockworkGears();
             this.buildBackgroundPendulum();
@@ -343,8 +417,28 @@
 
             this.drawSpots(gs, waitingHour ? drawn : []);
             this.drawCenter(gs, drawn, waitingHour);
+            this.updatePenaltyBadge(gs);
             this.syncTokens(gs, humanId);
             this.computeSinPairs(gs);
+        },
+
+        // ---------- 頂部狀態膠囊內的受罰規則標示 ----------
+        updatePenaltyBadge(gs) {
+            const el = document.getElementById('round-penalty-display');
+            if (!el || !gs) return;
+            el.classList.remove('hidden');
+            const is3P = gs.gameMode === '3P';
+            const sinMode = gs.sinTargetingMode === 'sin' && !is3P;
+            if (is3P) {
+                el.dataset.penaltyMode = 'none';
+                el.innerHTML = `<span class="hud-penalty-icon">🛡️</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
+            } else if (sinMode) {
+                el.dataset.penaltyMode = 'sin';
+                el.innerHTML = `<span class="hud-penalty-icon">🔥</span><span class="hud-penalty-text">受罰：距離時之惡最近</span>`;
+            } else {
+                el.dataset.penaltyMode = 'time';
+                el.innerHTML = `<span class="hud-penalty-icon">⚠️</span><span class="hud-penalty-text">受罰：最高小時值</span>`;
+            }
         },
 
         // ---------- 12 個時辰格位 ----------
@@ -411,33 +505,27 @@
             });
         },
 
-        // ---------- 中央軸心：局數資訊 + 當前小時卡 ----------
+        // ---------- 中央軸心：當前翻開的小時卡（局次與受罰標示已移至頂部膠囊） ----------
         drawCenter(gs, drawn, waitingHour) {
             this.clear(this.L.center);
             const L = this.L.center;
 
             const hub = new PIXI.Graphics();
-            hub.lineStyle(2, PAL.gold, 0.38)
-               .beginFill(0x050916, 0.78)
+            const isDropActive = !!this.dropHighlightActive;
+            if (isDropActive) {
+                this.glowCircle(hub, CX, CY, 88, PAL.gold, 0.42, 5);
+            }
+            hub.lineStyle(isDropActive ? 3 : 2, isDropActive ? PAL.goldBright : PAL.gold, isDropActive ? 0.92 : 0.38)
+               .beginFill(0x050916, isDropActive ? 0.88 : 0.78)
                .drawCircle(CX, CY, 84)
                .endFill();
-            hub.lineStyle(1, PAL.glow, 0.25).drawCircle(CX, CY, 76);
+            hub.lineStyle(1.2, isDropActive ? PAL.gold : PAL.glow, isDropActive ? 0.65 : 0.25).drawCircle(CX, CY, 76);
             L.addChild(hub);
-
-            const info = this.text(`第 ${gs.gameRound} 局  ·  回合 ${gs.roundMarker}/12`, 11.5, PAL.gold, '700');
-            info.position.set(CX, CY - 58);
-            L.addChild(info);
-
-            const sinMode = gs.sinTargetingMode === 'sin' && gs.gameMode !== '3P';
-            const pen = this.text(sinMode ? '受罰：距離時之惡最近' : '受罰：最高小時值', 11.5,
-                sinMode ? PAL.orange : PAL.danger, '700');
-            pen.position.set(CX, CY - 41);
-            L.addChild(pen);
 
             const W = 48, H = 68, GAP = 10, n = drawn.length;
             drawn.forEach((card, i) => {
                 const c = new PIXI.Container();
-                c.position.set(CX + (i - (n - 1) / 2) * (W + GAP), CY + 4);
+                c.position.set(CX + (i - (n - 1) / 2) * (W + GAP), CY);
 
                 const g = new PIXI.Graphics();
                 if (waitingHour) this.glowRect(g, W, H, PAL.gold, 0.38);
@@ -463,30 +551,79 @@
 
             if (waitingHour) {
                 const hint = this.text('請點選小時卡', 11.5, PAL.gold, '700');
-                hint.position.set(CX, CY + 56);
+                hint.position.set(CX, CY + 54);
                 L.addChild(hint);
+            } else if (this.dropHighlightActive) {
+                const dropHint = this.text('⚡ 放開以出牌', 12, PAL.goldBright, '800');
+                dropHint.position.set(CX, CY + 54);
+                L.addChild(dropHint);
             }
         },
 
-        // ---------- 棋子（同格錯開排列，平滑補間） ----------
+        // ---------- 拖曳分鐘卡靠近鐘面時的接收高亮回饋 ----------
+        setDropHighlight(active) {
+            const next = !!active;
+            if (this.dropHighlightActive === next) return;
+            this.dropHighlightActive = next;
+            if (window.globalGameState) {
+                const humanId = (window.getEffectiveHumanPlayerId && window.getEffectiveHumanPlayerId()) || 'SM_1';
+                const drawn = window.globalGameState.currentDrawnHourCards || [];
+                const waitingHour = !!window.globalGameState.waitingHourChoice && window.globalGameState.waitingHourChoicePlayerId === humanId;
+                this.drawCenter(window.globalGameState, drawn, waitingHour);
+            }
+        },
+
+        // ---------- 棋子（同格錯開排列，專屬角色靈魂圖案與星芒光環特效） ----------
         makeToken(p, isHuman, key) {
             const col = hexOf(tokenKey(p), 0xffffff);
             const c = new PIXI.Container();
-            const g = new PIXI.Graphics();
-            this.glowCircle(g, 0, 0, 16, col, 0.45, 4);
-            g.lineStyle(isHuman ? 3 : 1.8, isHuman ? 0xffffff : col, 0.95)
-             .beginFill(PAL.shell, 0.94).drawCircle(0, 0, 14).endFill();
-            c.addChild(g);
-            c.addChild(this.text(labelOf(p), 13.5, col, '800'));
-            if (isHuman) {
-                const you = this.text('你', 9, PAL.gold, '700');
-                you.y = -25;
-                c.addChild(you);
+
+            // 外層微光光環（包含柔和擴散層）
+            const auraG = new PIXI.Graphics();
+            this.glowCircle(auraG, 0, 0, 18, col, isHuman ? 0.55 : 0.38, 4);
+            auraG.lineStyle(isHuman ? 2.6 : 1.6, isHuman ? 0xffffff : col, isHuman ? 0.95 : 0.75)
+                 .beginFill(PAL.shell, 0.92)
+                 .drawCircle(0, 0, 16)
+                 .endFill();
+            // 內圈細緻金色/角色色微光環
+            auraG.lineStyle(1, isHuman ? PAL.goldBright : col, isHuman ? 0.8 : 0.45)
+                 .drawCircle(0, 0, 14);
+            c.addChild(auraG);
+
+            // 取得角色專屬貼圖 key
+            let texKey = isHuman ? 'p_demon' : 'demon';
+            if (p.type === '時之惡') texKey = isHuman ? 'p_sin' : 'sin';
+            else if (p.type === '受詛者') texKey = isHuman ? 'p_scz' : 'scz';
+            else if (p.roleCard === '時針') texKey = isHuman ? 'p_hour' : 'hour';
+            else if (p.roleCard === '分針') texKey = isHuman ? 'p_min' : 'min';
+            else if (p.roleCard === '秒針') texKey = isHuman ? 'p_sec' : 'sec';
+
+            const tex = this.textures[texKey];
+            let sprite = null;
+            if (tex) {
+                sprite = new PIXI.Sprite(tex);
+                sprite.anchor.set(0.5);
+                sprite.width = 28;
+                sprite.height = 28;
+                c.addChild(sprite);
+            } else {
+                // 後備方案：文字符號標記
+                const fallbackTxt = this.text(labelOf(p), 13.5, col, '800');
+                c.addChild(fallbackTxt);
             }
-            return { c, key, tx: 0, ty: 0 };
+
+            // 人類玩家專屬上方金色「你」標記與星芒徽章
+            let youTag = null;
+            if (isHuman) {
+                youTag = this.text('★你', 9, PAL.goldBright, '800');
+                youTag.y = -24;
+                c.addChild(youTag);
+            }
+
+            return { c, auraG, sprite, youTag, isHuman, key, tx: 0, ty: 0, phase: Math.random() * Math.PI * 2 };
         },
 
-        syncTokens(gs, humanId) {
+        syncTokens(gs, humanId, forceRebuild = false) {
             const alive = new Set();
             const groups = {};
             (gs.players || []).forEach(p => {
@@ -500,14 +637,14 @@
                     alive.add(p.id);
                     const a = (Number(pos) * 30 - 90) * Math.PI / 180;
                     const base = this.polar(Number(pos), TOKEN_R);
-                    const off = (idx - (n - 1) / 2) * 24;
+                    const off = (idx - (n - 1) / 2) * 26;
                     const tx = base.x - Math.sin(a) * off;
                     const ty = base.y + Math.cos(a) * off;
 
                     const isHuman = p.id === humanId;
-                    const key = `${tokenKey(p)}|${p.roleCard}|${isHuman}`;
+                    const key = `${tokenKey(p)}|${p.roleCard}|${isHuman}|${this.texturesLoaded ? 'tex' : 'notex'}`;
                     let node = this.tokens.get(p.id);
-                    if (!node || node.key !== key) {
+                    if (forceRebuild || !node || node.key !== key) {
                         if (node) node.c.destroy({ children: true });
                         node = this.makeToken(p, isHuman, key);
                         node.c.position.set(tx, ty);
@@ -597,10 +734,26 @@
                 d.node.alpha = 0.2 + 0.3 * Math.sin(this.t * 2 + d.phase);
             });
 
-            // 5. 棋子平滑移動補間
+            // 5. 棋子平滑移動補間與靈魂微光浮動特效
             this.tokens.forEach(n => {
                 n.c.x += (n.tx - n.c.x) * 0.16;
                 n.c.y += (n.ty - n.c.y) * 0.16;
+
+                // 靈魂微浮動與呼吸脈動特效
+                if (n.sprite) {
+                    const breath = 1 + 0.045 * Math.sin(this.t * 2.8 + n.phase);
+                    n.sprite.scale.set(breath);
+                    // 微幅上下浮動 1.2px
+                    n.sprite.y = Math.sin(this.t * 2.2 + n.phase) * 1.2;
+                }
+                if (n.auraG) {
+                    // 光環微透光度呼吸 (0.85 ~ 1.0)
+                    n.auraG.alpha = 0.88 + 0.12 * Math.sin(this.t * 3.2 + n.phase);
+                }
+                if (n.youTag) {
+                    // 人類玩家專屬「★你」微幅躍動
+                    n.youTag.y = -24 + Math.sin(this.t * 3.5) * 1.0;
+                }
             });
 
             // 6. 可選時辰格脈動與時之惡牽引線
@@ -631,11 +784,32 @@
         }
     }
 
+    // 左側懸浮抽屜手風琴互斥：僅在使用者點擊某個抽屜標題即將展開時，才收合其他抽屜（不使用非同步 toggle 事件以免誤關）
+    function initLeftDrawerAccordion() {
+        const leftDrawers = Array.from(document.querySelectorAll('.hud-drawer-left > details.hud-drawer'));
+        if (!leftDrawers.length) return;
+        leftDrawers.forEach(drawer => {
+            if (drawer._accordionBound) return;
+            drawer._accordionBound = true;
+            const summary = drawer.querySelector(':scope > summary');
+            if (!summary) return;
+            summary.addEventListener('click', () => {
+                // 點擊前若為收合狀態，代表即將展開 -> 預先收合左側其他已展開的抽屜
+                if (!drawer.open) {
+                    leftDrawers.forEach(other => {
+                        if (other !== drawer && other.open) other.open = false;
+                    });
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const host = document.getElementById('modern-board');
         if (!host) return;
         Board.init(host);
         hookUpdateUI();
+        initLeftDrawerAccordion();
 
         if (window.globalGameState) {
             Board.render(window.globalGameState);

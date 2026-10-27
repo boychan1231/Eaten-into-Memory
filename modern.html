@@ -151,6 +151,11 @@
 					<span class="hud-stat-label">🃏 牌庫</span>
 					<span class="deck-count" id="deck-count-num">--</span>
 				</div>
+				<span class="hud-stat-sep">｜</span>
+				<div id="round-penalty-display" class="hud-stat-item hud-penalty-badge" data-penalty-mode="time" title="當前生效的受罰規則">
+					<span class="hud-penalty-icon">⚠️</span>
+					<span class="hud-penalty-text">受罰：最高小時值</span>
+				</div>
 			</div>
 
 			<div class="game-status">
@@ -205,8 +210,9 @@
 							<div id="clock-face">
 								<div id="modern-board"></div>
 								<div class="clock-center"></div>
-								<div id="round-penalty-display" class="penalty-display hidden"></div>
 							</div>
+							<!-- 分鐘卡比大小與次序排列動態舞台 -->
+							<div id="minute-clash-overlay" class="minute-clash-overlay hidden" aria-live="polite"></div>
 						</div>
 					</section>
 
@@ -735,6 +741,7 @@
 	</div>
 
 	<script src="pixi.min.js"></script>
+	<script src="role_assets_data.js"></script>
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
 	<script src="audio.js"></script>

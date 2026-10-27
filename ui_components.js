@@ -238,6 +238,7 @@ function updateUI(gameState) {
         isWaitingHourInput: !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId,
         isWaitingAbilityChoice: !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId,
         isWaitingSecondFinalChoice: !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId,
+        isPlayingMinuteClash: !!gameState.isPlayingMinuteClash,
         gameEnded: gameState.gameEnded
     };
 
@@ -296,9 +297,10 @@ function updateNextStepButton(gameState, flags) {
         return; // 直接返回，不執行下方的 disable 邏輯
     }
 
-    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice) {
+    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
         nextStepBtn.disabled = true;
-        if (flags.isWaitingHourInput) nextStepBtn.textContent = "請選擇小時卡...";
+        if (flags.isPlayingMinuteClash) nextStepBtn.textContent = "比較分鐘數值中...";
+        else if (flags.isWaitingHourInput) nextStepBtn.textContent = "請選擇小時卡...";
         else if (flags.isWaitingAbilityChoice) nextStepBtn.textContent = "請決定是否使用特殊能力...";
         else if (flags.isWaitingSecondFinalChoice) nextStepBtn.textContent = "請完成秒針二選一...";
         else nextStepBtn.textContent = "請出牌...";
@@ -845,9 +847,10 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             cardEl.innerHTML = `<div>${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
-                cardEl.addEventListener('click', function () {
-                    const v = card.value;
-                    if (uiState.isSecondHandSelectingTwo) {
+                if (uiState.isSecondHandSelectingTwo) {
+                    // 【秒針特殊能力模式】：保留「點選 2 張卡牌 + 點擊確認出牌」操作
+                    cardEl.addEventListener('click', function () {
+                        const v = card.value;
                         if (uiState.selectedCardValues.includes(v)) {
                             uiState.selectedCardValues = uiState.selectedCardValues.filter(x => x !== v);
                             this.classList.remove('selected');
@@ -857,18 +860,15 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                             this.classList.add('selected');
                         }
                         uiState.selectedCardValue = null;
-                        confirmBtn.disabled = (uiState.selectedCardValues.length !== 2);
-                    } else {
-                        document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
-                        this.classList.add('selected');
-                        uiState.selectedCardValue = v;
-                        uiState.selectedCardValues = [];
-                        confirmBtn.disabled = false;
-                    }
-                    if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
-                        window.TutorialModeManager.updateTutorialPointers(gameState);
-                    }
-                });
+                        if (confirmBtn) confirmBtn.disabled = (uiState.selectedCardValues.length !== 2);
+                        if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
+                            window.TutorialModeManager.updateTutorialPointers(gameState);
+                        }
+                    });
+                } else {
+                    // 【一般出牌模式】：採用拖放（Drag & Drop）至鐘面出牌（同時支援雙擊快速出牌）
+                    bindMinuteCardDragToPlay(cardEl, card.value, gameState);
+                }
             } else {
                 cardEl.style.cursor = 'default';
                 cardEl.style.opacity = '0.7';
@@ -879,11 +879,15 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             humanHandEl.appendChild(cardEl);
         });
 
-        // 確認出牌按鈕狀態
-        if (flags.isWaitingMinuteInput) {
-            confirmBtn.disabled = uiState.isSecondHandSelectingTwo ? (uiState.selectedCardValues.length !== 2) : (uiState.selectedCardValue === null);
-        } else {
-            confirmBtn.disabled = true;
+        // 確認出牌按鈕狀態：一般拖放模式時隱藏，僅在「秒針」蓋 2 張能力時顯示並啟用點選確認
+        if (confirmBtn) {
+            if (uiState.isSecondHandSelectingTwo) {
+                confirmBtn.style.display = 'inline-block';
+                confirmBtn.disabled = !flags.isWaitingMinuteInput || (uiState.selectedCardValues.length !== 2);
+            } else {
+                confirmBtn.style.display = 'none';
+                confirmBtn.disabled = true;
+            }
         }
 
         if (actionHint) {
@@ -899,12 +903,10 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             } else if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
                     hintText = uiState.selectedCardValues.length < 2
-                        ? '請選擇 2 張分鐘卡。'
-                        : '已選擇 2 張卡牌，請確認出牌。';
+                        ? '⚡ 秒針能力：請點選 2 張分鐘卡。'
+                        : '⚡ 已選 2 張卡牌，請點擊「確認出牌」。';
                 } else {
-                    hintText = uiState.selectedCardValue === null
-                        ? '請選擇 1 張分鐘卡。'
-                        : '已選擇卡牌，請確認出牌。';
+                    hintText = '👆 向上拖曳一張分鐘卡至鐘面即可出牌';
                 }
             } else {
                 hintText = '準備完成，點擊「下一回合」繼續遊戲。';
@@ -916,6 +918,398 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     // 4. 秒針能力按鈕與彈窗控制
     updateSecondHandControls(gameState, humanPlayer, flags);
 }
+
+// --- 一般分鐘卡拖放（Drag & Drop）出牌控制器 ---
+// 遵循三大核心事件架構：
+// 1. pointerdown（按下）：提升卡牌 zIndex 至最高層並記錄進入「拖曳中」狀態，註冊全域 Stage (window) 移動與放開事件。
+// 2. pointermove（移動）：綁定於整個視窗 Stage (window)，游標快速移動離開卡牌時也不會中斷，並以 !important 即時更新卡牌座標。
+// 3. pointerup / pointerupoutside (pointercancel / blur / mouseleave)：綁定於整個視窗 Stage，確保拖出視窗外放開也不會卡死，並恢復圖層與狀態。
+function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
+    if (!cardEl || typeof cardEl.addEventListener !== 'function') return;
+
+    let isDragging = false;
+    let activePointerId = null;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let isDropReady = false;
+    let hasCommitted = false;
+
+    const DROP_UP_THRESHOLD = 75; // 向上拖離超過 75px 即進入可出牌狀態
+
+    const checkIsInsideClock = (clientX, clientY) => {
+        const clockEl = document.getElementById('clock-face');
+        if (!clockEl || typeof clockEl.getBoundingClientRect !== 'function') return false;
+        const r = clockEl.getBoundingClientRect();
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+    };
+
+    const setClockDropHighlight = (active) => {
+        const clockEl = document.getElementById('clock-face');
+        if (clockEl && clockEl.classList) {
+            clockEl.classList.toggle('drop-target-active', !!active);
+        }
+        if (window.ModernBoard && typeof window.ModernBoard.setDropHighlight === 'function') {
+            window.ModernBoard.setDropHighlight(!!active);
+        }
+    };
+
+    const detachStageListeners = () => {
+        window.removeEventListener('pointermove', onStagePointerMove);
+        window.removeEventListener('pointerup', onStagePointerUp);
+        window.removeEventListener('pointercancel', onStagePointerUpOutside);
+        window.removeEventListener('blur', onStagePointerUpOutside);
+        document.removeEventListener('mouseleave', onStageMouseLeave);
+    };
+
+    const commitCardPlay = () => {
+        if (hasCommitted) return;
+        const gs = window.globalGameState || gameState;
+        if (!gs || gs.currentRoundAIChoices === null) return;
+        const playFn = (typeof window.handleHumanChoice === 'function')
+            ? window.handleHumanChoice
+            : (typeof handleHumanChoice === 'function' ? handleHumanChoice : null);
+        if (!playFn) return;
+
+        hasCommitted = true;
+        setClockDropHighlight(false);
+
+        if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
+            window.gameAudio.playConfirm();
+        }
+
+        // 飛入鐘面中心動畫後執行出牌
+        const clockEl = document.getElementById('clock-face');
+        if (clockEl && typeof clockEl.getBoundingClientRect === 'function' && typeof cardEl.getBoundingClientRect === 'function') {
+            const clockRect = clockEl.getBoundingClientRect();
+            const cardRect = cardEl.getBoundingClientRect();
+            const targetDx = (clockRect.left + clockRect.width / 2) - (cardRect.left + cardRect.width / 2);
+            const targetDy = (clockRect.top + clockRect.height / 2) - (cardRect.top + cardRect.height / 2);
+            const currentDx = parseFloat(cardEl.dataset.dragDx || '0');
+            const currentDy = parseFloat(cardEl.dataset.dragDy || '0');
+            cardEl.classList.remove('is-dragging', 'is-drop-ready');
+            cardEl.classList.add('is-committing');
+            cardEl.style.setProperty('z-index', '9999', 'important');
+            cardEl.style.setProperty('transform', `translate3d(${currentDx + targetDx}px, ${currentDy + targetDy}px, 0) scale(0.35)`, 'important');
+            cardEl.style.opacity = '0';
+
+            setTimeout(() => {
+                const ok = playFn(gs, cardValue);
+                if (ok) {
+                    uiState.selectedCardValue = null;
+                    updateUI(gs);
+                }
+            }, 170);
+        } else {
+            const ok = playFn(gs, cardValue);
+            if (ok) {
+                uiState.selectedCardValue = null;
+                updateUI(gs);
+            }
+        }
+    };
+
+    // 2. pointermove（移動）：綁定於整個畫布/視窗（window），確保滑鼠快速移動離開卡牌時仍即時跟隨游標
+    const onStagePointerMove = (e) => {
+        if (!isDragging || hasCommitted) return;
+        if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const vx = Math.max(-14, Math.min(14, (e.clientX - lastX) * 0.65));
+        lastX = e.clientX;
+
+        cardEl.dataset.dragDx = String(dx);
+        cardEl.dataset.dragDy = String(dy);
+
+        const ready = (dy < -DROP_UP_THRESHOLD) || checkIsInsideClock(e.clientX, e.clientY);
+        if (ready !== isDropReady) {
+            isDropReady = ready;
+            cardEl.classList.toggle('is-drop-ready', isDropReady);
+            setClockDropHighlight(isDropReady);
+        }
+
+        const scale = isDropReady ? 1.22 : 1.12;
+        // 使用 setProperty(..., 'important') 確保覆蓋任何 CSS hover !important 規則，畫面即時呈現卡牌移動
+        cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
+    };
+
+    const resetCardToHand = () => {
+        isDropReady = false;
+        setClockDropHighlight(false);
+        cardEl.classList.remove('is-dragging', 'is-drop-ready');
+        cardEl.classList.add('is-returning');
+        cardEl.style.removeProperty('transform');
+        cardEl.style.removeProperty('z-index');
+        cardEl.dataset.dragDx = '0';
+        cardEl.dataset.dragDy = '0';
+        setTimeout(() => {
+            cardEl.classList.remove('is-returning');
+        }, 260);
+    };
+
+    // 3A. pointerup（正常放開）：解除拖曳狀態，若在可出牌區則出牌，否則恢復圖層並彈回原位
+    const onStagePointerUp = (e) => {
+        if (!isDragging) return;
+        if (activePointerId !== null && e && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+        isDragging = false;
+        activePointerId = null;
+        detachStageListeners();
+
+        if (isDropReady) {
+            commitCardPlay();
+        } else {
+            resetCardToHand();
+        }
+    };
+
+    // 3B. pointerupoutside（拖出視窗外放開或中斷）：防止拖到瀏覽器視窗外放開造成的卡死問題
+    const onStagePointerUpOutside = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        activePointerId = null;
+        detachStageListeners();
+        resetCardToHand();
+    };
+
+    const onStageMouseLeave = (e) => {
+        // 當滑鼠移出瀏覽器視窗且按鍵已鬆開時，視為 pointerupoutside
+        if (isDragging && (!e || e.buttons === 0)) {
+            onStagePointerUpOutside();
+        }
+    };
+
+    // 1. pointerdown（按下）：提升 zIndex 到最高層，記錄進入「拖曳中」狀態，並將 move/up 綁定到全域 Stage
+    cardEl.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        if (uiState.isSecondHandSelectingTwo || hasCommitted) return;
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+
+        isDragging = true;
+        activePointerId = e.pointerId !== undefined ? e.pointerId : null;
+        startX = e.clientX;
+        startY = e.clientY;
+        lastX = e.clientX;
+        isDropReady = false;
+        cardEl.dataset.dragDx = '0';
+        cardEl.dataset.dragDy = '0';
+
+        cardEl.classList.remove('is-returning');
+        cardEl.classList.add('is-dragging');
+        cardEl.style.setProperty('z-index', '9999', 'important');
+        cardEl.style.setProperty('transform', 'translate3d(0px, -6px, 0) scale(1.12)', 'important');
+
+        window.addEventListener('pointermove', onStagePointerMove);
+        window.addEventListener('pointerup', onStagePointerUp);
+        window.addEventListener('pointercancel', onStagePointerUpOutside);
+        window.addEventListener('blur', onStagePointerUpOutside);
+        document.addEventListener('mouseleave', onStageMouseLeave);
+
+        if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+            window.gameAudio.playClick();
+        }
+    });
+
+    // 無障礙快速後備：雙擊卡牌直接飛入鐘面出牌
+    cardEl.addEventListener('dblclick', () => {
+        if (!uiState.isSecondHandSelectingTwo && !hasCommitted) {
+            detachStageListeners();
+            commitCardPlay();
+        }
+    });
+}
+
+// --- 三階段「各玩家比較分鐘數值並分出大小次序」動態演出（6 秒完整版，等待玩家點擊畫面退場）---
+// 階段 1 (0.00s ~ 1.00s)：各玩家蓋牌匯聚於鐘面中央（原始座位次序）
+// 階段 2 (1.00s ~ 3.20s)：依序 3D 翻牌揭曉各玩家打出的分鐘卡數值與齒輪數
+// 階段 3 (3.20s ~ 6.00s)：依數值由大到小執行 FLIP 動態交錯換位並依序浮現 1st~5th 次序
+// 6.00s 後：常駐展示最終次序，並顯示「👆 點擊畫面任意處繼續」，待玩家點擊畫面時才退場
+window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedChoices, onComplete) {
+    const overlay = document.getElementById('minute-clash-overlay');
+    if (!overlay || !Array.isArray(sortedChoices) || sortedChoices.length === 0) {
+        if (typeof onComplete === 'function') onComplete();
+        return;
+    }
+
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+        ? window.getEffectiveHumanPlayerId()
+        : 'SM_1';
+
+    const rankLabels = ['1st', '2nd', '3rd', '4th', '5th'];
+    const timers = [];
+    let finished = false;
+
+    const cleanupDismissListener = () => {
+        window.removeEventListener('pointerdown', onGlobalPointerDown, true);
+        overlay.onclick = null;
+    };
+
+    const finishNow = () => {
+        if (finished) return;
+        finished = true;
+        timers.forEach(id => clearTimeout(id));
+        cleanupDismissListener();
+        overlay.classList.add('is-leaving');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('is-leaving');
+            overlay.innerHTML = '';
+            if (typeof onComplete === 'function') onComplete();
+        }, 260);
+    };
+
+    // 玩家點擊畫面任意處才退場（延遲 180ms 綁定，避免剛放開出牌滑鼠時立即誤觸關閉）
+    const onGlobalPointerDown = (e) => {
+        if (finished) return;
+        // 避免攔截設定視窗或音效開關
+        if (e && e.target && typeof e.target.closest === 'function') {
+            if (e.target.closest('#settings-modal, #rules-modal, #top-settings-btn')) return;
+        }
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        finishNow();
+    };
+
+    timers.push(setTimeout(() => {
+        if (finished) return;
+        window.addEventListener('pointerdown', onGlobalPointerDown, true);
+        overlay.onclick = () => finishNow();
+    }, 180));
+
+    // 建立舞台 DOM（初始按未排序的座位順序 preSortChoices 排列）
+    const initialList = (Array.isArray(preSortChoices) && preSortChoices.length === sortedChoices.length)
+        ? preSortChoices
+        : sortedChoices;
+
+    const banner = document.createElement('div');
+    banner.className = 'minute-clash-banner';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'minute-clash-title';
+    titleEl.textContent = '⏳ 各玩家已蓋牌集結，準備翻牌…';
+    banner.appendChild(titleEl);
+
+    const rowEl = document.createElement('div');
+    rowEl.className = 'minute-clash-row';
+
+    const slotMap = new Map();
+
+    initialList.forEach(item => {
+        const playerObj = (gameState.players || []).find(p => p.id === item.playerId);
+        const roleName = playerObj ? playerObj.roleCard : (item.roleType || '時魔');
+        const roleKey = (roleName && String(roleName).includes('時魔')) ? '時魔' : roleName;
+        const color = ROLE_COLORS[roleKey] || '#ffd27f';
+        const isHuman = item.playerId === humanId;
+        const val = item.card && typeof item.card.value === 'number' ? item.card.value : '?';
+        const gear = item.card && typeof item.card.gear === 'number' ? item.card.gear : 1;
+
+        const slot = document.createElement('div');
+        slot.className = 'clash-card-slot' + (isHuman ? ' is-human' : '');
+        slot.dataset.playerId = item.playerId;
+        slot.style.setProperty('--role-color', color);
+
+        const rankIdx = sortedChoices.findIndex(s => s.playerId === item.playerId);
+        const rankText = rankLabels[rankIdx] || `#${rankIdx + 1}`;
+
+        slot.innerHTML = `
+            <div class="clash-rank-badge">${rankText}</div>
+            <div class="clash-card-3d">
+                <div class="clash-card-face clash-card-back">✦</div>
+                <div class="clash-card-face clash-card-front">
+                    <div class="clash-card-val">${val}</div>
+                    <div class="clash-card-gear">${gear}⚙</div>
+                </div>
+            </div>
+            <div class="clash-player-tag">${item.playerName}${isHuman ? '<span class="clash-you-badge">你</span>' : ''}</div>
+        `;
+
+        rowEl.appendChild(slot);
+        slotMap.set(item.playerId, slot);
+    });
+
+    const footerEl = document.createElement('div');
+    footerEl.className = 'minute-clash-footer';
+    footerEl.textContent = '比較分鐘數值中…（點擊畫面可提前跳過）';
+
+    banner.appendChild(rowEl);
+    banner.appendChild(footerEl);
+    overlay.innerHTML = '';
+    overlay.appendChild(banner);
+    overlay.classList.remove('hidden', 'is-leaving');
+
+    // 階段 2 (1.00s ~ 3.20s)：依序 3D 翻牌揭曉數值（每張間隔 300ms）
+    timers.push(setTimeout(() => {
+        if (finished) return;
+        titleEl.textContent = '🃏 揭曉各玩家打出的分鐘卡…';
+        initialList.forEach((item, idx) => {
+            timers.push(setTimeout(() => {
+                if (finished) return;
+                const slot = slotMap.get(item.playerId);
+                if (slot) slot.classList.add('is-flipped');
+                if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                    window.gameAudio.playClick();
+                }
+            }, idx * 300));
+        });
+    }, 1000));
+
+    // 階段 3 (3.20s ~ 6.00s)：比較數值大小，執行 FLIP 動態交錯換位並依序浮現 1st ~ 5th 名次
+    timers.push(setTimeout(() => {
+        if (finished) return;
+        titleEl.textContent = '⚡ 比較分鐘數值大小，排列行動次序…';
+
+        // Step A (First)：記錄換位前每個 slot 的水平座標
+        const firstRects = new Map();
+        slotMap.forEach((slot, pid) => {
+            if (typeof slot.getBoundingClientRect === 'function') {
+                firstRects.set(pid, slot.getBoundingClientRect());
+            }
+        });
+
+        // Step B (Last)：將 DOM 節點依照由大到小（sortedChoices）重新掛載
+        sortedChoices.forEach(item => {
+            const slot = slotMap.get(item.playerId);
+            if (slot) rowEl.appendChild(slot);
+        });
+
+        // Step C (Invert & Play)：計算位移差並以 1.35 秒曲線動畫優雅滑入新名次位置
+        sortedChoices.forEach((item, newIdx) => {
+            const slot = slotMap.get(item.playerId);
+            const first = firstRects.get(item.playerId);
+            if (!slot || !first || typeof slot.getBoundingClientRect !== 'function') return;
+            const last = slot.getBoundingClientRect();
+            const dx = first.left - last.left;
+
+            if (Math.abs(dx) > 1) {
+                // 往前排移動者微幅上拱，往後排退讓者微幅下沉，形成交錯超車感
+                const arcY = dx > 0 ? -18 : 14;
+                slot.style.transition = 'none';
+                slot.style.transform = `translate3d(${dx}px, ${arcY}px, 0)`;
+                // 強制觸發重繪 (reflow)
+                void slot.offsetWidth;
+                slot.style.transition = 'transform 1.35s cubic-bezier(0.22, 1, 0.36, 1)';
+                slot.style.transform = 'translate3d(0, 0, 0)';
+            }
+
+            // 待換位滑行接近定點時（約 4.30s 起，每張間隔 280ms），依名次 1st -> 5th 逐一彈出標章
+            timers.push(setTimeout(() => {
+                if (!finished && slot) slot.classList.add('show-rank');
+            }, 1100 + newIdx * 280));
+        });
+
+        if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
+            window.gameAudio.playConfirm();
+        }
+    }, 3200));
+
+    // 6.00s：整套 6 秒動態演出完畢，畫面停留並提示玩家點擊畫面退場
+    timers.push(setTimeout(() => {
+        if (finished) return;
+        titleEl.textContent = '✨ 分鐘卡大小次序已確定！';
+        footerEl.textContent = '👆 點擊畫面任意處繼續挑選小時卡';
+        footerEl.classList.add('is-ready-prompt');
+    }, 6000));
+};
 
 // --- 秒針 UI 控制 (輔助函式) ---
 function updateSecondHandControls(gameState, humanPlayer, flags) {

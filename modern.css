@@ -137,6 +137,60 @@ header {
     line-height: 1 !important;
 }
 
+/* 頂部狀態膠囊內的「受罰規則」徽章 (#round-penalty-display) */
+#deck-info #round-penalty-display.hud-penalty-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 2px 10px !important;
+    margin: 0 !important;
+    border-radius: 999px !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.2 !important;
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
+    transition: all 0.25s ease !important;
+}
+#deck-info #round-penalty-display.hud-penalty-badge[data-penalty-mode="time"] {
+    background: rgba(255, 107, 136, 0.14) !important;
+    border: 1px solid rgba(255, 107, 136, 0.42) !important;
+    color: #ff8da3 !important;
+}
+#deck-info #round-penalty-display.hud-penalty-badge[data-penalty-mode="sin"] {
+    background: rgba(255, 159, 67, 0.18) !important;
+    border: 1px solid rgba(255, 159, 67, 0.55) !important;
+    color: #ffbe76 !important;
+    box-shadow: 0 0 12px rgba(255, 159, 67, 0.28) !important;
+}
+#deck-info #round-penalty-display.hud-penalty-badge[data-penalty-mode="none"] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: var(--dim) !important;
+}
+#deck-info #round-penalty-display .penalty-list,
+#deck-info #round-penalty-display .penalty-item {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    border: none !important;
+    background: transparent !important;
+}
+#deck-info #round-penalty-display .penalty-time,
+#deck-info #round-penalty-display .penalty-action {
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
 /* 版本切換收摺選單 */
 .version-switch-details {
     position: relative;
@@ -265,11 +319,13 @@ button:disabled {
 .hud-drawer-stack {
     position: fixed !important;
     top: 52px !important;
+    max-height: calc(100vh - 140px) !important;
     z-index: 80 !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
     pointer-events: none !important;
+    overflow: visible !important;
 }
 .hud-drawer-left {
     left: 18px !important;
@@ -282,28 +338,34 @@ button:disabled {
 details.hud-drawer {
     pointer-events: auto !important;
     margin: 0 !important;
+    flex: 0 0 auto !important;
     transition: all 0.2s ease;
 }
 details.hud-drawer:not([open]) {
     width: auto !important;
+    height: auto !important;
     max-height: none !important;
     padding: 0 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
 }
 details.hud-drawer[open] {
-    width: min(310px, 88vw) !important;
-    max-height: calc(100vh - 150px) !important;
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
+    width: min(320px, 88vw) !important;
+    height: auto !important;
+    max-height: calc(100vh - 220px) !important;
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
     padding: 10px 12px !important;
-    background: rgba(6, 7, 11, 0.93) !important;
+    background: rgba(6, 7, 11, 0.95) !important;
     border: 1px solid rgba(255, 210, 127, 0.28) !important;
     border-radius: 16px !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85) !important;
     backdrop-filter: blur(18px);
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 #players-panel-details[open] {
     width: min(350px, 90vw) !important;
@@ -312,8 +374,8 @@ details.hud-drawer[open] {
     list-style: none;
     cursor: pointer;
     user-select: none;
-    display: inline-flex;
-    align-items: center;
+    display: inline-flex !important;
+    align-items: center !important;
     gap: 6px;
     background: rgba(8, 9, 14, 0.82) !important;
     border: 1px solid rgba(255, 210, 127, 0.24) !important;
@@ -327,16 +389,28 @@ details.hud-drawer[open] {
     transition: all 0.2s ease;
 }
 .side-panel-summary::-webkit-details-marker { display: none; }
+.side-panel-summary::before { content: none !important; display: none !important; }
 .side-panel-summary::after {
     content: "▾";
     font-size: 0.72rem;
     opacity: 0.8;
     transition: transform 0.2s ease;
 }
+details.hud-drawer:not([open]) > .hud-drawer-body {
+    display: none !important;
+}
+details.hud-drawer[open] > .hud-drawer-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    max-height: calc(100vh - 285px) !important;
+    overflow-y: auto !important;
+}
 details.hud-drawer[open] > .side-panel-summary {
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin-bottom: 8px !important;
     background: rgba(255, 210, 127, 0.1) !important;
     border-color: rgba(255, 210, 127, 0.35) !important;
 }
@@ -347,20 +421,13 @@ details.hud-drawer[open] > .side-panel-summary::after {
     border-color: rgba(255, 210, 127, 0.5) !important;
     color: #fff4d6 !important;
 }
-.hud-drawer-body {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-}
 
 /* 左側抽屜內容：日誌與進化、各角色狀態 */
 #game-log-container {
     background: transparent !important;
     border: none !important;
-    max-height: 340px !important;
+    height: auto !important;
+    max-height: calc(100vh - 295px) !important;
     overflow-y: auto !important;
 }
 #log-list li {
@@ -379,19 +446,27 @@ details.hud-drawer[open] > .side-panel-summary::after {
     background: linear-gradient(90deg, rgba(255, 210, 127, 0.16), transparent) !important;
     color: #fff !important;
 }
+#players-section,
 .players-grid {
     display: flex !important;
     flex-direction: column !important;
+    height: auto !important;
+    max-height: calc(100vh - 295px) !important;
+    margin-top: 0 !important;
     padding: 2px !important;
-    gap: 6px !important;
-    max-height: 420px !important;
+    gap: 8px !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
 }
 .players-grid .player-card {
-    background: rgba(255, 255, 255, 0.035) !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid var(--line) !important;
     border-radius: 10px !important;
-    padding: 6px 10px !important;
+    padding: 8px 10px !important;
 }
 
 /* 右側抽屜內容：出牌/歷史/積分 */
@@ -452,6 +527,188 @@ details.hud-drawer[open] > .side-panel-summary::after {
     width: min(660px, 68vh, 92vw) !important;
     height: min(660px, 68vh, 92vw) !important;
     margin: 0 auto !important;
+    position: relative !important;
+}
+
+/* =========================================================
+   ⚔️ 分鐘卡比大小與次序排列動畫舞台 (Minute Clash Stage)
+   ========================================================= */
+.minute-clash-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.minute-clash-overlay.hidden {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+.minute-clash-overlay.is-leaving {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+.minute-clash-banner {
+    background: rgba(5, 6, 12, 0.88);
+    border: 1px solid rgba(255, 210, 127, 0.38);
+    border-radius: 20px;
+    padding: 14px 20px 16px 20px;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.92), 0 0 32px rgba(255, 210, 127, 0.14);
+    backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 94vw;
+    animation: clashBannerEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes clashBannerEnter {
+    0% { opacity: 0; transform: translateY(12px) scale(0.94); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.minute-clash-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(255, 210, 127, 0.45);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.minute-clash-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    perspective: 900px;
+}
+.clash-card-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 68px;
+    position: relative;
+    will-change: transform;
+}
+.clash-rank-badge {
+    height: 20px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    background: rgba(255, 210, 127, 0.14);
+    border: 1px solid rgba(255, 210, 127, 0.42);
+    color: var(--gold);
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+    transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.22, 1.35, 0.36, 1);
+    white-space: nowrap;
+}
+.clash-card-slot.show-rank .clash-rank-badge {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.clash-card-3d {
+    width: 58px;
+    height: 82px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.clash-card-slot.is-flipped .clash-card-3d {
+    transform: rotateY(180deg);
+}
+.clash-card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75);
+}
+.clash-card-back {
+    background: radial-gradient(circle at 50% 40%, #3a2a10 0%, #171106 75%);
+    border: 1.5px solid var(--role-color, rgba(255, 210, 127, 0.65));
+    color: rgba(255, 210, 127, 0.75);
+    font-size: 1.25rem;
+}
+.clash-card-front {
+    transform: rotateY(180deg);
+    background: linear-gradient(165deg, #56401a 0%, #2e220d 58%, #181105 100%);
+    border: 2px solid var(--role-color, #ffd27f);
+    color: #fff4d6;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 230, 165, 0.3);
+}
+.clash-card-slot.is-human .clash-card-front {
+    box-shadow: 0 0 0 1.5px #ffffff, 0 0 18px rgba(255, 210, 127, 0.55), 0 8px 22px rgba(0, 0, 0, 0.85);
+}
+.clash-card-val {
+    font-size: 1.38rem;
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff6df;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+}
+.clash-card-gear {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #d8b060;
+    margin-top: 3px;
+}
+.clash-player-tag {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--role-color, #e8ebf7);
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+.clash-you-badge {
+    display: inline-block;
+    padding: 0 4px;
+    margin-left: 2px;
+    border-radius: 4px;
+    background: var(--gold);
+    color: #111;
+    font-size: 0.62rem;
+    font-weight: 900;
+    vertical-align: middle;
+}
+.minute-clash-footer {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: rgba(232, 235, 247, 0.68);
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+.minute-clash-footer.is-ready-prompt {
+    color: var(--gold);
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(255, 210, 127, 0.55);
+    animation: clashFooterPulse 1.4s ease-in-out infinite;
+}
+@keyframes clashFooterPulse {
+    0%, 100% { opacity: 0.72; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-2px); }
 }
 
 /* ---- 底部操作台：無框懸浮手牌塢 + 暗金色手牌（無星芒） ---- */
@@ -580,18 +837,66 @@ details.hud-drawer[open] > .side-panel-summary::after {
     font-size: 0.68rem !important;
     opacity: 0.9 !important;
 }
-.minute-card:hover {
+.minute-card:hover:not(.is-dragging):not(.is-committing) {
     transform: translateY(-4px) !important;
     background: linear-gradient(165deg, #5e461d 0%, #382910 55%, #221808 100%) !important;
     border-color: rgba(255, 210, 127, 0.88) !important;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.75), 0 0 8px rgba(218, 175, 92, 0.28) !important;
 }
-.minute-card.selected {
+.minute-card.selected:not(.is-dragging):not(.is-committing) {
     transform: translateY(-7px) scale(1.04) !important;
     background: linear-gradient(165deg, #785a26 0%, #4a3515 58%, #2b1f0b 100%) !important;
     border-color: #ffd27f !important;
     color: #fff4d6 !important;
     box-shadow: 0 0 0 1.5px #ffd27f, 0 10px 20px rgba(218, 175, 92, 0.4) !important;
+}
+
+/* 拖放分鐘卡（Drag & Drop）互動狀態 */
+.minute-card {
+    touch-action: none;
+    position: relative;
+    cursor: grab;
+    will-change: transform;
+}
+.minute-card.is-dragging {
+    cursor: grabbing !important;
+    z-index: 9999 !important;
+    transition: box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.85), 0 0 14px rgba(255, 210, 127, 0.35) !important;
+}
+.minute-card.is-drop-ready {
+    background: linear-gradient(165deg, #8a682d 0%, #573e18 55%, #30220b 100%) !important;
+    border-color: #ffeaa7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 2px #ffd27f, 0 0 26px rgba(255, 210, 127, 0.78), 0 18px 36px rgba(0, 0, 0, 0.9) !important;
+}
+.minute-card.is-drop-ready::before {
+    content: "⚡ 放開出牌";
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(8, 9, 14, 0.92);
+    border: 1px solid #ffd27f;
+    color: #ffd27f;
+    font-size: 0.62rem;
+    font-weight: 800;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.75);
+}
+.minute-card.is-returning {
+    transition: transform 0.25s cubic-bezier(0.22, 1.35, 0.36, 1), box-shadow 0.2s ease !important;
+}
+.minute-card.is-committing {
+    pointer-events: none !important;
+    z-index: 9999 !important;
+    transition: transform 0.17s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.17s ease !important;
+}
+#clock-face.drop-target-active {
+    filter: drop-shadow(0 0 24px rgba(255, 210, 127, 0.38));
 }
 
 /* 右側操作按鈕組 */
@@ -672,6 +977,19 @@ details.hud-drawer[open] > .side-panel-summary::after {
 .tutorial-tooltip {
     background: rgba(6, 7, 10, 0.92) !important;
     border: 1px solid rgba(255, 210, 127, 0.5) !important; border-radius: 14px !important;
+}
+.tutorial-tooltip.tutorial-fade-in {
+    animation: tutorialBubbleFadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes tutorialBubbleFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 @media (max-width: 1024px) {

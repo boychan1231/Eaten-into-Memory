@@ -386,8 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === humanId;
             const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === humanId;
             const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
+            const playingClash = !!globalGameState.isPlayingMinuteClash;
 
-            if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
+            if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal || playingClash) {
                 appLogger.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
                 updateUI(globalGameState);
                 return;

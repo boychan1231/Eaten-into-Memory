@@ -14,6 +14,7 @@
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         if (tooltip) {
             tooltip.classList.add('hidden');
+            tooltip.classList.remove('tutorial-fade-in');
         }
     }
 
@@ -41,6 +42,8 @@
             return;
         }
 
+        const wasHidden = tooltip.classList.contains('hidden');
+
         // 高亮目標元素
         clearTutorialPointers();
         targetEl.classList.add('tutorial-spotlight');
@@ -49,8 +52,11 @@
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
-        // 重新顯示 tooltip
+        // 重新顯示 tooltip（若為初次／重新浮現，加入淡入動畫）
         tooltip.classList.remove('hidden');
+        if (wasHidden) {
+            tooltip.classList.add('tutorial-fade-in');
+        }
         tooltip.setAttribute('data-arrow', arrowDirection);
 
         // 計算定位
@@ -99,8 +105,8 @@
     // 追蹤已顯示過的教學指南步驟；當全部核心步驟都顯示過並推進後，自動關閉教學
     const shownSteps = new Set();
     const CORE_STEPS = [
-        'step1_select_minute',
-        'step2_confirm_minute',
+        'step0_welcome',
+        'step1_drag_minute',
         'step3_select_hour',
         'step4_next_round'
     ];
@@ -116,35 +122,69 @@
             return;
         }
 
+        // 若現代版進場動畫 (modern-intro-overlay) 尚未完全結束，暫不顯示教學提示，待進場動畫結束後再顯示
+        const introOverlay = document.getElementById('modern-intro-overlay');
+        const introStillVisible = introOverlay && (
+            typeof window.getComputedStyle === 'function'
+                ? window.getComputedStyle(introOverlay).display !== 'none'
+                : introOverlay.style.display !== 'none'
+        );
+        if ((window.ModernIntro && window.ModernIntro.state !== 'DONE') || introStillVisible) {
+            clearTutorialPointers();
+            return;
+        }
+
+        // 若正在播放分鐘卡比大小與次序排列動畫，暫時隱藏教學提示以免遮擋動畫
+        if (gameState.isPlayingMinuteClash) {
+            clearTutorialPointers();
+            return;
+        }
+
         const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
             ? window.getEffectiveHumanPlayerId()
             : 'SM_1';
 
+        // 若進入新一場遊戲（第 1 局、第 1 回合、尚未翻開小時卡），自動重置教學步驟紀錄
+        if (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && (!gameState.currentDrawnHourCards || gameState.currentDrawnHourCards.length === 0)) {
+            shownSteps.clear();
+        }
+
         // 階段 1：等待人類出牌 (分鐘卡)
         if (gameState.currentRoundAIChoices !== null) {
-            // 若四個核心教學步驟都已經顯示過（代表上一回合已完成完整教學循環），自動關閉教學
+            // 若核心教學步驟都已經顯示過（代表上一回合已完成完整教學循環），自動關閉教學
             if (hasCompletedAllTutorialSteps()) {
                 disableTutorialMode(true);
                 return;
             }
 
-            const hasSelected = document.querySelector('.minute-card.selected');
             const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
-            if (!hasSelected) {
-                shownSteps.add('step1_select_minute');
-                showTutorialPointer(
-                    '#human-hand',
-                    turnPrefix + '<strong>步驟 1：點擊挑選一張分鐘卡</strong><br>數字越大越有機會取得優先挑選小時卡的位置！',
-                    'top'
-                );
-            } else {
-                shownSteps.add('step2_confirm_minute');
-                showTutorialPointer(
-                    '#confirm-move-btn',
-                    turnPrefix + '<strong>步驟 2：點擊「確認出牌」</strong><br>將挑選的分鐘卡打出與其他玩家比大小。',
-                    'bottom'
-                );
+
+            // 若玩家啟動了「秒針」蓋 2 張特殊能力，則保留「點選 2 張卡牌 + 點擊確認出牌」的教學提示
+            if (typeof uiState !== 'undefined' && uiState.isSecondHandSelectingTwo) {
+                const selectedCount = Array.isArray(uiState.selectedCardValues) ? uiState.selectedCardValues.length : 0;
+                if (selectedCount < 2) {
+                    showTutorialPointer(
+                        '#human-hand',
+                        turnPrefix + `<strong>秒針能力（${selectedCount}/2）：請點選 2 張分鐘卡</strong><br>選滿 2 張後再點擊右側「確認出牌」。`,
+                        'top'
+                    );
+                } else {
+                    showTutorialPointer(
+                        '#confirm-move-btn',
+                        turnPrefix + '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出！',
+                        'bottom'
+                    );
+                }
+                return;
             }
+
+            // 一般出牌：引導玩家直接將分鐘卡向上拖曳至鐘面出牌
+            shownSteps.add('step1_drag_minute');
+            showTutorialPointer(
+                '#human-hand',
+                turnPrefix + '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開即可出牌（數字越大越優先挑選小時卡）！',
+                'top'
+            );
             return;
         }
 
@@ -198,19 +238,28 @@
             return;
         }
 
-        // 階段 5：回合結束，準備進入下一回合
+        // 階段 5：開局歡迎提示 或 回合結束準備進入下一回合
         const nextBtn = document.getElementById('next-step-btn');
         if (nextBtn && !nextBtn.disabled && nextBtn.offsetParent !== null) {
-            // 若在開局尚未進行第 1 回合前（例如剛初始化），也先記錄或引導點擊下一回合
-            if (shownSteps.has('step1_select_minute') && shownSteps.has('step2_confirm_minute') && shownSteps.has('step3_select_hour')) {
-                shownSteps.add('step4_next_round');
+            const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
+            if (isInitialStart) {
+                shownSteps.add('step0_welcome');
+                showTutorialPointer(
+                    '#next-step-btn',
+                    '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
+                    'left'
+                );
+            } else {
+                if (shownSteps.has('step1_drag_minute') && shownSteps.has('step3_select_hour')) {
+                    shownSteps.add('step4_next_round');
+                }
+                const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
+                showTutorialPointer(
+                    '#next-step-btn',
+                    turnPrefix + '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
+                    'left'
+                );
             }
-            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
-            showTutorialPointer(
-                '#next-step-btn',
-                turnPrefix + '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
-                'left'
-            );
             return;
         }
 

@@ -849,18 +849,6 @@
                     }
                 });
             }
-
-            // 左側懸浮抽屜互斥展開（避免同時展開超出畫面高度）
-            const leftDrawers = document.querySelectorAll('.hud-drawer-left details.hud-drawer');
-            leftDrawers.forEach(drawer => {
-                drawer.addEventListener('toggle', () => {
-                    if (drawer.open) {
-                        leftDrawers.forEach(other => {
-                            if (other !== drawer && other.open) other.open = false;
-                        });
-                    }
-                });
-            });
         },
 
         launchGameFromIntro() {
@@ -909,6 +897,10 @@
                     this.overlayEl.classList.remove('is-leaving');
                 }
                 if (typeof onComplete === 'function') onComplete();
+                // 進場動畫完全結束後，觸發教學引導顯示
+                if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function' && window.globalGameState) {
+                    window.TutorialModeManager.updateTutorialPointers(window.globalGameState);
+                }
             }, 680);
         },
 
