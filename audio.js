@@ -49,12 +49,22 @@ class AudioManager {
 		
 		this.isBGMMuted = false; // 背景音樂靜音狀態
         this.isSFXMuted = false; // 音效靜音狀態
+        this._bgmFadeTimer = null; // BGM 淡入計時器
         
         this.updateVolume();
+    }
+
+    // 清除進行中的 BGM 淡入計時器
+    _clearFadeTimer() {
+        if (this._bgmFadeTimer) {
+            clearInterval(this._bgmFadeTimer);
+            this._bgmFadeTimer = null;
+        }
     }
 	
     // 更新所有音軌的音量
     updateVolume() {
+        this._clearFadeTimer();
 		const bgmVol = this.isBGMMuted ? 0 : this.bgmVolume;
         const sfxVol = this.isSFXMuted ? 0 : this.sfxVolume;
 
@@ -82,9 +92,9 @@ class AudioManager {
     setBGMMuted(muted) {
         this.isBGMMuted = muted;
         this.updateVolume();
-        // 如果取消靜音且音樂暫停中，嘗試播放 (因為這是使用者點擊觸發的，瀏覽器允許)
+        // 如果取消靜音且音樂暫停中，嘗試播放並平滑淡入 (因為這是使用者點擊觸發的，瀏覽器允許)
         if (!muted && this.bgm.paused) {
-            this.playBGM();
+            this.playBGM(2400);
         }
     }
 
@@ -94,17 +104,66 @@ class AudioManager {
         this.updateVolume();
     }
 
-    // 播放背景音樂 (需由使用者操作觸發)
-    playBGM() {
+    // 播放背景音樂並支援平滑淡入效果 (預設淡入 2800ms)
+    playBGM(fadeInMs = 2800) {
         // 防止重複播放
-        if (this.bgm.paused) {
-            this.bgm.play().catch(e => {
-                console.warn("瀏覽器阻擋自動播放，等待使用者互動:", e);
-            });
+        if (!this.bgm.paused) return;
+
+        const targetVol = this.isBGMMuted ? 0 : this.bgmVolume;
+        this._clearFadeTimer();
+
+        if (fadeInMs > 0 && targetVol > 0) {
+            this.bgm.volume = 0;
+        } else {
+            this.bgm.volume = targetVol;
         }
+
+        this.bgm.play().then(() => {
+            if (fadeInMs > 0 && !this.isBGMMuted && this.bgmVolume > 0) {
+                this.fadeInBGM(fadeInMs);
+            }
+        }).catch(e => {
+            console.warn("瀏覽器阻擋自動播放，等待使用者互動:", e);
+        });
+    }
+
+    // BGM 音量由 0 平滑淡入至設定音量
+    fadeInBGM(durationMs = 2800) {
+        this._clearFadeTimer();
+        if (this.isBGMMuted || this.bgmVolume <= 0) {
+            this.bgm.volume = 0;
+            return;
+        }
+
+        const stepMs = 40;
+        const totalSteps = Math.max(1, Math.round(durationMs / stepMs));
+        let currentStep = 0;
+        this.bgm.volume = 0;
+
+        this._bgmFadeTimer = setInterval(() => {
+            if (this.isBGMMuted || this.bgm.paused) {
+                this._clearFadeTimer();
+                if (this.isBGMMuted) this.bgm.volume = 0;
+                return;
+            }
+            currentStep++;
+            const progress = Math.min(1, currentStep / totalSteps);
+            // 平滑漸強曲線 (easeInOutQuad)
+            const eased = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            const targetVol = this.bgmVolume;
+            this.bgm.volume = Math.max(0, Math.min(1, targetVol * eased));
+
+            if (progress >= 1) {
+                this.bgm.volume = targetVol;
+                this._clearFadeTimer();
+            }
+        }, stepMs);
     }
 
     stopBGM() {
+        this._clearFadeTimer();
         this.bgm.pause();
         this.bgm.currentTime = 0;
     }
@@ -171,16 +230,20 @@ class AudioManager {
         // 記錄切換前是否正在播放
         const wasPlaying = !this.bgm.paused;
         
-        // 先暫停目前的音樂
+        // 先暫停目前的音樂與淡入計時器
+        this._clearFadeTimer();
         this.bgm.pause();
 
         this.bgm.src = targetSrc;
         this.currentBgmType = newType;
         this.bgm.load(); // 載入新音檔
 
-        // 如果原本音樂有在播放，且 BGM 沒有被靜音，就自動播放新曲目
+        // 如果原本音樂有在播放，且 BGM 沒有被靜音，就自動播放新曲目並淡入
         if (wasPlaying && !this.isBGMMuted) {
-            this.bgm.play().catch(e => console.warn("切換 BGM 播放失敗:", e));
+            this.bgm.volume = 0;
+            this.bgm.play().then(() => {
+                this.fadeInBGM(2000);
+            }).catch(e => console.warn("切換 BGM 播放失敗:", e));
         }
     }
 	
