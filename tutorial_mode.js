@@ -157,34 +157,33 @@
                 return;
             }
 
-            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
+            const turnPrefix = gameState.roundMarker > 1
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                : '';
 
             // 若玩家啟動了「秒針」蓋 2 張特殊能力，則保留「點選 2 張卡牌 + 點擊確認出牌」的教學提示
             if (typeof uiState !== 'undefined' && uiState.isSecondHandSelectingTwo) {
                 const selectedCount = Array.isArray(uiState.selectedCardValues) ? uiState.selectedCardValues.length : 0;
                 if (selectedCount < 2) {
-                    showTutorialPointer(
-                        '#human-hand',
-                        turnPrefix + `<strong>秒針能力（${selectedCount}/2）：請點選 2 張分鐘卡</strong><br>選滿 2 張後再點擊右側「確認出牌」。`,
-                        'top'
-                    );
+                    const msg = window.i18n
+                        ? window.i18n.t('tutorial.step1_sec_ability_select', { count: selectedCount })
+                        : `<strong>秒針能力（${selectedCount}/2）：請點選 2 張分鐘卡</strong><br>選滿 2 張後再點擊右側「確認出牌」。`;
+                    showTutorialPointer('#human-hand', turnPrefix + msg, 'top');
                 } else {
-                    showTutorialPointer(
-                        '#confirm-move-btn',
-                        turnPrefix + '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出！',
-                        'bottom'
-                    );
+                    const msg = window.i18n
+                        ? window.i18n.t('tutorial.step1_sec_ability_confirm')
+                        : '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出！';
+                    showTutorialPointer('#confirm-move-btn', turnPrefix + msg, 'bottom');
                 }
                 return;
             }
 
             // 一般出牌：引導玩家直接將分鐘卡向上拖曳至鐘面出牌
             shownSteps.add('step1_drag_minute');
-            showTutorialPointer(
-                '#human-hand',
-                turnPrefix + '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開即可出牌（數字越大越優先挑選小時卡）！',
-                'top'
-            );
+            const step1Msg = window.i18n
+                ? window.i18n.t('tutorial.step1_drag_minute')
+                : '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開即可出牌（數字越大越優先挑選小時卡）！';
+            showTutorialPointer('#human-hand', turnPrefix + step1Msg, 'top');
             return;
         }
 
@@ -192,49 +191,46 @@
         if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
             const isSinDist = gameState.sinTargetingMode === 'sin' && gameState.gameMode !== '3P';
             const penaltyHint = isSinDist
-                ? '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>'
-                : '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>';
-            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
+                ? (window.i18n ? window.i18n.t('tutorial.penalty_sin') : '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>')
+                : (window.i18n ? window.i18n.t('tutorial.penalty_max') : '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>');
+            const turnPrefix = gameState.roundMarker > 1
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                : '';
 
             shownSteps.add('step3_select_hour');
+            const step3Msg = (window.i18n ? window.i18n.t('tutorial.step3_select_hour') : '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！') + penaltyHint;
             const highlightSpot = document.querySelector('.clock-spot.highlight-target');
             if (highlightSpot && highlightSpot.offsetParent !== null) {
-                showTutorialPointer(
-                    highlightSpot,
-                    turnPrefix + '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！' + penaltyHint,
-                    'top'
-                );
+                showTutorialPointer(highlightSpot, turnPrefix + step3Msg, 'top');
             } else {
-                showTutorialPointer(
-                    '#clock-face',
-                    turnPrefix + '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！' + penaltyHint,
-                    'left'
-                );
+                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'left');
             }
             return;
         }
 
         // 階段 3：分針能力選擇中
         if (gameState.waitingMinuteHandChoice) {
-            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
+            const turnPrefix = gameState.roundMarker > 1
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                : '';
             shownSteps.add('step_minute_ability');
-            showTutorialPointer(
-                '#evolution-progress-area',
-                turnPrefix + '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。',
-                'right'
-            );
+            const minMsg = window.i18n
+                ? window.i18n.t('tutorial.step_minute_ability')
+                : '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。';
+            showTutorialPointer('#evolution-progress-area', turnPrefix + minMsg, 'right');
             return;
         }
 
         // 階段 4：秒針二選一
         if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId) {
-            const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
+            const turnPrefix = gameState.roundMarker > 1
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                : '';
             shownSteps.add('step_second_ability');
-            showTutorialPointer(
-                '#seconds-choice-overlay .modal',
-                turnPrefix + '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
-                'top'
-            );
+            const secMsg = window.i18n
+                ? window.i18n.t('tutorial.step_second_ability')
+                : '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！';
+            showTutorialPointer('#seconds-choice-overlay .modal', turnPrefix + secMsg, 'top');
             return;
         }
 
@@ -244,21 +240,21 @@
             const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
             if (isInitialStart) {
                 shownSteps.add('step0_welcome');
-                showTutorialPointer(
-                    '#next-step-btn',
-                    '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
-                    'left'
-                );
+                const welcomeMsg = window.i18n
+                    ? window.i18n.t('tutorial.step0_welcome')
+                    : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                showTutorialPointer('#next-step-btn', welcomeMsg, 'left');
             } else {
                 if (shownSteps.has('step1_drag_minute') && shownSteps.has('step3_select_hour')) {
                     shownSteps.add('step4_next_round');
                 }
-                const turnPrefix = gameState.roundMarker > 1 ? '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>' : '';
-                showTutorialPointer(
-                    '#next-step-btn',
-                    turnPrefix + '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
-                    'left'
-                );
+                const turnPrefix = gameState.roundMarker > 1
+                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                    : '';
+                const roundDoneMsg = window.i18n
+                    ? window.i18n.t('tutorial.step4_round_done')
+                    : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
+                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg, 'left');
             }
             return;
         }

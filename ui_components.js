@@ -11,7 +11,11 @@ function safeStringify(value) {
 if (typeof appLogger.setUiSink === 'function') {
     appLogger.setUiSink((args) => {
         const message = args.map(arg => safeStringify(arg)).join(' ');
-        logToUI(message);
+        if (typeof logToUI === 'function') {
+            logToUI(message);
+        } else if (typeof window !== 'undefined' && typeof window.logToUI === 'function') {
+            window.logToUI(message);
+        }
     });
 }
 
@@ -1716,30 +1720,37 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
 
         // --- 修改結束 ---
 
+        const targetLabel = window.i18n ? window.i18n.t('abilities.target_role') : '目標身份：';
+        const condMetText = window.i18n ? window.i18n.t('abilities.condition_met') : '✨ 條件達成！回合結束時進化';
         const roleDescriptions = {
-            '時針': `<div style="color:#ff9ff3; margin-top:4px;">👁️預知牌頂 + ⚡1 Mana：牌頂移底</div>`,
-            '分針': `<div style="color:#f368e0; margin-top:4px;">⚡2 Mana：移至下一個有小時卡的格子</div>`,
-            '秒針': `<div style="color:#00d2d3; margin-top:4px;">⚡3 Mana：出牌二選一</div>`
+            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 Mana：牌頂移底'}</div>`,
+            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 Mana：移至下一個有小時卡的格子'}</div>`,
+            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 Mana：出牌二選一'}</div>`
         };
+
+        const cond1Text = window.i18n ? window.i18n.t('abilities.cond_ages', { ages: uniqueAges, precious: preciousCount }) : `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`;
+        const cond2Text = window.i18n ? window.i18n.t('abilities.cond_numbers', { numbers: uniqueNumbers, precious: preciousCount }) : `2. 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`;
+        const cond3Text = window.i18n ? window.i18n.t('abilities.cond_total', { total: totalCount, precious: preciousCount }) : `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`;
+        const cond4Text = window.i18n ? window.i18n.t('abilities.cond_precious', { precious: preciousCount }) : `4. 珍貴 ${preciousCount}/3 (任意)`;
 
         // 將 optionsHtml 放入 select 中
         let html = `
             <div class="target-role-header">
-                <label class="target-role-label">目標身份：</label>
+                <label class="target-role-label">${targetLabel}</label>
                 <select id="target-role-select" class="target-role-select">
                     ${optionsHtml}
                 </select>
                 <div style="font-size:0.8rem; line-height:1.4; color:#ddd;">${roleDescriptions[currentTarget] || ''}</div>
             </div>
             <div style="margin-top:10px;">
-                ${renderConditionRow(cond1, `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`)}
-                ${renderConditionRow(cond2, `2. 數字 ${uniqueNumbers}/4, 珍貴 ${preciousCount}/1`)}
-                ${renderConditionRow(cond3, `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`)}
-                ${renderConditionRow(cond4, `4. 珍貴 ${preciousCount}/3 (任意)`)}
+                ${renderConditionRow(cond1, cond1Text)}
+                ${renderConditionRow(cond2, cond2Text)}
+                ${renderConditionRow(cond3, cond3Text)}
+                ${renderConditionRow(cond4, cond4Text)}
             </div>
         `;
         if (isReady) {
-            html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px dashed #ffd27f; padding:4px;">✨ 條件達成！回合結束時進化</div>`;
+            html += `<div style="margin-top:8px; color:#ffd27f; text-align:center; font-weight:bold; border:1px dashed #ffd27f; padding:4px;">${condMetText}</div>`;
         }
         container.innerHTML = html;
 
@@ -1786,12 +1797,16 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         let contentHtml = '';
         if (isAbilityLocked) {
-            contentHtml = '<div style="color:#ff6b6b; font-weight:bold;">🚫 預知能力失效</div>';
+            contentHtml = `<div style="color:#ff6b6b; font-weight:bold;">${window.i18n ? window.i18n.t('abilities.hour_predict_disabled') : '🚫 預知能力失效'}</div>`;
         } else if (!topCard) {
-            contentHtml = '<div style="color:#aaa;">(牌庫已空)</div>';
+            contentHtml = `<div style="color:#aaa;">${window.i18n ? window.i18n.t('abilities.hour_deck_empty') : '(牌庫已空)'}</div>`;
         } else {
             const star = topCard.isPrecious ? '<span style="color:#ffd27f; font-size:1.2rem;">★</span>' : '';
-            contentHtml = `<div style="font-size:0.9rem; margin-bottom:6px; border-bottom:1px dashed #666; padding-bottom:4px; color:#fff;">👁️ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${topCard.ageGroup || ''}</span> ${star}</div>`;
+            const localizedAge = window.i18n ? window.i18n.getAgeGroupName(topCard.ageGroup || '') : (topCard.ageGroup || '');
+            const topCardText = window.i18n
+                ? window.i18n.t('abilities.hour_top_card', { number: topCard.number, age: localizedAge, star })
+                : `👁️ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${localizedAge}</span> ${star}`;
+            contentHtml = `<div style="font-size:0.9rem; margin-bottom:6px; border-bottom:1px dashed #666; padding-bottom:4px; color:#fff;">${topCardText}</div>`;
         }
 
         const passiveContainer = document.createElement('div');
@@ -1815,7 +1830,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         if (isAbilityLocked) {
             // ✅ 封鎖狀態樣式
-            btn.innerHTML = `🚫 能力被封鎖`;
+            btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
             btn.style.backgroundColor = '#555';
             btn.style.color = '#999';
             btn.disabled = true;
@@ -1823,9 +1838,13 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             // 正常狀態
             btn.style.backgroundColor = '#ff9ff3';
             if (moveCount === 0) {
-                btn.innerHTML = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
+                btn.innerHTML = window.i18n
+                    ? window.i18n.t('abilities.hour_move_btn', { cost: currentCost })
+                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
             } else {
-                btn.innerHTML = `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
+                btn.innerHTML = window.i18n
+                    ? window.i18n.t('abilities.hour_move_again_btn', { cost: currentCost })
+                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
             }
             btn.disabled = !canUse;
             btn.onclick = () => {
@@ -1842,14 +1861,12 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
 
         if (gameState.waitingMinuteHandChoice) {
-            // 只有當觸發條件達成且未被封鎖時，才會進入此區塊 (邏輯由 game.js 控制)
-            // 但為了保險，這裡也可以擋一下 UI
             if (isAbilityLocked) {
                 container.innerHTML += `<div style="color:#ff6b6b">異常：封鎖狀態下不應顯示選擇面板。</div>`;
             } else {
                 const desc = document.createElement('div');
                 desc.className = 'evo-desc';
-                desc.innerHTML = `<span style="color:#f368e0">⚡請選擇移動方向 (將跳至下一個有卡片的格子)：`;
+                desc.innerHTML = `<span style="color:#f368e0">${window.i18n ? window.i18n.t('abilities.min_prompt') : '⚡請選擇移動方向 (將跳至下一個有卡片的格子)：'}`;
                 container.appendChild(desc);
 
                 const btnGroup = document.createElement('div');
@@ -1863,9 +1880,12 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                     b.onclick = () => handleHumanAbilityChoice(globalGameState, val);
                     return b;
                 }
-                btnGroup.appendChild(makeBtn('↺ 逆時針', 'ccw', '#00d2d3'));
-                btnGroup.appendChild(makeBtn('↻ 順時針', 'cw', '#ff9ff3'));
-                btnGroup.appendChild(makeBtn('略過', false, '#777'));
+                const ccwTxt = window.i18n ? window.i18n.t('abilities.min_btn_ccw') : '↺ 逆時針';
+                const cwTxt = window.i18n ? window.i18n.t('abilities.min_btn_cw') : '↻ 順時針';
+                const skipTxt = window.i18n ? window.i18n.t('abilities.min_btn_skip') : '略過';
+                btnGroup.appendChild(makeBtn(ccwTxt, 'ccw', '#00d2d3'));
+                btnGroup.appendChild(makeBtn(cwTxt, 'cw', '#ff9ff3'));
+                btnGroup.appendChild(makeBtn(skipTxt, false, '#777'));
                 container.appendChild(btnGroup);
             }
         } else {
@@ -1874,10 +1894,13 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             info.className = 'evo-desc';
 
             if (isAbilityLocked) {
-                // ✅ 封鎖狀態提示
-                info.innerHTML = `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
+                info.innerHTML = window.i18n
+                    ? window.i18n.t('abilities.min_passive_disabled', { cost: COST })
+                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
             } else {
-                info.innerHTML = `取得小時卡時，可消耗 ${COST} Mana 跳躍至順/逆時針下一個有卡片的格子。`;
+                info.innerHTML = window.i18n
+                    ? window.i18n.t('abilities.min_passive_text', { cost: COST })
+                    : `取得小時卡時，可消耗 ${COST} Mana 跳躍至順/逆時針下一個有卡片的格子。`;
             }
             container.appendChild(info);
         }
@@ -1900,7 +1923,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         if (isWaitingFinal) {
             const desc = document.createElement('div');
             desc.className = 'evo-desc';
-            desc.textContent = '請選擇一張牌...';
+            desc.textContent = window.i18n ? window.i18n.t('abilities.sec_pick_one_prompt') : '請選擇一張牌...';
             container.appendChild(desc);
         } else {
             const btn = document.createElement('button');
@@ -1908,7 +1931,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
             if (isAbilityLocked) {
                 // ✅ 封鎖狀態樣式
-                btn.innerHTML = `🚫 能力被封鎖`;
+                btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
                 btn.style.backgroundColor = '#555';
                 btn.style.color = '#999';
                 btn.disabled = true;
@@ -1917,11 +1940,13 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                 if (uiState.isSecondHandSelectingTwo) {
                     btn.style.backgroundColor = '#ff6b6b';
                     btn.style.color = '#fff';
-                    btn.textContent = '取消選擇';
+                    btn.textContent = window.i18n ? window.i18n.t('abilities.sec_btn_cancel') : '取消選擇';
                     btn.onclick = () => { uiState.isSecondHandSelectingTwo = false; uiState.selectedCardValues = []; updateUI(globalGameState); };
                 } else {
                     btn.style.backgroundColor = '#00d2d3';
-                    btn.innerHTML = `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
+                    btn.innerHTML = window.i18n
+                        ? window.i18n.t('abilities.sec_btn_play', { cost: COST })
+                        : `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
                     btn.disabled = !canUse;
                     btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
                 }
@@ -1932,7 +1957,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                 const hint = document.createElement('div');
                 hint.className = 'evo-desc';
                 hint.style.color = '#00d2d3';
-                hint.textContent = '👆 請點擊上方 2 張手牌';
+                hint.textContent = window.i18n ? window.i18n.t('abilities.sec_pick_two_hint') : '👆 請點擊上方 2 張手牌';
                 container.appendChild(hint);
             }
         }
@@ -1947,10 +1972,13 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
-    container.innerHTML = `<div class="evo-role-title" style="color:#feca57">時之惡</div>`;
+    const localizedSinName = window.i18n ? window.i18n.getRoleName('時之惡') : '時之惡';
+    container.innerHTML = `<div class="evo-role-title" style="color:#feca57">${localizedSinName}</div>`;
 
     // 1. 顯示當前規則狀態
-    const currentMode = gameState.sinTargetingMode === 'sin' ? '扣滅目標：距離最近 (已變更)' : '扣滅目標：數值最大 (預設)';
+    const modeNear = window.i18n ? window.i18n.t('abilities.sin_mode_near') : '扣滅目標：距離最近 (已變更)';
+    const modeMax = window.i18n ? window.i18n.t('abilities.sin_mode_max') : '扣滅目標：數值最大 (預設)';
+    const currentMode = gameState.sinTargetingMode === 'sin' ? modeNear : modeMax;
     const statusDiv = document.createElement('div');
     statusDiv.style.cssText = 'font-size:0.85rem; color:#aaa; margin-bottom:8px;';
     statusDiv.innerHTML = `<span style="color:${gameState.sinTargetingMode === 'sin' ? '#ff6b6b' : '#fff'}">${currentMode}</span>`;
@@ -1969,21 +1997,24 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     const pullCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     const btnPull = document.createElement('button');
     btnPull.className = 'evo-btn';
-    btnPull.style.flex = '1';           // ✅ 設定 flex: 1 讓兩顆按鈕平均分配寬度
+    btnPull.style.flex = '1';
     btnPull.style.backgroundColor = '#feca57';
     btnPull.style.color = '#000';
-    // btnPull.style.marginBottom = '0'; // 移除原本的底部間距
+
+    const actedTxt = window.i18n ? window.i18n.t('abilities.sin_acted') : '已行動';
+    const lackManaTxt = (cost) => window.i18n ? window.i18n.t('abilities.sin_lack_mana', { cost }) : `缺 Mana (${cost})`;
 
     if (humanPlayer.specialAbilityUsed) {
-        btnPull.textContent = "已行動";
+        btnPull.textContent = actedTxt;
         btnPull.disabled = true;
     } else if (humanPlayer.mana < pullCost) {
-        btnPull.textContent = `缺 Mana (${pullCost})`; // 精簡文字
+        btnPull.textContent = lackManaTxt(pullCost);
         btnPull.disabled = true;
     } else {
-        // 精簡描述以適應較窄的寬度
-        btnPull.innerHTML = `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
-        btnPull.title = "改為懲罰「距離最近」者"; // 將詳細說明移至 Tooltip
+        btnPull.innerHTML = window.i18n
+            ? window.i18n.t('abilities.sin_btn_pull', { cost: pullCost })
+            : `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
+        btnPull.title = window.i18n ? window.i18n.t('abilities.sin_pull_tip') : '改為懲罰「距離最近」者';
         btnPull.onclick = () => {
             if (typeof activateSinAbility === 'function') {
                 const success = activateSinAbility(globalGameState, humanPlayer.id);
@@ -1991,31 +2022,33 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
             }
         };
     }
-    btnGroup.appendChild(btnPull); // 加入群組
+    btnGroup.appendChild(btnPull);
 
     // --- 按鈕 B：封鎖 (右) ---
     const sealCost = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     const btnSeal = document.createElement('button');
     btnSeal.className = 'evo-btn';
-    btnSeal.style.flex = '1';           // ✅ 設定 flex: 1
+    btnSeal.style.flex = '1';
     btnSeal.style.backgroundColor = '#ff6b6b';
     btnSeal.style.color = '#fff';
 
     if (gameState.abilityMarker) {
-        btnSeal.textContent = "已封鎖";
+        btnSeal.textContent = window.i18n ? window.i18n.t('abilities.locked_btn') : '已封鎖';
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else if (humanPlayer.specialAbilityUsed) {
-        btnSeal.textContent = "已行動";
+        btnSeal.textContent = actedTxt;
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else if (humanPlayer.mana < sealCost) {
-        btnSeal.textContent = `缺 Mana (${sealCost})`;
+        btnSeal.textContent = lackManaTxt(sealCost);
         btnSeal.disabled = true;
         btnSeal.style.backgroundColor = '#555';
     } else {
-        btnSeal.innerHTML = `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖</span>`;
-        btnSeal.title = "本回合封鎖時魔技能"; // Tooltip
+        btnSeal.innerHTML = window.i18n
+            ? window.i18n.t('abilities.sin_btn_seal', { cost: sealCost })
+            : `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>`;
+        btnSeal.title = window.i18n ? window.i18n.t('abilities.sin_seal_tip') : '本回合封印全體時魔能力';
         btnSeal.onclick = () => {
             if (typeof activateSinSealAbility === 'function') {
                 const success = activateSinSealAbility(globalGameState, humanPlayer.id);

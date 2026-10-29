@@ -426,4 +426,9 @@ function initializeGame(roles = null) {
     appLogger.log("遊戲初始化完成！");
     return gameState;
 }
-
+if (typeof window !== 'undefined') {
+    window.initializeGame = initializeGame;
+    if (typeof resetGameForNextRound !== 'undefined') window.resetGameForNextRound = resetGameForNextRound;
+    if (typeof createMinuteDeck !== 'undefined') window.createMinuteDeck = createMinuteDeck;
+    if (typeof createHourDeck !== 'undefined') window.createHourDeck = createHourDeck;
+}

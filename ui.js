@@ -1263,14 +1263,16 @@ function showCardStory(card) {
 
     const age = card.ageGroup || '未知';
     const num = card.number;
-    const isPrecious = card.isPrecious ? '<span style="color:#ffd27f;">★ 珍貴</span>' : '';
+    const localizedAge = window.i18n ? window.i18n.getAgeGroupName(age) : age;
+    const preciousTag = window.i18n ? window.i18n.t('ui.labels.precious', '★ 珍貴') : '★ 珍貴';
+    const isPrecious = card.isPrecious ? `<span style="color:#ffd27f;">${preciousTag}</span>` : '';
 
-    titleEl.innerHTML = `📖 ${age} ${num} ${isPrecious}`;
+    titleEl.innerHTML = `📖 ${localizedAge} ${num} ${isPrecious}`;
 
-    // 從資料庫取得故事
-    const stories = window.GAME_DATA?.HOUR_STORIES || {};
-    const ageStories = stories[age] || {};
-    const storyText = ageStories[num] || `這是一張尚未被發掘記憶的卡片...)`;
+    // 從資料庫取得故事 (支援多語系獨立故事模組)
+    const storyText = (typeof window.getHourCardStory === 'function')
+        ? window.getHourCardStory(age, num)
+        : ((window.GAME_DATA?.HOUR_STORIES?.[age]?.[num]) || `這是一張尚未被發掘記憶的卡片...`);
 
     // 替換換行符號為 <br>
     contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
@@ -1341,8 +1343,8 @@ window.AutoNextRoundTimer = {
         }
         this.remainingSeconds = 7;
         const nextStepBtn = document.getElementById('next-step-btn');
-        if (nextStepBtn && nextStepBtn.textContent.includes('下一回合 (')) {
-            nextStepBtn.textContent = '下一回合';
+        if (nextStepBtn && typeof nextStepBtn.textContent === 'string' && nextStepBtn.textContent.includes('(')) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round') : '下一回合';
         }
     }
 };

@@ -99,6 +99,17 @@
                     el.textContent = translated;
                 }
             });
+
+            // 支援富文本 HTML 注入 [data-i18n-html]
+            const htmlElements = root.querySelectorAll('[data-i18n-html]');
+            htmlElements.forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                if (!key) return;
+                const translated = this.t(key);
+                if (translated && translated !== key) {
+                    el.innerHTML = translated;
+                }
+            });
         },
 
         // 角色與身分多語系轉換輔助

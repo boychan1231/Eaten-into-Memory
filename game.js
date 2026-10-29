@@ -1629,7 +1629,7 @@ function endGame(gameState) {
 // ✅ 對 UI 暴露必要 API（避免 scope/載入差異導致 initializeGame 不可見）
 try {
     if (typeof window !== 'undefined') {
-        window.initializeGame = initializeGame;
+        if (typeof initializeGame !== 'undefined') window.initializeGame = initializeGame;
         window.startRound = startRound;
         window.handleHumanChoice = handleHumanChoice;
         window.handleHumanHourCardChoice = handleHumanHourCardChoice;
