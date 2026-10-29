@@ -59,6 +59,7 @@ const minuteHistoryRenderCache = {
 
 let uiTrackedGameRound = 1;// 追蹤目前輪數，用於偵測換輪時重置歷史
 let uiTokenMemory = {}; // 用來記憶棋子動畫的時間戳記
+let trackedEnteredClockPlayerIds = new Set(); // 追蹤各角色是否首次進入鐘面
 
 
 function resetMinuteHistory(gameState) {
@@ -212,10 +213,11 @@ function updateUI(gameState) {
 
     // 檢查是否進入新的一輪 (例如從 第1輪 變 第2輪)
     // 若是，則清空右側的出牌歷史記錄
-    if (gameState.gameRound > uiTrackedGameRound) {
+    if (gameState.gameRound !== uiTrackedGameRound) {
         resetMinuteHistory(gameState);
         uiTrackedGameRound = gameState.gameRound;
-        //appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史。`);
+        trackedEnteredClockPlayerIds.clear();
+        //appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史與進場追蹤。`);
     }
 
     // 1. 準備共用變數
@@ -286,27 +288,38 @@ function updateNextStepButton(gameState, flags) {
 
     if (flags.gameEnded) {
         nextStepBtn.disabled = true;
-        nextStepBtn.textContent = '遊戲結束';
+        nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.game_over') : '遊戲結束';
         return;
     }
 
     // 分針能力等待時，允許點擊按鈕 (視為略過)
     if (gameState.waitingMinuteHandChoice) {
         nextStepBtn.disabled = false;
-        nextStepBtn.textContent = "下一回合 (略過能力)";
+        nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round_skip') : "下一回合 (略過能力)";
         return; // 直接返回，不執行下方的 disable 邏輯
     }
 
     if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
         nextStepBtn.disabled = true;
-        if (flags.isPlayingMinuteClash) nextStepBtn.textContent = "比較分鐘數值中...";
-        else if (flags.isWaitingHourInput) nextStepBtn.textContent = "請選擇小時卡...";
-        else if (flags.isWaitingAbilityChoice) nextStepBtn.textContent = "請決定是否使用特殊能力...";
-        else if (flags.isWaitingSecondFinalChoice) nextStepBtn.textContent = "請完成秒針二選一...";
-        else nextStepBtn.textContent = "請出牌...";
+        if (flags.isPlayingMinuteClash) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute') : "比較分鐘數值中...";
+        } else if (flags.isWaitingHourInput) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_hour_choice') : "請選擇小時卡...";
+        } else if (flags.isWaitingAbilityChoice) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_ability_choice') : "請決定是否使用特殊能力...";
+        } else if (flags.isWaitingSecondFinalChoice) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_second_final') : "請完成秒針二選一...";
+        } else {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_input') : "請出牌...";
+        }
     } else {
         nextStepBtn.disabled = false;
-        nextStepBtn.textContent = "下一回合";
+        if (window.AutoNextRoundTimer && window.AutoNextRoundTimer.timerId && window.AutoNextRoundTimer.remainingSeconds > 0) {
+            const sec = window.AutoNextRoundTimer.remainingSeconds;
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round_countdown', { sec }) : `下一回合 (${sec}s)`;
+        } else {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round') : "下一回合";
+        }
     }
 }
 
@@ -408,8 +421,138 @@ function renderScorePanel(gameState) {
 
 
 
+// ==========================================
+// 角色首次進入鐘面：「漂移 (Drift)」與「逐字模糊浮現 (Blur In Letters)」
+// ==========================================
+function getRoleSoulImage(player) {
+    if (!player) return 'assets/soul_demon.png';
+    const rawRole = String(player.roleCard || player.type || '').toLowerCase();
+    let key = 'demon';
+    if (rawRole.includes('時針') || rawRole.includes('hour')) key = 'hour';
+    else if (rawRole.includes('分針') || rawRole.includes('min')) key = 'min';
+    else if (rawRole.includes('秒針') || rawRole.includes('sec')) key = 'sec';
+    else if (rawRole.includes('時之惡') || rawRole.includes('sin')) key = 'sin';
+    else if (rawRole.includes('受詛者') || rawRole.includes('scz')) key = 'scz';
+    else if (rawRole.includes('時魔') || rawRole.includes('demon')) key = 'demon';
+
+    return `assets/soul_${key}.png`;
+}
+
+function triggerClockDriftEffect(player) {
+    const clockSection = document.querySelector('.clock-section') || document.getElementById('clock-face');
+    if (!clockSection) return;
+
+    let overlay = document.getElementById('clock-drift-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'clock-drift-overlay';
+        overlay.className = 'clock-drift-overlay';
+        clockSection.appendChild(overlay);
+    }
+
+    // 隨機方向側約 12% 位置淡入
+    const angle = Math.random() * Math.PI * 2;
+    const startDistance = 12; // 12%
+    const startX = (Math.cos(angle) * startDistance).toFixed(1);
+    const startY = (Math.sin(angle) * startDistance).toFixed(1);
+
+    // 等速持續往反方向漂移
+    const endDistance = 16;
+    const endX = (-Math.cos(angle) * endDistance).toFixed(1);
+    const endY = (-Math.sin(angle) * endDistance).toFixed(1);
+
+    const rawRole = player.roleCard || player.type;
+    const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
+    const glowColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
+    const localizedRole = window.i18n ? window.i18n.getRoleName(rawRole) : rawRole;
+    const soulImg = getRoleSoulImage(player);
+
+    const itemEl = document.createElement('div');
+    itemEl.className = 'clock-drift-item';
+    itemEl.style.setProperty('--drift-start-x', `${startX}%`);
+    itemEl.style.setProperty('--drift-start-y', `${startY}%`);
+    itemEl.style.setProperty('--drift-end-x', `${endX}%`);
+    itemEl.style.setProperty('--drift-end-y', `${endY}%`);
+    itemEl.style.setProperty('--drift-glow', glowColor);
+
+    // 1. 光環靈魂徽記
+    const emblemEl = document.createElement('div');
+    emblemEl.className = 'clock-drift-emblem';
+    const avatarEl = document.createElement('img');
+    avatarEl.className = 'clock-drift-avatar';
+    avatarEl.src = soulImg;
+    avatarEl.alt = localizedRole;
+    emblemEl.appendChild(avatarEl);
+    itemEl.appendChild(emblemEl);
+
+    // 2. 逐字模糊浮現標題 (Blur In Letters)
+    const titleEl = document.createElement('div');
+    titleEl.className = 'clock-drift-title';
+    titleEl.style.borderColor = `${glowColor}40`;
+
+    // 拆分個別字元為 span (不依賴付費商用 SplitText 插件，以原生輕量 DOM 實現 100% 同等效果)
+    const textChars = localizedRole.split('');
+    const letterEls = textChars.map(char => {
+        const span = document.createElement('span');
+        span.className = 'blur-letter';
+        span.textContent = char;
+        titleEl.appendChild(span);
+        return span;
+    });
+    itemEl.appendChild(titleEl);
+    overlay.appendChild(itemEl);
+
+    // 3. GSAP 逐字模糊浮現動態
+    if (window.gsap && letterEls.length > 0) {
+        const tl = window.gsap.timeline();
+        // 前 20%：依序從「模糊、透明、略大、略低」變成清楚落到定位
+        tl.fromTo(letterEls,
+            { opacity: 0, filter: 'blur(10px)', y: '.25em', scale: 1.15 },
+            { opacity: 1, filter: 'blur(0px)', y: 0, scale: 1, duration: 0.65, ease: 'power2.out', stagger: 0.07 }
+        );
+        // 停留展示後依序模糊淡出
+        tl.to(letterEls,
+            { opacity: 0, filter: 'blur(10px)', y: '-.15em', scale: 0.95, duration: 0.5, ease: 'power2.in', stagger: 0.04 },
+            '+=1.8'
+        );
+    }
+
+    // 4. 整段約 4 秒後自然淡出並自 DOM 移除
+    setTimeout(() => {
+        if (itemEl.parentNode) {
+            itemEl.remove();
+        }
+    }, 4000);
+}
+
+function checkAndTriggerClockDrift(gameState) {
+    if (!gameState || !Array.isArray(gameState.players)) return;
+    const newlyEntered = [];
+    gameState.players.forEach(p => {
+        if (typeof p.currentClockPosition === 'number' && !p.isEjected) {
+            if (!trackedEnteredClockPlayerIds.has(p.id)) {
+                trackedEnteredClockPlayerIds.add(p.id);
+                newlyEntered.push(p);
+            }
+        }
+    });
+
+    if (newlyEntered.length > 0) {
+        newlyEntered.forEach((p, idx) => {
+            setTimeout(() => {
+                triggerClockDriftEffect(p);
+            }, idx * 280);
+        });
+    }
+}
+
+window.triggerClockDriftEffect = triggerClockDriftEffect;
+
 // --- B. 鐘面繪製 ---
 function renderClockFace(gameState, flags) {
+    // 檢測角色首次進入鐘面：觸發「漂移 (Drift)」與「逐字模糊浮現 (Blur In Letters)」
+    checkAndTriggerClockDrift(gameState);
+
     // 移除舊的像素設定
     // const radius = 190;
     // const centerX = 250;
@@ -729,14 +872,18 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 Mana 抵擋">🛡️</span>`
             : '';
 
-        humanRoleEl.innerHTML = `您是：${humanPlayer.roleCard} ${shieldHtml}`;
+        const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
+        const youAreLabel = window.i18n ? window.i18n.t('ui.labels.you_are') : '您是：';
+        humanRoleEl.innerHTML = `${youAreLabel}${roleName} ${shieldHtml}`;
     }
 
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-mana', String(humanPlayer.mana));
     setText('h-gear', '⚙️'.repeat(Math.max(0, humanPlayer.gearCards)));
     setText('h-score', String(humanPlayer.score));
-    setText('h-pos', humanPlayer.isEjected ? '驅逐' : String(humanPlayer.currentClockPosition || '未上場'));
+    const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '驅逐';
+    const notOnBoardLabel = window.i18n ? window.i18n.t('ui.labels.not_on_board') : '未上場';
+    setText('h-pos', humanPlayer.isEjected ? ejectedLabel : String(humanPlayer.currentClockPosition || notOnBoardLabel));
     setText('h-hour', String(humanPlayer.hourCards.length));
 
     const diceEl = document.getElementById('h-dice');
@@ -882,6 +1029,52 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             if (uiState.isSecondHandSelectingTwo && uiState.selectedCardValues.includes(card.value)) cardEl.classList.add('selected');
             humanHandEl.appendChild(cardEl);
         });
+
+        // 分鐘手牌初次配置「發牌進入手牌區」動態效果（不再排列成扇形，而是直接依序發入成為玩家手牌）
+        if (gameState && gameState.needsHandDealAnimation && typeof gsap !== 'undefined') {
+            const introOverlay = document.getElementById('modern-intro-overlay');
+            const isIntroCovering = introOverlay && introOverlay.style.display !== 'none' && !introOverlay.classList.contains('is-leaving');
+            const cardEls = humanHandEl.querySelectorAll('.minute-card');
+
+            if (isIntroCovering) {
+                // 開場進場動畫仍覆蓋中，先預先隱藏手牌並保留標記，等進場動畫淡出後才正式發牌
+                if (cardEls.length > 0) gsap.set(cardEls, { opacity: 0 });
+            } else {
+                gameState.needsHandDealAnimation = false;
+                if (cardEls.length > 0) {
+                    const midIdx = Math.floor(cardEls.length / 2);
+                    gsap.set(cardEls, { opacity: 0 });
+                    gsap.fromTo(cardEls,
+                        {
+                            y: 85,
+                            x: (i) => (midIdx - i) * 14,
+                            opacity: 0,
+                            scale: 0.55,
+                            rotation: (i) => (i - midIdx) * 2.8,
+                            transformOrigin: "50% 100%"
+                        },
+                        {
+                            y: 0,
+                            x: 0,
+                            opacity: (i) => flags.isWaitingMinuteInput ? 1 : 0.7,
+                            scale: 1,
+                            rotation: 0,
+                            duration: 0.42,
+                            ease: "back.out(1.4)",
+                            stagger: {
+                                each: 0.042,
+                                from: "start"
+                            },
+                            onStart: () => {
+                                if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                                    window.gameAudio.playClick();
+                                }
+                            }
+                        }
+                    );
+                }
+            }
+        }
 
         // 確認出牌按鈕狀態：一般拖放模式時隱藏，僅在「秒針」蓋 2 張能力時顯示並啟用點選確認
         if (confirmBtn) {
@@ -1152,10 +1345,12 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
 
     const rankLabels = ['1st', '2nd', '3rd', '4th', '5th'];
     const timers = [];
+    const intervals = [];
     let finished = false;
 
     const cleanupDismissListener = () => {
         window.removeEventListener('pointerdown', onGlobalPointerDown, true);
+        window.removeEventListener('keydown', onGlobalKeyDown, true);
         overlay.onclick = null;
     };
 
@@ -1163,6 +1358,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         if (finished) return;
         finished = true;
         timers.forEach(id => clearTimeout(id));
+        intervals.forEach(id => clearInterval(id));
         cleanupDismissListener();
         overlay.classList.add('is-leaving');
         setTimeout(() => {
@@ -1184,9 +1380,18 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         finishNow();
     };
 
+    const onGlobalKeyDown = (e) => {
+        if (finished) return;
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            finishNow();
+        }
+    };
+
     timers.push(setTimeout(() => {
         if (finished) return;
         window.addEventListener('pointerdown', onGlobalPointerDown, true);
+        window.addEventListener('keydown', onGlobalKeyDown, true);
         overlay.onclick = () => finishNow();
     }, 180));
 
@@ -1200,13 +1405,14 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
 
     const titleEl = document.createElement('div');
     titleEl.className = 'minute-clash-title';
-    titleEl.textContent = '⏳ 各玩家已蓋牌集結，準備翻牌…';
+    titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.gathering') : '⏳ 各玩家已蓋牌集結，準備翻牌…';
     banner.appendChild(titleEl);
 
     const rowEl = document.createElement('div');
     rowEl.className = 'minute-clash-row';
 
     const slotMap = new Map();
+    const youTag = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '你';
 
     initialList.forEach(item => {
         const playerObj = (gameState.players || []).find(p => p.id === item.playerId);
@@ -1234,7 +1440,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
                     <div class="clash-card-gear">${gear}⚙</div>
                 </div>
             </div>
-            <div class="clash-player-tag">${item.playerName}${isHuman ? '<span class="clash-you-badge">你</span>' : ''}</div>
+            <div class="clash-player-tag">${item.playerName}${isHuman ? `<span class="clash-you-badge">${youTag}</span>` : ''}</div>
         `;
 
         rowEl.appendChild(slot);
@@ -1243,7 +1449,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
 
     const footerEl = document.createElement('div');
     footerEl.className = 'minute-clash-footer';
-    footerEl.textContent = '比較分鐘數值中…（點擊畫面可提前跳過）';
+    footerEl.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute_skip') : '比較分鐘數值中…（點擊畫面可提前跳過）';
 
     banner.appendChild(rowEl);
     banner.appendChild(footerEl);
@@ -1251,26 +1457,23 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     overlay.appendChild(banner);
     overlay.classList.remove('hidden', 'is-leaving');
 
-    // 階段 2 (0.80s ~ 3.00s)：階段 1 蓋牌集結縮短至 0.8s，此時依序 3D 翻牌揭曉數值（每張間隔 300ms）
+    // 階段 2 (0.80s ~ 1.80s)：階段 1 蓋牌集結後，全體卡牌一同 3D 翻牌揭曉數值
     timers.push(setTimeout(() => {
         if (finished) return;
-        titleEl.textContent = '🃏 揭曉各玩家打出的分鐘卡…';
-        initialList.forEach((item, idx) => {
-            timers.push(setTimeout(() => {
-                if (finished) return;
-                const slot = slotMap.get(item.playerId);
-                if (slot) slot.classList.add('is-flipped');
-                if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
-                    window.gameAudio.playClick();
-                }
-            }, idx * 300));
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.revealing') : '🃏 揭曉各玩家打出的分鐘卡…';
+        initialList.forEach(item => {
+            const slot = slotMap.get(item.playerId);
+            if (slot) slot.classList.add('is-flipped');
         });
+        if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+            window.gameAudio.playClick();
+        }
     }, 800));
 
-    // 階段 3 (3.00s ~ 5.80s)：比較數值大小，執行 FLIP 動態交錯換位並依序浮現 1st ~ 5th 名次
+    // 階段 3 (1.80s ~ 3.50s)：比較數值大小，執行 FLIP 動態交錯換位並全體一同浮現 1st ~ 5th 名次
     timers.push(setTimeout(() => {
         if (finished) return;
-        titleEl.textContent = '⚡ 比較分鐘數值大小，排列行動次序…';
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.comparing') : '⚡ 比較分鐘數值大小，排列行動次序…';
 
         // Step A (First)：記錄換位前每個 slot 的水平座標
         const firstRects = new Map();
@@ -1305,24 +1508,56 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
                 slot.style.transform = 'translate3d(0, 0, 0)';
             }
 
-            // 待換位滑行接近定點時（約 4.10s 起，每張間隔 280ms），依名次 1st -> 5th 逐一彈出標章
+            // 待換位滑行接近定點時（約 1.25s），全體次序標章（1st, 2nd, 3rd...）一同齊發彈出顯示
             timers.push(setTimeout(() => {
                 if (!finished && slot) slot.classList.add('show-rank');
-            }, 1100 + newIdx * 280));
+            }, 1250));
         });
 
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
         }
-    }, 3000));
+    }, 1800));
 
-    // 5.80s：整套動態演出完畢，畫面停留並提示玩家點擊畫面退場
+    // 3.40s：比較全數結束，次序正式確立，啟動 8 秒倒數計時自動關閉
     timers.push(setTimeout(() => {
         if (finished) return;
-        titleEl.textContent = '✨ 分鐘卡大小次序已確定！';
-        footerEl.textContent = '👆 點擊畫面任意處繼續挑選小時卡';
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.resolved') : '✨ 分鐘卡大小次序已確定！';
         footerEl.classList.add('is-ready-prompt');
-    }, 5800));
+
+        let remainingSec = 8;
+        const updateCountdownText = () => {
+            footerEl.textContent = window.i18n
+                ? window.i18n.t('ui.clash.continue_prompt', { sec: remainingSec })
+                : `👆 點擊畫面任意處繼續（${remainingSec}s 後自動進入挑選小時卡）`;
+        };
+        updateCountdownText();
+
+        const countdownTimer = setInterval(() => {
+            if (finished) {
+                clearInterval(countdownTimer);
+                return;
+            }
+            remainingSec--;
+            if (remainingSec > 0) {
+                updateCountdownText();
+            } else {
+                clearInterval(countdownTimer);
+                finishNow();
+            }
+        }, 1000);
+        intervals.push(countdownTimer);
+    }, 3400));
+};
+
+// --- 分鐘手牌初次配置「發牌進入手牌區」動態觸發函式 ---
+window.playCardDealAnimation = function (onComplete) {
+    const gs = window.globalGameState;
+    if (gs) {
+        gs.needsHandDealAnimation = true;
+        if (typeof updateUI === 'function') updateUI(gs);
+    }
+    if (typeof onComplete === 'function') onComplete();
 };
 
 // --- 秒針 UI 控制 (輔助函式) ---

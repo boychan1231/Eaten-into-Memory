@@ -131,6 +131,9 @@ if (typeof window !== 'undefined') {
 }
 
 function startRound(gameState) {
+	if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.stop === 'function') {
+		window.AutoNextRoundTimer.stop();
+	}
 	const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
 	// 當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
     const waitingMinute = gameState && gameState.currentRoundAIChoices !== null;
@@ -1385,6 +1388,9 @@ function moveRoundMarker(gameState) {
     } else {
         appLogger.log(`--- 回合結束，準備進入第 ${gameState.roundMarker} 回合 ---`);
         if (typeof updateUI === 'function') updateUI(gameState);
+        if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.start === 'function') {
+            window.AutoNextRoundTimer.start(gameState);
+        }
     }
 }
 
@@ -1577,9 +1583,11 @@ function endGameRound(gameState) {
             `已重新分配手牌，準備進入第 ${gameState.gameRound} 局`, 
             () => {
                 // 玩家點擊「準備完成」後，這段才會執行
-                // 此時畫面才會瞬間刷新成下一局的狀態！
+                // 此時畫面才會瞬間刷新成下一局的狀態，手牌直接動態發牌飛入！
+                gameState.needsHandDealAnimation = true;
                 if (typeof updateUI === 'function') updateUI(gameState);
-            }
+            },
+            gameState
         );
     } else {
         if (typeof updateUI === 'function') updateUI(gameState);

@@ -3,6 +3,44 @@
 window.globalGameState = null; 
 
 // 1. 系統開關 (System Toggles)
+// 0. 核心資料識別碼（獨立於自然語言，供邏輯判定與多語系/語音索引使用）
+window.GAME_IDS = {
+    ROLES: {
+        HOUR: 'hour',
+        MINUTE: 'min',
+        SECOND: 'sec'
+    },
+    TYPES: {
+        TIME_DEMON: 'demon',
+        TIME_SIN: 'sin',
+        CURSED_ONE: 'scz',
+        YOUNG_DEMON: 'young_demon'
+    },
+    AGE_GROUPS: {
+        YOUTH: 'youth',
+        ADULT: 'adult',
+        MIDDLE: 'middle'
+    }
+};
+
+// 雙向相容層 (Legacy Adapter)
+window.getNormalizedRole = function (role) {
+    if (!role) return '';
+    if (role === '時針' || role === 'hour' || role === 'Hour Hand') return 'hour';
+    if (role === '分針' || role === 'min' || role === 'Minute Hand') return 'min';
+    if (role === '秒針' || role === 'sec' || role === 'Second Hand') return 'sec';
+    return role;
+};
+
+window.getNormalizedType = function (type) {
+    if (!type) return '';
+    if (type === '時魔' || type === 'demon' || type === 'Time Demon') return 'demon';
+    if (type === '時之惡' || type === 'sin' || type === 'Time Sin') return 'sin';
+    if (type === '受詛者' || type === 'scz' || type === 'Cursed One') return 'scz';
+    if (type === '幼體時魔' || type === '時魔幼體' || type === 'young_demon' || type === 'Young Demon') return 'young_demon';
+    return type;
+};
+
 window.GAME_CONFIG = {
     enableAbilities: false, // 預設是否啟用特殊能力 (可被 UI 開關覆蓋)
     testMode: false,        // 預設是否開啟測試模式 (可被 UI 開關覆蓋)
@@ -30,7 +68,13 @@ window.UI_CONFIG = {
         '受詛者': '#54a0ff',
         '時針': '#ff9ff3',
         '分針': '#f368e0',
-        '秒針': '#00d2d3'
+        '秒針': '#00d2d3',
+        'demon': '#ff6b6b',
+        'sin': '#feca57',
+        'scz': '#54a0ff',
+        'hour': '#ff9ff3',
+        'min': '#f368e0',
+        'sec': '#00d2d3'
     }
 };
 

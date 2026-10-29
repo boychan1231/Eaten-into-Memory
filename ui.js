@@ -120,6 +120,81 @@ function processLogQueue() {
     }, currentLogSpeed);
 }
 
+// --- 打開日誌時自動滾動至最新（最底）一項 ---
+function initLogAutoScrollOnOpen() {
+    const logDetails = document.getElementById('log-panel-details');
+    const logContainer = document.getElementById('game-log-container');
+    if (!logDetails && !logContainer) return;
+
+    const performScroll = () => {
+        const container = document.getElementById('game-log-container');
+        const list = document.getElementById('log-list');
+        const details = document.getElementById('log-panel-details');
+        const drawerBody = container ? container.closest('.hud-drawer-body') : null;
+
+        const initialScrollX = window.scrollX || window.pageXOffset || 0;
+        const initialScrollY = window.scrollY || window.pageYOffset || 0;
+
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+        if (drawerBody) {
+            drawerBody.scrollTop = drawerBody.scrollHeight;
+        }
+        if (details) {
+            details.scrollTop = details.scrollHeight;
+        }
+        if (list && list.lastElementChild) {
+            try {
+                list.lastElementChild.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'auto' });
+            } catch (_) {}
+        }
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+        // 嚴防頁面整體視口產生非預期的位移跳動
+        if (window.scrollX !== initialScrollX || window.scrollY !== initialScrollY) {
+            window.scrollTo(initialScrollX, initialScrollY);
+        }
+    };
+
+    const scheduleScrollToBottom = () => {
+        // 多階層定時器以克服 display:none 展開時的重排重繪延遲
+        performScroll();
+        requestAnimationFrame(() => {
+            performScroll();
+            setTimeout(performScroll, 50);
+            setTimeout(performScroll, 160);
+        });
+    };
+
+    window.scrollLogToBottom = scheduleScrollToBottom;
+
+    if (logDetails) {
+        // 1. 監聽 details 原生 toggle 事件
+        logDetails.addEventListener('toggle', () => {
+            if (logDetails.open) {
+                scheduleScrollToBottom();
+            }
+        });
+
+        // 2. 監聽 summary 點擊事件（提早於展開前瞬間預備滾動）
+        const summary = logDetails.querySelector(':scope > summary');
+        if (summary) {
+            summary.addEventListener('click', () => {
+                if (!logDetails.open) {
+                    scheduleScrollToBottom();
+                }
+            });
+        }
+
+        // 3. 若載入時已經處於打開狀態，也進行一次對齊
+        if (logDetails.open) {
+            scheduleScrollToBottom();
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
@@ -358,6 +433,9 @@ document.addEventListener('DOMContentLoaded', () => {
         nextBtn.disabled = false;
         nextBtn.textContent = "下一回合";
         nextBtn.onclick = () => {
+            if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.stop === 'function') {
+                window.AutoNextRoundTimer.stop();
+            }
             if (!globalGameState) return;
 
             // 若處於「分針能力選擇中」，點擊此按鈕等同於「略過」
@@ -471,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const humanId = getCurrentHumanPlayerId();
         const humanPlayer = globalGameState.players.find(p => p.id === humanId);
         if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+        globalGameState.needsHandDealAnimation = true;
         updateUI(globalGameState);
         bindNextStepButton();
     };
@@ -651,6 +730,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
+        // 🌐 語言切換監聽 (i18n)
+        const langRadios = document.querySelectorAll('input[name="ui-lang"]');
+        if (langRadios.length > 0 && window.i18n) {
+            const currentLang = window.i18n.currentLang || 'zh-TW';
+            langRadios.forEach(radio => {
+                if (radio.value === currentLang) radio.checked = true;
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked && window.i18n) {
+                        window.i18n.setLanguage(e.target.value);
+                    }
+                });
+            });
+        }
+
         // ✅ 新增：手牌排序設定監聽
         const handSortRadios = document.querySelectorAll('input[name="hand-sort"]');
         if (handSortRadios.length > 0) {
@@ -818,6 +911,9 @@ document.addEventListener('DOMContentLoaded', () => {
         logContainer.style.cursor = "pointer";
         logContainer.title = "點擊可瞬間顯示剩餘訊息";
     }
+
+    // 打開日誌時自動顯示最新（最底）一項
+    initLogAutoScrollOnOpen();
 
     // 已收集小時卡彈窗控制
     const btnViewCol = document.getElementById('btn-view-collection');
@@ -1187,23 +1283,151 @@ function showCardStory(card) {
     }
 }
 
-// ---局數準備彈窗邏輯 ---
+// --- 7 秒自動進入下一回合計時器 ---
+window.AutoNextRoundTimer = {
+    timerId: null,
+    remainingSeconds: 7,
+    targetRoundMarker: null,
+    targetGameRound: null,
+
+    start(gameState) {
+        this.stop();
+
+        if (!gameState || gameState.gameEnded || gameState.phase !== 'idle') return;
+        if (gameState.waitingMinuteHandChoice || gameState.currentRoundAIChoices !== null) return;
+        if (gameState.waitingHourChoice || gameState.isPlayingMinuteClash) return;
+        if (gameState.roundMarker > 12) return; // 局結束進入結算，不自動推進
+
+        this.targetRoundMarker = gameState.roundMarker;
+        this.targetGameRound = gameState.gameRound;
+        this.remainingSeconds = 7;
+
+        const updateBtn = () => {
+            const nextStepBtn = document.getElementById('next-step-btn');
+            if (nextStepBtn && !nextStepBtn.disabled) {
+                nextStepBtn.textContent = `下一回合 (${this.remainingSeconds}s)`;
+            }
+        };
+        updateBtn();
+
+        this.timerId = setInterval(() => {
+            const currentGs = window.globalGameState || gameState;
+            if (!currentGs || currentGs.gameEnded || currentGs.roundMarker !== this.targetRoundMarker || currentGs.gameRound !== this.targetGameRound || currentGs.waitingMinuteHandChoice) {
+                this.stop();
+                return;
+            }
+
+            this.remainingSeconds--;
+            if (this.remainingSeconds > 0) {
+                updateBtn();
+            } else {
+                this.stop();
+                appLogger.log("⏱️【自動流程】小時卡選擇流程結束後 7 秒已到，自動進入下一回合。");
+                const nextStepBtn = document.getElementById('next-step-btn');
+                if (nextStepBtn && !nextStepBtn.disabled) {
+                    nextStepBtn.click();
+                } else if (typeof window.startRound === 'function') {
+                    window.startRound(currentGs);
+                    if (typeof updateUI === 'function') updateUI(currentGs);
+                }
+            }
+        }, 1000);
+    },
+
+    stop() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+        this.remainingSeconds = 7;
+        const nextStepBtn = document.getElementById('next-step-btn');
+        if (nextStepBtn && nextStepBtn.textContent.includes('下一回合 (')) {
+            nextStepBtn.textContent = '下一回合';
+        }
+    }
+};
+
+// --- 局數準備彈窗邏輯（同時展示分數詳情） ---
 let nextRoundCallback = null;
 
-window.showRoundReadyModal = function (titleText, subtitleText, callback) {
+window.showRoundReadyModal = function (titleText, subtitleText, callback, gameState) {
     const overlay = document.getElementById('round-ready-overlay');
     const titleEl = document.getElementById('round-ready-title');
     const contentEl = document.getElementById('round-ready-content');
+    const scoreContainer = document.getElementById('round-ready-score-table');
 
     if (!overlay) {
         if (callback) callback();
         return;
     }
 
-    // 填入文字
+    // 填入標題與副標題
     if (titleEl) titleEl.textContent = titleText;
     if (contentEl) contentEl.textContent = subtitleText;
     nextRoundCallback = callback; // 記錄回呼函式，等待按鈕點擊後執行
+
+    // 填入第一局結算分數詳情表格
+    if (scoreContainer) {
+        const gs = gameState || window.globalGameState;
+        if (gs && Array.isArray(gs.players)) {
+            const humanId = (typeof getCurrentHumanPlayerId === 'function')
+                ? getCurrentHumanPlayerId()
+                : ((typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1');
+            const sorted = gs.players.slice().sort((a, b) => b.score - a.score);
+            const maxScore = sorted.length > 0 ? sorted[0].score : -999;
+
+            const colRank = window.i18n ? window.i18n.t('ui.round_ready.col_rank') : '排名';
+            const colPlayer = window.i18n ? window.i18n.t('ui.round_ready.col_player') : '角色';
+            const colRole = window.i18n ? window.i18n.t('ui.round_ready.col_role') : '身份';
+            const colRoundScore = window.i18n ? window.i18n.t('ui.round_ready.col_round_score') : '本局得分';
+            const colTotalScore = window.i18n ? window.i18n.t('ui.round_ready.col_total_score') : '累計總分';
+
+            let html = `
+                <table class="round-score-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">${colRank}</th>
+                            <th style="width: 25%;">${colPlayer}</th>
+                            <th style="width: 24%;">${colRole}</th>
+                            <th style="width: 18%; text-align: center;">${colRoundScore}</th>
+                            <th style="width: 18%; text-align: right;">${colTotalScore}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            sorted.forEach((p, idx) => {
+                const isHuman = p.id === humanId;
+                const isLeader = p.score === maxScore && p.score > 0;
+                const rankIcon = idx === 0 ? '🥇 1' : (idx === 1 ? '🥈 2' : (idx === 2 ? '🥉 3' : `${idx + 1}`));
+                const rawRole = p.roleCard || p.type;
+                const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
+                const roleColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
+                const localizedRole = window.i18n ? window.i18n.getRoleName(rawRole) : rawRole;
+                const ejectedText = window.i18n ? window.i18n.t('ui.round_ready.ejected') : '(逐出)';
+                const roleDisplay = p.isEjected ? `<s style="opacity:0.6;">${localizedRole}</s> ${ejectedText}` : localizedRole;
+                const humanBadgeText = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '我';
+                const humanBadge = isHuman ? `<span class="score-badge-human">${humanBadgeText}</span>` : '';
+                const gearText = window.i18n ? window.i18n.t('ui.round_ready.pts_gear', { gear: p.gearCards }) : `+${p.gearCards} 齒`;
+                const ptsText = window.i18n ? window.i18n.t('ui.round_ready.pts_total', { pts: p.score }) : `${p.score} 分`;
+
+                html += `
+                    <tr class="${isHuman ? 'is-human' : ''} ${isLeader ? 'is-leader' : ''}">
+                        <td>${rankIcon}</td>
+                        <td>${p.name}${humanBadge}</td>
+                        <td style="color:${roleColor};">${roleDisplay}</td>
+                        <td style="text-align: center;" class="score-pts-round">${gearText}</td>
+                        <td style="text-align: right;" class="score-pts-total">${ptsText}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            scoreContainer.innerHTML = html;
+        } else {
+            scoreContainer.innerHTML = '';
+        }
+    }
 
     // 播放提示音效
     if (window.gameAudio && typeof window.gameAudio.playChime === 'function') {

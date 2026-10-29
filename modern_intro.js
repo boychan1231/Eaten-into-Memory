@@ -899,6 +899,13 @@
                     this.overlayEl.classList.remove('is-leaving');
                 }
                 if (typeof onComplete === 'function') onComplete();
+
+                // 開場進場動畫完全淡出收起後，正式在玩家眼前播放第一局手牌發牌飛入動態！
+                if (window.globalGameState) {
+                    window.globalGameState.needsHandDealAnimation = true;
+                    if (typeof updateUI === 'function') updateUI(window.globalGameState);
+                }
+
                 // 進場動畫完全結束後，觸發教學引導顯示
                 if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function' && window.globalGameState) {
                     window.TutorialModeManager.updateTutorialPointers(window.globalGameState);

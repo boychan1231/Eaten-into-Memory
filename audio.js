@@ -249,8 +249,86 @@ class AudioManager {
 	
 }
 
+// ==========================================
+// 語音管理器 (Voice Manager - 多國語音版核心骨架)
+// ==========================================
+class VoiceManager {
+    constructor() {
+        this.currentAudio = null;
+        this.voiceVolume = 0.8;
+        this.isVoiceMuted = false;
+        this.basePath = 'audio/voices';
+    }
+
+    // 取得當前語系代碼（對應 i18n）
+    getLanguage() {
+        if (window.i18n && typeof window.i18n.getLanguage === 'function') {
+            return window.i18n.getLanguage();
+        }
+        return 'zh-TW';
+    }
+
+    setVoiceVolume(val) {
+        this.voiceVolume = Math.max(0, Math.min(1, val));
+        if (this.currentAudio) {
+            this.currentAudio.volume = this.isVoiceMuted ? 0 : this.voiceVolume;
+        }
+    }
+
+    setVoiceMuted(muted) {
+        this.isVoiceMuted = muted;
+        if (this.currentAudio) {
+            this.currentAudio.volume = muted ? 0 : this.voiceVolume;
+        }
+    }
+
+    stopVoice() {
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio.currentTime = 0;
+            this.currentAudio = null;
+        }
+    }
+
+    /**
+     * 播放角色或系統語音
+     * @param {string} category 類別（roles, system, story, clash）
+     * @param {string} voiceKey 語音識別碼（例如 'hour_ability', 'clash_start'）
+     * @param {object} options 可選參數 { onEnd: function }
+     */
+    playVoice(category, voiceKey, options = {}) {
+        if (this.isVoiceMuted) return;
+
+        this.stopVoice();
+
+        const lang = this.getLanguage();
+        // 檔案命名約定：audio/voices/{lang}/{category}/{voiceKey}.mp3
+        const src = `${this.basePath}/${lang}/${category}/${voiceKey}.mp3`;
+
+        const audio = new Audio(src);
+        audio.volume = this.voiceVolume;
+
+        audio.onended = () => {
+            this.currentAudio = null;
+            if (typeof options.onEnd === 'function') options.onEnd();
+        };
+
+        audio.onerror = () => {
+            // 若當前語系沒有該音檔，安全靜默忽略，不中斷遊戲
+            this.currentAudio = null;
+        };
+
+        this.currentAudio = audio;
+        audio.play().catch(() => {
+            this.currentAudio = null;
+        });
+    }
+}
+
 // 建立全域實例
 const gameAudio = new AudioManager();
+const gameVoice = new VoiceManager();
 
 // 掛載到 window 以便除錯或從其他檔案呼叫
 window.gameAudio = gameAudio;
+window.gameVoice = gameVoice;

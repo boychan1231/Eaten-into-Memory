@@ -66,12 +66,16 @@
         textures: {},
         texturesLoaded: false,
 
-        // ---------- 鐘面視角自由拖拉平移 (Pan / Drag) ----------
+        // ---------- 鐘面視角自由拖拉平移 (Pan / Drag) 與動態滾輪縮放 ----------
         pan: {
             x: 0,
             y: 0,
             targetX: 0,
             targetY: 0,
+            zoom: 1.0,
+            targetZoom: 1.0,
+            minZoom: 0.85,
+            maxZoom: 1.75,
             isDragging: false,
             startX: 0,
             startY: 0,
@@ -84,13 +88,14 @@
         recenter() {
             this.pan.targetX = 0;
             this.pan.targetY = 0;
+            this.pan.targetZoom = 1.0;
             this.updateRecenterBtn();
         },
 
         updateRecenterBtn() {
             const btn = document.getElementById('clock-recenter-btn');
             if (!btn) return;
-            const isOffset = Math.hypot(this.pan.targetX, this.pan.targetY) > 18;
+            const isOffset = Math.hypot(this.pan.targetX, this.pan.targetY) > 18 || Math.abs((this.pan.targetZoom || 1.0) - 1.0) > 0.05;
             btn.classList.toggle('hidden', !isOffset);
         },
 
@@ -104,8 +109,8 @@
             }
             const rect = this.app.view.getBoundingClientRect();
             const baseDiameter = Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * 1.2;
-            const s = targetDiameter / D;
+            const targetDiameter = baseDiameter * 1.38;
+            const s = (targetDiameter / D) * (this.pan.zoom || 1.0);
             const cx = rect.left + (this.app.screen.width) / 2 + this.pan.x;
             const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y;
             return { x: cx, y: cy, radius: (D * s) / 2 };
@@ -174,7 +179,16 @@
             host.addEventListener('pointerup', onPanEnd);
             host.addEventListener('pointercancel', onPanEnd);
 
-            // 雙擊空白處平滑置中鐘面
+            // 滑鼠滾輪平滑縮放鐘面
+            host.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const factor = e.deltaY < 0 ? 1.08 : 0.92;
+                const nextZoom = Math.min(this.pan.maxZoom, Math.max(this.pan.minZoom, (this.pan.targetZoom || 1.0) * factor));
+                this.pan.targetZoom = nextZoom;
+                this.updateRecenterBtn();
+            }, { passive: false });
+
+            // 雙擊空白處平滑置中鐘面與重設縮放
             host.addEventListener('dblclick', (e) => {
                 e.preventDefault();
                 this.recenter();
@@ -755,22 +769,10 @@
             }
         },
 
-        // ---------- 棋子（同格錯開排列，專屬角色靈魂圖案與星芒光環特效） ----------
+        // ---------- 棋子（專屬角色靈魂圖案，已內嵌 PLAYER 標記，純粹大圖無外框遮蔽） ----------
         makeToken(p, isHuman, key) {
             const col = hexOf(tokenKey(p), 0xffffff);
             const c = new PIXI.Container();
-
-            // 外層微光光環（包含柔和擴散層）
-            const auraG = new PIXI.Graphics();
-            this.glowCircle(auraG, 0, 0, 18, col, isHuman ? 0.55 : 0.38, 4);
-            auraG.lineStyle(isHuman ? 2.6 : 1.6, isHuman ? 0xffffff : col, isHuman ? 0.95 : 0.75)
-                 .beginFill(PAL.shell, 0.92)
-                 .drawCircle(0, 0, 16)
-                 .endFill();
-            // 內圈細緻金色/角色色微光環
-            auraG.lineStyle(1, isHuman ? PAL.goldBright : col, isHuman ? 0.8 : 0.45)
-                 .drawCircle(0, 0, 14);
-            c.addChild(auraG);
 
             // 取得角色專屬貼圖 key
             let texKey = isHuman ? 'p_demon' : 'demon';
@@ -786,31 +788,34 @@
             if (tex) {
                 sprite = new PIXI.Sprite(tex);
                 sprite.anchor.set(0.5);
-                // 縮小至原來的 90% (28px * 0.9 = 25.2px)
+                // 大幅放大至 44px（無外框遮蔽，純粹呈現精緻立繪圖案）
                 const origW = (tex.orig && tex.orig.width) || tex.width || 90;
-                baseScale = 25.2 / Math.max(1, origW);
+                baseScale = 44 / Math.max(1, origW);
                 sprite.scale.set(baseScale);
                 c.addChild(sprite);
             } else {
-                // 後備方案：文字符號標記
-                const fallbackTxt = this.text(labelOf(p), 12, col, '800');
+                // 後備方案：無貼圖時以符號標記
+                const fallbackTxt = this.text(labelOf(p), 15, col, '800');
                 c.addChild(fallbackTxt);
             }
 
-            // 角色身分標籤：文字統一使用金色；player 顯示「我」，其他角色顯示對應身分（時魔、時之惡、受詛者、時針、分針、秒針）
-            const roleNameText = roleDisplayNameOf(p, isHuman);
-            const tagColor = isHuman ? PAL.goldBright : PAL.gold;
-            const youTag = this.text(isHuman ? '★我' : roleNameText, 8.5, tagColor, '800');
-            youTag.y = -23;
-            c.addChild(youTag);
+            // 支援滑鼠移入微幅彈跳懸停特效
+            c.eventMode = 'static';
+            c.cursor = 'pointer';
+            c.on('pointerover', () => {
+                if (!this.pan.isDragging) c.scale.set(1.15 * (c.targetScale || 1));
+            });
+            c.on('pointerout', () => {
+                c.scale.set(c.targetScale || 1);
+            });
 
             c.zIndex = isHuman ? 10 : 1;
 
             return {
                 c,
-                auraG,
+                auraG: null,
                 sprite,
-                youTag,
+                youTag: null,
                 isHuman,
                 key,
                 baseScale,
@@ -834,53 +839,53 @@
                 return { dx: 0, dy: 0, scale: 1.0 };
             }
             if (n === 2) {
-                // 2 名角色：縮小至 80%，沿切線微距對稱並排 (相距 30px)
-                const off = (idx === 0 ? -1 : 1) * 15;
+                // 2 名角色：縮小至 82%，沿切線微距對稱並排 (相距 34px)
+                const off = (idx === 0 ? -1 : 1) * 17;
                 return {
                     dx: dirTanX * off,
                     dy: dirTanY * off,
-                    scale: 0.80
+                    scale: 0.82
                 };
             }
             if (n === 3) {
-                // 3 名角色：縮小至 68%，呈等邊三角形分佈
+                // 3 名角色：縮小至 72%，呈等邊三角形分佈
                 if (idx === 0) {
                     return {
-                        dx: dirOutX * 14,
-                        dy: dirOutY * 14,
-                        scale: 0.68
+                        dx: dirOutX * 16,
+                        dy: dirOutY * 16,
+                        scale: 0.72
                     };
                 } else if (idx === 1) {
                     return {
-                        dx: -dirOutX * 9 - dirTanX * 15,
-                        dy: -dirOutY * 9 - dirTanY * 15,
-                        scale: 0.68
+                        dx: -dirOutX * 10 - dirTanX * 17,
+                        dy: -dirOutY * 10 - dirTanY * 17,
+                        scale: 0.72
                     };
                 } else {
                     return {
-                        dx: -dirOutX * 9 + dirTanX * 15,
-                        dy: -dirOutY * 9 + dirTanY * 15,
-                        scale: 0.68
+                        dx: -dirOutX * 10 + dirTanX * 17,
+                        dy: -dirOutY * 10 + dirTanY * 17,
+                        scale: 0.72
                     };
                 }
             }
             if (n === 4) {
-                // 4 名角色：縮小至 58%，呈四角星/菱形陣列
+                // 4 名角色：縮小至 62%，呈四角星/菱形陣列
                 const tanSign = (idx % 2 === 0) ? -1 : 1;
                 const outSign = (idx < 2) ? 1 : -1;
                 return {
-                    dx: dirTanX * tanSign * 15 + dirOutX * outSign * 12,
-                    dy: dirTanY * tanSign * 15 + dirOutY * outSign * 12,
-                    scale: 0.58
+                    dx: dirTanX * tanSign * 17 + dirOutX * outSign * 14,
+                    dy: dirTanY * tanSign * 17 + dirOutY * outSign * 14,
+                    scale: 0.62
                 };
             }
-            // n >= 5: 縮小至 52%，均勻星環分佈
+            // n >= 5: 縮小至 55%，均勻星環分佈
             const rot = (idx / n) * Math.PI * 2;
-            const r = 18;
+            const r = 20;
             return {
                 dx: Math.cos(rot) * r,
                 dy: Math.sin(rot) * r,
-                scale: 0.52
+                scale: 0.55
             };
         },
 
@@ -972,10 +977,16 @@
             if (Math.abs(this.pan.targetX - this.pan.x) < 0.15) this.pan.x = this.pan.targetX;
             if (Math.abs(this.pan.targetY - this.pan.y) < 0.15) this.pan.y = this.pan.targetY;
 
+            // 滾輪縮放平滑插值 (Lerp)
+            this.pan.zoom = this.pan.zoom || 1.0;
+            this.pan.targetZoom = this.pan.targetZoom || 1.0;
+            this.pan.zoom += (this.pan.targetZoom - this.pan.zoom) * 0.22;
+            if (Math.abs(this.pan.targetZoom - this.pan.zoom) < 0.005) this.pan.zoom = this.pan.targetZoom;
+
             const app = this.app;
             const baseDiameter = Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * 1.2;
-            const s = targetDiameter / D;
+            const targetDiameter = baseDiameter * 1.38;
+            const s = (targetDiameter / D) * this.pan.zoom;
             this.stage.scale.set(s);
             this.stage.position.set(
                 (app.screen.width - D * s) / 2 + this.pan.x,
@@ -1092,6 +1103,9 @@
                     leftDrawers.forEach(other => {
                         if (other !== drawer && other.open) other.open = false;
                     });
+                    if (drawer.id === 'log-panel-details' && typeof window.scrollLogToBottom === 'function') {
+                        window.scrollLogToBottom();
+                    }
                 }
             });
         });
