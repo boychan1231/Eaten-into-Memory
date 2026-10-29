@@ -703,6 +703,14 @@ details.hud-drawer[open] > .side-panel-summary::after {
 #modern-board.is-panning {
     cursor: grabbing !important;
 }
+#modern-board canvas {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+    touch-action: none !important;
+}
 
 /* 鐘面置中快捷按鈕 */
 .clock-recenter-btn {

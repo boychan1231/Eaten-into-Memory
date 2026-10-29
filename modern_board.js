@@ -95,7 +95,7 @@
         },
 
         isPanActive() {
-            return this.pan.hasMoved || (Date.now() < this.pan.movedCooldown);
+            return this.pan.isDragging || (this.pan.hasMoved && Date.now() < this.pan.movedCooldown);
         },
 
         getClockCenter() {
@@ -103,7 +103,8 @@
                 return { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 360 };
             }
             const rect = this.app.view.getBoundingClientRect();
-            const targetDiameter = Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
+            const baseDiameter = Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
+            const targetDiameter = baseDiameter * 1.2;
             const s = targetDiameter / D;
             const cx = rect.left + (this.app.screen.width) / 2 + this.pan.x;
             const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y;
@@ -122,25 +123,30 @@
                 // 若正在拖出手牌（避免衝突），不平移鐘面
                 if (window.isDraggingCard) return;
 
-                this.pan.isDragging = true;
+                this.pan.isPotentialPan = true;
+                this.pan.isDragging = false;
                 this.pan.startX = e.clientX;
                 this.pan.startY = e.clientY;
                 this.pan.startPanX = this.pan.targetX;
                 this.pan.startPanY = this.pan.targetY;
                 this.pan.hasMoved = false;
-
-                try { host.setPointerCapture(e.pointerId); } catch (_) {}
+                // 注意：絕不能在 pointerdown 強行 capture，否則會吞掉 PixiJS 畫布內部的點擊事件！
             });
 
             host.addEventListener('pointermove', (e) => {
-                if (!this.pan.isDragging) return;
+                if (!this.pan.isPotentialPan) return;
                 const dx = e.clientX - this.pan.startX;
                 const dy = e.clientY - this.pan.startY;
                 const dist = Math.hypot(dx, dy);
 
-                if (dist > 5) {
-                    this.pan.hasMoved = true;
-                    host.classList.add('is-panning');
+                // 位移超過 8px 才認定為拖曳鐘面
+                if (dist > 8) {
+                    if (!this.pan.isDragging) {
+                        this.pan.isDragging = true;
+                        this.pan.hasMoved = true;
+                        host.classList.add('is-panning');
+                        try { host.setPointerCapture(e.pointerId); } catch (_) {}
+                    }
 
                     // 平移邊界限制：允許鐘面最多移動至視野 85%
                     const maxPanX = Math.max(300, (this.app?.screen?.width || 800) * 0.85);
@@ -152,15 +158,17 @@
             });
 
             const onPanEnd = (e) => {
-                if (!this.pan.isDragging) return;
-                this.pan.isDragging = false;
-                host.classList.remove('is-panning');
-                try { host.releasePointerCapture(e.pointerId); } catch (_) {}
-
-                if (this.pan.hasMoved) {
-                    this.pan.movedCooldown = Date.now() + 160; // 拖曳結束後 160ms 內防點擊穿透
+                if (this.pan.isDragging) {
+                    this.pan.isDragging = false;
+                    host.classList.remove('is-panning');
+                    try { host.releasePointerCapture(e.pointerId); } catch (_) {}
+                    this.pan.movedCooldown = Date.now() + 80;
+                    this.updateRecenterBtn();
                 }
-                this.updateRecenterBtn();
+                this.pan.isPotentialPan = false;
+                setTimeout(() => {
+                    this.pan.hasMoved = false;
+                }, 50);
             };
 
             host.addEventListener('pointerup', onPanEnd);
@@ -264,6 +272,7 @@
                 this.L[k] = new PIXI.Container();
                 this.stage.addChild(this.L[k]);
             });
+            this.L.tokens.sortableChildren = true;
 
             this.lineG = new PIXI.Graphics();
             this.L.lines.addChild(this.lineG);
@@ -539,6 +548,8 @@
         // ---------- 主渲染入口（每次 updateUI 調用） ----------
         render(gs) {
             if (!this.app || !gs) return;
+            this.gs = gs;
+            window.globalGameState = gs;
             const humanId = (window.getEffectiveHumanPlayerId && window.getEffectiveHumanPlayerId()) || 'SM_1';
             const drawn = gs.currentDrawnHourCards || [];
             const waitingHour = !!gs.waitingHourChoice && gs.waitingHourChoicePlayerId === humanId;
@@ -627,11 +638,28 @@
                 if (isTarget) {
                     node.eventMode = 'static';
                     node.cursor = 'pointer';
-                    node.on('pointertap', () => {
+                    let downX = 0, downY = 0;
+                    node.on('pointerdown', (e) => {
+                        downX = e.global.x;
+                        downY = e.global.y;
+                    });
+                    const triggerSpotChoice = () => {
                         if (this.isPanActive()) return;
-                        const gsNow = window.globalGameState;
-                        const idx = (gsNow.currentDrawnHourCards || []).findIndex(c => c.number === spot.position);
-                        if (idx >= 0) window.handleHumanHourCardChoice(gsNow, idx);
+                        const gsNow = this.gs || window.globalGameState || (typeof gameState !== 'undefined' ? gameState : null);
+                        const cards = (gsNow && gsNow.currentDrawnHourCards) || [];
+                        const idx = cards.findIndex(c => c.number === spot.position);
+                        if (idx >= 0) {
+                            const fn = (typeof window.handleHumanHourCardChoice === 'function')
+                                ? window.handleHumanHourCardChoice
+                                : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
+                            if (fn && gsNow) fn(gsNow, idx);
+                        }
+                    };
+                    node.on('pointertap', triggerSpotChoice);
+                    node.on('click', triggerSpotChoice);
+                    node.on('pointerup', (e) => {
+                        const dist = Math.hypot(e.global.x - downX, e.global.y - downY);
+                        if (dist < 10) triggerSpotChoice();
                     });
                     node.on('pointerover', () => { if (!this.pan.isDragging) node.scale.set(1.1); });
                     node.on('pointerout', () => node.scale.set(1));
@@ -678,12 +706,27 @@
                 if (waitingHour) {
                     c.eventMode = 'static';
                     c.cursor = 'pointer';
+                    let downX = 0, downY = 0;
+                    c.on('pointerdown', (e) => {
+                        downX = e.global.x;
+                        downY = e.global.y;
+                    });
+                    const triggerCardChoice = () => {
+                        if (this.isPanActive()) return;
+                        const gsNow = this.gs || window.globalGameState || (typeof gameState !== 'undefined' ? gameState : null);
+                        const fn = (typeof window.handleHumanHourCardChoice === 'function')
+                            ? window.handleHumanHourCardChoice
+                            : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
+                        if (fn && gsNow) fn(gsNow, i);
+                    };
+                    c.on('pointertap', triggerCardChoice);
+                    c.on('click', triggerCardChoice);
+                    c.on('pointerup', (e) => {
+                        const dist = Math.hypot(e.global.x - downX, e.global.y - downY);
+                        if (dist < 10) triggerCardChoice();
+                    });
                     c.on('pointerover', () => { if (!this.pan.isDragging) c.scale.set(1.07); });
                     c.on('pointerout', () => c.scale.set(1));
-                    c.on('pointertap', () => {
-                        if (this.isPanActive()) return;
-                        window.handleHumanHourCardChoice(window.globalGameState, i);
-                    });
                 }
                 L.addChild(c);
             });
@@ -739,12 +782,14 @@
 
             const tex = this.textures[texKey];
             let sprite = null;
+            let baseScale = 1;
             if (tex) {
                 sprite = new PIXI.Sprite(tex);
                 sprite.anchor.set(0.5);
                 // 縮小至原來的 90% (28px * 0.9 = 25.2px)
-                sprite.width = 25.2;
-                sprite.height = 25.2;
+                const origW = (tex.orig && tex.orig.width) || tex.width || 90;
+                baseScale = 25.2 / Math.max(1, origW);
+                sprite.scale.set(baseScale);
                 c.addChild(sprite);
             } else {
                 // 後備方案：文字符號標記
@@ -759,7 +804,84 @@
             youTag.y = -23;
             c.addChild(youTag);
 
-            return { c, auraG, sprite, youTag, isHuman, key, tx: 0, ty: 0, phase: Math.random() * Math.PI * 2 };
+            c.zIndex = isHuman ? 10 : 1;
+
+            return {
+                c,
+                auraG,
+                sprite,
+                youTag,
+                isHuman,
+                key,
+                baseScale,
+                targetScale: 1,
+                currentScale: 1,
+                tx: 0,
+                ty: 0,
+                phase: Math.random() * Math.PI * 2
+            };
+        },
+
+        // ---------- 同格多角色佈局與自適應縮放計算 ----------
+        calculateTokenOffset(idx, n, angle) {
+            // angle: (pos * 30 - 90) * PI / 180 (從圓心指向時辰格的弧度)
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const dirOutX = cos, dirOutY = sin;
+            const dirTanX = -sin, dirTanY = cos;
+
+            if (n <= 1) {
+                return { dx: 0, dy: 0, scale: 1.0 };
+            }
+            if (n === 2) {
+                // 2 名角色：縮小至 80%，沿切線微距對稱並排 (相距 30px)
+                const off = (idx === 0 ? -1 : 1) * 15;
+                return {
+                    dx: dirTanX * off,
+                    dy: dirTanY * off,
+                    scale: 0.80
+                };
+            }
+            if (n === 3) {
+                // 3 名角色：縮小至 68%，呈等邊三角形分佈
+                if (idx === 0) {
+                    return {
+                        dx: dirOutX * 14,
+                        dy: dirOutY * 14,
+                        scale: 0.68
+                    };
+                } else if (idx === 1) {
+                    return {
+                        dx: -dirOutX * 9 - dirTanX * 15,
+                        dy: -dirOutY * 9 - dirTanY * 15,
+                        scale: 0.68
+                    };
+                } else {
+                    return {
+                        dx: -dirOutX * 9 + dirTanX * 15,
+                        dy: -dirOutY * 9 + dirTanY * 15,
+                        scale: 0.68
+                    };
+                }
+            }
+            if (n === 4) {
+                // 4 名角色：縮小至 58%，呈四角星/菱形陣列
+                const tanSign = (idx % 2 === 0) ? -1 : 1;
+                const outSign = (idx < 2) ? 1 : -1;
+                return {
+                    dx: dirTanX * tanSign * 15 + dirOutX * outSign * 12,
+                    dy: dirTanY * tanSign * 15 + dirOutY * outSign * 12,
+                    scale: 0.58
+                };
+            }
+            // n >= 5: 縮小至 52%，均勻星環分佈
+            const rot = (idx / n) * Math.PI * 2;
+            const r = 18;
+            return {
+                dx: Math.cos(rot) * r,
+                dy: Math.sin(rot) * r,
+                scale: 0.52
+            };
         },
 
         syncTokens(gs, humanId, forceRebuild = false) {
@@ -776,9 +898,9 @@
                     alive.add(p.id);
                     const a = (Number(pos) * 30 - 90) * Math.PI / 180;
                     const base = this.polar(Number(pos), TOKEN_R);
-                    const off = (idx - (n - 1) / 2) * 26;
-                    const tx = base.x - Math.sin(a) * off;
-                    const ty = base.y + Math.cos(a) * off;
+                    const layout = this.calculateTokenOffset(idx, n, a);
+                    const tx = base.x + layout.dx;
+                    const ty = base.y + layout.dy;
 
                     const isHuman = p.id === humanId;
                     const key = `${tokenKey(p)}|${p.roleCard}|${isHuman}|${this.texturesLoaded ? 'tex' : 'notex'}`;
@@ -787,11 +909,14 @@
                         if (node) node.c.destroy({ children: true });
                         node = this.makeToken(p, isHuman, key);
                         node.c.position.set(tx, ty);
+                        node.currentScale = layout.scale;
+                        node.c.scale.set(layout.scale);
                         this.L.tokens.addChild(node.c);
                         this.tokens.set(p.id, node);
                     }
                     node.tx = tx;
                     node.ty = ty;
+                    node.targetScale = layout.scale;
                 });
             });
 
@@ -848,7 +973,8 @@
             if (Math.abs(this.pan.targetY - this.pan.y) < 0.15) this.pan.y = this.pan.targetY;
 
             const app = this.app;
-            const targetDiameter = Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
+            const baseDiameter = Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
+            const targetDiameter = baseDiameter * 1.2;
             const s = targetDiameter / D;
             this.stage.scale.set(s);
             this.stage.position.set(
@@ -896,15 +1022,20 @@
                 d.node.alpha = 0.2 + 0.3 * Math.sin(this.t * 2 + d.phase);
             });
 
-            // 5. 棋子平滑移動補間與靈魂微光浮動特效
+            // 5. 棋子平滑移動補間、同格多角色自適應縮放與靈魂微光浮動特效
             this.tokens.forEach(n => {
                 n.c.x += (n.tx - n.c.x) * 0.16;
                 n.c.y += (n.ty - n.c.y) * 0.16;
 
-                // 靈魂微浮動與呼吸脈動特效
+                // 同格多角色自適應縮放補間
+                n.currentScale = n.currentScale || 1;
+                n.currentScale += ((n.targetScale || 1) - n.currentScale) * 0.18;
+                n.c.scale.set(n.currentScale);
+
+                // 靈魂微浮動與呼吸脈動特效（乘以 baseScale，鎖定標準 25.2px 基準尺寸）
                 if (n.sprite) {
                     const breath = 1 + 0.045 * Math.sin(this.t * 2.8 + n.phase);
-                    n.sprite.scale.set(breath);
+                    n.sprite.scale.set((n.baseScale || 1) * breath);
                     // 微幅上下浮動 1.2px
                     n.sprite.y = Math.sin(this.t * 2.2 + n.phase) * 1.2;
                 }
