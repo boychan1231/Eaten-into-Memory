@@ -550,6 +550,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const humanPlayer = globalGameState.players.find(p => p.id === humanId);
         if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
         globalGameState.needsHandDealAnimation = true;
+
+        // 遊戲開始時左上的進化/能力框預設打開
+        const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
+        if (leftDrawers.length > 0) {
+            leftDrawers.forEach(d => {
+                d.open = (d.id === 'evo-panel-details');
+            });
+        }
+
         updateUI(globalGameState);
         bindNextStepButton();
     };

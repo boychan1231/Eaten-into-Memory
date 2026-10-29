@@ -8,7 +8,7 @@ function safeStringify(value) {
     }
 }
 
-if (typeof appLogger.setUiSink === 'function') {
+if (typeof appLogger !== 'undefined' && typeof appLogger.setUiSink === 'function') {
     appLogger.setUiSink((args) => {
         const message = args.map(arg => safeStringify(arg)).join(' ');
         if (typeof logToUI === 'function') {
@@ -442,48 +442,101 @@ function getRoleSoulImage(player) {
     return `assets/soul_${key}.png`;
 }
 
-function triggerClockDriftEffect(player) {
-    const clockSection = document.querySelector('.clock-section') || document.getElementById('clock-face');
-    if (!clockSection) return;
-
-    let overlay = document.getElementById('clock-drift-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'clock-drift-overlay';
-        overlay.className = 'clock-drift-overlay';
-        clockSection.appendChild(overlay);
+/**
+ * 取得角色在鐘面上的螢幕絕對像素座標 (支援 PixiJS 現代鐘面與經典 DOM 鐘面)
+ */
+function getPlayerClockScreenCoords(player) {
+    if (!player || typeof player.currentClockPosition !== 'number') {
+        return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     }
 
-    // 隨機方向側約 12% 位置淡入
-    const angle = Math.random() * Math.PI * 2;
-    const startDistance = 12; // 12%
-    const startX = (Math.cos(angle) * startDistance).toFixed(1);
-    const startY = (Math.sin(angle) * startDistance).toFixed(1);
+    // 1. 優先嘗試從現代 PixiJS 渲染器 (window.Board) 取得實體棋子節點的世界座標
+    try {
+        if (window.Board && window.Board.tokens && window.Board.tokens.has(player.id)) {
+            const node = window.Board.tokens.get(player.id);
+            if (node && node.c && window.Board.app && window.Board.app.view) {
+                const rect = window.Board.app.view.getBoundingClientRect();
+                const pt = node.c.toGlobal(new PIXI.Point(0, 0));
+                if (typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y)) {
+                    return { x: rect.left + pt.x, y: rect.top + pt.y };
+                }
+            }
+        }
+    } catch (e) {
+        // fallback to geometric calculation
+    }
 
-    // 等速持續往反方向漂移
-    const endDistance = 16;
-    const endX = (-Math.cos(angle) * endDistance).toFixed(1);
-    const endY = (-Math.sin(angle) * endDistance).toFixed(1);
+    // 2. 若 Board.tokens 尚未同步或節點未掛載，使用 Pixi 畫布極座標進行視口投射
+    try {
+        if (window.Board && typeof window.Board.polar === 'function' && window.Board.stage && window.Board.app && window.Board.app.view) {
+            const TOKEN_R = 164; // 222 - 58
+            const localPt = window.Board.polar(player.currentClockPosition, TOKEN_R);
+            const rect = window.Board.app.view.getBoundingClientRect();
+            const pt = window.Board.stage.toGlobal(new PIXI.Point(localPt.x, localPt.y));
+            if (typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y)) {
+                return { x: rect.left + pt.x, y: rect.top + pt.y };
+            }
+        }
+    } catch (e) {
+        // fallback to DOM
+    }
+
+    // 3. 次選：經典 DOM 鐘面模式 (#clock-face)
+    try {
+        const clockFaceEl = document.getElementById('clock-face');
+        if (clockFaceEl) {
+            const rect = clockFaceEl.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const radius = rect.width * 0.38;
+                const angleRad = ((player.currentClockPosition * 30 - 90) * Math.PI) / 180;
+                return {
+                    x: cx + radius * Math.cos(angleRad),
+                    y: cy + radius * Math.sin(angleRad)
+                };
+            }
+        }
+    } catch (e) {
+        // fallback to center
+    }
+
+    // 4. 兜底策略：螢幕中央
+    return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+}
+
+function triggerClockBlurInEffect(player) {
+    if (!player) return;
+
+    let overlay = document.getElementById('clock-blur-in-overlay') || document.getElementById('clock-drift-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'clock-blur-in-overlay';
+        overlay.className = 'clock-blur-in-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    // 取得角色在鐘面刻度的精確螢幕座標（支援 PixiJS 世界座標與 DOM 幾何換算）
+    const coords = getPlayerClockScreenCoords(player);
 
     const rawRole = player.roleCard || player.type;
     const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
+    // 嚴格依照網站既有主題色與風格搭配，不另外指定顏色
     const glowColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
     const localizedRole = window.i18n ? window.i18n.getRoleName(rawRole) : rawRole;
     const soulImg = getRoleSoulImage(player);
 
     const itemEl = document.createElement('div');
-    itemEl.className = 'clock-drift-item';
-    itemEl.style.setProperty('--drift-start-x', `${startX}%`);
-    itemEl.style.setProperty('--drift-start-y', `${startY}%`);
-    itemEl.style.setProperty('--drift-end-x', `${endX}%`);
-    itemEl.style.setProperty('--drift-end-y', `${endY}%`);
+    itemEl.className = 'clock-blur-in-item';
+    itemEl.style.left = `${coords.x}px`;
+    itemEl.style.top = `${coords.y}px`;
     itemEl.style.setProperty('--drift-glow', glowColor);
 
-    // 1. 光環靈魂徽記
+    // 1. 光環靈魂徽記（依網站既有暗金、暗夜藍與角色專屬主題色光暈）
     const emblemEl = document.createElement('div');
-    emblemEl.className = 'clock-drift-emblem';
+    emblemEl.className = 'clock-blur-in-emblem';
     const avatarEl = document.createElement('img');
-    avatarEl.className = 'clock-drift-avatar';
+    avatarEl.className = 'clock-blur-in-avatar';
     avatarEl.src = soulImg;
     avatarEl.alt = localizedRole;
     emblemEl.appendChild(avatarEl);
@@ -491,10 +544,10 @@ function triggerClockDriftEffect(player) {
 
     // 2. 逐字模糊浮現標題 (Blur In Letters)
     const titleEl = document.createElement('div');
-    titleEl.className = 'clock-drift-title';
-    titleEl.style.borderColor = `${glowColor}40`;
+    titleEl.className = 'clock-blur-in-title';
+    titleEl.style.borderColor = `${glowColor}50`;
 
-    // 拆分個別字元為 span (不依賴付費商用 SplitText 插件，以原生輕量 DOM 實現 100% 同等效果)
+    // 拆分個別字元為 span，供 GSAP 進行依序（stagger）模糊落位
     const textChars = localizedRole.split('');
     const letterEls = textChars.map(char => {
         const span = document.createElement('span');
@@ -506,30 +559,47 @@ function triggerClockDriftEffect(player) {
     itemEl.appendChild(titleEl);
     overlay.appendChild(itemEl);
 
-    // 3. GSAP 逐字模糊浮現動態
-    if (window.gsap && letterEls.length > 0) {
-        const tl = window.gsap.timeline();
-        // 前 20%：依序從「模糊、透明、略大、略低」變成清楚落到定位
-        tl.fromTo(letterEls,
-            { opacity: 0, filter: 'blur(10px)', y: '.25em', scale: 1.15 },
-            { opacity: 1, filter: 'blur(0px)', y: 0, scale: 1, duration: 0.65, ease: 'power2.out', stagger: 0.07 }
-        );
-        // 停留展示後依序模糊淡出
-        tl.to(letterEls,
-            { opacity: 0, filter: 'blur(10px)', y: '-.15em', scale: 0.95, duration: 0.5, ease: 'power2.in', stagger: 0.04 },
-            '+=1.8'
-        );
-    }
+    // 3. GSAP 模糊浮現（Blur In Letters）動態效果：
+    // 角色依序從「模糊、透明、略大、略低」的狀態變成清楚並落到定位
+    if (window.gsap) {
+        const tl = window.gsap.timeline({
+            onComplete: () => {
+                if (itemEl.parentNode) itemEl.remove();
+            }
+        });
 
-    // 4. 整段約 4 秒後自然淡出並自 DOM 移除
-    setTimeout(() => {
-        if (itemEl.parentNode) {
-            itemEl.remove();
+        // (1) 徽記率先由「模糊(blur: 10px)、透明(opacity: 0)、略大(scale: 1.15)、略低(y: 12px)」清楚落到位
+        tl.fromTo(emblemEl,
+            { opacity: 0, filter: 'blur(10px)', y: 12, scale: 1.15 },
+            { opacity: 1, filter: 'blur(0px)', y: 0, scale: 1, duration: 0.55, ease: 'power2.out' },
+            0
+        );
+
+        // (2) 標題字元依序（stagger: 0.07）由「模糊(blur: 10px)、透明(opacity: 0)、略大(scale: 1.15)、略低(y: .25em)」
+        // 變成清楚並落到位
+        if (letterEls.length > 0) {
+            tl.fromTo(letterEls,
+                { opacity: 0, filter: 'blur(10px)', y: '.25em', scale: 1.15 },
+                { opacity: 1, filter: 'blur(0px)', y: 0, scale: 1, duration: 0.65, ease: 'power2.out', stagger: 0.07 },
+                0.05
+            );
         }
-    }, 4000);
+
+        // (3) 定位清楚停留展示約 1.4 秒後，柔和模糊淡出退場
+        tl.to([emblemEl, titleEl],
+            { opacity: 0, filter: 'blur(8px)', duration: 0.45, ease: 'power2.in' },
+            '+=1.4'
+        );
+    } else {
+        // Fallback 無 GSAP 時
+        itemEl.style.opacity = '1';
+        setTimeout(() => {
+            if (itemEl.parentNode) itemEl.remove();
+        }, 2200);
+    }
 }
 
-function checkAndTriggerClockDrift(gameState) {
+function checkAndTriggerClockBlurIn(gameState) {
     if (!gameState || !Array.isArray(gameState.players)) return;
     const newlyEntered = [];
     gameState.players.forEach(p => {
@@ -542,20 +612,25 @@ function checkAndTriggerClockDrift(gameState) {
     });
 
     if (newlyEntered.length > 0) {
+        // 多位角色依序（stagger: 240ms）各自在所屬刻度上模糊浮現落位
         newlyEntered.forEach((p, idx) => {
             setTimeout(() => {
-                triggerClockDriftEffect(p);
-            }, idx * 280);
+                triggerClockBlurInEffect(p);
+            }, idx * 240);
         });
     }
 }
 
-window.triggerClockDriftEffect = triggerClockDriftEffect;
+// 暴露 API 並相容舊函式名稱
+window.triggerClockBlurInEffect = triggerClockBlurInEffect;
+window.checkAndTriggerClockBlurIn = checkAndTriggerClockBlurIn;
+window.triggerClockDriftEffect = triggerClockBlurInEffect;
+window.checkAndTriggerClockDrift = checkAndTriggerClockBlurIn;
 
 // --- B. 鐘面繪製 ---
 function renderClockFace(gameState, flags) {
-    // 檢測角色首次進入鐘面：觸發「漂移 (Drift)」與「逐字模糊浮現 (Blur In Letters)」
-    checkAndTriggerClockDrift(gameState);
+    // 檢測角色首次進入鐘面：觸發「模糊浮現 (Blur In Letters)」
+    checkAndTriggerClockBlurIn(gameState);
 
     // 移除舊的像素設定
     // const radius = 190;
