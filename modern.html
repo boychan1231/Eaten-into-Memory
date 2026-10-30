@@ -171,33 +171,43 @@
 		<div class="tab-wrapper">
 			<div id="game-content" class="tab-content active-tab">
 				<div class="main-area">
-					<!-- 左側懸浮抽屜群（不擠壓中央鐘面） -->
+					<!-- 左側懸浮抽屜群：對局情報（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-left">
-						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
-							<summary class="side-panel-summary" data-i18n="ui.drawers.evolution">⚡ 能力與進化</summary>
+						<!-- 1. 👥 各角色狀態與積分（預設展開） -->
+						<details id="players-panel-details" class="players-block side-panel-group hud-drawer" open>
+							<summary class="side-panel-summary" data-i18n="ui.drawers.players_scores">👥 各角色與積分</summary>
 							<div class="hud-drawer-body">
-								<div id="evolution-progress-area" class="progress-area"></div>
+								<div id="score-panel" class="log-side-info score-panel">
+									<div class="deck-title panel-title-highlight" data-i18n="ui.tabs.scores">🏆 積分榜</div>
+									<div id="score-list"></div>
+								</div>
+								<div id="players-section" class="players-grid">
+									<div class="player-card placeholder">
+										<p>等待遊戲開始...</p>
+									</div>
+								</div>
 							</div>
 						</details>
 
+						<!-- 2. 📜 各角色出牌記錄 -->
+						<details id="history-panel-details" class="side-panel-group hud-drawer">
+							<summary class="side-panel-summary" data-i18n="ui.drawers.history">📜 出牌記錄</summary>
+							<div class="hud-drawer-body">
+								<div id="player-history-panel" class="log-side-info history-panel">
+									<div class="deck-title panel-title-highlight" data-i18n="ui.drawers.history">各角色出牌記錄</div>
+									<div id="player-history-list"></div>
+								</div>
+							</div>
+						</details>
+
+						<!-- 3. 📝 遊戲日誌 -->
 						<details id="log-panel-details" class="log-section side-panel-group hud-drawer">
-							<summary class="side-panel-summary" data-i18n="ui.drawers.log">📜 遊戲日誌</summary>
+							<summary class="side-panel-summary" data-i18n="ui.drawers.log">📝 遊戲日誌</summary>
 							<div class="hud-drawer-body">
 								<div id="game-log-container">
 									<ul id="log-list">
 										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
 									</ul>
-								</div>
-							</div>
-						</details>
-
-						<details id="players-panel-details" class="players-block side-panel-group hud-drawer">
-							<summary class="side-panel-summary" data-i18n="ui.drawers.players">👥 各角色狀態</summary>
-							<div class="hud-drawer-body">
-								<div id="players-section" class="players-grid">
-									<div class="player-card placeholder">
-										<p>等待遊戲開始...</p>
-									</div>
 								</div>
 							</div>
 						</details>
@@ -220,30 +230,23 @@
 						</div>
 					</section>
 
-					<!-- 右側懸浮抽屜群（不擠壓中央鐘面） -->
+					<!-- 右側懸浮抽屜群：自身決策（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-right">
-						<details id="side-panel-details" class="side-panel-group hud-drawer">
-							<summary class="side-panel-summary" data-i18n="ui.drawers.played_scores">📊 出牌與積分</summary>
+						<!-- 1. ⚡ 能力與進化（預設展開） -->
+						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
+							<summary class="side-panel-summary" data-i18n="ui.drawers.evolution">⚡ 能力與進化</summary>
 							<div class="hud-drawer-body">
-								<div class="panel-switcher">
-									<button id="btn-show-played" class="switch-btn active" type="button" data-i18n="ui.tabs.current_round">本回合</button>
-									<button id="btn-show-history" class="switch-btn" type="button" data-i18n="ui.tabs.history">歷史</button>
-									<button id="btn-show-score" class="switch-btn" type="button" data-i18n="ui.tabs.scores">積分</button>
-								</div>
+								<div id="evolution-progress-area" class="progress-area"></div>
+							</div>
+						</details>
 
+						<!-- 2. ⚔️ 本回合出牌 -->
+						<details id="played-panel-details" class="side-panel-group hud-drawer">
+							<summary class="side-panel-summary" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</summary>
+							<div class="hud-drawer-body">
 								<div id="played-cards-panel" class="log-side-info">
-									<div class="deck-title panel-title-highlight">本回合出牌</div>
+									<div class="deck-title panel-title-highlight" data-i18n="ui.tabs.current_round">本回合出牌</div>
 									<div id="played-cards-list"></div>
-								</div>
-
-								<div id="score-panel" class="log-side-info score-panel">
-									<div class="deck-title panel-title-highlight">🏆 積分</div>
-									<div id="score-list"></div>
-								</div>
-
-								<div id="player-history-panel" class="log-side-info history-panel">
-									<div class="deck-title panel-title-highlight">各角色出牌記錄</div>
-									<div id="player-history-list"></div>
 								</div>
 							</div>
 						</details>

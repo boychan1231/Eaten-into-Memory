@@ -1088,25 +1088,28 @@
         }
     }
 
-    // 左側懸浮抽屜手風琴互斥：僅在使用者點擊某個抽屜標題即將展開時，才收合其他抽屜（不使用非同步 toggle 事件以免誤關）
-    function initLeftDrawerAccordion() {
-        const leftDrawers = Array.from(document.querySelectorAll('.hud-drawer-left > details.hud-drawer'));
-        if (!leftDrawers.length) return;
-        leftDrawers.forEach(drawer => {
-            if (drawer._accordionBound) return;
-            drawer._accordionBound = true;
-            const summary = drawer.querySelector(':scope > summary');
-            if (!summary) return;
-            summary.addEventListener('click', () => {
-                // 點擊前若為收合狀態，代表即將展開 -> 預先收合左側其他已展開的抽屜
-                if (!drawer.open) {
-                    leftDrawers.forEach(other => {
-                        if (other !== drawer && other.open) other.open = false;
-                    });
-                    if (drawer.id === 'log-panel-details' && typeof window.scrollLogToBottom === 'function') {
-                        window.scrollLogToBottom();
+    // 左右兩側懸浮抽屜手風琴互斥：在同側點擊某個抽屜標題即將展開時，自動收合同側其他已展開的抽屜
+    function initHudDrawerAccordions() {
+        ['.hud-drawer-left', '.hud-drawer-right'].forEach(selector => {
+            const stack = document.querySelector(selector);
+            if (!stack) return;
+            const drawers = Array.from(stack.querySelectorAll(':scope > details.hud-drawer'));
+            drawers.forEach(drawer => {
+                if (drawer._accordionBound) return;
+                drawer._accordionBound = true;
+                const summary = drawer.querySelector(':scope > summary');
+                if (!summary) return;
+                summary.addEventListener('click', () => {
+                    // 點擊前若為收合狀態，代表即將展開 -> 預先收合同側其他已展開的抽屜
+                    if (!drawer.open) {
+                        drawers.forEach(other => {
+                            if (other !== drawer && other.open) other.open = false;
+                        });
+                        if (drawer.id === 'log-panel-details' && typeof window.scrollLogToBottom === 'function') {
+                            window.scrollLogToBottom();
+                        }
                     }
-                }
+                });
             });
         });
     }
@@ -1116,7 +1119,7 @@
         if (!host) return;
         Board.init(host);
         hookUpdateUI();
-        initLeftDrawerAccordion();
+        initHudDrawerAccordions();
 
         if (window.globalGameState) {
             Board.render(window.globalGameState);

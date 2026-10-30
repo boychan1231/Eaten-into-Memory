@@ -551,10 +551,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
         globalGameState.needsHandDealAnimation = true;
 
-        // 遊戲開始時左上的進化/能力框預設打開
+        // 遊戲開始時：
+        // 左側對局情報：各角色與積分 (players-panel-details) 預設打開
+        // 右側自身決策：能力與進化 (evo-panel-details) 預設打開
         const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
         if (leftDrawers.length > 0) {
             leftDrawers.forEach(d => {
+                d.open = (d.id === 'players-panel-details');
+            });
+        }
+        const rightDrawers = document.querySelectorAll('.hud-drawer-right > details.hud-drawer');
+        if (rightDrawers.length > 0) {
+            rightDrawers.forEach(d => {
                 d.open = (d.id === 'evo-panel-details');
             });
         }

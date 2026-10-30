@@ -20,8 +20,11 @@
         ui: {
             drawers: {
                 evolution: '⚡ Abilities & Evolution',
-                log: '📜 Game Log',
+                log: '📝 Game Log',
                 players: '👥 Player Status',
+                players_scores: '👥 Players & Standings',
+                played_cards: '⚔️ Current Round',
+                history: '📜 Minute History',
                 played_scores: '📊 Played & Scores'
             },
             buttons: {

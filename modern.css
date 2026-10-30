@@ -368,8 +368,39 @@ details.hud-drawer[open] {
     overflow-y: auto !important;
 }
 #players-panel-details[open] {
-    width: min(280px, 84vw) !important;
+    width: min(310px, 88vw) !important;
     padding: 8px 10px !important;
+}
+
+/* 確保新架構下各獨立抽屜面板不受 style.css display:none 影響 */
+#players-panel-details .score-panel,
+#history-panel-details .history-panel,
+#played-panel-details #played-cards-panel {
+    display: block !important;
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 左側各角色與積分抽屜內的即時積分榜微調 */
+#players-panel-details .score-panel {
+    border-bottom: 1px solid rgba(255, 210, 127, 0.22) !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+#players-panel-details .score-panel .deck-title,
+#history-panel-details .deck-title,
+#played-panel-details .deck-title {
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    color: var(--gold) !important;
+    margin-bottom: 6px !important;
+    padding: 2px 0 !important;
+    text-shadow: 0 0 8px rgba(255, 210, 127, 0.35) !important;
 }
 .side-panel-summary {
     list-style: none;

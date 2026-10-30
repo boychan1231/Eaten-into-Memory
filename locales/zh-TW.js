@@ -20,8 +20,11 @@
         ui: {
             drawers: {
                 evolution: '⚡ 能力與進化',
-                log: '📜 遊戲日誌',
+                log: '📝 遊戲日誌',
                 players: '👥 各角色狀態',
+                players_scores: '👥 各角色與積分',
+                played_cards: '⚔️ 本回合出牌',
+                history: '📜 出牌記錄',
                 played_scores: '📊 出牌與積分'
             },
             buttons: {
