@@ -534,6 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const doInitialize = () => {
+        if (window.AnimationController && typeof window.AnimationController.killAll === 'function') {
+            window.AnimationController.killAll();
+        }
         const logListEl = document.getElementById('log-list');
         if (logListEl) logListEl.innerHTML = '';
         const initFn = (typeof window.initializeGame === 'function') ? window.initializeGame : (typeof initializeGame === 'function' ? initializeGame : null);
@@ -1128,6 +1131,11 @@ function drawSinTargetLines(gameState) {
             svg.appendChild(line);
         }
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.processFloatingText = processFloatingText;
+    window.drawSinTargetLines = drawSinTargetLines;
 }
 
 function getUIDistance(pos1, pos2) {

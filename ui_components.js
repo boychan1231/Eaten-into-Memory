@@ -267,8 +267,17 @@ function updateUI(gameState) {
     renderEvolutionPanel(gameState, humanPlayer);  // F. 進化/能力/任務面板
 
     // 4. 特效處理
-    processFloatingText(gameState); // 漂浮文字
-    drawSinTargetLines(gameState);  // 時之惡紅線
+    if (typeof processFloatingText === 'function') {
+        processFloatingText(gameState);
+    } else if (typeof window !== 'undefined' && typeof window.processFloatingText === 'function') {
+        window.processFloatingText(gameState);
+    }
+
+    if (typeof drawSinTargetLines === 'function') {
+        drawSinTargetLines(gameState);
+    } else if (typeof window !== 'undefined' && typeof window.drawSinTargetLines === 'function') {
+        window.drawSinTargetLines(gameState);
+    }
 
     // 5. 🎓 新手教學模式：自動調度動態引導與高亮指標
     if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
@@ -505,6 +514,164 @@ function getPlayerClockScreenCoords(player) {
     return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 }
 
+/**
+ * 全域動畫生命週期控制器 (AnimationController)
+ * 封裝 GSAP Timeline、確定性回呼 (safeComplete)、中斷保護 (interrupt/abort) 與超時保險絲 (Watchdog)
+ */
+const AnimationController = {
+    activeTimelines: new Set(),
+    pendingTimers: new Set(),
+
+    setTimeout(fn, delayMs) {
+        const id = setTimeout(() => {
+            this.pendingTimers.delete(id);
+            try { fn(); } catch (err) { console.error('[AnimationController] Timer error:', err); }
+        }, delayMs);
+        this.pendingTimers.add(id);
+        return id;
+    },
+
+    create(options = {}) {
+        let resolved = false;
+        let watchdogId = null;
+        let tl = null;
+        const internalTimers = [];
+
+        const clearWatchdog = () => {
+            if (watchdogId !== null) {
+                clearTimeout(watchdogId);
+                this.pendingTimers.delete(watchdogId);
+                watchdogId = null;
+            }
+            while (internalTimers.length > 0) {
+                const tid = internalTimers.pop();
+                clearTimeout(tid);
+                this.pendingTimers.delete(tid);
+            }
+        };
+
+        const runCleanup = () => {
+            clearWatchdog();
+            if (tl) this.activeTimelines.delete(tl);
+            if (typeof options.onCleanup === 'function') {
+                try { options.onCleanup(); } catch (err) { console.error('[AnimationController] onCleanup error:', err); }
+            }
+        };
+
+        const safeComplete = () => {
+            if (resolved) return;
+            resolved = true;
+            runCleanup();
+            if (typeof options.onComplete === 'function') {
+                try { options.onComplete(); } catch (err) { console.error('[AnimationController] onComplete error:', err); }
+            }
+        };
+
+        if (typeof window !== 'undefined' && window.gsap && typeof window.gsap.timeline === 'function') {
+            const gsapOpts = { ...options };
+            delete gsapOpts.watchdogMs;
+            delete gsapOpts.onCleanup;
+            gsapOpts.onComplete = safeComplete;
+            tl = window.gsap.timeline(gsapOpts);
+        } else {
+            // 無 GSAP 環境（如 Node.js 無頭測試）相容降級時間線
+            tl = {
+                _cursor: 0,
+                fromTo(targets, fromVars, toVars, pos) { return this; },
+                to(targets, toVars, pos) { return this; },
+                set(targets, vars, pos) { return this; },
+                call(fn, params, pos) {
+                    const sec = typeof pos === 'number' ? pos : this._cursor;
+                    if (sec > this._cursor) this._cursor = sec;
+                    const tid = setTimeout(() => {
+                        if (!resolved && typeof fn === 'function') {
+                            try { fn.apply(null, params || []); } catch (e) {}
+                        }
+                    }, Math.max(0, Math.round(sec * 1000)));
+                    internalTimers.push(tid);
+                    AnimationController.pendingTimers.add(tid);
+                    return this;
+                },
+                progress(v) {
+                    if (v === 1) safeComplete();
+                    return this;
+                },
+                kill() {
+                    clearWatchdog();
+                },
+                isActive() { return !resolved; }
+            };
+        }
+
+        // 擴充確定性中斷（觸發清理與 onComplete，推進遊戲階段）
+        tl.interrupt = () => {
+            if (resolved) return;
+            try { if (typeof tl.kill === 'function') tl.kill(); } catch (_) {}
+            safeComplete();
+        };
+
+        // 擴充強制終止（僅執行 DOM 清理，不觸發舊局的 onComplete 業務回呼）
+        tl.abort = () => {
+            if (resolved) return;
+            resolved = true;
+            try { if (typeof tl.kill === 'function') tl.kill(); } catch (_) {}
+            runCleanup();
+        };
+
+        this.activeTimelines.add(tl);
+
+        // 掛載超時保險絲 (Watchdog Timeout)：防止未預期腳本錯誤導致動畫永久卡死
+        if (typeof options.watchdogMs === 'number' && options.watchdogMs > 0) {
+            watchdogId = setTimeout(() => {
+                this.pendingTimers.delete(watchdogId);
+                watchdogId = null;
+                if (!resolved) {
+                    console.warn('[AnimationController] Watchdog triggered, forcing safeComplete.');
+                    tl.interrupt();
+                }
+            }, options.watchdogMs);
+            this.pendingTimers.add(watchdogId);
+        }
+
+        return tl;
+    },
+
+    // 快進跳過所有活動中的劇情演出（觸發各自的 safeComplete）
+    skipAll() {
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl && typeof tl.interrupt === 'function') tl.interrupt();
+        });
+        this.activeTimelines.clear();
+    },
+
+    // 強制銷毀所有活動中的動畫與等待計時器（換局或重新開始時呼叫）
+    killAll() {
+        this.pendingTimers.forEach(id => clearTimeout(id));
+        this.pendingTimers.clear();
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl && typeof tl.abort === 'function') tl.abort();
+        });
+        this.activeTimelines.clear();
+
+        if (typeof document !== 'undefined' && typeof document.getElementById === 'function') {
+            const clashOverlay = document.getElementById('minute-clash-overlay');
+            if (clashOverlay && clashOverlay.classList) {
+                clashOverlay.classList.add('hidden');
+                clashOverlay.classList.remove('is-leaving');
+                clashOverlay.innerHTML = '';
+            }
+            const blurOverlay = document.getElementById('clock-blur-in-overlay');
+            if (blurOverlay) blurOverlay.innerHTML = '';
+        }
+    }
+};
+
+if (typeof window !== 'undefined') {
+    window.AnimationController = AnimationController;
+}
+
 function triggerClockBlurInEffect(player) {
     if (!player) return;
 
@@ -559,13 +726,15 @@ function triggerClockBlurInEffect(player) {
     itemEl.appendChild(titleEl);
     overlay.appendChild(itemEl);
 
-    // 3. GSAP 模糊浮現（Blur In Letters）動態效果：
-    // 角色依序從「模糊、透明、略大、略低」的狀態變成清楚並落到定位
+    // 3. GSAP 模糊浮現（Blur In Letters）動態效果（納管於 AnimationController）：
+    const cleanupItem = () => {
+        if (itemEl.parentNode) itemEl.remove();
+    };
+
     if (window.gsap) {
-        const tl = window.gsap.timeline({
-            onComplete: () => {
-                if (itemEl.parentNode) itemEl.remove();
-            }
+        const tl = AnimationController.create({
+            watchdogMs: 3800,
+            onCleanup: cleanupItem
         });
 
         // (1) 徽記率先由「模糊(blur: 10px)、透明(opacity: 0)、略大(scale: 1.15)、略低(y: 12px)」清楚落到位
@@ -591,11 +760,8 @@ function triggerClockBlurInEffect(player) {
             '+=1.4'
         );
     } else {
-        // Fallback 無 GSAP 時
         itemEl.style.opacity = '1';
-        setTimeout(() => {
-            if (itemEl.parentNode) itemEl.remove();
-        }, 2200);
+        AnimationController.setTimeout(cleanupItem, 2200);
     }
 }
 
@@ -614,7 +780,7 @@ function checkAndTriggerClockBlurIn(gameState) {
     if (newlyEntered.length > 0) {
         // 多位角色依序（stagger: 240ms）各自在所屬刻度上模糊浮現落位
         newlyEntered.forEach((p, idx) => {
-            setTimeout(() => {
+            AnimationController.setTimeout(() => {
                 triggerClockBlurInEffect(p);
             }, idx * 240);
         });
@@ -1109,7 +1275,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             humanHandEl.appendChild(cardEl);
         });
 
-        // 分鐘手牌初次配置「發牌進入手牌區」動態效果（不再排列成扇形，而是直接依序發入成為玩家手牌）
+        // 分鐘手牌初次配置「發牌進入手牌區」動態效果（納管於 AnimationController，完成後清除行內 transform 避免干擾 CSS Hover）
         if (gameState && gameState.needsHandDealAnimation && typeof gsap !== 'undefined') {
             const introOverlay = document.getElementById('modern-intro-overlay');
             const isIntroCovering = introOverlay && introOverlay.style.display !== 'none' && !introOverlay.classList.contains('is-leaving');
@@ -1122,8 +1288,14 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 gameState.needsHandDealAnimation = false;
                 if (cardEls.length > 0) {
                     const midIdx = Math.floor(cardEls.length / 2);
-                    gsap.set(cardEls, { opacity: 0 });
-                    gsap.fromTo(cardEls,
+                    const targetOpacity = flags.isWaitingMinuteInput ? 1 : 0.7;
+                    const dealTl = AnimationController.create({
+                        watchdogMs: 2200,
+                        onCleanup: () => {
+                            gsap.set(cardEls, { opacity: targetOpacity, clearProps: 'transform,transformOrigin' });
+                        }
+                    });
+                    dealTl.fromTo(cardEls,
                         {
                             y: 85,
                             x: (i) => (midIdx - i) * 14,
@@ -1135,11 +1307,12 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                         {
                             y: 0,
                             x: 0,
-                            opacity: (i) => flags.isWaitingMinuteInput ? 1 : 0.7,
+                            opacity: targetOpacity,
                             scale: 1,
                             rotation: 0,
                             duration: 0.42,
                             ease: "back.out(1.4)",
+                            clearProps: "transform,transformOrigin",
                             stagger: {
                                 each: 0.042,
                                 from: "start"
@@ -1149,7 +1322,8 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                                     window.gameAudio.playClick();
                                 }
                             }
-                        }
+                        },
+                        0
                     );
                 }
             }
@@ -1406,11 +1580,11 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     });
 }
 
-// --- 三階段「各玩家比較分鐘數值並分出大小次序」動態演出（等待玩家點擊畫面退場）---
-// 階段 1 (0.00s ~ 0.80s)：各玩家蓋牌匯聚於鐘面中央（原始座位次序，停留 0.8 秒）
-// 階段 2 (0.80s ~ 3.00s)：依序 3D 翻牌揭曉各玩家打出的分鐘卡數值與齒輪數
-// 階段 3 (3.00s ~ 5.80s)：依數值由大到小執行 FLIP 動態交錯換位並依序浮現 1st~5th 次序
-// 5.80s 後：常駐展示最終次序，並顯示「👆 點擊畫面任意處繼續」，待玩家點擊畫面時才退場
+// --- 分鐘卡比大小與次序排列（Minute Clash）動態演出（由 AnimationController 統一納管）---
+// 階段 1 (0.00s ~ 1.50s)：[集結] 各玩家蓋牌匯聚於鐘面中央（為聯網對戰預留出牌同步緩衝，停留 1.5 秒）
+// 階段 2 (1.50s ~ 3.00s)：全體 3D 翻牌揭曉分鐘數值與齒輪數（停留 1.5 秒看清點數）
+// 階段 3 (3.00s ~ 5.00s)：依數值由大到小執行交錯換位並浮現 1st~5th 次序（1.4s 弧線換位 + 徽章彈出）
+// 5.00s ~ 10.00s：次序確立，常駐展示並啟動 5 秒倒數計時（點擊畫面任意處亦可提前跳過退場）
 window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedChoices, onComplete) {
     const overlay = document.getElementById('minute-clash-overlay');
     if (!overlay || !Array.isArray(sortedChoices) || sortedChoices.length === 0) {
@@ -1423,9 +1597,8 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         : 'SM_1';
 
     const rankLabels = ['1st', '2nd', '3rd', '4th', '5th'];
-    const timers = [];
-    const intervals = [];
     let finished = false;
+    let clashTl = null;
 
     const cleanupDismissListener = () => {
         window.removeEventListener('pointerdown', onGlobalPointerDown, true);
@@ -1433,25 +1606,31 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         overlay.onclick = null;
     };
 
+    const cleanupOverlayDom = () => {
+        cleanupDismissListener();
+        overlay.classList.add('hidden');
+        overlay.classList.remove('is-leaving');
+        overlay.innerHTML = '';
+    };
+
     const finishNow = () => {
         if (finished) return;
         finished = true;
-        timers.forEach(id => clearTimeout(id));
-        intervals.forEach(id => clearInterval(id));
         cleanupDismissListener();
         overlay.classList.add('is-leaving');
-        setTimeout(() => {
-            overlay.classList.add('hidden');
-            overlay.classList.remove('is-leaving');
-            overlay.innerHTML = '';
-            if (typeof onComplete === 'function') onComplete();
-        }, 260);
+        AnimationController.setTimeout(() => {
+            if (clashTl && typeof clashTl.interrupt === 'function') {
+                clashTl.interrupt();
+            } else {
+                cleanupOverlayDom();
+                if (typeof onComplete === 'function') onComplete();
+            }
+        }, 220);
     };
 
     // 玩家點擊畫面任意處才退場（延遲 180ms 綁定，避免剛放開出牌滑鼠時立即誤觸關閉）
     const onGlobalPointerDown = (e) => {
         if (finished) return;
-        // 避免攔截設定視窗或音效開關
         if (e && e.target && typeof e.target.closest === 'function') {
             if (e.target.closest('#settings-modal, #rules-modal, #top-settings-btn')) return;
         }
@@ -1466,13 +1645,6 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
             finishNow();
         }
     };
-
-    timers.push(setTimeout(() => {
-        if (finished) return;
-        window.addEventListener('pointerdown', onGlobalPointerDown, true);
-        window.addEventListener('keydown', onGlobalKeyDown, true);
-        overlay.onclick = () => finishNow();
-    }, 180));
 
     // 建立舞台 DOM（初始按未排序的座位順序 preSortChoices 排列）
     const initialList = (Array.isArray(preSortChoices) && preSortChoices.length === sortedChoices.length)
@@ -1491,6 +1663,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     rowEl.className = 'minute-clash-row';
 
     const slotMap = new Map();
+    const slotEls = [];
     const youTag = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '你';
 
     initialList.forEach(item => {
@@ -1524,6 +1697,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
 
         rowEl.appendChild(slot);
         slotMap.set(item.playerId, slot);
+        slotEls.push(slot);
     });
 
     const footerEl = document.createElement('div');
@@ -1536,8 +1710,36 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     overlay.appendChild(banner);
     overlay.classList.remove('hidden', 'is-leaving');
 
-    // 階段 2 (0.80s ~ 1.80s)：階段 1 蓋牌集結後，全體卡牌一同 3D 翻牌揭曉數值
-    timers.push(setTimeout(() => {
+    // 建立受控 GSAP Timeline（預設 5s 演出 + 5s 倒數 = 10s，外加 11.5s Watchdog 超時保護）
+    clashTl = AnimationController.create({
+        watchdogMs: 11500,
+        onCleanup: cleanupOverlayDom,
+        onComplete: () => {
+            if (typeof onComplete === 'function') onComplete();
+        }
+    });
+
+    // 階段 1 (0.00s ~ 1.50s)：[集結] 各玩家蓋牌匯聚於鐘面中央（為聯網對戰預留出牌同步緩衝，停留 1.5 秒）
+    clashTl.fromTo(banner,
+        { opacity: 0, y: 12, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.24, ease: 'power2.out' },
+        0
+    );
+    clashTl.fromTo(slotEls,
+        { opacity: 0, y: 12, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.32, stagger: 0.05, ease: 'power2.out' },
+        0.04
+    );
+
+    clashTl.call(() => {
+        if (finished) return;
+        window.addEventListener('pointerdown', onGlobalPointerDown, true);
+        window.addEventListener('keydown', onGlobalKeyDown, true);
+        overlay.onclick = () => finishNow();
+    }, null, 0.18);
+
+    // 階段 2 (1.50s ~ 3.00s)：全體卡牌一同 3D 翻牌揭曉數值與齒輪數（停留 1.5 秒看清點數）
+    clashTl.call(() => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.revealing') : '🃏 揭曉各玩家打出的分鐘卡…';
         initialList.forEach(item => {
@@ -1547,10 +1749,10 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
             window.gameAudio.playClick();
         }
-    }, 800));
+    }, null, 1.5);
 
-    // 階段 3 (1.80s ~ 3.50s)：比較數值大小，執行 FLIP 動態交錯換位並全體一同浮現 1st ~ 5th 名次
-    timers.push(setTimeout(() => {
+    // 階段 3 (3.00s ~ 5.00s)：比較數值大小，執行 FLIP 動態交錯換位並全體浮現 1st ~ 5th 名次
+    clashTl.call(() => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.comparing') : '⚡ 比較分鐘數值大小，排列行動次序…';
 
@@ -1568,8 +1770,8 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
             if (slot) rowEl.appendChild(slot);
         });
 
-        // Step C (Invert & Play)：計算位移差並以 1.35 秒曲線動畫優雅滑入新名次位置
-        sortedChoices.forEach((item, newIdx) => {
+        // Step C (Invert & Play)：計算位移差並以 1.4 秒曲線動畫優雅滑入新名次位置
+        sortedChoices.forEach((item) => {
             const slot = slotMap.get(item.playerId);
             const first = firstRects.get(item.playerId);
             if (!slot || !first || typeof slot.getBoundingClientRect !== 'function') return;
@@ -1577,56 +1779,53 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
             const dx = first.left - last.left;
 
             if (Math.abs(dx) > 1) {
-                // 往前排移動者微幅上拱，往後排退讓者微幅下沉，形成交錯超車感
                 const arcY = dx > 0 ? -18 : 14;
-                slot.style.transition = 'none';
-                slot.style.transform = `translate3d(${dx}px, ${arcY}px, 0)`;
-                // 強制觸發重繪 (reflow)
-                void slot.offsetWidth;
-                slot.style.transition = 'transform 1.35s cubic-bezier(0.22, 1, 0.36, 1)';
-                slot.style.transform = 'translate3d(0, 0, 0)';
+                if (window.gsap && typeof window.gsap.fromTo === 'function') {
+                    window.gsap.fromTo(slot,
+                        { x: dx, y: arcY },
+                        { x: 0, y: 0, duration: 1.4, ease: 'power3.out', clearProps: 'transform' }
+                    );
+                } else {
+                    slot.style.transition = 'none';
+                    slot.style.transform = `translate3d(${dx}px, ${arcY}px, 0)`;
+                    void slot.offsetWidth;
+                    slot.style.transition = 'transform 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                    slot.style.transform = 'translate3d(0, 0, 0)';
+                }
             }
-
-            // 待換位滑行接近定點時（約 1.25s），全體次序標章（1st, 2nd, 3rd...）一同齊發彈出顯示
-            timers.push(setTimeout(() => {
-                if (!finished && slot) slot.classList.add('show-rank');
-            }, 1250));
         });
 
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
         }
-    }, 1800));
+    }, null, 3.0);
 
-    // 3.40s：比較全數結束，次序正式確立，啟動 8 秒倒數計時自動關閉
-    timers.push(setTimeout(() => {
+    // 4.30s：換位滑行接近定點，全體次序標章（1st, 2nd, 3rd...）一同彈出顯示
+    clashTl.call(() => {
+        if (finished) return;
+        sortedChoices.forEach(item => {
+            const slot = slotMap.get(item.playerId);
+            if (slot) slot.classList.add('show-rank');
+        });
+    }, null, 4.3);
+
+    // 5.00s ~ 10.00s：預設播放 5 秒後全數結束，次序正式確立，啟動 5 秒倒數計時自動關閉
+    const setCountdownLabel = (sec) => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.resolved') : '✨ 分鐘卡大小次序已確定！';
         footerEl.classList.add('is-ready-prompt');
+        footerEl.textContent = window.i18n
+            ? window.i18n.t('ui.clash.continue_prompt', { sec })
+            : `👆 點擊畫面任意處繼續（${sec}s 後自動進入挑選小時卡）`;
+    };
 
-        let remainingSec = 8;
-        const updateCountdownText = () => {
-            footerEl.textContent = window.i18n
-                ? window.i18n.t('ui.clash.continue_prompt', { sec: remainingSec })
-                : `👆 點擊畫面任意處繼續（${remainingSec}s 後自動進入挑選小時卡）`;
-        };
-        updateCountdownText();
+    for (let s = 5; s >= 1; s--) {
+        clashTl.call(() => setCountdownLabel(s), null, 5.0 + (5 - s));
+    }
 
-        const countdownTimer = setInterval(() => {
-            if (finished) {
-                clearInterval(countdownTimer);
-                return;
-            }
-            remainingSec--;
-            if (remainingSec > 0) {
-                updateCountdownText();
-            } else {
-                clearInterval(countdownTimer);
-                finishNow();
-            }
-        }, 1000);
-        intervals.push(countdownTimer);
-    }, 3400));
+    clashTl.call(() => {
+        finishNow();
+    }, null, 10.0);
 };
 
 // --- 分鐘手牌初次配置「發牌進入手牌區」動態觸發函式 ---
@@ -1671,10 +1870,14 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
             if (btnA) { btnA.textContent = String(a.value); btnA.dataset.value = String(a.value); }
             if (btnB) { btnB.textContent = String(b.value); btnB.dataset.value = String(b.value); }
             if (overlay.classList.contains('hidden')) {
-                openModal(overlay, btnA || undefined);
+                if (typeof openModal === 'function') openModal(overlay, btnA || undefined);
+                else if (typeof window !== 'undefined' && typeof window.openModal === 'function') window.openModal(overlay, btnA || undefined);
+                else if (overlay) { overlay.classList.remove('hidden'); overlay.style.display = 'block'; }
             }
         } else if (!overlay.classList.contains('hidden')) {
-            closeModal(overlay);
+            if (typeof closeModal === 'function') closeModal(overlay);
+            else if (typeof window !== 'undefined' && typeof window.closeModal === 'function') window.closeModal(overlay);
+            else if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; }
         }
     }
 }
@@ -1830,7 +2033,7 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         container.innerHTML = html;
 
         const selectEl = document.getElementById('target-role-select');
-        if (selectEl) {
+        if (selectEl && typeof selectEl.addEventListener === 'function') {
             selectEl.addEventListener('change', (e) => {
                 humanPlayer.targetRoleName = e.target.value;
                 updateUI(globalGameState);

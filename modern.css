@@ -821,11 +821,6 @@ details.hud-drawer[open] > .side-panel-summary::after {
     align-items: center;
     gap: 12px;
     max-width: 94vw;
-    animation: clashBannerEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-@keyframes clashBannerEnter {
-    0% { opacity: 0; transform: translateY(12px) scale(0.94); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 .minute-clash-title {
     font-size: 0.82rem;

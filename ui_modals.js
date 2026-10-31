@@ -48,3 +48,9 @@ function closeTopModal() {
     const overlay = modalOpenOrder[modalOpenOrder.length - 1];
     if (overlay) closeModal(overlay);
 }
+
+if (typeof window !== 'undefined') {
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.closeTopModal = closeTopModal;
+}

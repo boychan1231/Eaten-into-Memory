@@ -584,7 +584,13 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
 
 function handleHumanChoice(gameState, chosenCardValue) {
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
-    const humanPlayer = gameState.players.find(p => p.id === humanId);
+    const humanPlayer = (gameState && Array.isArray(gameState.players))
+        ? (gameState.players.find(p => p.id === humanId) || gameState.players[0])
+        : null;
+    if (!humanPlayer || !Array.isArray(humanPlayer.hand)) {
+        console.warn("無法取得人類玩家手牌。");
+        return false;
+    }
     const chosenCardIndex = humanPlayer.hand.findIndex(c => c.value === chosenCardValue);
     if (chosenCardIndex === -1) {
         console.warn("無效卡牌選擇，請重新選擇。");
