@@ -1004,6 +1004,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 🗂️ 棄牌區彈窗控制
+    const discardPileZone = document.getElementById('discard-pile-zone');
+    const discardOverlay = document.getElementById('discard-pile-overlay');
+    const discardCloseBtn = document.getElementById('discard-pile-close-btn');
+    const tabDiscardTimeline = document.getElementById('tab-discard-timeline');
+    const tabDiscardMatrix = document.getElementById('tab-discard-matrix');
+    const contentDiscardTimeline = document.getElementById('discard-tab-timeline');
+    const contentDiscardMatrix = document.getElementById('discard-tab-matrix');
+
+    if (discardPileZone && discardOverlay) {
+        discardPileZone.addEventListener('click', () => {
+            if (window.gameAudio) window.gameAudio.playClick();
+            const currentGs = (typeof window !== 'undefined' && window.globalGameState) || (typeof globalGameState !== 'undefined' ? globalGameState : null);
+            if (typeof renderDiscardPileModal === 'function') {
+                renderDiscardPileModal(currentGs);
+            }
+            openModal(discardOverlay, discardCloseBtn || undefined);
+        });
+
+        // 支援鍵盤 Enter/Space 觸發
+        discardPileZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                discardPileZone.click();
+            }
+        });
+    }
+
+    if (discardCloseBtn && discardOverlay) {
+        discardCloseBtn.addEventListener('click', () => {
+            if (window.gameAudio) window.gameAudio.playClick();
+            closeModal(discardOverlay);
+        });
+    }
+
+    if (discardOverlay) {
+        discardOverlay.addEventListener('click', (e) => {
+            if (e.target === discardOverlay) {
+                if (window.gameAudio) window.gameAudio.playClick();
+                closeModal(discardOverlay);
+            }
+        });
+    }
+
+    // 棄牌彈窗標籤頁切換
+    if (tabDiscardTimeline && tabDiscardMatrix) {
+        tabDiscardTimeline.addEventListener('click', () => {
+            if (window.gameAudio) window.gameAudio.playClick();
+            tabDiscardTimeline.classList.add('active');
+            tabDiscardMatrix.classList.remove('active');
+            if (contentDiscardTimeline) contentDiscardTimeline.classList.add('active');
+            if (contentDiscardMatrix) contentDiscardMatrix.classList.remove('active');
+        });
+
+        tabDiscardMatrix.addEventListener('click', () => {
+            if (window.gameAudio) window.gameAudio.playClick();
+            tabDiscardMatrix.classList.add('active');
+            tabDiscardTimeline.classList.remove('active');
+            if (contentDiscardMatrix) contentDiscardMatrix.classList.add('active');
+            if (contentDiscardTimeline) contentDiscardTimeline.classList.remove('active');
+        });
+    }
+
     // 點擊視窗外部也可以關閉 (選用)
     if (colOverlay) {
         colOverlay.addEventListener('click', (e) => {

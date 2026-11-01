@@ -234,6 +234,7 @@ class GameState {
         this.hourDeck = [];
 		this.hourPreciousConfig = null; // 新增：紀錄本局抽到的珍貴配置（CFG_1/2/3）
         this.minuteDiscard = [];
+        this.lastPlayedCard = null;
         this.clockFace = Array(12).fill(null).map((_, i) => ({
             position: i + 1,
             cards: []

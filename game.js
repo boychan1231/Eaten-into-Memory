@@ -556,6 +556,19 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
     // 未選擇的卡回手牌
     humanPlayer.hand.push(other);
 
+    // 即時更新人類最後打出的卡牌（供手牌旁棄牌區頂牌顯示）
+    gameState.lastPlayedCard = {
+        value: chosen.value,
+        gear: chosen.gear,
+        card: chosen,
+        playerId: humanPlayer.id,
+        playerName: humanPlayer.name,
+        roleType: humanPlayer.type,
+        gameRound: gameState.gameRound,
+        roundMarker: gameState.roundMarker,
+        isHuman: true
+    };
+
     const baseChoices = gameState.secondHandRevealedChoices || [];
     const allChoices = [...baseChoices, {
         playerId: humanPlayer.id,
@@ -597,6 +610,17 @@ function handleHumanChoice(gameState, chosenCardValue) {
         return false; 
     }
     const chosenCard = humanPlayer.hand.splice(chosenCardIndex, 1)[0];
+    gameState.lastPlayedCard = {
+        value: chosenCard.value,
+        gear: chosenCard.gear,
+        card: chosenCard,
+        playerId: humanPlayer.id,
+        playerName: humanPlayer.name,
+        roleType: humanPlayer.type,
+        gameRound: gameState.gameRound,
+        roundMarker: gameState.roundMarker,
+        isHuman: true
+    };
 
     const allChoices = gameState.currentRoundAIChoices || [];
     allChoices.push({ 
@@ -696,7 +720,7 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
 
     if (!drawnCards || drawnCards.length === 0) {
         gameState.currentDrawnHourCards = null;
-        choices.forEach(c => gameState.minuteDiscard.push(c.card));
+        recordMinuteDiscard(gameState, choices);
         deductGearCards(gameState);
         return;
     }
@@ -1048,6 +1072,58 @@ if (typeof window !== 'undefined') {
 
 // game.js - finishHourSelection 函式 (已修改：分針取得任意小時卡皆可觸發)
 
+function recordMinuteDiscard(gameState, choices) {
+    if (!gameState) return;
+    if (!Array.isArray(gameState.minuteDiscard)) gameState.minuteDiscard = [];
+    if (!choices || !Array.isArray(choices) || choices.length === 0) return;
+
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : (typeof HUMAN_PLAYER_ID !== 'undefined' ? HUMAN_PLAYER_ID : 'SM_1');
+
+    // 過濾尚未決定的秒針暫態卡或無效資料，避免寫入 undefined
+    const validChoices = choices.filter(c => c && c.card && c.card.type !== 'seconds_pending' && typeof c.card.value === 'number');
+    if (validChoices.length === 0) return;
+
+    // 依序記錄：非人類玩家先入堆，人類玩家卡牌最後入堆，使最上一張為人類打出的卡牌
+    const sortedChoices = [...validChoices].sort((a, b) => {
+        const aIsHuman = (a.playerId === humanId);
+        const bIsHuman = (b.playerId === humanId);
+        if (aIsHuman && !bIsHuman) return 1;
+        if (!aIsHuman && bIsHuman) return -1;
+        return 0;
+    });
+
+    sortedChoices.forEach(c => {
+        const entry = {
+            value: c.card.value,
+            gear: c.card.gear,
+            card: c.card,
+            playerId: c.playerId,
+            playerName: c.playerName,
+            roleType: c.roleType,
+            gameRound: gameState.gameRound,
+            roundMarker: gameState.roundMarker,
+            isHuman: (c.playerId === humanId)
+        };
+        gameState.minuteDiscard.push(entry);
+    });
+
+    // 若本回合含人類出牌，或尚無 lastPlayedCard 時，更新最上一張牌快取
+    const topChoice = sortedChoices[sortedChoices.length - 1];
+    if (topChoice.playerId === humanId || !gameState.lastPlayedCard) {
+        gameState.lastPlayedCard = {
+            value: topChoice.card.value,
+            gear: topChoice.card.gear,
+            card: topChoice.card,
+            playerId: topChoice.playerId,
+            playerName: topChoice.playerName,
+            roleType: topChoice.roleType,
+            gameRound: gameState.gameRound,
+            roundMarker: gameState.roundMarker,
+            isHuman: (topChoice.playerId === humanId)
+        };
+    }
+}
+
 function finishHourSelection(gameState) {
     // 1. 清理上一階段狀態
     gameState.currentDrawnHourCards = null;
@@ -1058,7 +1134,7 @@ function finishHourSelection(gameState) {
 
     // 丟棄本回合分鐘卡
     const choices = gameState.currentMinuteChoices || [];
-    choices.forEach(c => gameState.minuteDiscard.push(c.card));
+    recordMinuteDiscard(gameState, choices);
 
     // 1.5 AI 分針能力判定
     if (typeof minuteHandPostHourAI === 'function') {
@@ -1580,6 +1656,8 @@ function endGameRound(gameState) {
     gameState.currentMinuteChoices = null; 
     gameState.uiMinuteChoicesTurnKey = null;
     gameState.sinTargetingMode = 'default';
+    gameState.minuteDiscard = [];
+    gameState.lastPlayedCard = null;
     
     appLogger.log(`--- 準備開始第 ${gameState.gameRound} 局遊戲 ---`);
 	

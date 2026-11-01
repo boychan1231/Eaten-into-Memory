@@ -293,6 +293,17 @@
 						<div class="human-tab-panels">
 							<div id="human-tab-hand" class="human-tab-panel active">
 								<div class="human-play-row">
+									<!-- 🗂️ 棄牌區 Discard Pile Zone -->
+									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看本輪打出的所有牌" aria-label="棄牌區">
+										<div class="discard-pile-stack" id="discard-pile-stack">
+											<div class="discard-card-empty">
+												<span class="discard-empty-icon">🎴</span>
+												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">棄牌區</span>
+											</div>
+										</div>
+										<div class="discard-pile-badge is-zero" id="discard-pile-badge">0</div>
+									</div>
+
 									<div id="human-hand" class="hand-display"></div>
 
 									<div id="human-controls" class="hand-controls">
@@ -702,6 +713,28 @@
 					<span id="collection-close-btn" class="modal-close-btn">&times;</span>
 					<h2 class="modal-title modal-title-collection">已收集小時卡</h2>
 					<div id="human-hour-collection" class="hour-collection-list collection-list-scroll">
+					</div>
+				</div>
+			</div>
+
+			<!-- 🗂️ 棄牌記錄彈窗 Discard Pile Modal -->
+			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
+				<div class="modal discard-pile-modal">
+					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
+					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">本輪已出牌記錄</h2>
+					<div class="discard-pile-meta-bar">
+						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
+						<span id="discard-count-badge" class="discard-meta-chip">已打出 0 張</span>
+					</div>
+					<div class="discard-view-tabs" role="tablist">
+						<button type="button" id="tab-discard-timeline" class="discard-tab-btn active" data-tab="timeline" data-i18n="ui.discard_pile.tab_timeline">依回合記錄</button>
+						<button type="button" id="tab-discard-matrix" class="discard-tab-btn" data-tab="matrix" data-i18n="ui.discard_pile.tab_matrix">數字盤 (1~60)</button>
+					</div>
+					<div id="discard-tab-timeline" class="discard-tab-content active">
+						<div id="discard-timeline-list" class="discard-timeline-scroll"></div>
+					</div>
+					<div id="discard-tab-matrix" class="discard-tab-content">
+						<div id="discard-matrix-grid" class="discard-matrix-grid"></div>
 					</div>
 				</div>
 			</div>

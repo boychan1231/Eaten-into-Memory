@@ -288,6 +288,12 @@ function updateUI(gameState) {
     if (window.PixiClockRenderer && typeof window.PixiClockRenderer.render === 'function') {
         window.PixiClockRenderer.render(gameState);
     }
+
+    // 7. 🗂️ 棄牌記錄彈窗實時同步（若處於打開狀態）
+    const discardOverlay = document.getElementById('discard-pile-overlay');
+    if (discardOverlay && !discardOverlay.classList.contains('hidden') && discardOverlay.style.display !== 'none') {
+        renderDiscardPileModal(gameState);
+    }
 }
 
 // ==========================================
@@ -1095,9 +1101,317 @@ function renderAIPlayers(gameState, humanId) {
     });
 }
 
+// --- D-0. 棄牌區與已出牌記錄 ---
+function getTopDiscardCard(gameState) {
+    if (!gameState) return null;
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+        ? window.getEffectiveHumanPlayerId()
+        : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
+
+    // 1. 若有剛打出且暫存的牌
+    if (gameState.lastPlayedCard) {
+        return gameState.lastPlayedCard;
+    }
+
+    // 2. 從 minuteDiscard 取得
+    const discard = gameState.minuteDiscard;
+    if (Array.isArray(discard) && discard.length > 0) {
+        // 優先找人類玩家在棄牌堆中的最後一張牌
+        for (let i = discard.length - 1; i >= 0; i--) {
+            const entry = discard[i];
+            if (entry && (entry.playerId === humanId || entry.isHuman)) {
+                return entry;
+            }
+        }
+        // 若找不到人類牌（例如 AI 代打模式），取棄牌堆最頂端一張
+        return discard[discard.length - 1];
+    }
+    return null;
+}
+
+function getAllPlayedCardsInCurrentGameRound(gameState) {
+    if (!gameState) return [];
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+        ? window.getEffectiveHumanPlayerId()
+        : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
+
+    const result = [];
+    const seenCards = new Set(); // 記錄本局已納入的卡牌點數，確保不重複
+
+    // 1. 本局已進入棄牌堆的所有分鐘卡
+    if (Array.isArray(gameState.minuteDiscard)) {
+        gameState.minuteDiscard.forEach(item => {
+            if (!item) return;
+            const val = (item.card && item.card.value !== undefined) ? item.card.value : item.value;
+            if (val !== undefined) {
+                seenCards.add(val);
+                result.push({
+                    value: val,
+                    gear: (item.card && item.card.gear !== undefined) ? item.card.gear : item.gear,
+                    playerId: item.playerId,
+                    playerName: item.playerName || '',
+                    roleType: item.roleType || '',
+                    gameRound: item.gameRound || gameState.gameRound || 1,
+                    roundMarker: item.roundMarker || 1,
+                    isHuman: item.isHuman || (item.playerId === humanId)
+                });
+            }
+        });
+    }
+
+    // 2. 若當前回合正在比大小或選小時卡，尚未入堆的卡牌也併入
+    if (Array.isArray(gameState.currentMinuteChoices)) {
+        gameState.currentMinuteChoices.forEach(c => {
+            if (!c || !c.card || c.card.type === 'seconds_pending') return;
+            const val = c.card.value;
+            if (!seenCards.has(val)) {
+                seenCards.add(val);
+                result.push({
+                    value: val,
+                    gear: c.card.gear,
+                    playerId: c.playerId,
+                    playerName: c.playerName || '',
+                    roleType: c.roleType || '',
+                    gameRound: gameState.gameRound || 1,
+                    roundMarker: gameState.roundMarker || 1,
+                    isHuman: (c.playerId === humanId)
+                });
+            }
+        });
+    }
+
+    return result;
+}
+
+function resolveCurrentPlayerName(item, gameState) {
+    if (!item) return '';
+    if (gameState && Array.isArray(gameState.players) && item.playerId) {
+        const livePlayer = gameState.players.find(p => p.id === item.playerId);
+        if (livePlayer && livePlayer.name) {
+            return (window.i18n && typeof window.i18n.getRoleName === 'function')
+                ? window.i18n.getRoleName(livePlayer.name)
+                : livePlayer.name;
+        }
+    }
+    return item.playerName || '';
+}
+
+function formatDiscardPlayerShortTag(item, gameState) {
+    const t = (k, p) => (window.i18n ? window.i18n.t(k, p) : null);
+    if (!item) return '';
+    if (item.isHuman) {
+        return t('ui.labels.you_tag') || '★我';
+    }
+    if (gameState && Array.isArray(gameState.players) && item.playerId) {
+        const livePlayer = gameState.players.find(p => p.id === item.playerId);
+        if (livePlayer) {
+            if (['時針', '分針', '秒針'].includes(livePlayer.roleCard)) {
+                return (window.i18n && typeof window.i18n.getRoleName === 'function')
+                    ? window.i18n.getRoleName(livePlayer.roleCard)
+                    : livePlayer.roleCard;
+            }
+            if (livePlayer.type === '時之惡' || livePlayer.id === 'sin') {
+                return (window.i18n && typeof window.i18n.getRoleName === 'function')
+                    ? window.i18n.getRoleName('時之惡')
+                    : '時之惡';
+            }
+            if (livePlayer.type === '受詛者' || livePlayer.id === 'SCZ') {
+                return (window.i18n && typeof window.i18n.getRoleName === 'function')
+                    ? window.i18n.getRoleName('受詛者')
+                    : '受詛者';
+            }
+            const m = String(livePlayer.id).match(/SM_(\d+)/);
+            if (m) return `幼體${m[1]}`;
+        }
+    }
+    const rawName = String(item.playerName || '');
+    const handMatch = rawName.match(/(時針|分針|秒針)/);
+    if (handMatch) return handMatch[1];
+    const numMatch = rawName.match(/(\d+)/);
+    if (numMatch) return `時魔${numMatch[1]}`;
+    return rawName.slice(0, 3) || '已出';
+}
+
+function renderDiscardPile(gameState, humanPlayer) {
+    const zoneEl = document.getElementById('discard-pile-zone');
+    if (!zoneEl) return;
+
+    const stackEl = document.getElementById('discard-pile-stack') || zoneEl.querySelector('.discard-pile-stack');
+    const badgeEl = document.getElementById('discard-pile-badge') || zoneEl.querySelector('.discard-pile-badge');
+
+    const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
+    const topCard = getTopDiscardCard(gameState);
+
+    // 更新計數標籤
+    if (badgeEl) {
+        badgeEl.textContent = String(allPlayed.length);
+        if (allPlayed.length === 0) {
+            badgeEl.classList.add('is-zero');
+        } else {
+            badgeEl.classList.remove('is-zero');
+        }
+    }
+
+    const t = (k, p) => (window.i18n ? window.i18n.t(k, p) : null);
+
+    if (stackEl) {
+        if (topCard && topCard.value !== undefined) {
+            stackEl.classList.add('has-cards');
+            if (allPlayed.length >= 2) {
+                stackEl.classList.add('has-multiple');
+            } else {
+                stackEl.classList.remove('has-multiple');
+            }
+
+            const pTag = formatDiscardPlayerShortTag(topCard, gameState);
+            const fullPlayerName = resolveCurrentPlayerName(topCard, gameState);
+
+            stackEl.innerHTML = `
+                <div class="discard-top-card">
+                    <div class="card-val">${topCard.value}</div>
+                    <div class="card-gear">${topCard.gear ? '⚙️' : ''}</div>
+                    ${pTag ? `<div class="card-player-tag" title="${fullPlayerName}">${pTag}</div>` : ''}
+                </div>
+            `;
+            const tooltipStr = t('ui.discard_pile.tooltip', { count: allPlayed.length }) || `點擊查看本輪打出的所有牌 (共 ${allPlayed.length} 張)`;
+            zoneEl.setAttribute('title', tooltipStr);
+            zoneEl.setAttribute('aria-label', tooltipStr);
+        } else {
+            stackEl.classList.remove('has-cards', 'has-multiple');
+            const emptyTitle = t('ui.discard_pile.title') || '棄牌區';
+            stackEl.innerHTML = `
+                <div class="discard-card-empty">
+                    <span class="discard-empty-icon">🎴</span>
+                    <span class="discard-empty-text">${emptyTitle}</span>
+                </div>
+            `;
+            const emptySub = t('ui.discard_pile.empty_sub') || '尚無棄牌 · 點擊查看本輪記錄';
+            zoneEl.setAttribute('title', emptySub);
+            zoneEl.setAttribute('aria-label', emptySub);
+        }
+    }
+}
+
+function renderDiscardPileModal(gameState) {
+    const overlay = document.getElementById('discard-pile-overlay');
+    if (!overlay) return;
+
+    const t = (k, p) => (window.i18n ? window.i18n.t(k, p) : null);
+    const roundBadge = document.getElementById('discard-round-badge');
+    const countBadge = document.getElementById('discard-count-badge');
+    const timelineList = document.getElementById('discard-timeline-list');
+    const matrixGrid = document.getElementById('discard-matrix-grid');
+
+    const currentRound = gameState ? (gameState.gameRound || 1) : 1;
+    const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
+
+    if (roundBadge) {
+        roundBadge.textContent = t('ui.labels.game_round', { round: currentRound }) || `第 ${currentRound} 局`;
+    }
+    if (countBadge) {
+        countBadge.textContent = t('ui.discard_pile.cards_count', { count: allPlayed.length }) || `已打出 ${allPlayed.length} 張`;
+    }
+
+    // 1. 依回合記錄時間線
+    if (timelineList) {
+        timelineList.innerHTML = '';
+        if (allPlayed.length === 0) {
+            const emptyTip = document.createElement('div');
+            emptyTip.className = 'discard-empty-placeholder';
+            emptyTip.style.cssText = 'text-align: center; color: #888; padding: 25px 0; font-size: 0.95rem;';
+            emptyTip.textContent = t('ui.discard_pile.empty') || '本局尚無任何打出的卡牌記錄。';
+            timelineList.appendChild(emptyTip);
+        } else {
+            // 依回合 (roundMarker) 分群
+            const groupsByTrick = {};
+            allPlayed.forEach(item => {
+                const tr = item.roundMarker || 1;
+                if (!groupsByTrick[tr]) groupsByTrick[tr] = [];
+                groupsByTrick[tr].push(item);
+            });
+
+            // 由最新回合往最舊回合排（方便第一眼看到剛剛發生的）
+            const sortedTricks = Object.keys(groupsByTrick)
+                .map(Number)
+                .sort((a, b) => b - a);
+
+            sortedTricks.forEach(tr => {
+                const trickCards = groupsByTrick[tr];
+                const trickCardEl = document.createElement('div');
+                trickCardEl.className = 'discard-trick-card';
+
+                const trickTitle = t('ui.discard_pile.trick_title', { trick: tr }) || `第 ${tr} 回合`;
+                const countText = t('ui.discard_pile.cards_count', { count: trickCards.length }) || `${trickCards.length} 張`;
+
+                const trickHeaderEl = document.createElement('div');
+                trickHeaderEl.className = 'discard-trick-header';
+                trickHeaderEl.innerHTML = `
+                    <span>${trickTitle}</span>
+                    <span style="font-weight: normal; font-size: 0.8rem; color: #a0aec0;">${countText}</span>
+                `;
+                trickCardEl.appendChild(trickHeaderEl);
+
+                const entriesEl = document.createElement('div');
+                entriesEl.className = 'discard-trick-entries';
+
+                // 回合內卡牌依點數由大到小展示
+                [...trickCards].sort((a, b) => b.value - a.value).forEach(cardItem => {
+                    const chip = document.createElement('div');
+                    chip.className = `discard-entry-chip ${cardItem.isHuman ? 'is-human' : ''}`;
+                    const liveName = resolveCurrentPlayerName(cardItem, gameState);
+                    const pName = cardItem.isHuman
+                        ? `${liveName} (${t('ui.labels.you_tag') || '你'})`
+                        : liveName;
+                    chip.innerHTML = `
+                        <span class="entry-player">${pName}:</span>
+                        <span class="entry-card-val">[ ${cardItem.value} ]</span>
+                        ${cardItem.gear ? `<span class="entry-gear" title="${cardItem.gear}">⚙️</span>` : ''}
+                    `;
+                    entriesEl.appendChild(chip);
+                });
+
+                trickCardEl.appendChild(entriesEl);
+                timelineList.appendChild(trickCardEl);
+            });
+        }
+    }
+
+    // 2. 數字盤 (1~60) 矩陣
+    if (matrixGrid) {
+        matrixGrid.innerHTML = '';
+        const playedMap = new Map();
+        allPlayed.forEach(item => {
+            playedMap.set(item.value, item);
+        });
+
+        for (let v = 1; v <= 60; v++) {
+            const cell = document.createElement('div');
+            const found = playedMap.get(v);
+            if (found) {
+                cell.className = `matrix-cell played ${found.isHuman ? 'is-human' : ''}`;
+                const whoText = formatDiscardPlayerShortTag(found, gameState);
+                const fullPlayerName = resolveCurrentPlayerName(found, gameState);
+                cell.title = `[${v}] ${fullPlayerName} (第 ${found.roundMarker} 回合打出)`;
+                cell.innerHTML = `
+                    <span class="cell-num">${v}</span>
+                    <span class="cell-sub">${whoText}</span>
+                `;
+            } else {
+                cell.className = 'matrix-cell unplayed';
+                cell.title = `[${v}] 尚未打出`;
+                cell.innerHTML = `<span class="cell-num">${v}</span>`;
+            }
+            matrixGrid.appendChild(cell);
+        }
+    }
+}
+
 // --- D. 人類操作區 ---
 function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     if (!humanPlayer) return;
+
+    // 0. 更新棄牌區 (手牌旁)
+    renderDiscardPile(gameState, humanPlayer);
 
     // 1. 更新數據
     const setText = (id, value) => {
@@ -2462,5 +2776,12 @@ function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, active
             }
         });
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.renderDiscardPile = renderDiscardPile;
+    window.renderDiscardPileModal = renderDiscardPileModal;
+    window.getTopDiscardCard = getTopDiscardCard;
+    window.getAllPlayedCardsInCurrentGameRound = getAllPlayedCardsInCurrentGameRound;
 }
 
