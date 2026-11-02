@@ -1527,7 +1527,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
         humanHandEl.innerHTML = '';
 		
 		// 根據角色身份動態設定手牌區背景圖 
-        let bgUrl = "url('assets/background_hand.png')"; // 預設背景
+        let bgUrl = "url('assets/soul_demon.png')"; // 預設背景（以幼體時魔作為安全預設，避免 404）
         
         if (humanPlayer.type === '時之惡') {
             bgUrl = "url('assets/soul_sin.png')";        // 時之惡專屬背景

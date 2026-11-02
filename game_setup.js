@@ -314,8 +314,23 @@ function getCircularDistance(pos1, pos2) {
 // --- 5. 遊戲初始化邏輯 ---
 
 function initializeGame(roles = null) {
-    const resolvedGameMode = roles ? (roles.length === 3 ? '3P' : '5P') : getGameMode();
-    const resolvedRoles = roles || getRolesForMode(resolvedGameMode);
+    let resolvedGameMode;
+    let resolvedRoles;
+
+    if (Array.isArray(roles)) {
+        resolvedGameMode = roles.length === 3 ? '3P' : '5P';
+        resolvedRoles = roles;
+    } else if (typeof roles === 'string' && (roles === '3P' || roles === '5P')) {
+        resolvedGameMode = roles;
+        resolvedRoles = getRolesForMode(resolvedGameMode);
+    } else if (typeof roles === 'boolean') {
+        resolvedGameMode = roles ? '3P' : '5P';
+        resolvedRoles = getRolesForMode(resolvedGameMode);
+    } else {
+        resolvedGameMode = getGameMode();
+        resolvedRoles = getRolesForMode(resolvedGameMode);
+    }
+
     const minuteDeckCopy = [...DECK_MINUTE_CARDS];
 	shuffle(minuteDeckCopy);
 
