@@ -1491,11 +1491,23 @@ function endGameRound(gameState) {
     appLogger.log(`=== 第 ${gameState.gameRound} 局結束 ===`);
     const numPlayers = gameState.players.length;
 
-    // 1. 計算分數（以本局結束時的齒局數為準）
-    gameState.players.forEach(player => {
-        player.score += player.gearCards;
-        appLogger.log(`【${player.name}】得分: ${player.gearCards}. 總分: ${player.score}`);
+    // 1. 計算分數（以本局結束時的齒局數為準，出局逐出者為 0 分）
+    const roundSummary = gameState.players.map(player => {
+        const wasEjected = !!player.isEjected;
+        const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);
+        player.score += roundEarned;
+        appLogger.log(`【${player.name}】得分: ${roundEarned}. 總分: ${player.score}`);
+        return {
+            id: player.id,
+            name: player.name,
+            roleCard: player.roleCard,
+            type: player.type,
+            wasEjected: wasEjected,
+            roundScore: roundEarned,
+            totalScore: player.score
+        };
     });
+    gameState.lastRoundSummary = roundSummary;
 
     // 2. 「時之惡懲罰」：以「局」為單位
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
@@ -1682,7 +1694,7 @@ function endGame(gameState) {
     appLogger.log("=== 遊戲結束 ===");
     if (gameState.gameMode !== '3P') {
         gameState.players
-            .filter(p => p.type === '時魔' && ['時針', '分針', '秒針'].includes(p.roleCard))
+            .filter(p => p.type === '時魔' && !p.isEjected && ['時針', '分針', '秒針'].includes(p.roleCard))
             .forEach(player => {
 			    player.score += 3;
             });

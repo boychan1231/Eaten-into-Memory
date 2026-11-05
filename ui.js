@@ -1471,7 +1471,26 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
             const humanId = (typeof getCurrentHumanPlayerId === 'function')
                 ? getCurrentHumanPlayerId()
                 : ((typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1');
-            const sorted = gs.players.slice().sort((a, b) => b.score - a.score);
+            // 優先讀取剛結束局的快照 (lastRoundSummary)，避免讀到下一局已重置發牌的齒輪與復活狀態
+            const summaryMap = new Map();
+            if (Array.isArray(gs.lastRoundSummary)) {
+                gs.lastRoundSummary.forEach(item => summaryMap.set(item.id, item));
+            }
+
+            const playerList = gs.players.map(p => {
+                const s = summaryMap.get(p.id);
+                return {
+                    id: p.id,
+                    name: s ? s.name : p.name,
+                    roleCard: s ? s.roleCard : p.roleCard,
+                    type: s ? s.type : p.type,
+                    isEjected: s ? s.wasEjected : !!p.isEjected,
+                    roundScore: s ? s.roundScore : (p.isEjected ? 0 : p.gearCards),
+                    score: s ? s.totalScore : p.score
+                };
+            });
+
+            const sorted = playerList.slice().sort((a, b) => b.score - a.score);
             const maxScore = sorted.length > 0 ? sorted[0].score : -999;
 
             const colRank = window.i18n ? window.i18n.t('ui.round_ready.col_rank') : '排名';
@@ -1506,7 +1525,8 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
                 const roleDisplay = p.isEjected ? `<s style="opacity:0.6;">${localizedRole}</s> ${ejectedText}` : localizedRole;
                 const humanBadgeText = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '我';
                 const humanBadge = isHuman ? `<span class="score-badge-human">${humanBadgeText}</span>` : '';
-                const gearText = window.i18n ? window.i18n.t('ui.round_ready.pts_gear', { gear: p.gearCards }) : `+${p.gearCards} 齒`;
+                const earnedGears = p.isEjected ? 0 : (typeof p.roundScore === 'number' ? p.roundScore : p.gearCards);
+                const gearText = window.i18n ? window.i18n.t('ui.round_ready.pts_gear', { gear: earnedGears }) : `+${earnedGears} 齒`;
                 const ptsText = window.i18n ? window.i18n.t('ui.round_ready.pts_total', { pts: p.score }) : `${p.score} 分`;
 
                 html += `

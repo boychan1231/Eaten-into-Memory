@@ -684,23 +684,7 @@
                                 : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
                             if (!fn || !gsNow) return;
 
-                            if (typeof window.playHourCardDisintegrateAnimation === 'function') {
-                                const bounds = (typeof node.getBounds === 'function') ? node.getBounds() : { x: window.innerWidth / 2, y: window.innerHeight / 2, width: 56, height: 76 };
-                                const cardData = cards[idx] || {};
-                                window.playHourCardDisintegrateAnimation({
-                                    x: bounds.x,
-                                    y: bounds.y,
-                                    width: bounds.width,
-                                    height: bounds.height,
-                                    number: cardData.number,
-                                    ageGroup: cardData.ageGroup,
-                                    isPrecious: cardData.isPrecious
-                                }, () => {
-                                    fn(gsNow, idx);
-                                });
-                            } else {
-                                fn(gsNow, idx);
-                            }
+                            fn(gsNow, idx);
                         }
                     };
                     node.on('pointertap', triggerSpotChoice);
@@ -767,23 +751,7 @@
                             : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
                         if (!fn || !gsNow) return;
 
-                        if (typeof window.playHourCardDisintegrateAnimation === 'function') {
-                            const bounds = (typeof c.getBounds === 'function') ? c.getBounds() : { x: window.innerWidth / 2, y: window.innerHeight / 2, width: 56, height: 76 };
-                            const cardData = drawn[i] || {};
-                            window.playHourCardDisintegrateAnimation({
-                                x: bounds.x,
-                                y: bounds.y,
-                                width: bounds.width,
-                                height: bounds.height,
-                                number: cardData.number,
-                                ageGroup: cardData.ageGroup,
-                                isPrecious: cardData.isPrecious
-                            }, () => {
-                                fn(gsNow, i);
-                            });
-                        } else {
-                            fn(gsNow, i);
-                        }
+                        fn(gsNow, i);
                     };
                     c.on('pointertap', triggerCardChoice);
                     c.on('click', triggerCardChoice);

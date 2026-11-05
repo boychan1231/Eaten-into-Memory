@@ -170,7 +170,7 @@ function attemptRoleUpgrade(player, gameState) {
 
     // 找出目前已被佔用的身份
     const takenRoles = gameState.players
-        .filter(p => p !== player && !p.isEjected && p.type === '時魔')
+        .filter(p => p !== player && p.type === '時魔')
         .map(p => p.roleCard);
 
     // 如果沒指定，或指定的已被搶走，則自動尋找剩下的
