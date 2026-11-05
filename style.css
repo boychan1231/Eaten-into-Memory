@@ -2772,3 +2772,383 @@ body {
     color: rgba(255, 255, 255, 0.7);
     margin-top: 1px;
 }
+
+
+/* ==========================================================================
+   ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & 乙太發條能量管 (Aether Gauge)
+   ========================================================================== */
+
+.resource-chip.has-mech-gauge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+    background: rgba(18, 14, 26, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    min-height: 28px !important;
+    box-sizing: border-box !important;
+}
+
+.resource-chip--gear.has-mech-gauge {
+    border-color: rgba(255, 210, 127, 0.5) !important;
+    background: linear-gradient(180deg, rgba(38, 28, 18, 0.92) 0%, rgba(18, 13, 8, 0.98) 100%) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 210, 127, 0.22) !important;
+}
+
+.resource-chip--mana.has-mech-gauge {
+    border-color: rgba(174, 108, 255, 0.55) !important;
+    background: linear-gradient(180deg, rgba(32, 20, 48, 0.92) 0%, rgba(14, 9, 24, 0.98) 100%) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(174, 108, 255, 0.25) !important;
+}
+
+/* --- 1. 機芯齒輪鏈 (Gear Life Chain) --- */
+.mech-gear-gauge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    user-select: none !important;
+    width: auto !important;
+}
+
+.mech-gauge-label {
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.6px !important;
+    color: rgba(255, 210, 127, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+    font-family: inherit !important;
+}
+
+.resource-chip--mana .mech-gauge-label {
+    color: rgba(206, 160, 255, 0.95) !important;
+}
+
+.mech-gear-track {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 5px !important;
+    background: rgba(8, 6, 4, 0.75) !important;
+    border: 1px solid rgba(255, 210, 127, 0.35) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.9) !important;
+    min-height: 22px !important;
+    position: relative !important;
+}
+
+.gear-cog {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    margin-left: -5px !important;
+    transition: transform 0.25s ease, filter 0.25s ease !important;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.95)) !important;
+    flex-shrink: 0 !important;
+}
+
+.gear-cog:first-child {
+    margin-left: 0 !important;
+}
+
+.gear-cog--offset {
+    transform: translateY(2px) rotate(15deg) !important;
+}
+
+.gear-cog-svg {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    display: block !important;
+}
+
+/* 齒輪金屬立體層次 */
+.gear-cog-svg .gear-teeth {
+    fill: #ffd27f !important;
+    stroke: #523105 !important;
+    stroke-width: 0.65 !important;
+}
+
+.gear-cog-svg .gear-rim-line {
+    stroke: #87520e !important;
+    stroke-width: 0.6 !important;
+    fill: none !important;
+}
+
+.gear-cog-svg .gear-axle-hole {
+    fill: #140f09 !important;
+    stroke: #d49a37 !important;
+    stroke-width: 0.8 !important;
+}
+
+.gear-cog-svg .gear-axle-pin {
+    fill: #ffeaa7 !important;
+    stroke: #3a2206 !important;
+    stroke-width: 0.45 !important;
+}
+
+/* 齒輪咬合動態 */
+.mech-gear-gauge:hover .gear-cog {
+    animation: gear-spin-anim 5s linear infinite !important;
+}
+.mech-gear-gauge:hover .gear-cog--offset {
+    animation: gear-spin-rev-anim 5s linear infinite !important;
+}
+
+@keyframes gear-spin-anim {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes gear-spin-rev-anim {
+    from { transform: translateY(2px) rotate(15deg); }
+    to { transform: translateY(2px) rotate(-345deg); }
+}
+
+/* 崩毀齒輪 (0生命) */
+.gear-cog--shattered .gear-cog-svg.shattered .gear-hole-broken {
+    fill: #220a0e !important;
+    stroke: #ff4757 !important;
+    stroke-width: 1.2 !important;
+    stroke-dasharray: 2 1.5 !important;
+}
+.gear-cog--shattered .gear-cog-svg.shattered .gear-crack-line {
+    stroke: #ff4757 !important;
+    stroke-width: 1.3 !important;
+    stroke-linecap: round !important;
+}
+.gear-cog--shattered .gear-cog-svg.shattered .gear-axle-broken {
+    fill: #ff4757 !important;
+    filter: drop-shadow(0 0 4px #ff4757) !important;
+}
+
+/* 復古機械滾輪數字框 */
+.mech-counter-dial {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1px 6px !important;
+    background: #0d0a08 !important;
+    border: 1px solid rgba(255, 210, 127, 0.45) !important;
+    border-radius: 4px !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(255, 210, 127, 0.2) !important;
+    margin-left: auto !important;
+    min-width: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.mech-counter-dial.aether-dial {
+    border-color: rgba(174, 108, 255, 0.5) !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 5px rgba(174, 108, 255, 0.25) !important;
+}
+
+.mech-gear-val {
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    color: #ffd27f !important;
+    text-shadow: 0 0 6px rgba(255, 210, 127, 0.6) !important;
+    font-family: 'Cinzel', 'Cinzel Decorative', 'Georgia', monospace, sans-serif !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+}
+
+.mech-gear-gauge.is-danger .mech-counter-dial {
+    border-color: #ff4757 !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 71, 87, 0.5) !important;
+}
+
+.mech-gear-gauge.is-danger .mech-gear-val {
+    color: #ff6b81 !important;
+    text-shadow: 0 0 8px rgba(255, 107, 129, 0.9) !important;
+    animation: pulse-danger 1.5s ease-in-out infinite !important;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.65; transform: scale(0.92); }
+}
+
+/* 緊湊模式（左側玩家卡） */
+.mech-gear-gauge--compact {
+    gap: 3px !important;
+    padding: 0 !important;
+}
+.mech-gear-gauge--compact .gear-cog {
+    width: 15px !important;
+    height: 15px !important;
+    margin-left: -3.5px !important;
+}
+.mech-gear-gauge--compact .mech-gear-track {
+    padding: 1px 3px !important;
+    border-radius: 8px !important;
+    min-height: 16px !important;
+}
+.mech-gear-gauge--compact .mech-gauge-label {
+    font-size: 0.62rem !important;
+}
+.mech-gear-gauge--compact .mech-counter-dial {
+    padding: 0 4px !important;
+    min-width: 16px !important;
+}
+.mech-gear-gauge--compact .mech-gear-val {
+    font-size: 0.78rem !important;
+}
+
+
+/* --- 2. 乙太真空發條能量管 (Aether Mana Gauge) --- */
+.mech-mana-gauge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    user-select: none !important;
+    width: auto !important;
+}
+
+.aether-vial {
+    display: inline-flex !important;
+    align-items: center !important;
+    position: relative !important;
+    width: 68px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+}
+
+.vial-cap {
+    width: 5px !important;
+    height: 14px !important;
+    background: linear-gradient(180deg, #ffeaa7 0%, #d49a37 50%, #683e08 100%) !important;
+    border-radius: 2px !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+    position: relative !important;
+    border: 1px solid rgba(0, 0, 0, 0.5) !important;
+}
+
+.vial-cap-knob {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 2px !important;
+    height: 6px !important;
+    background: #ffeaa7 !important;
+    border-radius: 1px !important;
+}
+
+.vial-cap--left {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+.vial-cap--left .vial-cap-knob {
+    left: -2px !important;
+}
+
+.vial-cap--right {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+.vial-cap--right .vial-cap-knob {
+    right: -2px !important;
+}
+
+.vial-glass {
+    flex: 1 !important;
+    height: 10px !important;
+    background: rgba(12, 10, 22, 0.94) !important;
+    border-top: 1px solid rgba(174, 108, 255, 0.65) !important;
+    border-bottom: 1px solid rgba(174, 108, 255, 0.5) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 6px rgba(174, 108, 255, 0.25) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 1px !important;
+}
+
+.vial-plasma {
+    height: 100% !important;
+    background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #ec4899 100%) !important;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.7) !important;
+    transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative !important;
+}
+
+.vial-specular {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 42% !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%) !important;
+    pointer-events: none !important;
+}
+
+.vial-ticks {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+}
+
+.vial-tick {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 1px !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.9) !important;
+}
+
+.aether-val {
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    color: #e9d5ff !important;
+    text-shadow: 0 0 6px rgba(174, 108, 255, 0.7) !important;
+    font-family: 'Cinzel', 'Cinzel Decorative', 'Georgia', monospace, sans-serif !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+}
+
+.mech-mana-gauge.is-depleted .vial-plasma {
+    opacity: 0.2 !important;
+}
+
+.mech-mana-gauge.is-energized .vial-plasma {
+    animation: aether-glow-pulse 2.8s ease-in-out infinite alternate !important;
+}
+
+@keyframes aether-glow-pulse {
+    0% { filter: brightness(0.95); }
+    100% { filter: brightness(1.22) drop-shadow(0 0 6px rgba(236, 72, 153, 0.7)); }
+}
+
+/* 緊湊模式（左側玩家卡） */
+.mech-mana-gauge--compact {
+    gap: 3px !important;
+    padding: 0 !important;
+}
+.mech-mana-gauge--compact .aether-vial {
+    width: 36px !important;
+    height: 11px !important;
+}
+.mech-mana-gauge--compact .vial-cap {
+    width: 4px !important;
+    height: 11px !important;
+}
+.mech-mana-gauge--compact .vial-glass {
+    height: 8px !important;
+}
+.mech-mana-gauge--compact .mech-gauge-label {
+    font-size: 0.62rem !important;
+}
+.mech-mana-gauge--compact .mech-counter-dial {
+    padding: 0 4px !important;
+    min-width: 16px !important;
+}
+.mech-mana-gauge--compact .aether-val {
+    font-size: 0.78rem !important;
+}

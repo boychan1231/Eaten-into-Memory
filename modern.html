@@ -259,13 +259,40 @@
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
 
-							<div class="resource-chip resource-chip--mana" title="魔力 (Mana)">
-								<span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
-								Mana <span id="h-mana">0</span>
+							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力乙太發條管 (Mana)">
+								<div class="mech-mana-gauge is-depleted" title="法力乙太發條管 (Mana): 0/1">
+									<span class="mech-gauge-label">Mana 乙太</span>
+									<div class="aether-vial">
+										<div class="vial-cap vial-cap--left"><span class="vial-cap-knob"></span></div>
+										<div class="vial-glass">
+											<div class="vial-plasma" style="width: 0%;"></div>
+											<div class="vial-ticks"></div>
+											<div class="vial-specular"></div>
+										</div>
+										<div class="vial-cap vial-cap--right"><span class="vial-cap-knob"></span></div>
+									</div>
+									<div class="mech-counter-dial aether-dial">
+										<strong class="aether-val" id="h-mana">0</strong>
+									</div>
+								</div>
 							</div>
 							
-							<div class="resource-chip resource-chip--gear" title="齒輪生命值">
-								生命 <span id="h-gear"></span>
+							<div class="resource-chip resource-chip--gear has-mech-gauge" title="機芯生命齒輪鏈">
+								<div class="mech-gear-gauge is-danger" title="機芯生命齒輪：0">
+									<span class="mech-gauge-label">生命齒輪</span>
+									<div class="mech-gear-track">
+										<span class="gear-cog gear-cog--shattered" title="機芯停擺 / 齒輪崩毀">
+											<svg viewBox="0 0 24 24" class="gear-cog-svg shattered" aria-hidden="true">
+												<circle cx="12" cy="12" r="5" class="gear-hole-broken" />
+												<path class="gear-crack-line" d="M12 2 L12 7 M12 17 L12 22 M2 12 L7 12 M17 12 L22 12 M5 5 L8 8 M16 16 L19 19" />
+												<circle cx="12" cy="12" r="1.8" class="gear-axle-broken" />
+											</svg>
+										</span>
+									</div>
+									<div class="mech-counter-dial">
+										<strong class="mech-gear-val" id="h-gear">0</strong>
+									</div>
+								</div>
 							</div>
 							
 							<div class="resource-chip resource-chip--shield" title="護盾點數">
@@ -293,12 +320,12 @@
 						<div class="human-tab-panels">
 							<div id="human-tab-hand" class="human-tab-panel active">
 								<div class="human-play-row">
-									<!-- 🗂️ 棄牌區 Discard Pile Zone -->
-									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看本輪打出的所有牌" aria-label="棄牌區">
+									<!-- 🗂️ 個人棄牌區 Discard Pile Zone -->
+									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看我的棄牌記錄" aria-label="個人棄牌區">
 										<div class="discard-pile-stack" id="discard-pile-stack">
 											<div class="discard-card-empty">
 												<span class="discard-empty-icon">🎴</span>
-												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">棄牌區</span>
+												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">個人棄牌</span>
 											</div>
 										</div>
 										<div class="discard-pile-badge is-zero" id="discard-pile-badge">0</div>
@@ -721,10 +748,10 @@
 			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
 				<div class="modal discard-pile-modal">
 					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">本輪已出牌記錄</h2>
+					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">我的棄牌記錄</h2>
 					<div class="discard-pile-meta-bar">
 						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
-						<span id="discard-count-badge" class="discard-meta-chip">已打出 0 張</span>
+						<span id="discard-count-badge" class="discard-meta-chip">已棄 0 張</span>
 					</div>
 					<div class="discard-view-tabs" role="tablist">
 						<button type="button" id="tab-discard-timeline" class="discard-tab-btn active" data-tab="timeline" data-i18n="ui.discard_pile.tab_timeline">依回合記錄</button>

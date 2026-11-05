@@ -1014,6 +1014,95 @@ function renderClockFace(gameState, flags) {
     }
 }
 
+// --- ⚙️ 擬物化儀表生成函式：機芯齒輪鏈 (Gear Life Chain) & 乙太真空發條能量管 (Aether Gauge) ---
+function createGearChainHtml(count, isCompact = false, idVal = '') {
+    const gearCount = Math.max(0, Number(count) || 0);
+    const idAttr = idVal ? `id="${idVal}"` : '';
+    const maxVisualCogs = isCompact ? 3 : 5;
+    const visualCount = Math.min(gearCount, maxVisualCogs);
+    
+    let cogsHtml = '';
+    if (gearCount === 0) {
+        cogsHtml = `
+            <span class="gear-cog gear-cog--shattered" title="機芯停擺 / 齒輪崩毀">
+                <svg viewBox="0 0 24 24" class="gear-cog-svg shattered" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5" class="gear-hole-broken" />
+                    <path class="gear-crack-line" d="M12 2 L12 7 M12 17 L12 22 M2 12 L7 12 M17 12 L22 12 M5 5 L8 8 M16 16 L19 19" />
+                    <circle cx="12" cy="12" r="1.8" class="gear-axle-broken" />
+                </svg>
+            </span>`;
+    } else {
+        for (let i = 0; i < visualCount; i++) {
+            const isOdd = (i % 2 === 1);
+            const offsetClass = isOdd ? 'gear-cog--offset' : '';
+            cogsHtml += `
+                <span class="gear-cog ${offsetClass}" title="機芯咬合齒輪 #${i + 1}">
+                    <svg viewBox="0 0 24 24" class="gear-cog-svg" aria-hidden="true">
+                        <path class="gear-teeth" d="M10.5 1 h3 l0.6 2.6 a7.5 7.5 0 0 1 1.8 0.7 l2.2 -1.4 l2.1 2.1 l-1.4 2.2 a7.5 7.5 0 0 1 0.7 1.8 l2.6 0.6 v3 l-2.6 0.6 a7.5 7.5 0 0 1 -0.7 1.8 l1.4 2.2 l-2.1 2.1 l-2.2 -1.4 a7.5 7.5 0 0 1 -1.8 0.7 l-0.6 2.6 h-3 l-0.6 -2.6 a7.5 7.5 0 0 1 -1.8 -0.7 l-2.2 1.4 l-2.1 -2.1 l1.4 -2.2 a7.5 7.5 0 0 1 -0.7 -1.8 l-2.6 -0.6 v-3 l2.6 -0.6 a7.5 7.5 0 0 1 0.7 -1.8 l-1.4 -2.2 l2.1 -2.1 l2.2 1.4 a7.5 7.5 0 0 1 1.8 -0.7 z" />
+                        <circle cx="12" cy="12" r="5.2" class="gear-rim-line" />
+                        <circle cx="12" cy="12" r="3.2" class="gear-axle-hole" />
+                        <circle cx="12" cy="12" r="1.3" class="gear-axle-pin" />
+                    </svg>
+                </span>`;
+        }
+    }
+
+    const compactModifier = isCompact ? 'mech-gear-gauge--compact' : '';
+    const dangerClass = (gearCount <= 1) ? 'is-danger' : '';
+    const labelText = isCompact ? '齒輪' : '生命齒輪';
+
+    return `
+        <div class="mech-gear-gauge ${compactModifier} ${dangerClass}" title="機芯生命齒輪：${gearCount}">
+            <span class="mech-gauge-label">${labelText}</span>
+            <div class="mech-gear-track">
+                ${cogsHtml}
+            </div>
+            <div class="mech-counter-dial">
+                <strong class="mech-gear-val" ${idAttr}>${gearCount}</strong>
+            </div>
+        </div>`;
+}
+
+function createManaGaugeHtml(mana, maxCapacity = 0, isCompact = false, idVal = '') {
+    const val = Math.max(0, Number(mana) || 0);
+    const cap = Math.max(val, Number(maxCapacity) || 0, 1);
+    const fillPercent = (val > 0) ? Math.min(100, Math.max(12, Math.round((val / cap) * 100))) : 0;
+    const idAttr = idVal ? `id="${idVal}"` : '';
+
+    const maxTicks = isCompact ? 3 : 5;
+    const ticksCount = Math.min(cap, maxTicks);
+    let ticksHtml = '';
+    for (let i = 1; i < ticksCount; i++) {
+        const leftPercent = (i / ticksCount) * 100;
+        ticksHtml += `<span class="vial-tick" style="left: ${leftPercent.toFixed(1)}%;"></span>`;
+    }
+
+    const compactModifier = isCompact ? 'mech-mana-gauge--compact' : '';
+    const glowClass = (val > 0) ? 'is-energized' : 'is-depleted';
+    const labelText = isCompact ? 'Mana' : 'Mana 乙太';
+
+    return `
+        <div class="mech-mana-gauge ${compactModifier} ${glowClass}" title="法力乙太發條管 (Mana): ${val}/${cap}">
+            <span class="mech-gauge-label">${labelText}</span>
+            <div class="aether-vial">
+                <div class="vial-cap vial-cap--left">
+                    <span class="vial-cap-knob"></span>
+                </div>
+                <div class="vial-glass">
+                    <div class="vial-plasma" style="width: ${fillPercent}%;"></div>
+                    <div class="vial-ticks">${ticksHtml}</div>
+                    <div class="vial-specular"></div>
+                </div>
+                <div class="vial-cap vial-cap--right">
+                    <span class="vial-cap-knob"></span>
+                </div>
+            </div>
+            <div class="mech-counter-dial aether-dial">
+                <strong class="aether-val" ${idAttr}>${val}</strong>
+            </div>
+        </div>`;
+}
+
 // --- C. AI 玩家列表 ---
 function renderAIPlayers(gameState, humanId) {
     const playersContainer = document.getElementById('players-section');
@@ -1076,13 +1165,11 @@ function renderAIPlayers(gameState, humanId) {
             </div>
 
             <div class="player-stats-grid">
-                <div class="resource-chip resource-chip--mana" title="目前法力值">
-                    <span class="resource-chip__icon icon-mana-css" aria-hidden="true"></span>
-                    Mana: <strong>${player.mana}</strong>
+                <div class="resource-chip resource-chip--mana has-mech-gauge" title="目前法力值：${player.mana}">
+                    ${createManaGaugeHtml(player.mana, player.gearCards, true)}
                 </div>
-                <div class="resource-chip resource-chip--gear" title="齒輪生命數">
-                    <span class="gear-icon">⚙️</span>
-                    齒輪: <strong>${gearCount}</strong>
+                <div class="resource-chip resource-chip--gear has-mech-gauge" title="齒輪生命數：${gearCount}">
+                    ${createGearChainHtml(gearCount, true)}
                 </div>
                 ${diceChip}
                 <div class="stat-pill stat-pill--hours" title="已收集的小時卡張數">
@@ -1108,23 +1195,20 @@ function getTopDiscardCard(gameState) {
         ? window.getEffectiveHumanPlayerId()
         : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
 
-    // 1. 若有剛打出且暫存的牌
-    if (gameState.lastPlayedCard) {
+    // 棄牌區僅顯示玩家本人的棄牌：若暫存牌為人類出牌則採用
+    if (gameState.lastPlayedCard && (gameState.lastPlayedCard.playerId === humanId || gameState.lastPlayedCard.isHuman)) {
         return gameState.lastPlayedCard;
     }
 
-    // 2. 從 minuteDiscard 取得
+    // 從 minuteDiscard 倒序搜尋人類玩家在棄牌堆中的最後一張牌
     const discard = gameState.minuteDiscard;
     if (Array.isArray(discard) && discard.length > 0) {
-        // 優先找人類玩家在棄牌堆中的最後一張牌
         for (let i = discard.length - 1; i >= 0; i--) {
             const entry = discard[i];
             if (entry && (entry.playerId === humanId || entry.isHuman)) {
                 return entry;
             }
         }
-        // 若找不到人類牌（例如 AI 代打模式），取棄牌堆最頂端一張
-        return discard[discard.length - 1];
     }
     return null;
 }
@@ -1138,12 +1222,16 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
     const result = [];
     const seenCards = new Set(); // 記錄本局已納入的卡牌點數，確保不重複
 
-    // 1. 本局已進入棄牌堆的所有分鐘卡
+    // ✅ 核心修改：棄牌區只納入玩家自己的棄牌
+    // 1. 本局已進入棄牌堆的人類卡牌
     if (Array.isArray(gameState.minuteDiscard)) {
         gameState.minuteDiscard.forEach(item => {
             if (!item) return;
+            const isHuman = !!(item.isHuman || item.playerId === humanId);
+            if (!isHuman) return;
+
             const val = (item.card && item.card.value !== undefined) ? item.card.value : item.value;
-            if (val !== undefined) {
+            if (val !== undefined && !seenCards.has(val)) {
                 seenCards.add(val);
                 result.push({
                     value: val,
@@ -1153,18 +1241,21 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
                     roleType: item.roleType || '',
                     gameRound: item.gameRound || gameState.gameRound || 1,
                     roundMarker: item.roundMarker || 1,
-                    isHuman: item.isHuman || (item.playerId === humanId)
+                    isHuman: true
                 });
             }
         });
     }
 
-    // 2. 若當前回合正在比大小或選小時卡，尚未入堆的卡牌也併入
+    // 2. 若當前回合正在比大小或選小時卡，尚未入堆的人類卡牌也併入
     if (Array.isArray(gameState.currentMinuteChoices)) {
         gameState.currentMinuteChoices.forEach(c => {
             if (!c || !c.card || c.card.type === 'seconds_pending') return;
+            const isHuman = (c.playerId === humanId);
+            if (!isHuman) return;
+
             const val = c.card.value;
-            if (!seenCards.has(val)) {
+            if (typeof val === 'number' && !seenCards.has(val)) {
                 seenCards.add(val);
                 result.push({
                     value: val,
@@ -1174,7 +1265,7 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
                     roleType: c.roleType || '',
                     gameRound: gameState.gameRound || 1,
                     roundMarker: gameState.roundMarker || 1,
-                    isHuman: (c.playerId === humanId)
+                    isHuman: true
                 });
             }
         });
@@ -1202,34 +1293,7 @@ function formatDiscardPlayerShortTag(item, gameState) {
     if (item.isHuman) {
         return t('ui.labels.you_tag') || '★我';
     }
-    if (gameState && Array.isArray(gameState.players) && item.playerId) {
-        const livePlayer = gameState.players.find(p => p.id === item.playerId);
-        if (livePlayer) {
-            if (['時針', '分針', '秒針'].includes(livePlayer.roleCard)) {
-                return (window.i18n && typeof window.i18n.getRoleName === 'function')
-                    ? window.i18n.getRoleName(livePlayer.roleCard)
-                    : livePlayer.roleCard;
-            }
-            if (livePlayer.type === '時之惡' || livePlayer.id === 'sin') {
-                return (window.i18n && typeof window.i18n.getRoleName === 'function')
-                    ? window.i18n.getRoleName('時之惡')
-                    : '時之惡';
-            }
-            if (livePlayer.type === '受詛者' || livePlayer.id === 'SCZ') {
-                return (window.i18n && typeof window.i18n.getRoleName === 'function')
-                    ? window.i18n.getRoleName('受詛者')
-                    : '受詛者';
-            }
-            const m = String(livePlayer.id).match(/SM_(\d+)/);
-            if (m) return `幼體${m[1]}`;
-        }
-    }
-    const rawName = String(item.playerName || '');
-    const handMatch = rawName.match(/(時針|分針|秒針)/);
-    if (handMatch) return handMatch[1];
-    const numMatch = rawName.match(/(\d+)/);
-    if (numMatch) return `時魔${numMatch[1]}`;
-    return rawName.slice(0, 3) || '已出';
+    return '★我';
 }
 
 function renderDiscardPile(gameState, humanPlayer) {
@@ -1242,7 +1306,7 @@ function renderDiscardPile(gameState, humanPlayer) {
     const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
     const topCard = getTopDiscardCard(gameState);
 
-    // 更新計數標籤
+    // 更新個人棄牌計數標籤
     if (badgeEl) {
         badgeEl.textContent = String(allPlayed.length);
         if (allPlayed.length === 0) {
@@ -1263,29 +1327,26 @@ function renderDiscardPile(gameState, humanPlayer) {
                 stackEl.classList.remove('has-multiple');
             }
 
-            const pTag = formatDiscardPlayerShortTag(topCard, gameState);
-            const fullPlayerName = resolveCurrentPlayerName(topCard, gameState);
-
             stackEl.innerHTML = `
                 <div class="discard-top-card">
                     <div class="card-val">${topCard.value}</div>
                     <div class="card-gear">${topCard.gear ? '⚙️' : ''}</div>
-                    ${pTag ? `<div class="card-player-tag" title="${fullPlayerName}">${pTag}</div>` : ''}
+                    <div class="card-player-tag" title="你的棄牌">★我</div>
                 </div>
             `;
-            const tooltipStr = t('ui.discard_pile.tooltip', { count: allPlayed.length }) || `點擊查看本輪打出的所有牌 (共 ${allPlayed.length} 張)`;
+            const tooltipStr = t('ui.discard_pile.tooltip', { count: allPlayed.length }) || `點擊查看我的棄牌記錄 (共 ${allPlayed.length} 張)`;
             zoneEl.setAttribute('title', tooltipStr);
             zoneEl.setAttribute('aria-label', tooltipStr);
         } else {
             stackEl.classList.remove('has-cards', 'has-multiple');
-            const emptyTitle = t('ui.discard_pile.title') || '棄牌區';
+            const emptyTitle = t('ui.discard_pile.title') || '個人棄牌';
             stackEl.innerHTML = `
                 <div class="discard-card-empty">
                     <span class="discard-empty-icon">🎴</span>
                     <span class="discard-empty-text">${emptyTitle}</span>
                 </div>
             `;
-            const emptySub = t('ui.discard_pile.empty_sub') || '尚無棄牌 · 點擊查看本輪記錄';
+            const emptySub = t('ui.discard_pile.empty_sub') || '尚無棄牌 · 點擊查看個人記錄';
             zoneEl.setAttribute('title', emptySub);
             zoneEl.setAttribute('aria-label', emptySub);
         }
@@ -1309,17 +1370,17 @@ function renderDiscardPileModal(gameState) {
         roundBadge.textContent = t('ui.labels.game_round', { round: currentRound }) || `第 ${currentRound} 局`;
     }
     if (countBadge) {
-        countBadge.textContent = t('ui.discard_pile.cards_count', { count: allPlayed.length }) || `已打出 ${allPlayed.length} 張`;
+        countBadge.textContent = `已棄 ${allPlayed.length} 張`;
     }
 
-    // 1. 依回合記錄時間線
+    // 1. 依回合記錄時間線（僅顯示玩家個人的出牌記錄）
     if (timelineList) {
         timelineList.innerHTML = '';
         if (allPlayed.length === 0) {
             const emptyTip = document.createElement('div');
             emptyTip.className = 'discard-empty-placeholder';
             emptyTip.style.cssText = 'text-align: center; color: #888; padding: 25px 0; font-size: 0.95rem;';
-            emptyTip.textContent = t('ui.discard_pile.empty') || '本局尚無任何打出的卡牌記錄。';
+            emptyTip.textContent = t('ui.discard_pile.empty') || '本局你尚未打出任何卡牌。';
             timelineList.appendChild(emptyTip);
         } else {
             // 依回合 (roundMarker) 分群
@@ -1341,13 +1402,12 @@ function renderDiscardPileModal(gameState) {
                 trickCardEl.className = 'discard-trick-card';
 
                 const trickTitle = t('ui.discard_pile.trick_title', { trick: tr }) || `第 ${tr} 回合`;
-                const countText = t('ui.discard_pile.cards_count', { count: trickCards.length }) || `${trickCards.length} 張`;
 
                 const trickHeaderEl = document.createElement('div');
                 trickHeaderEl.className = 'discard-trick-header';
                 trickHeaderEl.innerHTML = `
                     <span>${trickTitle}</span>
-                    <span style="font-weight: normal; font-size: 0.8rem; color: #a0aec0;">${countText}</span>
+                    <span style="font-weight: normal; font-size: 0.8rem; color: #ffd27f;">你的棄牌</span>
                 `;
                 trickCardEl.appendChild(trickHeaderEl);
 
@@ -1357,13 +1417,9 @@ function renderDiscardPileModal(gameState) {
                 // 回合內卡牌依點數由大到小展示
                 [...trickCards].sort((a, b) => b.value - a.value).forEach(cardItem => {
                     const chip = document.createElement('div');
-                    chip.className = `discard-entry-chip ${cardItem.isHuman ? 'is-human' : ''}`;
-                    const liveName = resolveCurrentPlayerName(cardItem, gameState);
-                    const pName = cardItem.isHuman
-                        ? `${liveName} (${t('ui.labels.you_tag') || '你'})`
-                        : liveName;
+                    chip.className = 'discard-entry-chip is-human';
                     chip.innerHTML = `
-                        <span class="entry-player">${pName}:</span>
+                        <span class="entry-player">★我:</span>
                         <span class="entry-card-val">[ ${cardItem.value} ]</span>
                         ${cardItem.gear ? `<span class="entry-gear" title="${cardItem.gear}">⚙️</span>` : ''}
                     `;
@@ -1376,7 +1432,7 @@ function renderDiscardPileModal(gameState) {
         }
     }
 
-    // 2. 數字盤 (1~60) 矩陣
+    // 2. 數字盤 (1~60) 矩陣（僅標註玩家自己打出的卡牌）
     if (matrixGrid) {
         matrixGrid.innerHTML = '';
         const playedMap = new Map();
@@ -1388,13 +1444,11 @@ function renderDiscardPileModal(gameState) {
             const cell = document.createElement('div');
             const found = playedMap.get(v);
             if (found) {
-                cell.className = `matrix-cell played ${found.isHuman ? 'is-human' : ''}`;
-                const whoText = formatDiscardPlayerShortTag(found, gameState);
-                const fullPlayerName = resolveCurrentPlayerName(found, gameState);
-                cell.title = `[${v}] ${fullPlayerName} (第 ${found.roundMarker} 回合打出)`;
+                cell.className = 'matrix-cell played is-human';
+                cell.title = `[${v}] 你的棄牌 (第 ${found.roundMarker} 回合打出)`;
                 cell.innerHTML = `
                     <span class="cell-num">${v}</span>
-                    <span class="cell-sub">${whoText}</span>
+                    <span class="cell-sub">★我</span>
                 `;
             } else {
                 cell.className = 'matrix-cell unplayed';
@@ -1437,9 +1491,24 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     }
 
     setText('h-hand-count', String(humanPlayer.hand.length));
-    setText('h-mana', String(humanPlayer.mana));
-    setText('h-gear', '⚙️'.repeat(Math.max(0, humanPlayer.gearCards)));
     setText('h-score', String(humanPlayer.score));
+
+    // 渲染立體機械生命齒輪鏈與發條乙太管
+    const gearChip = document.querySelector('.human-top-bar .resource-chip--gear');
+    if (gearChip) {
+        gearChip.classList.add('has-mech-gauge');
+        gearChip.innerHTML = createGearChainHtml(humanPlayer.gearCards, false, 'h-gear');
+    } else {
+        setText('h-gear', '⚙️'.repeat(Math.max(0, humanPlayer.gearCards)));
+    }
+
+    const manaChip = document.querySelector('.human-top-bar .resource-chip--mana');
+    if (manaChip) {
+        manaChip.classList.add('has-mech-gauge');
+        manaChip.innerHTML = createManaGaugeHtml(humanPlayer.mana, humanPlayer.gearCards, false, 'h-mana');
+    } else {
+        setText('h-mana', String(humanPlayer.mana));
+    }
     const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '驅逐';
     const notOnBoardLabel = window.i18n ? window.i18n.t('ui.labels.not_on_board') : '未上場';
     setText('h-pos', humanPlayer.isEjected ? ejectedLabel : String(humanPlayer.currentClockPosition || notOnBoardLabel));
@@ -2779,6 +2848,10 @@ function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, active
 }
 
 if (typeof window !== 'undefined') {
+    window.createGearChainHtml = createGearChainHtml;
+    window.createManaGaugeHtml = createManaGaugeHtml;
+    window.renderHumanPlayerArea = renderHumanPlayerArea;
+    window.renderAIPlayers = renderAIPlayers;
     window.renderDiscardPile = renderDiscardPile;
     window.renderDiscardPileModal = renderDiscardPileModal;
     window.getTopDiscardCard = getTopDiscardCard;

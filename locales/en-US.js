@@ -41,18 +41,18 @@
                 view_board: '👀 View Board'
             },
             discard_pile: {
-                title: 'Discard Pile',
+                title: 'My Discard Pile',
                 empty: 'No Discards',
-                empty_sub: 'Click to view played cards',
+                empty_sub: 'Click to view your discarded cards',
                 last_played: 'Last Played Card',
-                modal_title: 'Played Cards Record',
-                modal_subtitle: 'Round {round} · {count} Minute Cards',
+                modal_title: 'My Discard Record',
+                modal_subtitle: 'Round {round} · {count} cards discarded',
                 tab_timeline: 'By Trick / Round',
                 tab_matrix: 'Number Matrix (1~60)',
-                trick_title: 'Trick {trick}',
+                trick_title: 'Round {trick}',
                 cards_count: '{count} cards',
                 unplayed_count: '{count} remaining unplayed',
-                tooltip: 'Click to view all cards played this round ({count} cards)'
+                tooltip: 'Click to view your discarded cards ({count} cards)'
             },
             labels: {
                 you_are: 'You are: ',

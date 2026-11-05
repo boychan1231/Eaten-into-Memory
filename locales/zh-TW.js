@@ -41,18 +41,18 @@
                 view_board: '👀 查看盤面'
             },
             discard_pile: {
-                title: '棄牌區',
+                title: '個人棄牌區',
                 empty: '尚無棄牌',
-                empty_sub: '點擊查看本輪記錄',
+                empty_sub: '點擊查看個人棄牌記錄',
                 last_played: '上一張出牌',
-                modal_title: '本輪已出牌記錄',
-                modal_subtitle: '第 {round} 局 · 共 {count} 張分鐘卡',
+                modal_title: '我的棄牌記錄',
+                modal_subtitle: '第 {round} 局 · 共棄 {count} 張分鐘卡',
                 tab_timeline: '依回合記錄',
                 tab_matrix: '數字盤 (1~60)',
                 trick_title: '第 {trick} 回合',
                 cards_count: '{count} 張',
                 unplayed_count: '剩餘未出 {count} 張',
-                tooltip: '點擊查看本輪打出的所有牌 (共 {count} 張)'
+                tooltip: '點擊查看我的棄牌記錄 (共 {count} 張)'
             },
             labels: {
                 you_are: '您是：',
