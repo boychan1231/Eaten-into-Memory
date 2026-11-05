@@ -21,7 +21,7 @@
         cardGold: 0xffd27f
     };
 
-    const FONT_UI = 'Inter, "Noto Sans TC", "Microsoft JhengHei", sans-serif';
+    const FONT_UI = '"Noto Sans TC", Inter, "Microsoft JhengHei", sans-serif';
     const FONT_ROMAN = '"Cinzel", Inter, "Noto Sans TC", serif';
 
     const hexOf = (key, fallback = 0xffffff) => {
@@ -310,10 +310,26 @@
                 });
             }
 
+            this.host = host;
+            if (window.ResizeObserver) {
+                this._ro = new ResizeObserver(() => {
+                    this.syncRendererSize();
+                });
+                this._ro.observe(host);
+            }
             this.app.ticker.add(dt => this.onTick(dt));
         },
 
         // ---------- 1. 背景微光與微塵（與純黑網頁背景無縫融合） ----------
+        syncRendererSize() {
+            if (!this.app || !this.host) return;
+            const hw = Math.round(this.host.clientWidth);
+            const hh = Math.round(this.host.clientHeight);
+            if (hw > 0 && hh > 0 && (hw !== this.app.screen.width || hh !== this.app.screen.height)) {
+                this.app.renderer.resize(hw, hh);
+            }
+        },
+
         buildAmbientAndDust() {
             const g = new PIXI.Graphics();
             for (let i = 8; i >= 1; i--) {
@@ -666,7 +682,25 @@
                             const fn = (typeof window.handleHumanHourCardChoice === 'function')
                                 ? window.handleHumanHourCardChoice
                                 : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
-                            if (fn && gsNow) fn(gsNow, idx);
+                            if (!fn || !gsNow) return;
+
+                            if (typeof window.playHourCardDisintegrateAnimation === 'function') {
+                                const bounds = (typeof node.getBounds === 'function') ? node.getBounds() : { x: window.innerWidth / 2, y: window.innerHeight / 2, width: 56, height: 76 };
+                                const cardData = cards[idx] || {};
+                                window.playHourCardDisintegrateAnimation({
+                                    x: bounds.x,
+                                    y: bounds.y,
+                                    width: bounds.width,
+                                    height: bounds.height,
+                                    number: cardData.number,
+                                    ageGroup: cardData.ageGroup,
+                                    isPrecious: cardData.isPrecious
+                                }, () => {
+                                    fn(gsNow, idx);
+                                });
+                            } else {
+                                fn(gsNow, idx);
+                            }
                         }
                     };
                     node.on('pointertap', triggerSpotChoice);
@@ -731,7 +765,25 @@
                         const fn = (typeof window.handleHumanHourCardChoice === 'function')
                             ? window.handleHumanHourCardChoice
                             : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
-                        if (fn && gsNow) fn(gsNow, i);
+                        if (!fn || !gsNow) return;
+
+                        if (typeof window.playHourCardDisintegrateAnimation === 'function') {
+                            const bounds = (typeof c.getBounds === 'function') ? c.getBounds() : { x: window.innerWidth / 2, y: window.innerHeight / 2, width: 56, height: 76 };
+                            const cardData = drawn[i] || {};
+                            window.playHourCardDisintegrateAnimation({
+                                x: bounds.x,
+                                y: bounds.y,
+                                width: bounds.width,
+                                height: bounds.height,
+                                number: cardData.number,
+                                ageGroup: cardData.ageGroup,
+                                isPrecious: cardData.isPrecious
+                            }, () => {
+                                fn(gsNow, i);
+                            });
+                        } else {
+                            fn(gsNow, i);
+                        }
                     };
                     c.on('pointertap', triggerCardChoice);
                     c.on('click', triggerCardChoice);
@@ -968,6 +1020,7 @@
 
         // ---------- 每幀：自適應縮放、齒輪旋轉、鐘擺微擺、指針與棋子補間 ----------
         onTick(dt) {
+            this.syncRendererSize();
             const deltaSec = dt / 60;
             this.t += deltaSec;
 

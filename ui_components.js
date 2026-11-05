@@ -862,11 +862,18 @@ function renderClockFace(gameState, flags) {
                 const cardIndex = gameState.currentDrawnHourCards.findIndex(c => c.number === spot.position);
                 
                 if (cardIndex !== -1) {
-                    // 呼叫 game.js 暴露出的選擇函式
-                    if (typeof window.handleHumanHourCardChoice === 'function') {
-                        window.handleHumanHourCardChoice(gameState, cardIndex);
-                    } else if (typeof handleHumanHourCardChoice === 'function') {
-                        handleHumanHourCardChoice(gameState, cardIndex);
+                    const chosenCard = gameState.currentDrawnHourCards[cardIndex];
+                    const fn = (typeof window.handleHumanHourCardChoice === 'function')
+                        ? window.handleHumanHourCardChoice
+                        : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
+                    if (!fn) return;
+
+                    if (typeof window.playHourCardDisintegrateAnimation === 'function') {
+                        window.playHourCardDisintegrateAnimation(spotEl, () => {
+                            fn(gameState, cardIndex);
+                        }, chosenCard);
+                    } else {
+                        fn(gameState, cardIndex);
                     }
                 }
             };
@@ -1840,6 +1847,266 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 // 1. pointerdown（按下）：提升卡牌 zIndex 至最高層並記錄進入「拖曳中」狀態，註冊全域 Stage (window) 移動與放開事件。
 // 2. pointermove（移動）：綁定於整個視窗 Stage (window)，游標快速移動離開卡牌時也不會中斷，並以 !important 即時更新卡牌座標。
 // 3. pointerup / pointerupoutside (pointercancel / blur / mouseleave)：綁定於整個視窗 Stage，確保拖出視窗外放開也不會卡死，並恢復圖層與狀態。
+
+// --- 小時卡被挑選時「粒子消散（Disintegrate）」動態效果 ---
+// 小時卡被挑選時不立即消失，而是快速變得模糊往右上飄散並淡出，同時周圍冒出許多小方塊粒子往外飄走。
+// 配色依網站既有主題色（金色、古銅金、琥珀金、星芒金）自行搭配。
+window.playHourCardDisintegrateAnimation = function (target, onComplete, cardData) {
+    const host = document.body;
+    if (!host) {
+        if (typeof onComplete === 'function') onComplete();
+        return;
+    }
+
+    let rect = { left: 0, top: 0, width: 60, height: 80 };
+    let cardInfo = cardData || {};
+
+    if (target && target.nodeType === 1) {
+        try {
+            const r = target.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) {
+                rect = { left: r.left, top: r.top, width: r.width, height: r.height };
+            }
+        } catch (_) {}
+    } else if (target && typeof target === 'object' && typeof target.x === 'number') {
+        rect = {
+            left: target.x,
+            top: target.y,
+            width: target.width || 56,
+            height: target.height || 76
+        };
+        if (target.number !== undefined) cardInfo = target;
+    }
+
+    const container = document.createElement('div');
+    container.className = 'hour-disintegrate-container';
+    container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden;';
+    host.appendChild(container);
+
+    // 主題金調色盤：純金、琥珀金、星芒白金、古銅金、夕照金
+    const PALETTE = ['#ffd700', '#feca57', '#fff4d6', '#e6be6a', '#c8963e', '#ff9f43', '#ffffff', '#ffd27f'];
+
+    let completed = false;
+    const triggerComplete = () => {
+        if (completed) return;
+        completed = true;
+        if (typeof onComplete === 'function') onComplete();
+    };
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // --- 1. 衝擊波光環 (Shockwave Ring) ---
+    const shockwave = document.createElement('div');
+    shockwave.className = 'disintegrate-shockwave';
+    shockwave.style.cssText = [
+        'position: fixed',
+        'left: ' + (centerX - 40) + 'px',
+        'top: ' + (centerY - 40) + 'px',
+        'width: 80px',
+        'height: 80px',
+        'border-radius: 50%',
+        'border: 2px solid ' + (cardInfo.isPrecious ? '#ffd700' : '#ffeaa7'),
+        'box-shadow: 0 0 16px ' + (cardInfo.isPrecious ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 255, 255, 0.6)'),
+        'pointer-events: none',
+        'z-index: 100000',
+        'opacity: 0.95',
+        'transform: translate3d(0, 0, 0) scale(0.2)',
+        'will-change: transform, opacity'
+    ].join(';');
+    container.appendChild(shockwave);
+
+    if (window.gsap && typeof window.gsap.to === 'function') {
+        window.gsap.to(shockwave, {
+            scale: 2.2,
+            opacity: 0,
+            duration: 0.65,
+            ease: 'power2.out'
+        });
+    } else if (typeof shockwave.animate === 'function') {
+        shockwave.animate([
+            { transform: 'translate3d(0, 0, 0) scale(0.2)', opacity: 0.95 },
+            { transform: 'translate3d(0, 0, 0) scale(2.2)', opacity: 0 }
+        ], {
+            duration: 650,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+        });
+    }
+
+    // --- 2. 小時卡本體幽靈體 (Ghost Card) ---
+    const clone = document.createElement('div');
+    clone.className = 'drawn-hour-card is-disintegrating' + (cardInfo.isPrecious ? ' precious' : '');
+    clone.style.cssText = [
+        'position: fixed',
+        'left: ' + rect.left + 'px',
+        'top: ' + rect.top + 'px',
+        'width: ' + rect.width + 'px',
+        'height: ' + rect.height + 'px',
+        'margin: 0',
+        'opacity: 1',
+        'visibility: visible',
+        'pointer-events: none',
+        'z-index: 100001',
+        'transform: translate3d(0, 0, 0) rotate(0deg) scale(1)',
+        'filter: blur(0px) brightness(1)',
+        'will-change: transform, opacity, filter',
+        'background: ' + (cardInfo.isPrecious ? 'linear-gradient(135deg, #ffd700, #ffae19)' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)'),
+        'border-radius: 8px',
+        'border: 2px solid ' + (cardInfo.isPrecious ? '#ffd27f' : '#ffffff'),
+        'box-shadow: 0 0 20px rgba(255, 215, 0, 0.75)',
+        'display: flex',
+        'flex-direction: column',
+        'align-items: center',
+        'justify-content: center',
+        'color: #1a1f36',
+        'font-family: inherit'
+    ].join(';');
+
+    const numVal = (cardInfo && cardInfo.number !== undefined) ? cardInfo.number : '';
+    const ageVal = (cardInfo && cardInfo.ageGroup) ? cardInfo.ageGroup : '';
+    const starVal = cardInfo && cardInfo.isPrecious ? '★' : '';
+
+    clone.innerHTML = '<div style="font-size:1.35rem;font-weight:800;line-height:1;">' + numVal + '</div>' +
+                      (ageVal ? '<div style="font-size:0.7rem;color:#4a5170;margin-top:2px;font-weight:600;">' + ageVal + '</div>' : '') +
+                      (starVal ? '<div style="font-size:0.95rem;color:#7a5a00;font-weight:bold;">★</div>' : '');
+
+    container.appendChild(clone);
+
+    // 卡牌本體動態：先懸浮充能放大，隨後裂解、強烈高斯模糊、往右上大幅飄散並淡出
+    const cardTargetX = 90 + Math.random() * 35;     // 往右偏移 +90~+125px
+    const cardTargetY = -(95 + Math.random() * 35);   // 往上偏移 -95~-130px
+    const cardRot = 16 + Math.random() * 12;          // 順時針傾斜 +16~+28deg
+
+    if (window.gsap && typeof window.gsap.timeline === 'function') {
+        const tl = window.gsap.timeline();
+        // 階段一：充能浮起 (0 ~ 0.2s)
+        tl.to(clone, {
+            y: -10,
+            scale: 1.1,
+            filter: 'blur(0px) brightness(1.35)',
+            boxShadow: '0 0 28px rgba(255, 215, 0, 0.95)',
+            duration: 0.2,
+            ease: 'power1.out'
+        });
+        // 階段二：劇烈模糊、加速往右上解構消散 (0.2s ~ 0.95s)
+        tl.to(clone, {
+            x: cardTargetX,
+            y: cardTargetY,
+            rotation: cardRot,
+            scale: 0.82,
+            opacity: 0,
+            filter: 'blur(16px) brightness(1.4)',
+            duration: 0.75,
+            ease: 'power2.inOut'
+        });
+    } else if (typeof clone.animate === 'function') {
+        clone.animate([
+            { transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)', opacity: 1, filter: 'blur(0px) brightness(1)', offset: 0 },
+            { transform: 'translate3d(0, -10px, 0) rotate(2deg) scale(1.1)', opacity: 1, filter: 'blur(1px) brightness(1.35)', offset: 0.22 },
+            { transform: 'translate3d(' + cardTargetX + 'px, ' + cardTargetY + 'px, 0) rotate(' + cardRot + 'deg) scale(0.82)', opacity: 0, filter: 'blur(16px) brightness(1.4)', offset: 1 }
+        ], {
+            duration: 950,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+        });
+    }
+
+    // --- 3. 粒子系統（雙軌粒子：42 顆金屬方塊碎屑 + 20 顆懸浮星光金塵）---
+    const totalParticles = 62;
+    for (let i = 0; i < totalParticles; i++) {
+        const isStardust = i >= 42; // 後 20 顆為細緻飄浮星塵
+        const p = document.createElement('div');
+        p.className = isStardust ? 'disintegrate-stardust' : 'disintegrate-particle';
+
+        const size = isStardust
+            ? (Math.random() * 2.5 + 2) // 2px ~ 4.5px 微星塵
+            : (Math.floor(Math.random() * 6) + 4); // 4px ~ 9px 方塊碎屑
+        const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+
+        const startX = rect.left + 2 + Math.random() * (rect.width - 4);
+        const startY = rect.top + 2 + Math.random() * (rect.height - 4);
+
+        let pTargetX, pTargetY, pRot, duration, delay;
+
+        if (isStardust) {
+            // 星塵：微向上緩慢浮動，如時間金沙
+            pTargetX = (Math.random() - 0.3) * 60;
+            pTargetY = -(60 + Math.random() * 90);
+            pRot = (Math.random() - 0.5) * 90;
+            duration = 0.85 + Math.random() * 0.35; // 0.85s ~ 1.2s
+            delay = 0.08 + Math.random() * 0.22;
+        } else {
+            // 方塊碎屑：75% 集中往右上弧形拋射，25% 向四周震盪
+            const isUpperRight = Math.random() < 0.75;
+            const angle = isUpperRight
+                ? ((-10 - Math.random() * 95) * Math.PI) / 180 // -10deg 到 -105deg
+                : (Math.random() * Math.PI * 2);
+
+            const distance = isUpperRight
+                ? (70 + Math.random() * 110) // 70px ~ 180px 大幅噴灑
+                : (30 + Math.random() * 65);
+
+            pTargetX = Math.cos(angle) * distance;
+            pTargetY = Math.sin(angle) * distance;
+            pRot = (Math.random() - 0.5) * 720; // 充分自轉
+            duration = 0.68 + Math.random() * 0.32; // 0.68s ~ 1.0s
+            delay = 0.05 + Math.random() * 0.18;
+        }
+
+        p.style.cssText = [
+            'position: fixed',
+            'left: ' + startX + 'px',
+            'top: ' + startY + 'px',
+            'width: ' + size + 'px',
+            'height: ' + size + 'px',
+            'background-color: ' + color,
+            'border-radius: ' + (isStardust ? '50%' : '2px'),
+            'box-shadow: 0 0 ' + (isStardust ? '6px ' + color : Math.max(3, size - 1) + 'px ' + color),
+            'pointer-events: none',
+            'z-index: 100002',
+            'transform: translate3d(0, 0, 0) rotate(0deg) scale(1)',
+            'opacity: ' + (0.9 + Math.random() * 0.1),
+            'will-change: transform, opacity'
+        ].join(';');
+        container.appendChild(p);
+
+        if (window.gsap && typeof window.gsap.to === 'function') {
+            window.gsap.to(p, {
+                x: pTargetX,
+                y: pTargetY,
+                rotation: pRot,
+                scale: isStardust ? 0.3 : 0.1,
+                opacity: 0,
+                duration: duration,
+                delay: delay,
+                ease: isStardust ? 'power1.out' : 'power2.out'
+            });
+        } else if (typeof p.animate === 'function') {
+            p.animate([
+                { transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)', opacity: 1 },
+                { transform: 'translate3d(' + pTargetX + 'px, ' + pTargetY + 'px, 0) rotate(' + pRot + 'deg) scale(' + (isStardust ? 0.3 : 0.1) + ')', opacity: 0 }
+            ], {
+                duration: duration * 1000,
+                delay: delay * 1000,
+                easing: isStardust ? 'ease-out' : 'cubic-bezier(0.16, 1, 0.3, 1)',
+                fill: 'forwards'
+            });
+        }
+    }
+
+    // 在約 780ms 時交棒給後續邏輯（此時卡牌已徹底模糊分解並淡出，盤面接續切換更加順暢自然）
+    setTimeout(triggerComplete, 780);
+
+    // 1250ms 徹底銷毀粒子容器
+    setTimeout(() => {
+        triggerComplete();
+        if (container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
+    }, 1250);
+};
+
 function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     if (!cardEl || typeof cardEl.addEventListener !== 'function') return;
 
@@ -1849,6 +2116,8 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     let startX = 0;
     let startY = 0;
     let lastX = 0;
+    let lastY = 0;
+    let minDy = 0;
     let isDropReady = false;
     let hasCommitted = false;
 
@@ -1933,41 +2202,11 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
             window.gameAudio.playConfirm();
         }
 
-        // 飛入鐘面中心動畫後執行出牌
-        const clockEl = document.getElementById('clock-face');
-        if (typeof cardEl.getBoundingClientRect === 'function') {
-            const cardRect = cardEl.getBoundingClientRect();
-            let targetDx = 0, targetDy = 0;
-            if (window.Board && typeof window.Board.getClockCenter === 'function') {
-                const c = window.Board.getClockCenter();
-                targetDx = c.x - (cardRect.left + cardRect.width / 2);
-                targetDy = c.y - (cardRect.top + cardRect.height / 2);
-            } else if (clockEl && typeof clockEl.getBoundingClientRect === 'function') {
-                const clockRect = clockEl.getBoundingClientRect();
-                targetDx = (clockRect.left + clockRect.width / 2) - (cardRect.left + cardRect.width / 2);
-                targetDy = (clockRect.top + clockRect.height / 2) - (cardRect.top + cardRect.height / 2);
-            }
-            const currentDx = parseFloat(cardEl.dataset.dragDx || '0');
-            const currentDy = parseFloat(cardEl.dataset.dragDy || '0');
-            cardEl.classList.remove('is-dragging', 'is-drop-ready', 'is-retrieving');
-            cardEl.classList.add('is-committing');
-            cardEl.style.setProperty('z-index', '9999', 'important');
-            cardEl.style.setProperty('transform', `translate3d(${currentDx + targetDx}px, ${currentDy + targetDy}px, 0) scale(0.35)`, 'important');
-            cardEl.style.opacity = '0';
-
-            setTimeout(() => {
-                const ok = playFn(gs, cardValue);
-                if (ok) {
-                    uiState.selectedCardValue = null;
-                    updateUI(gs);
-                }
-            }, 170);
-        } else {
-            const ok = playFn(gs, cardValue);
-            if (ok) {
-                uiState.selectedCardValue = null;
-                updateUI(gs);
-            }
+        cardEl.classList.remove('is-dragging', 'is-drop-ready', 'is-retrieving');
+        const ok = playFn(gs, cardValue);
+        if (ok) {
+            uiState.selectedCardValue = null;
+            updateUI(gs);
         }
     };
 
@@ -1978,8 +2217,15 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
 
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
+        const vy = e.clientY - lastY; // 當前垂直速度：正值代表向下移動，負值代表向上移動
         const vx = Math.max(-14, Math.min(14, (e.clientX - lastX) * 0.65));
         lastX = e.clientX;
+        lastY = e.clientY;
+
+        // 記錄拖曳歷程中的最高點（dy 越負代表向上拉得越高）
+        if (dy < minDy) {
+            minDy = dy;
+        }
 
         cardEl.dataset.dragDx = String(dx);
         cardEl.dataset.dragDy = String(dy);
@@ -1987,8 +2233,8 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         const inCancelZone = checkIsInCancelZone(e.clientX, e.clientY, dy);
         const inClock = checkIsInsideClock(e.clientX, e.clientY);
 
-        // 只有當卡牌曾明顯拉出手牌區（向上拖曳超過 60px 或離開手牌塢範圍）時，才標記已拖出
-        if (!inCancelZone || dy < -60 || inClock) {
+        // 只有當卡牌曾明顯拉出（向上拉超過 70px 或進入鐘面）時，才標記為曾拖出
+        if (minDy < -70 || inClock) {
             hasDraggedOut = true;
         }
 
@@ -2000,8 +2246,14 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
             setClockDropHighlight(isDropReady);
         }
 
-        // ✅ 「收回」只在手牌曾被拖出、且現在被拖回手牌區域中才顯示
-        const isRetrieving = hasDraggedOut && inCancelZone && !isDropReady;
+        // ✅ 「收回」判斷：只在玩家「向下 / 向手牌區拖動卡牌時」才作顯示！
+        // 1. 向上拖出準備出牌時（dy 靠近歷史最高點且未明顯向下拉回），絕不顯示「收回」
+        // 2. 只有當卡牌曾被拖出 (hasDraggedOut)、非出牌狀態 (!isDropReady)，
+        //    且玩家從最高點往下拉回 (dy - minDy >= 20) 並正朝手牌區移動 (vy > 0 || inCancelZone) 時，才顯示「收回」
+        const isPullingDown = (dy - minDy) >= 20;
+        const isMovingTowardsHand = vy > 0 || inCancelZone;
+        const isRetrieving = hasDraggedOut && !isDropReady && isPullingDown && isMovingTowardsHand;
+
         cardEl.classList.toggle('is-retrieving', isRetrieving);
         if (isRetrieving) {
             ensureRetrieveBadge();
@@ -2016,6 +2268,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     const resetCardToHand = () => {
         isDropReady = false;
         hasDraggedOut = false;
+        minDy = 0;
         setClockDropHighlight(false);
         removeRetrieveBadge();
         cardEl.classList.remove('is-dragging', 'is-drop-ready', 'is-retrieving');
@@ -2074,6 +2327,8 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         startX = e.clientX;
         startY = e.clientY;
         lastX = e.clientX;
+        lastY = e.clientY;
+        minDy = 0;
         isDropReady = false;
         cardEl.dataset.dragDx = '0';
         cardEl.dataset.dragDy = '0';
@@ -2105,10 +2360,10 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
 }
 
 // --- 分鐘卡比大小與次序排列（Minute Clash）動態演出（由 AnimationController 統一納管）---
-// 階段 1 (0.00s ~ 1.50s)：[集結] 各玩家蓋牌匯聚於鐘面中央（為聯網對戰預留出牌同步緩衝，停留 1.5 秒）
-// 階段 2 (1.50s ~ 3.00s)：全體 3D 翻牌揭曉分鐘數值與齒輪數（停留 1.5 秒看清點數）
-// 階段 3 (3.00s ~ 5.00s)：依數值由大到小執行交錯換位並浮現 1st~5th 次序（1.4s 弧線換位 + 徽章彈出）
-// 5.00s ~ 10.00s：次序確立，常駐展示並啟動 5 秒倒數計時（點擊畫面任意處亦可提前跳過退場）
+// 階段 1 (0.00s ~ 0.75s)：[集結] 各玩家蓋牌匯聚於鐘面中央（卡牌集合後停留 0.75 秒，減少一半節奏更明快）
+// 階段 2 (0.75s ~ 2.25s)：全體 3D 翻牌揭曉分鐘數值與齒輪數（停留 1.5 秒看清點數）
+// 階段 3 (2.25s ~ 4.25s)：依數值由大到小執行交錯換位並浮現 1st~5th 次序（1.4s 弧線換位 + 徽章彈出）
+// 4.25s ~ 9.25s：次序確立，常駐展示並啟動 5 秒倒數計時（點擊畫面任意處亦可提前跳過退場）
 window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedChoices, onComplete) {
     const overlay = document.getElementById('minute-clash-overlay');
     if (!overlay || !Array.isArray(sortedChoices) || sortedChoices.length === 0) {
@@ -2243,7 +2498,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         }
     });
 
-    // 階段 1 (0.00s ~ 1.50s)：[集結] 各玩家蓋牌匯聚於鐘面中央（為聯網對戰預留出牌同步緩衝，停留 1.5 秒）
+    // 階段 1 (0.00s ~ 0.75s)：[集結] 各玩家蓋牌匯聚於鐘面中央（為聯網對戰預留出牌同步緩衝，停留 1.5 秒）
     clashTl.fromTo(banner,
         { opacity: 0, y: 12, scale: 0.94 },
         { opacity: 1, y: 0, scale: 1, duration: 0.24, ease: 'power2.out' },
@@ -2262,7 +2517,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         overlay.onclick = () => finishNow();
     }, null, 0.18);
 
-    // 階段 2 (1.50s ~ 3.00s)：全體卡牌一同 3D 翻牌揭曉數值與齒輪數（停留 1.5 秒看清點數）
+    // 階段 2 (0.75s ~ 2.25s)：全體卡牌一同 3D 翻牌揭曉數值與齒輪數（停留 1.5 秒看清點數）
     clashTl.call(() => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.revealing') : '🃏 揭曉各玩家打出的分鐘卡…';
@@ -2273,9 +2528,9 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
             window.gameAudio.playClick();
         }
-    }, null, 1.5);
+    }, null, 0.75);
 
-    // 階段 3 (3.00s ~ 5.00s)：比較數值大小，執行 FLIP 動態交錯換位並全體浮現 1st ~ 5th 名次
+    // 階段 3 (2.25s ~ 4.25s)：比較數值大小，執行 FLIP 動態交錯換位並全體浮現 1st ~ 5th 名次
     clashTl.call(() => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.comparing') : '⚡ 比較分鐘數值大小，排列行動次序…';
@@ -2322,18 +2577,18 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
         }
-    }, null, 3.0);
+    }, null, 2.25);
 
-    // 4.30s：換位滑行接近定點，全體次序標章（1st, 2nd, 3rd...）一同彈出顯示
+    // 3.55s：換位滑行接近定點，全體次序標章（1st, 2nd, 3rd...）一同彈出顯示
     clashTl.call(() => {
         if (finished) return;
         sortedChoices.forEach(item => {
             const slot = slotMap.get(item.playerId);
             if (slot) slot.classList.add('show-rank');
         });
-    }, null, 4.3);
+    }, null, 3.55);
 
-    // 5.00s ~ 10.00s：預設播放 5 秒後全數結束，次序正式確立，啟動 5 秒倒數計時自動關閉
+    // 4.25s ~ 9.25s：預設播放 5 秒後全數結束，次序正式確立，啟動 5 秒倒數計時自動關閉
     const setCountdownLabel = (sec) => {
         if (finished) return;
         titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.resolved') : '✨ 分鐘卡大小次序已確定！';
@@ -2344,12 +2599,12 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     };
 
     for (let s = 5; s >= 1; s--) {
-        clashTl.call(() => setCountdownLabel(s), null, 5.0 + (5 - s));
+        clashTl.call(() => setCountdownLabel(s), null, 4.25 + (5 - s));
     }
 
     clashTl.call(() => {
         finishNow();
-    }, null, 10.0);
+    }, null, 9.25);
 };
 
 // --- 分鐘手牌初次配置「發牌進入手牌區」動態觸發函式 ---
@@ -2435,7 +2690,18 @@ function renderDrawnHourCards(gameState, flags) {
                 cardEl.classList.add('clickable');
                 cardEl.addEventListener('click', () => {
                     const idx = gameState.currentDrawnHourCards.indexOf(card);
-                    handleHumanHourCardChoice(globalGameState, idx);
+                    const fn = (typeof window.handleHumanHourCardChoice === 'function')
+                        ? window.handleHumanHourCardChoice
+                        : (typeof handleHumanHourCardChoice === 'function' ? handleHumanHourCardChoice : null);
+                    if (!fn) return;
+
+                    if (typeof window.playHourCardDisintegrateAnimation === 'function') {
+                        window.playHourCardDisintegrateAnimation(cardEl, () => {
+                            fn(globalGameState, idx);
+                        }, card);
+                    } else {
+                        fn(globalGameState, idx);
+                    }
                 });
             }
             clockCenterEl.appendChild(cardEl);

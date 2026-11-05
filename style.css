@@ -12,7 +12,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -334,10 +334,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* --- 鐘面區域 --- */
 .clock-section {
-    width: min(500px, 90vw); 
-    height: min(500px, 90vw);
+    width: min(500px, 90vw, 70vh); 
+    height: auto;
     aspect-ratio: 1 / 1;
-	margin: 50px auto 20px auto;;
+	margin: 20px auto 20px auto;
 }
 
 #clock-face {
@@ -3352,4 +3352,26 @@ body {
 }
 .mech-mana-gauge--compact .aether-val {
     font-size: 0.78rem !important;
+}
+
+/* ---- 分鐘卡「粒子消散（Disintegrate）」動態樣式 ---- */
+.minute-disintegrate-container {
+    position: fixed !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    z-index: 99999 !important;
+    overflow: hidden !important;
+}
+.minute-card.is-disintegrating {
+    pointer-events: none !important;
+    user-select: none !important;
+    box-shadow: 0 0 16px rgba(255, 210, 127, 0.45), 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+    border-color: rgba(255, 210, 127, 0.85) !important;
+    will-change: transform, opacity, filter !important;
+}
+.disintegrate-particle {
+    position: fixed !important;
+    pointer-events: none !important;
+    border-radius: 1px !important;
+    will-change: transform, opacity !important;
 }

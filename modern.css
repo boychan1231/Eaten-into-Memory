@@ -14,7 +14,7 @@
 html, body { height: 100%; }
 
 body {
-    font-family: Inter, 'Noto Sans TC', system-ui, sans-serif;
+    font-family: 'Noto Sans TC', Inter, system-ui, -apple-system, sans-serif;
     color: var(--text);
     background-color: #020204;
     background:
@@ -353,12 +353,12 @@ details.hud-drawer:not([open]) {
 }
 details.hud-drawer[open] {
     display: block !important;
-    width: min(320px, 88vw) !important;
+    width: min(250px, 88vw) !important;
     height: auto !important;
     max-height: calc(100vh - 220px) !important;
     flex: 0 1 auto !important;
     min-height: 0 !important;
-    padding: 10px 12px !important;
+    padding: 7px 8px !important;
     background: rgba(6, 7, 11, 0.95) !important;
     border: 1px solid rgba(255, 210, 127, 0.28) !important;
     border-radius: 16px !important;
@@ -367,21 +367,21 @@ details.hud-drawer[open] {
     overflow-x: hidden !important;
     overflow-y: auto !important;
 }
-#players-panel-details[open] {
-    width: min(250px, 88vw) !important;
-    padding: 7px 8px !important;
-}
 
-/* 確保新架構下各獨立抽屜面板不受 style.css display:none 影響 */
+/* 確保新架構下所有懸浮抽屜內嵌面板不受舊樣式影響 */
+.hud-drawer .log-side-info,
 #players-panel-details .score-panel,
 #history-panel-details .history-panel,
-#played-panel-details #played-cards-panel {
+#played-panel-details #played-cards-panel,
+#evo-panel-details #evolution-progress-area,
+#log-panel-details #game-log-container {
     display: block !important;
     width: 100% !important;
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-shadow: none !important;
 }
 
 /* 左側各角色與積分抽屜內的即時積分榜微調 */
@@ -391,9 +391,10 @@ details.hud-drawer[open] {
     margin-bottom: 8px !important;
 }
 
-#players-panel-details .score-panel .deck-title,
-#history-panel-details .deck-title,
-#played-panel-details .deck-title {
+/* 所有抽屜子標題統一規範 */
+.hud-drawer .deck-title,
+.hud-drawer .evo-role-title,
+.hud-drawer .target-role-label {
     font-size: 0.8rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.08em !important;
@@ -454,28 +455,44 @@ details.hud-drawer[open] > .side-panel-summary::after {
     color: #fff4d6 !important;
 }
 
-/* 左側抽屜內容：日誌與進化、各角色狀態 */
+/* 抽屜內容排版統一：日誌、出牌、歷史、進化與各角色狀態 */
 #game-log-container {
     background: transparent !important;
     border: none !important;
     height: auto !important;
-    max-height: calc(100vh - 295px) !important;
+    max-height: calc(100vh - 285px) !important;
     overflow-y: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+#log-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
 }
 #log-list li {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: none !important;
-    border-left: 2.5px solid rgba(255, 210, 127, 0.3) !important;
-    border-radius: 6px !important;
-    margin-bottom: 4px !important;
-    padding: 4px 8px !important;
-    font-size: 0.78rem !important;
-    line-height: 1.4 !important;
+    background: rgba(14, 17, 26, 0.72) !important;
+    border: 1px solid rgba(255, 210, 127, 0.15) !important;
+    border-left: 3px solid rgba(255, 210, 127, 0.38) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+    margin-bottom: 0 !important;
+    padding: 5px 8px !important;
+    font-size: 0.76rem !important;
+    line-height: 1.38 !important;
     color: #c9cfe8 !important;
+    transition: border-color 0.18s ease;
+}
+#log-list li:hover {
+    border-color: rgba(255, 210, 127, 0.35) !important;
 }
 #log-list li:last-child {
-    border-left-color: var(--gold) !important;
-    background: linear-gradient(90deg, rgba(255, 210, 127, 0.16), transparent) !important;
+    border-color: rgba(255, 210, 127, 0.35) !important;
+    border-left: 3px solid var(--gold) !important;
+    background: linear-gradient(90deg, rgba(255, 210, 127, 0.16), rgba(14, 17, 26, 0.85)) !important;
     color: #fff !important;
 }
 #players-section,
@@ -645,40 +662,219 @@ details.hud-drawer[open] > .side-panel-summary::after {
     color: #ff9ff3 !important;
 }
 
-/* 右側抽屜內容：出牌/歷史/積分 */
-.panel-switcher {
-    margin: 0 !important;
-    gap: 4px !important;
-    background: rgba(0, 0, 0, 0.35);
-    padding: 3px;
-    border-radius: 10px;
+/* 抽屜列表容器與項目卡片統一規格 (全面套用各角色面板微卡風格) */
+#played-cards-list,
+#player-history-list,
+#score-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
 }
-.switch-btn {
-    margin: 0 !important;
-    padding: 4px 0 !important;
+
+/* 1. 積分榜條目 */
+.score-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     font-size: 0.78rem !important;
-    border-radius: 8px !important;
-    border: none !important;
-    background: transparent !important;
-    color: var(--dim) !important;
+    padding: 3px 6px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    transition: background 0.15s ease;
 }
-.switch-btn.active {
-    background: rgba(255, 210, 127, 0.16) !important;
+.score-row.leader {
+    background: rgba(255, 210, 127, 0.12) !important;
+    border-color: rgba(255, 210, 127, 0.35) !important;
+}
+.score-row .score-name {
+    font-weight: 700 !important;
+    font-size: 0.78rem !important;
+}
+.score-row .score-val {
+    font-family: 'Courier New', monospace !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    color: #fff !important;
+}
+.score-row.leader .score-val {
     color: var(--gold) !important;
-    border: 1px solid rgba(255, 210, 127, 0.35) !important;
-    box-shadow: none !important;
+    text-shadow: 0 0 6px rgba(255, 210, 127, 0.5) !important;
 }
-.log-side-info {
-    background: rgba(255, 255, 255, 0.025) !important;
-    border: 1px solid var(--line) !important;
-    box-shadow: none !important;
-    border-radius: 10px !important;
+
+/* 2. 出牌記錄條目卡片 */
+.player-history-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
+    background: rgba(14, 17, 26, 0.72) !important;
+    border: 1px solid rgba(255, 210, 127, 0.2) !important;
+    border-radius: 9px !important;
+    padding: 5px 7px !important;
+    position: relative !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.player-history-row:hover {
+    border-color: rgba(255, 210, 127, 0.42) !important;
+}
+.player-history-row .player-history-name {
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding-bottom: 3px !important;
+    margin-bottom: 2px !important;
+}
+.player-history-row .player-history-cards {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 3px !important;
+    width: 100% !important;
+    max-width: none !important;
     margin: 0 !important;
-    padding: 8px 10px !important;
+}
+.player-history-row .minute-chip {
+    height: 22px !important;
+    width: auto !important;
+    border-radius: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+}
+.player-history-row .minute-chip.empty {
+    opacity: 0.3 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 3. 本回合出牌條目卡片 */
+.played-card-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    background: rgba(14, 17, 26, 0.72) !important;
+    border: 1px solid rgba(255, 210, 127, 0.2) !important;
+    border-radius: 9px !important;
+    padding: 5px 8px !important;
+    position: relative !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.played-card-row:hover {
+    border-color: rgba(255, 210, 127, 0.42) !important;
+}
+.played-card-row .p-name {
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
     flex: 1 !important;
-    min-height: 0 !important;
-    max-height: 380px !important;
-    overflow-y: auto !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-right: 6px !important;
+}
+.played-card-row .p-val {
+    font-family: 'Courier New', monospace !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    color: var(--gold) !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    border: 1px solid rgba(255, 210, 127, 0.3) !important;
+    border-radius: 6px !important;
+    padding: 2px 8px !important;
+    min-width: 32px !important;
+    text-align: center !important;
+}
+.played-placeholder {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(14, 17, 26, 0.5) !important;
+    border: 1px dashed rgba(255, 210, 127, 0.25) !important;
+    border-radius: 9px !important;
+    padding: 12px 8px !important;
+    color: var(--dim) !important;
+    font-size: 0.78rem !important;
+    text-align: center !important;
+    margin: 0 !important;
+}
+
+/* 4. 能力與進化卡片樣式 */
+#evolution-progress-area {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+}
+#evolution-progress-area .target-role-header,
+#evolution-progress-area .evo-ability-panel {
+    background: rgba(14, 17, 26, 0.72) !important;
+    border: 1px solid rgba(255, 210, 127, 0.2) !important;
+    border-radius: 9px !important;
+    padding: 6px 8px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45) !important;
+    margin-bottom: 0 !important;
+}
+#evolution-progress-area .target-role-select {
+    width: 100% !important;
+    background: rgba(10, 12, 18, 0.9) !important;
+    border: 1px solid rgba(255, 210, 127, 0.3) !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+    padding: 4px 6px !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 6px !important;
+    outline: none;
+}
+#evolution-progress-area .condition-row {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    padding: 4px 6px !important;
+    margin-bottom: 4px !important;
+    font-size: 0.75rem !important;
+    line-height: 1.35 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+}
+#evolution-progress-area .condition-row.met {
+    background: rgba(46, 204, 113, 0.12) !important;
+    border-color: rgba(46, 204, 113, 0.35) !important;
+    color: #e8f8f0 !important;
+}
+#evolution-progress-area .evo-btn {
+    border-radius: 7px !important;
+    font-size: 0.8rem !important;
+    padding: 8px 6px !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+#evolution-progress-area .evo-desc {
+    font-size: 0.75rem !important;
+    color: #c9cfe8 !important;
+    margin-top: 2px !important;
 }
 
 /* ---- 中央舞台：全視野動態鐘面（全寬全高透明畫布，徹底免除平移邊界裁切） ---- */
@@ -962,7 +1158,7 @@ details.hud-drawer[open] > .side-panel-summary::after {
 /* ---- 底部操作台：無框懸浮手牌塢 + 暗金色手牌（無星芒） ---- */
 .human-area,
 #human-player-area {
-    max-width: 960px !important;
+    max-width: min(1360px, 98vw) !important;
     width: 100% !important;
     margin: 0 auto !important;
     padding: 2px 8px 4px 8px !important;
@@ -1073,14 +1269,20 @@ details.hud-drawer[open] > .side-panel-summary::after {
     width: 100% !important;
 }
 .hand-display {
+    display: flex !important;
+    flex-wrap: nowrap !important;
     justify-content: center !important;
-    gap: 5px !important;
+    align-items: center !important;
+    gap: clamp(2px, 0.4vw, 5px) !important;
     padding: 4px 0 !important;
+    max-width: 100% !important;
 }
 
 /* 暗金色分鐘手牌（無星芒、沉穩古銅金質感） */
 .minute-card {
-    width: clamp(34px, 3.1vw, 42px) !important;
+    width: clamp(28px, 2.6vw, 42px) !important;
+    flex: 0 1 auto !important;
+    min-width: 26px !important;
     height: clamp(48px, 4.5vw, 58px) !important;
     font-size: clamp(0.88rem, 1.25vw, 1.04rem) !important;
     font-weight: 800 !important;
@@ -2464,4 +2666,26 @@ details.hud-drawer[open] > .side-panel-summary::after {
 .discard-history-chip.empty {
     opacity: 0.35;
     color: #718096;
+}
+
+/* ---- 分鐘卡「粒子消散（Disintegrate）」動態樣式 ---- */
+.minute-disintegrate-container {
+    position: fixed !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    z-index: 99999 !important;
+    overflow: hidden !important;
+}
+.minute-card.is-disintegrating {
+    pointer-events: none !important;
+    user-select: none !important;
+    box-shadow: 0 0 16px rgba(255, 210, 127, 0.45), 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+    border-color: rgba(255, 210, 127, 0.85) !important;
+    will-change: transform, opacity, filter !important;
+}
+.disintegrate-particle {
+    position: fixed !important;
+    pointer-events: none !important;
+    border-radius: 1px !important;
+    will-change: transform, opacity !important;
 }

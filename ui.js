@@ -436,6 +436,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.stop === 'function') {
                 window.AutoNextRoundTimer.stop();
             }
+            if (window.TutorialModeManager && typeof window.TutorialModeManager.clearTutorialPointers === 'function') {
+                window.TutorialModeManager.clearTutorialPointers();
+            }
             if (!globalGameState) return;
 
             // 若處於「分針能力選擇中」，點擊此按鈕等同於「略過」

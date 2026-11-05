@@ -157,17 +157,19 @@
         },
         tutorial: {
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 Tutorial can be disabled in Settings</div>',
+            welcome_prefix: '<strong>✨ Welcome to Eaten into Memory!</strong><br>',
             step0_welcome: '<strong>✨ Welcome to Eaten into Memory!</strong><br>Click "<strong>Next Round</strong>" to reveal Hour Cards and start bidding.',
-            step1_drag_minute: '<strong>Step 1: Drag a Minute Card up to play</strong><br>Higher numbers pick Hour Cards first!',
+            step1_drag_minute: '<strong>Step 1: Drag a Minute Card up to play</strong><br>Drag toward the clock face and release.<br>💡 <strong>Tactics:</strong> Higher cards claim safe spots & memories; smaller cards stay off the clock face to safely avoid penalties!',
             step1_sec_ability_select: '<strong>Second Hand ({count}/2): Select 2 Minute Cards</strong><br>Click "Confirm Play" after picking 2 cards.',
             step1_sec_ability_confirm: '<strong>Second Hand: Click "Confirm Play"</strong><br>Commit both selected cards face-down!',
             step3_select_hour: '<strong>Step 3: Click a glowing Hour Space</strong><br>Move your piece there and claim the Hour Card!',
+            step3_no_hour_notice: '<strong>【Tactical Notice: Staying Off the Clock Face】</strong><br>🛡️ <strong>Advantage (Safety):</strong> You do not enter the clock face this round, <strong>completely avoiding</strong> gear/life penalties!<br>⚠️ <strong>Disadvantage:</strong> You gain no Hour Cards, delaying memory collection for character evolution.',
             penalty_sin: '<br><span style="color:#feca57;">⚠️ Current Rule: "Nearest to Sin penalized"!</span>',
             penalty_max: '<br><span style="color:#ff6b6b;">⚠️ Current Rule: "Highest Hour penalized"! Stay away from 12!</span>',
             step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend Mana to jump clockwise or counter-clockwise (or click Skip).',
             step_second_ability: '<strong>Second Hand:</strong> Choose 1 final card from the two committed Minute Cards!',
             step4_round_done: '<strong>Round Resolved!</strong> Click "Next Round" to begin the next round.',
-            step4_no_hour_card: '<strong>Round Ended: No Hour Card Acquired</strong><br>While staying off the clock face protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.<br>Click "<strong>Next Round</strong>" to continue.',
+            step4_no_hour_card: '<strong>【Tactical Notice: Staying Off the Clock Face】</strong><br>🛡️ <strong>Advantage (Safety):</strong> Off the clock face—gears are completely safe from penalties!<br>⚠️ <strong>Disadvantage:</strong> No Hour Card claimed, delaying evolution progress.<br>Click "<strong>Next Round</strong>" to continue!',
             step_next_round: '<strong>Click "Next Round"</strong><br>Resolve movements and start next round!'
         },
         logs: {
