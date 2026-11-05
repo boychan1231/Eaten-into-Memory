@@ -245,16 +245,30 @@
                     : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                 showTutorialPointer('#next-step-btn', welcomeMsg, 'left');
             } else {
-                if (shownSteps.has('step1_drag_minute') && shownSteps.has('step3_select_hour')) {
-                    shownSteps.add('step4_next_round');
-                }
                 const turnPrefix = gameState.roundMarker > 1
                     ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                     : '';
-                const roundDoneMsg = window.i18n
-                    ? window.i18n.t('tutorial.step4_round_done')
-                    : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
-                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg, 'left');
+
+                const humanPlayer = gameState.players ? gameState.players.find(p => p.id === humanId) : null;
+                const didPickHour = !!(humanPlayer && humanPlayer.pickedHourThisTurn);
+
+                if (didPickHour) {
+                    if (shownSteps.has('step1_drag_minute') && shownSteps.has('step3_select_hour')) {
+                        shownSteps.add('step4_next_round');
+                    }
+                    const roundDoneMsg = window.i18n
+                        ? window.i18n.t('tutorial.step4_round_done')
+                        : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
+                    showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg, 'left');
+                } else {
+                    // 玩家未取得小時卡（未進入鐘面）
+                    // 告知：雖然不進入鐘面能保護齒輪，卻沒法取得變身用的珍貴回憶卡
+                    // ⚠️ 特別約束：此內容不納入教學自動關閉計算中（不加入 CORE_STEPS，亦不標註 step4_next_round）
+                    const noHourMsg = window.i18n
+                        ? window.i18n.t('tutorial.step4_no_hour_card')
+                        : '<strong>回合結算：未取得小時卡</strong><br>雖然不進入鐘面能保護齒輪免受懲罰，卻沒法取得變身用的珍貴回憶卡。<br>點擊「<strong>下一回合</strong>」展開新回合競標！';
+                    showTutorialPointer('#next-step-btn', turnPrefix + noHourMsg, 'left');
+                }
             }
             return;
         }

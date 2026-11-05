@@ -1188,25 +1188,33 @@ function renderAIPlayers(gameState, humanId) {
     });
 }
 
-// --- D-0. 棄牌區與已出牌記錄 ---
+// --- D-0. 出牌記錄 (Played Cards Record) 與彈窗 ---
 function getTopDiscardCard(gameState) {
     if (!gameState) return null;
     const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
         ? window.getEffectiveHumanPlayerId()
         : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
 
-    // 棄牌區僅顯示玩家本人的棄牌：若暫存牌為人類出牌則採用
-    if (gameState.lastPlayedCard && (gameState.lastPlayedCard.playerId === humanId || gameState.lastPlayedCard.isHuman)) {
+    // 優先使用最後打出的卡牌
+    if (gameState.lastPlayedCard && gameState.lastPlayedCard.value !== undefined) {
         return gameState.lastPlayedCard;
     }
 
-    // 從 minuteDiscard 倒序搜尋人類玩家在棄牌堆中的最後一張牌
+    // 從 minuteDiscard 倒序搜尋最後一張牌
     const discard = gameState.minuteDiscard;
     if (Array.isArray(discard) && discard.length > 0) {
-        for (let i = discard.length - 1; i >= 0; i--) {
-            const entry = discard[i];
-            if (entry && (entry.playerId === humanId || entry.isHuman)) {
-                return entry;
+        const lastEntry = discard[discard.length - 1];
+        if (lastEntry) {
+            const val = (lastEntry.card && lastEntry.card.value !== undefined) ? lastEntry.card.value : lastEntry.value;
+            if (val !== undefined) {
+                return {
+                    value: val,
+                    gear: (lastEntry.card && lastEntry.card.gear !== undefined) ? lastEntry.card.gear : lastEntry.gear,
+                    playerId: lastEntry.playerId,
+                    playerName: lastEntry.playerName || '',
+                    roleType: lastEntry.roleType || '',
+                    isHuman: !!(lastEntry.isHuman || lastEntry.playerId === humanId)
+                };
             }
         }
     }
@@ -1222,14 +1230,10 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
     const result = [];
     const seenCards = new Set(); // 記錄本局已納入的卡牌點數，確保不重複
 
-    // ✅ 核心修改：棄牌區只納入玩家自己的棄牌
-    // 1. 本局已進入棄牌堆的人類卡牌
+    // 1. 本局已進入出牌記錄/棄牌堆的卡牌 (包含所有玩家)
     if (Array.isArray(gameState.minuteDiscard)) {
         gameState.minuteDiscard.forEach(item => {
             if (!item) return;
-            const isHuman = !!(item.isHuman || item.playerId === humanId);
-            if (!isHuman) return;
-
             const val = (item.card && item.card.value !== undefined) ? item.card.value : item.value;
             if (val !== undefined && !seenCards.has(val)) {
                 seenCards.add(val);
@@ -1241,19 +1245,16 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
                     roleType: item.roleType || '',
                     gameRound: item.gameRound || gameState.gameRound || 1,
                     roundMarker: item.roundMarker || 1,
-                    isHuman: true
+                    isHuman: !!(item.isHuman || item.playerId === humanId)
                 });
             }
         });
     }
 
-    // 2. 若當前回合正在比大小或選小時卡，尚未入堆的人類卡牌也併入
+    // 2. 若當前回合正在比大小或選小時卡，尚未入堆的卡牌也併入
     if (Array.isArray(gameState.currentMinuteChoices)) {
         gameState.currentMinuteChoices.forEach(c => {
             if (!c || !c.card || c.card.type === 'seconds_pending') return;
-            const isHuman = (c.playerId === humanId);
-            if (!isHuman) return;
-
             const val = c.card.value;
             if (typeof val === 'number' && !seenCards.has(val)) {
                 seenCards.add(val);
@@ -1265,7 +1266,7 @@ function getAllPlayedCardsInCurrentGameRound(gameState) {
                     roleType: c.roleType || '',
                     gameRound: gameState.gameRound || 1,
                     roundMarker: gameState.roundMarker || 1,
-                    isHuman: true
+                    isHuman: !!(c.isHuman || c.playerId === humanId)
                 });
             }
         });
@@ -1293,7 +1294,8 @@ function formatDiscardPlayerShortTag(item, gameState) {
     if (item.isHuman) {
         return t('ui.labels.you_tag') || '★我';
     }
-    return '★我';
+    const name = resolveCurrentPlayerName(item, gameState);
+    return name ? name.slice(0, 2) : 'AI';
 }
 
 function renderDiscardPile(gameState, humanPlayer) {
@@ -1306,7 +1308,7 @@ function renderDiscardPile(gameState, humanPlayer) {
     const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
     const topCard = getTopDiscardCard(gameState);
 
-    // 更新個人棄牌計數標籤
+    // 更新出牌計數標籤
     if (badgeEl) {
         badgeEl.textContent = String(allPlayed.length);
         if (allPlayed.length === 0) {
@@ -1327,26 +1329,28 @@ function renderDiscardPile(gameState, humanPlayer) {
                 stackEl.classList.remove('has-multiple');
             }
 
+            const tagText = topCard.isHuman ? (t('ui.labels.you_tag') || '★我') : formatDiscardPlayerShortTag(topCard, gameState);
+            const tagTitle = topCard.isHuman ? '你的出牌' : `${resolveCurrentPlayerName(topCard, gameState)} 的出牌`;
             stackEl.innerHTML = `
                 <div class="discard-top-card">
                     <div class="card-val">${topCard.value}</div>
                     <div class="card-gear">${topCard.gear ? '⚙️' : ''}</div>
-                    <div class="card-player-tag" title="你的棄牌">★我</div>
+                    <div class="card-player-tag ${topCard.isHuman ? 'is-human' : ''}" title="${tagTitle}">${tagText}</div>
                 </div>
             `;
-            const tooltipStr = t('ui.discard_pile.tooltip', { count: allPlayed.length }) || `點擊查看我的棄牌記錄 (共 ${allPlayed.length} 張)`;
+            const tooltipStr = t('ui.discard_pile.tooltip', { count: allPlayed.length }) || `點擊查看出牌記錄 (共 ${allPlayed.length} 張)`;
             zoneEl.setAttribute('title', tooltipStr);
             zoneEl.setAttribute('aria-label', tooltipStr);
         } else {
             stackEl.classList.remove('has-cards', 'has-multiple');
-            const emptyTitle = t('ui.discard_pile.title') || '個人棄牌';
+            const emptyTitle = t('ui.discard_pile.title') || '出牌記錄';
             stackEl.innerHTML = `
                 <div class="discard-card-empty">
-                    <span class="discard-empty-icon">🎴</span>
+                    <span class="discard-empty-icon">📜</span>
                     <span class="discard-empty-text">${emptyTitle}</span>
                 </div>
             `;
-            const emptySub = t('ui.discard_pile.empty_sub') || '尚無棄牌 · 點擊查看個人記錄';
+            const emptySub = t('ui.discard_pile.empty_sub') || '尚無出牌 · 點擊查看出牌記錄';
             zoneEl.setAttribute('title', emptySub);
             zoneEl.setAttribute('aria-label', emptySub);
         }
@@ -1360,27 +1364,101 @@ function renderDiscardPileModal(gameState) {
     const t = (k, p) => (window.i18n ? window.i18n.t(k, p) : null);
     const roundBadge = document.getElementById('discard-round-badge');
     const countBadge = document.getElementById('discard-count-badge');
+    const currentTrickList = document.getElementById('discard-current-trick-list');
+    const playerHistoryList = document.getElementById('discard-player-history-list');
     const timelineList = document.getElementById('discard-timeline-list');
     const matrixGrid = document.getElementById('discard-matrix-grid');
 
     const currentRound = gameState ? (gameState.gameRound || 1) : 1;
     const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+        ? window.getEffectiveHumanPlayerId()
+        : (typeof window.HUMAN_PLAYER_ID !== 'undefined' ? window.HUMAN_PLAYER_ID : 'SM_1');
 
     if (roundBadge) {
         roundBadge.textContent = t('ui.labels.game_round', { round: currentRound }) || `第 ${currentRound} 局`;
     }
     if (countBadge) {
-        countBadge.textContent = `已棄 ${allPlayed.length} 張`;
+        countBadge.textContent = `已出 ${allPlayed.length} 張`;
     }
 
-    // 1. 依回合記錄時間線（僅顯示玩家個人的出牌記錄）
+    // 1. 各角色歷程頁籤：本回合出牌 + 各角色出牌歷程
+    if (currentTrickList) {
+        currentTrickList.innerHTML = '';
+        const choices = (gameState && Array.isArray(gameState.currentMinuteChoices)) ? gameState.currentMinuteChoices : [];
+        if (choices.length > 0) {
+            const sortedChoices = [...choices].sort((a, b) => {
+                const valA = (a.card && typeof a.card.value === 'number') ? a.card.value : 999;
+                const valB = (b.card && typeof b.card.value === 'number') ? b.card.value : 999;
+                return valB - valA;
+            });
+
+            sortedChoices.forEach(choice => {
+                const isHuman = (choice.playerId === humanId || choice.isHuman);
+                const displayValue = (choice.card.type === 'seconds_pending') ? '??' : choice.card.value;
+                const roleKey = (choice.roleType && choice.roleType.includes('時魔')) ? '時魔' : choice.roleType;
+                const color = ROLE_COLORS[roleKey] || '#ccc';
+
+                const cardItem = document.createElement('div');
+                cardItem.className = `discard-current-card-item ${isHuman ? 'is-human' : ''}`;
+                cardItem.innerHTML = `
+                    <span class="player-lbl" style="color:${color}">${choice.playerName || '玩家'}</span>
+                    ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
+                    <span class="card-val-badge">${displayValue}</span>
+                    ${choice.card.gear ? '<span title="齒輪" style="color:#ffd27f; font-size:0.85rem;">⚙️</span>' : ''}
+                `;
+                currentTrickList.appendChild(cardItem);
+            });
+        } else {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'played-placeholder';
+            placeholder.style.cssText = 'color:#888; font-size:0.9rem; padding:8px 0;';
+            placeholder.textContent = (gameState && gameState.currentRoundAIChoices !== null) ? '（等待確認出牌）' : '（尚未出牌）';
+            currentTrickList.appendChild(placeholder);
+        }
+    }
+
+    if (playerHistoryList) {
+        playerHistoryList.innerHTML = '';
+        const players = (gameState && Array.isArray(gameState.players)) ? gameState.players : [];
+        players.forEach(player => {
+            const isHuman = (player.id === humanId);
+            const roleKey = (player.roleCard && player.roleCard.includes('時魔')) ? '時魔' : player.roleCard;
+            const color = ROLE_COLORS[roleKey] || '#ccc';
+
+            const row = document.createElement('div');
+            row.className = `discard-player-history-row ${isHuman ? 'is-human' : ''}`;
+
+            const historyArr = uiMinuteHistory[player.id] || [];
+            let chipsHtml = '';
+            for (let i = 0; i < UI_HISTORY_LIMIT; i++) {
+                const val = historyArr[i];
+                if (val !== undefined && val !== null) {
+                    chipsHtml += `<span class="discard-history-chip">${val}</span>`;
+                } else {
+                    chipsHtml += `<span class="discard-history-chip empty">—</span>`;
+                }
+            }
+
+            row.innerHTML = `
+                <div class="discard-player-history-name">
+                    <span style="color:${color}; font-weight:700;">${player.name}</span>
+                    ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
+                </div>
+                <div class="discard-player-history-chips">${chipsHtml}</div>
+            `;
+            playerHistoryList.appendChild(row);
+        });
+    }
+
+    // 2. 依回合記錄時間線（展示本局所有回合各玩家出牌）
     if (timelineList) {
         timelineList.innerHTML = '';
         if (allPlayed.length === 0) {
             const emptyTip = document.createElement('div');
             emptyTip.className = 'discard-empty-placeholder';
             emptyTip.style.cssText = 'text-align: center; color: #888; padding: 25px 0; font-size: 0.95rem;';
-            emptyTip.textContent = t('ui.discard_pile.empty') || '本局你尚未打出任何卡牌。';
+            emptyTip.textContent = t('ui.discard_pile.empty') || '本局尚未打出任何卡牌。';
             timelineList.appendChild(emptyTip);
         } else {
             // 依回合 (roundMarker) 分群
@@ -1391,7 +1469,7 @@ function renderDiscardPileModal(gameState) {
                 groupsByTrick[tr].push(item);
             });
 
-            // 由最新回合往最舊回合排（方便第一眼看到剛剛發生的）
+            // 由最新回合往最舊回合排
             const sortedTricks = Object.keys(groupsByTrick)
                 .map(Number)
                 .sort((a, b) => b - a);
@@ -1407,7 +1485,7 @@ function renderDiscardPileModal(gameState) {
                 trickHeaderEl.className = 'discard-trick-header';
                 trickHeaderEl.innerHTML = `
                     <span>${trickTitle}</span>
-                    <span style="font-weight: normal; font-size: 0.8rem; color: #ffd27f;">你的棄牌</span>
+                    <span style="font-weight: normal; font-size: 0.8rem; color: #ffd27f;">共出 ${trickCards.length} 張</span>
                 `;
                 trickCardEl.appendChild(trickHeaderEl);
 
@@ -1417,9 +1495,11 @@ function renderDiscardPileModal(gameState) {
                 // 回合內卡牌依點數由大到小展示
                 [...trickCards].sort((a, b) => b.value - a.value).forEach(cardItem => {
                     const chip = document.createElement('div');
-                    chip.className = 'discard-entry-chip is-human';
+                    const isHuman = !!cardItem.isHuman;
+                    chip.className = `discard-entry-chip ${isHuman ? 'is-human' : ''}`;
+                    const tag = isHuman ? '★我:' : `${resolveCurrentPlayerName(cardItem, gameState)}:`;
                     chip.innerHTML = `
-                        <span class="entry-player">★我:</span>
+                        <span class="entry-player">${tag}</span>
                         <span class="entry-card-val">[ ${cardItem.value} ]</span>
                         ${cardItem.gear ? `<span class="entry-gear" title="${cardItem.gear}">⚙️</span>` : ''}
                     `;
@@ -1432,7 +1512,7 @@ function renderDiscardPileModal(gameState) {
         }
     }
 
-    // 2. 數字盤 (1~60) 矩陣（僅標註玩家自己打出的卡牌）
+    // 3. 數字盤 (1~60) 矩陣（標註全場已打出的卡牌與玩家）
     if (matrixGrid) {
         matrixGrid.innerHTML = '';
         const playedMap = new Map();
@@ -1444,11 +1524,14 @@ function renderDiscardPileModal(gameState) {
             const cell = document.createElement('div');
             const found = playedMap.get(v);
             if (found) {
-                cell.className = 'matrix-cell played is-human';
-                cell.title = `[${v}] 你的棄牌 (第 ${found.roundMarker} 回合打出)`;
+                const isHuman = !!found.isHuman;
+                cell.className = `matrix-cell played ${isHuman ? 'is-human' : ''}`;
+                const who = isHuman ? '你' : resolveCurrentPlayerName(found, gameState);
+                cell.title = `[${v}] 由 ${who} (第 ${found.roundMarker} 回合) 打出`;
+                const subTag = isHuman ? '★我' : formatDiscardPlayerShortTag(found, gameState);
                 cell.innerHTML = `
                     <span class="cell-num">${v}</span>
-                    <span class="cell-sub">★我</span>
+                    <span class="cell-sub">${subTag}</span>
                 `;
             } else {
                 cell.className = 'matrix-cell unplayed';
@@ -1761,6 +1844,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     if (!cardEl || typeof cardEl.addEventListener !== 'function') return;
 
     let isDragging = false;
+    let hasDraggedOut = false; // 是否曾拖離手牌區（只有拖離後再拖回手牌區，才顯示「收回」）
     let activePointerId = null;
     let startX = 0;
     let startY = 0;
@@ -1768,7 +1852,25 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     let isDropReady = false;
     let hasCommitted = false;
 
-    const DROP_UP_THRESHOLD = 75; // 向上拖離超過 75px 即進入可出牌狀態
+    // 加大「拖拉回手牌不打出」的判定範圍 (Hitbox / Check box)
+    const checkIsInCancelZone = (clientX, clientY, dy) => {
+        // 1. 取得手牌區或玩家塢的判定範圍
+        const handEl = document.getElementById('human-hand') || document.getElementById('human-player-area');
+        if (handEl && typeof handEl.getBoundingClientRect === 'function') {
+            const rect = handEl.getBoundingClientRect();
+            // 大幅加大判定區：向上延伸 80px，左右各擴充 60px，向下延伸至螢幕底端
+            if (clientY >= (rect.top - 80) &&
+                clientX >= (rect.left - 60) &&
+                clientX <= (rect.right + 60)) {
+                return true;
+            }
+        }
+        // 2. 備用垂直位移判定：向上拖曳未超過 95px，或向下拉回 (dy >= -95) 均視為回收區
+        if (dy >= -95) {
+            return true;
+        }
+        return false;
+    };
 
     const checkIsInsideClock = (clientX, clientY) => {
         if (window.Board && typeof window.Board.isInsideClock === 'function') {
@@ -1798,6 +1900,22 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         document.removeEventListener('mouseleave', onStageMouseLeave);
     };
 
+    const removeRetrieveBadge = () => {
+        const b = cardEl.querySelector('.card-retrieve-badge');
+        if (b) b.remove();
+    };
+
+    const ensureRetrieveBadge = () => {
+        let b = cardEl.querySelector('.card-retrieve-badge');
+        if (!b) {
+            b = document.createElement('div');
+            b.className = 'card-retrieve-badge';
+            const retrieveText = (window.i18n ? window.i18n.t('ui.discard_pile.retrieve_badge') : null) || '↩ 收回';
+            b.textContent = retrieveText;
+            cardEl.appendChild(b);
+        }
+    };
+
     const commitCardPlay = () => {
         if (hasCommitted) return;
         const gs = window.globalGameState || gameState;
@@ -1809,6 +1927,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
 
         hasCommitted = true;
         setClockDropHighlight(false);
+        removeRetrieveBadge();
 
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
@@ -1830,7 +1949,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
             }
             const currentDx = parseFloat(cardEl.dataset.dragDx || '0');
             const currentDy = parseFloat(cardEl.dataset.dragDy || '0');
-            cardEl.classList.remove('is-dragging', 'is-drop-ready');
+            cardEl.classList.remove('is-dragging', 'is-drop-ready', 'is-retrieving');
             cardEl.classList.add('is-committing');
             cardEl.style.setProperty('z-index', '9999', 'important');
             cardEl.style.setProperty('transform', `translate3d(${currentDx + targetDx}px, ${currentDy + targetDy}px, 0) scale(0.35)`, 'important');
@@ -1852,7 +1971,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }
     };
 
-    // 2. pointermove（移動）：綁定於整個畫布/視窗（window），確保滑鼠快速移動離開卡牌時仍即時跟隨游標
+    // 2. pointermove（移動）：綁定於整個畫布/視窗（window），即時判定出牌 vs 收回手牌
     const onStagePointerMove = (e) => {
         if (!isDragging || hasCommitted) return;
         if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
@@ -1865,22 +1984,41 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         cardEl.dataset.dragDx = String(dx);
         cardEl.dataset.dragDy = String(dy);
 
-        const ready = (dy < -DROP_UP_THRESHOLD) || checkIsInsideClock(e.clientX, e.clientY);
+        const inCancelZone = checkIsInCancelZone(e.clientX, e.clientY, dy);
+        const inClock = checkIsInsideClock(e.clientX, e.clientY);
+
+        // 只有當卡牌曾明顯拉出手牌區（向上拖曳超過 60px 或離開手牌塢範圍）時，才標記已拖出
+        if (!inCancelZone || dy < -60 || inClock) {
+            hasDraggedOut = true;
+        }
+
+        const ready = !inCancelZone && (inClock || dy < -110);
+
         if (ready !== isDropReady) {
             isDropReady = ready;
             cardEl.classList.toggle('is-drop-ready', isDropReady);
             setClockDropHighlight(isDropReady);
         }
 
-        const scale = isDropReady ? 1.22 : 1.12;
-        // 使用 setProperty(..., 'important') 確保覆蓋任何 CSS hover !important 規則，畫面即時呈現卡牌移動
+        // ✅ 「收回」只在手牌曾被拖出、且現在被拖回手牌區域中才顯示
+        const isRetrieving = hasDraggedOut && inCancelZone && !isDropReady;
+        cardEl.classList.toggle('is-retrieving', isRetrieving);
+        if (isRetrieving) {
+            ensureRetrieveBadge();
+        } else {
+            removeRetrieveBadge();
+        }
+
+        const scale = isDropReady ? 1.22 : 1.10;
         cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
     };
 
     const resetCardToHand = () => {
         isDropReady = false;
+        hasDraggedOut = false;
         setClockDropHighlight(false);
-        cardEl.classList.remove('is-dragging', 'is-drop-ready');
+        removeRetrieveBadge();
+        cardEl.classList.remove('is-dragging', 'is-drop-ready', 'is-retrieving');
         cardEl.classList.add('is-returning');
         cardEl.style.removeProperty('transform');
         cardEl.style.removeProperty('z-index');
@@ -1891,12 +2029,13 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }, 260);
     };
 
-    // 3A. pointerup（正常放開）：解除拖曳狀態，若在可出牌區則出牌，否則恢復圖層並彈回原位
+    // 3A. pointerup（正常放開）：在出牌區則出牌，在收回區則彈回原手牌位
     const onStagePointerUp = (e) => {
         if (!isDragging) return;
         if (activePointerId !== null && e && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
 
         isDragging = false;
+        hasDraggedOut = false;
         activePointerId = null;
         detachStageListeners();
 
@@ -1907,29 +2046,30 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }
     };
 
-    // 3B. pointerupoutside（拖出視窗外放開或中斷）：防止拖到瀏覽器視窗外放開造成的卡死問題
+    // 3B. pointerupoutside（拖出視窗外放開或中斷）：防止拖出瀏覽器卡死
     const onStagePointerUpOutside = () => {
         if (!isDragging) return;
         isDragging = false;
+        hasDraggedOut = false;
         activePointerId = null;
         detachStageListeners();
         resetCardToHand();
     };
 
     const onStageMouseLeave = (e) => {
-        // 當滑鼠移出瀏覽器視窗且按鍵已鬆開時，視為 pointerupoutside
         if (isDragging && (!e || e.buttons === 0)) {
             onStagePointerUpOutside();
         }
     };
 
-    // 1. pointerdown（按下）：提升 zIndex 到最高層，記錄進入「拖曳中」狀態，並將 move/up 綁定到全域 Stage
+    // 1. pointerdown（按下）：提升 zIndex 到最高層，初始剛按下時絕不顯示「收回」
     cardEl.addEventListener('pointerdown', (e) => {
         if (e.button !== undefined && e.button !== 0) return;
         if (uiState.isSecondHandSelectingTwo || hasCommitted) return;
         if (typeof e.preventDefault === 'function') e.preventDefault();
 
         isDragging = true;
+        hasDraggedOut = false; // 初始剛按下時，尚未拖離手牌區
         activePointerId = e.pointerId !== undefined ? e.pointerId : null;
         startX = e.clientX;
         startY = e.clientY;
@@ -1938,10 +2078,11 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         cardEl.dataset.dragDx = '0';
         cardEl.dataset.dragDy = '0';
 
-        cardEl.classList.remove('is-returning');
+        cardEl.classList.remove('is-returning', 'is-retrieving');
         cardEl.classList.add('is-dragging');
+        removeRetrieveBadge(); // 剛按下手牌時絕不顯示「收回」
         cardEl.style.setProperty('z-index', '9999', 'important');
-        cardEl.style.setProperty('transform', 'translate3d(0px, -6px, 0) scale(1.12)', 'important');
+        cardEl.style.setProperty('transform', 'translate3d(0px, -6px, 0) scale(1.10)', 'important');
 
         window.addEventListener('pointermove', onStagePointerMove);
         window.addEventListener('pointerup', onStagePointerUp);

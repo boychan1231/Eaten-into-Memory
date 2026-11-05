@@ -41,18 +41,20 @@
                 view_board: '👀 查看盤面'
             },
             discard_pile: {
-                title: '個人棄牌區',
-                empty: '尚無棄牌',
-                empty_sub: '點擊查看個人棄牌記錄',
+                title: '出牌記錄',
+                empty: '尚無出牌',
+                empty_sub: '點擊查看出牌記錄',
                 last_played: '上一張出牌',
-                modal_title: '我的棄牌記錄',
-                modal_subtitle: '第 {round} 局 · 共棄 {count} 張分鐘卡',
+                modal_title: '📜 出牌記錄',
+                modal_subtitle: '第 {round} 局 · 共出 {count} 張分鐘卡',
+                tab_history: '各角色歷程',
                 tab_timeline: '依回合記錄',
                 tab_matrix: '數字盤 (1~60)',
                 trick_title: '第 {trick} 回合',
                 cards_count: '{count} 張',
                 unplayed_count: '剩餘未出 {count} 張',
-                tooltip: '點擊查看我的棄牌記錄 (共 {count} 張)'
+                tooltip: '點擊查看出牌記錄 (共 {count} 張)',
+                retrieve_badge: '↩ 收回'
             },
             labels: {
                 you_are: '您是：',
@@ -165,6 +167,7 @@
             step_minute_ability: '<strong>分針能力：選擇移動方向</strong><br>可消耗 Mana 順時針或逆時針跳躍至下一個有小時卡的格子（若想保留 Mana 可點擊略過）。',
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
             step4_round_done: '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
+            step4_no_hour_card: '<strong>回合結算：未取得小時卡</strong><br>雖然不進入鐘面能保護齒輪免受懲罰，卻沒法取得變身用的珍貴回憶卡。<br>點擊「<strong>下一回合</strong>」展開新回合競標！',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合！'
         },
         logs: {
@@ -194,6 +197,7 @@
 							<li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
+							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
 						</ul>
 					</div>
 

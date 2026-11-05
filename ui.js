@@ -1004,12 +1004,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 🗂️ 棄牌區彈窗控制
+    // 🗂️ 出牌記錄彈窗控制
     const discardPileZone = document.getElementById('discard-pile-zone');
     const discardOverlay = document.getElementById('discard-pile-overlay');
     const discardCloseBtn = document.getElementById('discard-pile-close-btn');
+    const tabDiscardHistory = document.getElementById('tab-discard-history');
     const tabDiscardTimeline = document.getElementById('tab-discard-timeline');
     const tabDiscardMatrix = document.getElementById('tab-discard-matrix');
+    const contentDiscardHistory = document.getElementById('discard-tab-history');
     const contentDiscardTimeline = document.getElementById('discard-tab-timeline');
     const contentDiscardMatrix = document.getElementById('discard-tab-matrix');
 
@@ -1048,23 +1050,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 棄牌彈窗標籤頁切換
-    if (tabDiscardTimeline && tabDiscardMatrix) {
-        tabDiscardTimeline.addEventListener('click', () => {
-            if (window.gameAudio) window.gameAudio.playClick();
-            tabDiscardTimeline.classList.add('active');
-            tabDiscardMatrix.classList.remove('active');
-            if (contentDiscardTimeline) contentDiscardTimeline.classList.add('active');
-            if (contentDiscardMatrix) contentDiscardMatrix.classList.remove('active');
-        });
+    // 出牌記錄彈窗標籤頁切換 (各角色歷程 / 依回合記錄 / 數字盤)
+    const switchDiscardTab = (activeTab) => {
+        if (window.gameAudio) window.gameAudio.playClick();
+        if (tabDiscardHistory) tabDiscardHistory.classList.toggle('active', activeTab === 'history');
+        if (tabDiscardTimeline) tabDiscardTimeline.classList.toggle('active', activeTab === 'timeline');
+        if (tabDiscardMatrix) tabDiscardMatrix.classList.toggle('active', activeTab === 'matrix');
 
-        tabDiscardMatrix.addEventListener('click', () => {
-            if (window.gameAudio) window.gameAudio.playClick();
-            tabDiscardMatrix.classList.add('active');
-            tabDiscardTimeline.classList.remove('active');
-            if (contentDiscardMatrix) contentDiscardMatrix.classList.add('active');
-            if (contentDiscardTimeline) contentDiscardTimeline.classList.remove('active');
-        });
+        if (contentDiscardHistory) contentDiscardHistory.classList.toggle('active', activeTab === 'history');
+        if (contentDiscardTimeline) contentDiscardTimeline.classList.toggle('active', activeTab === 'timeline');
+        if (contentDiscardMatrix) contentDiscardMatrix.classList.toggle('active', activeTab === 'matrix');
+    };
+
+    if (tabDiscardHistory) {
+        tabDiscardHistory.addEventListener('click', () => switchDiscardTab('history'));
+    }
+    if (tabDiscardTimeline) {
+        tabDiscardTimeline.addEventListener('click', () => switchDiscardTab('timeline'));
+    }
+    if (tabDiscardMatrix) {
+        tabDiscardMatrix.addEventListener('click', () => switchDiscardTab('matrix'));
     }
 
     // 點擊視窗外部也可以關閉 (選用)

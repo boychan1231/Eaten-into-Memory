@@ -41,18 +41,20 @@
                 view_board: '👀 View Board'
             },
             discard_pile: {
-                title: 'My Discard Pile',
-                empty: 'No Discards',
-                empty_sub: 'Click to view your discarded cards',
+                title: 'Played Cards Record',
+                empty: 'No Cards Played',
+                empty_sub: 'Click to view played cards record',
                 last_played: 'Last Played Card',
-                modal_title: 'My Discard Record',
-                modal_subtitle: 'Round {round} · {count} cards discarded',
+                modal_title: '📜 Played Cards Record',
+                modal_subtitle: 'Round {round} · {count} cards played',
+                tab_history: 'Player History',
                 tab_timeline: 'By Trick / Round',
                 tab_matrix: 'Number Matrix (1~60)',
                 trick_title: 'Round {trick}',
                 cards_count: '{count} cards',
                 unplayed_count: '{count} remaining unplayed',
-                tooltip: 'Click to view your discarded cards ({count} cards)'
+                tooltip: 'Click to view played cards record ({count} cards)',
+                retrieve_badge: '↩ Retrieve'
             },
             labels: {
                 you_are: 'You are: ',
@@ -165,6 +167,7 @@
             step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend Mana to jump clockwise or counter-clockwise (or click Skip).',
             step_second_ability: '<strong>Second Hand:</strong> Choose 1 final card from the two committed Minute Cards!',
             step4_round_done: '<strong>Round Resolved!</strong> Click "Next Round" to begin the next round.',
+            step4_no_hour_card: '<strong>Round Ended: No Hour Card Acquired</strong><br>While staying off the clock face protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.<br>Click "<strong>Next Round</strong>" to continue.',
             step_next_round: '<strong>Click "Next Round"</strong><br>Resolve movements and start next round!'
         },
         logs: {
@@ -194,6 +197,7 @@
 							<li><strong>Hour Cards (Board):</strong> Divided into Youth, Adult, and Middle ages. Precious (★) cards are distributed each game.</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
 							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
+							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
 						</ul>
 					</div>
 

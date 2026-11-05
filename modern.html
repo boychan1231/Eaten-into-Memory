@@ -320,12 +320,12 @@
 						<div class="human-tab-panels">
 							<div id="human-tab-hand" class="human-tab-panel active">
 								<div class="human-play-row">
-									<!-- 🗂️ 個人棄牌區 Discard Pile Zone -->
-									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看我的棄牌記錄" aria-label="個人棄牌區">
+									<!-- 📜 出牌記錄 Played Cards Record Zone -->
+									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看出牌記錄" aria-label="出牌記錄">
 										<div class="discard-pile-stack" id="discard-pile-stack">
 											<div class="discard-card-empty">
-												<span class="discard-empty-icon">🎴</span>
-												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">個人棄牌</span>
+												<span class="discard-empty-icon">📜</span>
+												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">出牌記錄</span>
 											</div>
 										</div>
 										<div class="discard-pile-badge is-zero" id="discard-pile-badge">0</div>
@@ -744,20 +744,31 @@
 				</div>
 			</div>
 
-			<!-- 🗂️ 棄牌記錄彈窗 Discard Pile Modal -->
+			<!-- 📜 出牌記錄彈窗 Played Cards Record Modal -->
 			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
 				<div class="modal discard-pile-modal">
 					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">我的棄牌記錄</h2>
+					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">📜 出牌記錄</h2>
 					<div class="discard-pile-meta-bar">
 						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
-						<span id="discard-count-badge" class="discard-meta-chip">已棄 0 張</span>
+						<span id="discard-count-badge" class="discard-meta-chip">已出 0 張</span>
 					</div>
 					<div class="discard-view-tabs" role="tablist">
-						<button type="button" id="tab-discard-timeline" class="discard-tab-btn active" data-tab="timeline" data-i18n="ui.discard_pile.tab_timeline">依回合記錄</button>
+						<button type="button" id="tab-discard-history" class="discard-tab-btn active" data-tab="history" data-i18n="ui.discard_pile.tab_history">各角色歷程</button>
+						<button type="button" id="tab-discard-timeline" class="discard-tab-btn" data-tab="timeline" data-i18n="ui.discard_pile.tab_timeline">依回合記錄</button>
 						<button type="button" id="tab-discard-matrix" class="discard-tab-btn" data-tab="matrix" data-i18n="ui.discard_pile.tab_matrix">數字盤 (1~60)</button>
 					</div>
-					<div id="discard-tab-timeline" class="discard-tab-content active">
+					<div id="discard-tab-history" class="discard-tab-content active">
+						<div class="discard-history-section">
+							<div class="discard-section-title">⚔️ 本回合出牌</div>
+							<div id="discard-current-trick-list" class="discard-current-trick-list"></div>
+						</div>
+						<div class="discard-history-section" style="margin-top: 12px;">
+							<div class="discard-section-title">📜 各角色歷史出牌</div>
+							<div id="discard-player-history-list" class="discard-player-history-table"></div>
+						</div>
+					</div>
+					<div id="discard-tab-timeline" class="discard-tab-content">
 						<div id="discard-timeline-list" class="discard-timeline-scroll"></div>
 					</div>
 					<div id="discard-tab-matrix" class="discard-tab-content">

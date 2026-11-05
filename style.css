@@ -838,7 +838,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 .human-stats-row {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 }
-.human-stats-row div {
+.human-stats-row > div:not(.has-mech-gauge) {
     background: #1f1424;
     border: 1px solid #4a3b52;
     border-radius: 4px;
@@ -846,7 +846,8 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #dccae5; font-size: 0.95rem;
     display: flex; align-items: center; white-space: nowrap;
 }
-.human-stats-row span {
+.human-stats-row > div:not(.has-mech-gauge) span,
+.human-stats-row > span {
     color: #ff6b6b; font-weight: bold; margin-left: 6px; font-size: 1.1rem;
 }
 
@@ -872,10 +873,15 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: 700;
 }
 
-.human-stats-row .resource-chip span:not(.resource-chip__icon),
-.human-stats-row .resource-chip strong {
+.human-stats-row .resource-chip:not(.has-mech-gauge) span:not(.resource-chip__icon),
+.human-stats-row .resource-chip:not(.has-mech-gauge) strong {
     margin-left: 4px;
     font-size: 0.98rem;
+}
+
+.human-stats-row .resource-chip.has-mech-gauge span,
+.human-stats-row .resource-chip.has-mech-gauge strong {
+    margin-left: 0 !important;
 }
 
 .resource-chip.resource-chip--mana {
@@ -2773,6 +2779,152 @@ body {
     margin-top: 1px;
 }
 
+/* --- 出牌記錄 彈窗重整介面樣式 --- */
+.discard-history-section {
+    background: rgba(14, 18, 26, 0.75);
+    border: 1px solid rgba(255, 210, 127, 0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.discard-section-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #ffd27f;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 210, 127, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.discard-current-trick-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 44px;
+    align-items: center;
+}
+
+.discard-current-card-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(26, 32, 46, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 4px 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease;
+}
+.discard-current-card-item.is-human {
+    border-color: rgba(255, 210, 127, 0.6);
+    background: linear-gradient(135deg, rgba(46, 36, 20, 0.9), rgba(26, 20, 12, 0.95));
+}
+.discard-current-card-item .player-lbl {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.discard-current-card-item .card-val-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 210, 127, 0.35);
+    border-radius: 4px;
+    padding: 1px 7px;
+}
+
+.discard-player-history-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.discard-player-history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(20, 24, 34, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+}
+.discard-player-history-row.is-human {
+    border-color: rgba(255, 210, 127, 0.35);
+    background: rgba(35, 28, 18, 0.45);
+}
+
+.discard-player-history-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.discard-player-history-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.discard-history-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    padding: 2px 7px;
+    min-width: 26px;
+    text-align: center;
+}
+.discard-history-chip.empty {
+    opacity: 0.35;
+    color: #718096;
+}
+
+/* --- 手牌拖拉「回收」提示標籤 --- */
+.card-retrieve-badge {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(24, 18, 12, 0.95), rgba(48, 32, 14, 0.95));
+    border: 1.5px solid #ffd27f;
+    box-shadow: 0 0 12px rgba(255, 210, 127, 0.8), 0 2px 6px rgba(0, 0, 0, 0.9);
+    color: #ffeaa7;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    animation: retrieve-badge-pop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes retrieve-badge-pop {
+    0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.minute-card.is-dragging.is-retrieving {
+    border-color: #ffa502 !important;
+    box-shadow: 0 0 16px rgba(255, 165, 2, 0.75), 0 6px 16px rgba(0, 0, 0, 0.85) !important;
+}
+
 
 /* ==========================================================================
    ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & 乙太發條能量管 (Aether Gauge)
@@ -2994,6 +3146,7 @@ body {
 .mech-gear-gauge--compact .mech-counter-dial {
     padding: 0 4px !important;
     min-width: 16px !important;
+    margin-left: 3px !important;
 }
 .mech-gear-gauge--compact .mech-gear-val {
     font-size: 0.78rem !important;
@@ -3001,12 +3154,23 @@ body {
 
 
 /* --- 2. 乙太真空發條能量管 (Aether Mana Gauge) --- */
+.mech-mana-gauge,
+.mech-mana-gauge *,
+.mech-gear-gauge,
+.mech-gear-gauge * {
+    box-sizing: border-box !important;
+}
+
 .mech-mana-gauge {
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
     user-select: none !important;
     width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
 }
 
 .aether-vial {
@@ -3016,6 +3180,11 @@ body {
     width: 68px !important;
     height: 14px !important;
     flex-shrink: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .vial-cap {
@@ -3027,6 +3196,9 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
     position: relative !important;
     border: 1px solid rgba(0, 0, 0, 0.5) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .vial-cap-knob {
@@ -3037,6 +3209,10 @@ body {
     height: 6px !important;
     background: #ffeaa7 !important;
     border-radius: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .vial-cap--left {
@@ -3045,6 +3221,7 @@ body {
 }
 .vial-cap--left .vial-cap-knob {
     left: -2px !important;
+    right: auto !important;
 }
 
 .vial-cap--right {
@@ -3053,6 +3230,7 @@ body {
 }
 .vial-cap--right .vial-cap-knob {
     right: -2px !important;
+    left: auto !important;
 }
 
 .vial-glass {
@@ -3061,10 +3239,15 @@ body {
     background: rgba(12, 10, 22, 0.94) !important;
     border-top: 1px solid rgba(174, 108, 255, 0.65) !important;
     border-bottom: 1px solid rgba(174, 108, 255, 0.5) !important;
+    border-left: none !important;
+    border-right: none !important;
     box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 6px rgba(174, 108, 255, 0.25) !important;
     position: relative !important;
     overflow: hidden !important;
     border-radius: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .vial-plasma {
@@ -3073,6 +3256,10 @@ body {
     box-shadow: 0 0 8px rgba(168, 85, 247, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.7) !important;
     transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     position: relative !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
 }
 
 .vial-specular {
@@ -3083,6 +3270,9 @@ body {
     height: 42% !important;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%) !important;
     pointer-events: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
 }
 
 .vial-ticks {
@@ -3092,6 +3282,10 @@ body {
     width: 100% !important;
     height: 100% !important;
     pointer-events: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
 }
 
 .vial-tick {
@@ -3101,6 +3295,9 @@ body {
     width: 1px !important;
     background: rgba(255, 255, 255, 0.45) !important;
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.9) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
 }
 
 .aether-val {
@@ -3111,6 +3308,9 @@ body {
     font-family: 'Cinzel', 'Cinzel Decorative', 'Georgia', monospace, sans-serif !important;
     text-align: center !important;
     line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
 }
 
 .mech-mana-gauge.is-depleted .vial-plasma {
@@ -3148,6 +3348,7 @@ body {
 .mech-mana-gauge--compact .mech-counter-dial {
     padding: 0 4px !important;
     min-width: 16px !important;
+    margin-left: 3px !important;
 }
 .mech-mana-gauge--compact .aether-val {
     font-size: 0.78rem !important;
