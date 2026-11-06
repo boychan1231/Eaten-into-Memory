@@ -1569,6 +1569,14 @@ function endGameRound(gameState) {
         }
     }
 
+    // 同步局結算快照中的總分，確保受詛者任務額外得分或扣分正確反映於結算彈窗中
+    if (Array.isArray(gameState.lastRoundSummary)) {
+        gameState.lastRoundSummary.forEach(item => {
+            const p = gameState.players.find(x => x.id === item.id);
+            if (p) item.totalScore = p.score;
+        });
+    }
+
     // ✅ 重點修正 1：在此處檢查是否達到最後一局 (例如第 5 局結束)
     // 如果是，直接結束遊戲，不再進行後續的手牌分發 (避免 Bug)
     if (gameState.gameRound >= numPlayers) {

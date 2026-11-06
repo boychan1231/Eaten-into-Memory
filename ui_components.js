@@ -1988,13 +1988,8 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
             setClockDropHighlight(isDropReady);
         }
 
-        // ✅ 「收回」判斷：只在玩家「向下 / 向手牌區拖動卡牌時」才作顯示！
-        // 1. 向上拖出準備出牌時（dy 靠近歷史最高點且未明顯向下拉回），絕不顯示「收回」
-        // 2. 只有當卡牌曾被拖出 (hasDraggedOut)、非出牌狀態 (!isDropReady)，
-        //    且玩家從最高點往下拉回 (dy - minDy >= 20) 並正朝手牌區移動 (vy > 0 || inCancelZone) 時，才顯示「收回」
-        const isPullingDown = (dy - minDy) >= 20;
-        const isMovingTowardsHand = vy > 0 || inCancelZone;
-        const isRetrieving = hasDraggedOut && !isDropReady && isPullingDown && isMovingTowardsHand;
+        // ✅ 「收回」判斷：只在卡牌曾拖出手牌且被拖回手牌區域 (inCancelZone) 中才顯示！
+        const isRetrieving = hasDraggedOut && !isDropReady && inCancelZone;
 
         cardEl.classList.toggle('is-retrieving', isRetrieving);
         if (isRetrieving) {

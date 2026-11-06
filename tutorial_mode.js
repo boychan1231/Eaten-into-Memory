@@ -135,12 +135,12 @@
             return true;
         }
 
-        // 情況 B：玩家已完成出牌 (step1_drag_minute)，且經歷過進鐘面選卡 (step3_select_hour 或 step4_next_round)
-        // 以及經歷過無須選卡/未進鐘面的優劣勢提醒 (step3_no_hour_notice 或 step4_no_hour_card)
+        // 情況 B：玩家已完整走過一輪核心流程（出牌 + 進鐘面選小時卡 + 結算進入下一輪）
+        // 依使用者規則：未取得小時卡之戰術提醒不納入教學自動關閉的計算中
         const hasPlayedCard = shownSteps.has('step1_drag_minute');
-        const hasExperiencedPickHour = shownSteps.has('step3_select_hour') || shownSteps.has('step4_next_round');
-        const hasExperiencedNoHour = shownSteps.has('step3_no_hour_notice') || shownSteps.has('step4_no_hour_card');
-        if (hasPlayedCard && hasExperiencedPickHour && hasExperiencedNoHour) {
+        const hasExperiencedPickHour = shownSteps.has('step3_select_hour');
+        const hasFinishedRound = shownSteps.has('step4_next_round');
+        if (hasPlayedCard && hasExperiencedPickHour && hasFinishedRound) {
             return true;
         }
 
