@@ -197,6 +197,7 @@ class AudioManager {
 	playEvolve() { this._playSfx(this.sfxEvolve); }
     playAbility() { this._playSfx(this.sfxAbility); }
     playChime() { this._playSfx(this.sfxChime); }
+    playDamage() { this._playSfx(this.sfxClick); }
     
     playGameOver(isWin) {
         // 停止背景音樂，營造結算氛圍

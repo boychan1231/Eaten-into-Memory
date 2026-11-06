@@ -52,6 +52,8 @@ window.GAME_CONFIG = {
 
 // 2. 介面外觀 (UI Appearance)
 window.UI_CONFIG = {
+    SEQUENTIAL_EFFECTS: true,  // 預設是否啟用「特效依序播放 (逐一發生)」
+    EFFECT_INTERVAL_MS: 260,   // 特效逐一播放間隔時間 (毫秒，推薦 200~300ms 輕快節奏)
     LOG_SPEED: 360,          // 日誌顯示速度 (毫秒，越小越快)
     LOG_RETENTION_LIMIT: 200, // 日誌保留上限 (DOM)
     HISTORY_LIMIT: 12,       // 右側歷史記錄顯示的回合數

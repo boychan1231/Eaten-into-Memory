@@ -83,7 +83,9 @@
                 title: '⚙️ Game Settings',
                 language: '🌐 語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
-                lang_en: 'English (英文)'
+                lang_en: 'English (英文)',
+                sequential_effects: 'Sequential Effects (One by One)',
+                sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.'
             },
             hints: {
                 drag_to_play: '⚡ Release to play',

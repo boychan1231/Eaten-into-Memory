@@ -83,7 +83,9 @@
                 title: '⚙️ 遊戲設定',
                 language: '🌐 語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
-                lang_en: 'English (英文)'
+                lang_en: 'English (英文)',
+                sequential_effects: '特效依序播放（逐一發生）',
+                sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。'
             },
             hints: {
                 drag_to_play: '⚡ 放開以出牌',

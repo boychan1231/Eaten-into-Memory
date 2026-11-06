@@ -1965,6 +1965,11 @@ body {
     100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 
+/* 受傷受擊震動 class */
+.card-damage-shake {
+    animation: shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
+}
+
 /* 飄浮文字動畫 */
 @keyframes float-up-fade {
     0% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 1; }

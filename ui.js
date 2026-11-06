@@ -686,6 +686,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 監聽設定頁中的特效依序播放開關
+    const seqToggleEl = document.getElementById('sequential-effects-toggle');
+    if (seqToggleEl) {
+        try {
+            const savedSeq = localStorage.getItem('eaten_sequential_effects');
+            if (savedSeq !== null && window.UI_CONFIG) {
+                window.UI_CONFIG.SEQUENTIAL_EFFECTS = (savedSeq === 'true');
+            }
+        } catch (_) {}
+
+        seqToggleEl.checked = window.UI_CONFIG?.SEQUENTIAL_EFFECTS !== false;
+        seqToggleEl.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            window.UI_CONFIG.SEQUENTIAL_EFFECTS = isEnabled;
+            try {
+                localStorage.setItem('eaten_sequential_effects', String(isEnabled));
+            } catch (_) {}
+            appLogger.log(`[System] 特效依序播放已${isEnabled ? '開啟' : '關閉'}`);
+        });
+    }
+
     if (gameModeCloseBtn && gameModeOverlay) {
         gameModeCloseBtn.addEventListener('click', () => closeModal(gameModeOverlay));
     }
@@ -1086,35 +1108,59 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- 處理數值變動漂浮文字 (Mana / 齒輪 / 護盾) ---
+const lastSpawnOffsets = new Map(); // 記錄各目標最近一次浮字時間與垂直/水平偏移，防止短時間內同一目標的文字重疊
+
 function processFloatingText(gameState) {
     if (!gameState || !gameState.players) return;
+
+    // 收集所有玩家的數值變動事件
+    const pendingEvents = [];
+
     gameState.players.forEach(player => {
         const last = lastPlayerStats[player.id];
         if (last) {
-            // 1. Mana 變動
-            const manaDiff = player.mana - last.mana;
-            if (manaDiff !== 0) {
-                const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
-                const color = manaDiff > 0 ? '#4cd137' : '#e17055';
-                triggerFloat(player.id, text, color, 'mana');
+            // 1. 護盾變動 (防禦先消耗或增加)
+            const currentShield = (typeof player.d6Die === 'number') ? player.d6Die : 0;
+            const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
+            const shieldDiff = currentShield - lastShield;
+            if (shieldDiff !== 0) {
+                const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' 🛡️';
+                const color = shieldDiff > 0 ? '#4cd137' : '#e17055';
+                pendingEvents.push({
+                    playerId: player.id,
+                    text,
+                    color,
+                    type: 'shield',
+                    diff: shieldDiff
+                });
             }
-            // 2. 齒輪變動
+
+            // 2. 齒輪 (生命值) 變動
             const gearDiff = player.gearCards - last.gearCards;
             if (gearDiff !== 0) {
                 const text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
                 const color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
-                triggerFloat(player.id, text, color, 'gear');
+                pendingEvents.push({
+                    playerId: player.id,
+                    text,
+                    color,
+                    type: 'gear',
+                    diff: gearDiff
+                });
             }
-            // ✅ 3. 新增：護盾變動 (與 Mana 特效一致)
-            const currentShield = (typeof player.d6Die === 'number') ? player.d6Die : 0;
-            const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
-            const shieldDiff = currentShield - lastShield;
 
-            if (shieldDiff !== 0) {
-                const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' 🛡️';
-                // 扣除時使用與 Mana 扣除相同的紅色 (#e17055)，增加時使用綠色
-                const color = shieldDiff > 0 ? '#4cd137' : '#e17055';
-                triggerFloat(player.id, text, color, 'shield');
+            // 3. Mana 變動
+            const manaDiff = player.mana - last.mana;
+            if (manaDiff !== 0) {
+                const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
+                const color = manaDiff > 0 ? '#4cd137' : '#e17055';
+                pendingEvents.push({
+                    playerId: player.id,
+                    text,
+                    color,
+                    type: 'mana',
+                    diff: manaDiff
+                });
             }
         }
 
@@ -1128,32 +1174,84 @@ function processFloatingText(gameState) {
             currentClockPosition: player.currentClockPosition
         };
     });
+
+    if (pendingEvents.length === 0) return;
+
+    // 依序或立即觸發特效
+    pendingEvents.forEach(evt => {
+        if (window.EffectQueue && window.EffectQueue.isEnabled()) {
+            window.EffectQueue.enqueue(() => {
+                triggerFloat(evt.playerId, evt.text, evt.color, evt.type, evt.diff);
+            });
+        } else {
+            triggerFloat(evt.playerId, evt.text, evt.color, evt.type, evt.diff);
+        }
+    });
 }
 
-function triggerFloat(playerId, text, color, type) {
+function triggerFloat(playerId, text, color, type, diff) {
     let targetEl = null;
+    let cardEl = null;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
 
     if (playerId === humanId) {
         targetEl = (type === 'mana') ? document.getElementById('h-mana') : document.getElementById('h-gear');
-        if (!targetEl) targetEl = document.querySelector('.human-top-bar');
+        cardEl = document.querySelector('.human-top-bar') || document.getElementById('human-player-area');
+        if (!targetEl) targetEl = cardEl;
     } else {
-        targetEl = document.querySelector(`.player-card[data-id="${playerId}"]`);
+        cardEl = document.querySelector(`.player-card[data-id="${playerId}"]`);
+        targetEl = cardEl;
     }
-    if (targetEl) spawnFloatingText(targetEl, text, color);
+
+    // 受到懲罰／扣除齒輪或護盾時觸發卡片受擊震動動態與音效
+    if (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055'))) {
+        if (cardEl) {
+            cardEl.classList.remove('card-damage-shake');
+            void cardEl.offsetWidth; // 強制重排以重啟動畫
+            cardEl.classList.add('card-damage-shake');
+            setTimeout(() => {
+                if (cardEl) cardEl.classList.remove('card-damage-shake');
+            }, 450);
+        }
+        if (window.gameAudio && typeof window.gameAudio.playDamage === 'function') {
+            window.gameAudio.playDamage();
+        }
+    } else if (diff > 0 && type === 'mana') {
+        if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
+            window.gameAudio.playConfirm();
+        }
+    }
+
+    if (targetEl) spawnFloatingText(targetEl, text, color, playerId);
 }
 
-function spawnFloatingText(targetEl, text, color) {
+function spawnFloatingText(targetEl, text, color, playerId) {
     const rect = targetEl.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const topY = rect.top;
+
+    // 計算同一目標短時間內的錯位偏移，避免重疊
+    const now = Date.now();
+    const key = playerId || 'global';
+    let offsetInfo = lastSpawnOffsets.get(key) || { time: 0, count: 0 };
+    if (now - offsetInfo.time > 800) {
+        offsetInfo = { time: now, count: 0 };
+    } else {
+        offsetInfo.count++;
+        offsetInfo.time = now;
+    }
+    lastSpawnOffsets.set(key, offsetInfo);
+
+    // 每連續疊加一個數字，Y 軸微幅上移 18px，X 軸微幅交錯 12px
+    const offsetY = offsetInfo.count * -18;
+    const offsetX = (offsetInfo.count % 2 === 1 ? 14 : (offsetInfo.count === 0 ? 0 : -14));
 
     const el = document.createElement('div');
     el.className = 'floating-text';
     el.textContent = text;
     el.style.color = color;
-    el.style.left = `${centerX}px`;
-    el.style.top = `${topY}px`;
+    el.style.left = `${centerX + offsetX}px`;
+    el.style.top = `${topY + offsetY}px`;
     document.body.appendChild(el);
     setTimeout(() => { el.remove(); }, 1800);
 }
@@ -1206,6 +1304,8 @@ function drawSinTargetLines(gameState) {
 
 if (typeof window !== 'undefined') {
     window.processFloatingText = processFloatingText;
+    window.triggerFloat = triggerFloat;
+    window.spawnFloatingText = spawnFloatingText;
     window.drawSinTargetLines = drawSinTargetLines;
 }
 

@@ -644,6 +644,9 @@ const AnimationController = {
 
     // 快進跳過所有活動中的劇情演出（觸發各自的 safeComplete）
     skipAll() {
+        if (typeof EffectQueue !== 'undefined' && typeof EffectQueue.skipAll === 'function') {
+            EffectQueue.skipAll();
+        }
         const list = Array.from(this.activeTimelines);
         list.forEach(tl => {
             if (tl && typeof tl.interrupt === 'function') tl.interrupt();
@@ -653,6 +656,9 @@ const AnimationController = {
 
     // 強制銷毀所有活動中的動畫與等待計時器（換局或重新開始時呼叫）
     killAll() {
+        if (typeof EffectQueue !== 'undefined' && typeof EffectQueue.clear === 'function') {
+            EffectQueue.clear();
+        }
         this.pendingTimers.forEach(id => clearTimeout(id));
         this.pendingTimers.clear();
         const list = Array.from(this.activeTimelines);
@@ -674,8 +680,118 @@ const AnimationController = {
     }
 };
 
+/**
+ * 全域特效序列佇列管理器 (EffectQueue)
+ * 解決多個玩家數值變動浮字、受傷震動、鐘面角色落位同時爆發堆疊的問題
+ * 依序逐一（Sequential）執行各項演出，支援靈活間隔（預設 260ms）與跳過
+ */
+const EffectQueue = {
+    queue: [],
+    isRunning: false,
+    timerId: null,
+
+    isEnabled() {
+        if (typeof window !== 'undefined' && window.UI_CONFIG && typeof window.UI_CONFIG.SEQUENTIAL_EFFECTS === 'boolean') {
+            return window.UI_CONFIG.SEQUENTIAL_EFFECTS;
+        }
+        return true;
+    },
+
+    getIntervalMs() {
+        if (typeof window !== 'undefined' && window.UI_CONFIG && typeof window.UI_CONFIG.EFFECT_INTERVAL_MS === 'number') {
+            return window.UI_CONFIG.EFFECT_INTERVAL_MS;
+        }
+        return 260; // 預設 260ms (輕快節奏)
+    },
+
+    /**
+     * 加入一項特效至佇列
+     * @param {Function} effectFn 特效執行動態函式
+     * @param {Object} [options] { delayAfter, onComplete, id }
+     */
+    enqueue(effectFn, options = {}) {
+        if (typeof effectFn !== 'function') return;
+
+        // 若使用者關閉依序播放開關，直接立即同步執行（回退為原本的立即齊發模式）
+        if (!this.isEnabled()) {
+            try { effectFn(); } catch (e) { console.error('[EffectQueue] effect execution error:', e); }
+            if (typeof options.onComplete === 'function') {
+                try { options.onComplete(); } catch (_) {}
+            }
+            return;
+        }
+
+        const delay = (typeof options.delayAfter === 'number') ? options.delayAfter : this.getIntervalMs();
+        this.queue.push({
+            fn: effectFn,
+            delayAfter: delay,
+            onComplete: options.onComplete,
+            id: options.id || null
+        });
+
+        if (!this.isRunning) {
+            this.processNext();
+        }
+    },
+
+    processNext() {
+        if (this.queue.length === 0) {
+            this.isRunning = false;
+            return;
+        }
+
+        this.isRunning = true;
+        const item = this.queue.shift();
+
+        try {
+            item.fn();
+        } catch (err) {
+            console.error('[EffectQueue] Error running effect item:', err);
+        }
+
+        if (typeof item.onComplete === 'function') {
+            try { item.onComplete(); } catch (_) {}
+        }
+
+        const delay = Math.max(0, item.delayAfter);
+        this.timerId = setTimeout(() => {
+            this.timerId = null;
+            this.processNext();
+        }, delay);
+
+        if (typeof AnimationController !== 'undefined' && AnimationController.pendingTimers) {
+            AnimationController.pendingTimers.add(this.timerId);
+        }
+    },
+
+    skipAll() {
+        if (this.timerId !== null) {
+            clearTimeout(this.timerId);
+            this.timerId = null;
+        }
+        while (this.queue.length > 0) {
+            const item = this.queue.shift();
+            try { item.fn(); } catch (_) {}
+            if (typeof item.onComplete === 'function') {
+                try { item.onComplete(); } catch (_) {}
+            }
+        }
+        this.isRunning = false;
+    },
+
+    clear() {
+        if (this.timerId !== null) {
+            clearTimeout(this.timerId);
+            this.timerId = null;
+        }
+        this.queue = [];
+        this.isRunning = false;
+    }
+};
+
 if (typeof window !== 'undefined') {
     window.AnimationController = AnimationController;
+    window.EffectQueue = EffectQueue;
 }
 
 function triggerClockBlurInEffect(player) {
@@ -784,12 +900,20 @@ function checkAndTriggerClockBlurIn(gameState) {
     });
 
     if (newlyEntered.length > 0) {
-        // 多位角色依序（stagger: 240ms）各自在所屬刻度上模糊浮現落位
-        newlyEntered.forEach((p, idx) => {
-            AnimationController.setTimeout(() => {
-                triggerClockBlurInEffect(p);
-            }, idx * 240);
-        });
+        if (typeof EffectQueue !== 'undefined' && EffectQueue.isEnabled()) {
+            newlyEntered.forEach(p => {
+                EffectQueue.enqueue(() => {
+                    triggerClockBlurInEffect(p);
+                }, { delayAfter: EffectQueue.getIntervalMs() });
+            });
+        } else {
+            // 多位角色依序（stagger: 240ms）各自在所屬刻度上模糊浮現落位
+            newlyEntered.forEach((p, idx) => {
+                AnimationController.setTimeout(() => {
+                    triggerClockBlurInEffect(p);
+                }, idx * 240);
+            });
+        }
     }
 }
 

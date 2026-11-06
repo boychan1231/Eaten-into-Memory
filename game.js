@@ -793,9 +793,12 @@ function processNextHourPicker(gameState) {
     }
 
     gameState.nextHourPickerIndex++;
+    const pickDelay = (typeof window !== 'undefined' && window.EffectQueue && window.EffectQueue.isEnabled())
+        ? (window.EffectQueue.getIntervalMs() || 260)
+        : 50;
     setTimeout(() => {
         processNextHourPicker(gameState);
-    }, 50); 
+    }, pickDelay); 
 }
 
 function chooseHourCardForAI(gameState, player, drawnCards) {
