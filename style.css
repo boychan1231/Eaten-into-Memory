@@ -294,6 +294,14 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
+.log-section.game-panel,
+.side-panel-group.game-panel {
+    resize: horizontal;
+    overflow: auto;
+    min-width: 220px;
+    max-width: 600px;
+}
+
 .panel-header {
     display: inline-flex;
     align-items: center;

@@ -26,7 +26,10 @@
                 players_scores: '👥 Players & Standings',
                 played_cards: '⚔️ Current Round',
                 history: '📜 Minute History',
-                played_scores: '📊 Played & Scores'
+                played_scores: '📊 Played & Scores',
+                size_preset: 'Toggle width (Standard 260px / Medium 390px / Wide 520px)',
+                size_reset: 'Reset to default size',
+                resize_grip: 'Drag to resize (Double click to reset)'
             },
             buttons: {
                 confirm_move: 'Confirm Play',

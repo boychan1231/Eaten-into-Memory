@@ -1135,12 +1135,176 @@
         });
     }
 
+    // 左右兩側懸浮抽屜自訂調整大小 (拖曳拉伸、雙擊重置、快捷尺寸切換、localStorage 記憶)
+    function initHudDrawerResize() {
+        ['.hud-drawer-left', '.hud-drawer-right'].forEach(stackSelector => {
+            const isLeft = stackSelector.includes('left');
+            const stack = document.querySelector(stackSelector);
+            if (!stack) return;
+            const drawers = Array.from(stack.querySelectorAll(':scope > details.hud-drawer'));
+
+            drawers.forEach(drawer => {
+                if (drawer._resizeBound) return;
+                drawer._resizeBound = true;
+
+                const storageKey = `eaten_hud_drawer_size_${drawer.id}`;
+                const applySize = (w, h) => {
+                    if (w) drawer.style.setProperty('--drawer-custom-width', `${w}px`);
+                    else drawer.style.removeProperty('--drawer-custom-width');
+                    if (h) drawer.style.setProperty('--drawer-custom-height', `${h}px`);
+                    else drawer.style.removeProperty('--drawer-custom-height');
+                };
+
+                // 恢復歷史記錄之尺寸
+                try {
+                    const saved = JSON.parse(localStorage.getItem(storageKey));
+                    if (saved && (saved.width || saved.height)) {
+                        applySize(saved.width, saved.height);
+                    }
+                } catch (_) { }
+
+                // 注入角落拉伸把手與邊界把手
+                const corner = document.createElement('div');
+                corner.className = `hud-drawer-resizer resizer-corner ${isLeft ? 'corner-se' : 'corner-sw'}`;
+                corner.title = '拖曳調整大小 (雙擊重置)';
+                if (isLeft) {
+                    corner.innerHTML = `<svg viewBox="0 0 16 16"><path d="M14 14H10V12H12V10H14V14ZM14 8H12V6H14V8ZM8 14H6V12H8V14Z"/></svg>`;
+                } else {
+                    corner.innerHTML = `<svg viewBox="0 0 16 16"><path d="M2 14H6V12H4V10H2V14ZM2 8H4V6H2V8ZM8 14H10V12H8V14Z"/></svg>`;
+                }
+                drawer.appendChild(corner);
+
+                const edgeSide = document.createElement('div');
+                edgeSide.className = `hud-drawer-resizer resizer-edge ${isLeft ? 'resizer-right' : 'resizer-left'}`;
+                edgeSide.title = '拖曳調整寬度';
+                drawer.appendChild(edgeSide);
+
+                const edgeBottom = document.createElement('div');
+                edgeBottom.className = 'hud-drawer-resizer resizer-edge resizer-bottom';
+                edgeBottom.title = '拖曳調整高度';
+                drawer.appendChild(edgeBottom);
+
+                // 拖曳處理函式 (跨瀏覽器 PointerEvents 相容)
+                const bindDrag = (handle, resizeType) => {
+                    handle.addEventListener('pointerdown', (e) => {
+                        if (!drawer.open) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const rect = drawer.getBoundingClientRect();
+                        const startWidth = rect.width;
+                        const startHeight = rect.height;
+
+                        drawer.classList.add('is-resizing');
+                        document.body.classList.add('hud-drawer-resizing');
+                        try { handle.setPointerCapture(e.pointerId); } catch (_) { }
+
+                        let currentW = startWidth;
+                        let currentH = startHeight;
+
+                        const onPointerMove = (moveEvt) => {
+                            const dx = moveEvt.clientX - startX;
+                            const dy = moveEvt.clientY - startY;
+
+                            if (resizeType.includes('w') || resizeType.includes('e')) {
+                                const newW = isLeft ? (startWidth + dx) : (startWidth - dx);
+                                currentW = Math.max(200, Math.min(newW, Math.min(window.innerWidth - 60, 750)));
+                                drawer.style.setProperty('--drawer-custom-width', `${Math.round(currentW)}px`);
+                            }
+                            if (resizeType.includes('s')) {
+                                const newH = startHeight + dy;
+                                currentH = Math.max(130, Math.min(newH, window.innerHeight - 130));
+                                drawer.style.setProperty('--drawer-custom-height', `${Math.round(currentH)}px`);
+                            }
+                        };
+
+                        const onPointerUp = (upEvt) => {
+                            drawer.classList.remove('is-resizing');
+                            document.body.classList.remove('hud-drawer-resizing');
+                            try { handle.releasePointerCapture(upEvt.pointerId); } catch (_) { }
+                            window.removeEventListener('pointermove', onPointerMove);
+                            window.removeEventListener('pointerup', onPointerUp);
+                            window.removeEventListener('pointercancel', onPointerUp);
+
+                            try {
+                                localStorage.setItem(storageKey, JSON.stringify({
+                                    width: Math.round(currentW),
+                                    height: Math.round(currentH)
+                                }));
+                            } catch (_) { }
+                        };
+
+                        window.addEventListener('pointermove', onPointerMove);
+                        window.addEventListener('pointerup', onPointerUp);
+                        window.addEventListener('pointercancel', onPointerUp);
+                    });
+                };
+
+                bindDrag(corner, isLeft ? 'se' : 'sw');
+                bindDrag(edgeSide, isLeft ? 'e' : 'w');
+                bindDrag(edgeBottom, 's');
+
+                // 雙擊角落重置
+                corner.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    applySize(null, null);
+                    try { localStorage.removeItem(storageKey); } catch (_) { }
+                });
+
+                // 綁定 summary 內的尺寸快捷切換按鈕 (⤢ / ↺)
+                const presetBtn = drawer.querySelector('.btn-size-preset');
+                const resetBtn = drawer.querySelector('.btn-size-reset');
+
+                if (presetBtn) {
+                    const widthPresets = [260, 390, 520];
+                    presetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!drawer.open) return;
+
+                        const currentWidth = drawer.getBoundingClientRect().width;
+                        let nextWidth = widthPresets[0];
+                        for (let i = 0; i < widthPresets.length; i++) {
+                            if (currentWidth < widthPresets[i] - 15) {
+                                nextWidth = widthPresets[i];
+                                break;
+                            }
+                        }
+                        if (currentWidth >= widthPresets[widthPresets.length - 1] - 15) {
+                            nextWidth = widthPresets[0];
+                        }
+
+                        drawer.style.setProperty('--drawer-custom-width', `${nextWidth}px`);
+                        try {
+                            const existing = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                            existing.width = nextWidth;
+                            localStorage.setItem(storageKey, JSON.stringify(existing));
+                        } catch (_) { }
+                    });
+                }
+
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        applySize(null, null);
+                        try { localStorage.removeItem(storageKey); } catch (_) { }
+                    });
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const host = document.getElementById('modern-board');
         if (!host) return;
         Board.init(host);
         hookUpdateUI();
         initHudDrawerAccordions();
+        initHudDrawerResize();
 
         if (window.globalGameState) {
             Board.render(window.globalGameState);

@@ -351,28 +351,36 @@ details.hud-drawer:not([open]) {
     box-shadow: none !important;
     overflow: visible !important;
 }
+details.hud-drawer:not([open]) .hud-drawer-resizer,
+details.hud-drawer:not([open]) .drawer-size-btn-group {
+    display: none !important;
+}
+
 details.hud-drawer[open] {
-    display: block !important;
-    width: min(250px, 88vw) !important;
-    height: auto !important;
-    max-height: calc(100vh - 220px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: var(--drawer-custom-width, min(260px, 88vw)) !important;
+    height: var(--drawer-custom-height, auto) !important;
+    min-width: 200px !important;
+    max-width: min(750px, 92vw) !important;
+    min-height: 130px !important;
+    max-height: calc(100vh - 140px) !important;
     flex: 0 1 auto !important;
-    min-height: 0 !important;
-    padding: 7px 8px !important;
+    padding: 7px 8px 14px 8px !important;
     background: rgba(6, 7, 11, 0.95) !important;
     border: 1px solid rgba(255, 210, 127, 0.28) !important;
     border-radius: 16px !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85) !important;
     backdrop-filter: blur(18px);
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
+    position: relative !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
 }
 
 /* 確保新架構下所有懸浮抽屜內嵌面板不受舊樣式影響 */
 .hud-drawer .log-side-info,
 #players-panel-details .score-panel,
 #scores-panel-details .score-panel,
-#history-panel-details .history-panel,
 #played-panel-details #played-cards-panel,
 #evo-panel-details #evolution-progress-area,
 #log-panel-details #game-log-container {
@@ -383,6 +391,14 @@ details.hud-drawer[open] {
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;
+}
+
+/* 抽屜內日誌與角色清單容器高度放開，統一由 hud-drawer-body 滾動管理 */
+.hud-drawer #players-section,
+.hud-drawer .players-grid,
+.hud-drawer #game-log-container {
+    max-height: none !important;
+    height: auto !important;
 }
 
 /* 左側積分抽屜內的即時積分榜微調 */
@@ -435,16 +451,23 @@ details.hud-drawer[open] > .hud-drawer-body {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
-    max-height: calc(100vh - 285px) !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: calc(100vh - 220px) !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 details.hud-drawer[open] > .side-panel-summary {
     display: flex !important;
     width: 100% !important;
+    align-items: center !important;
     justify-content: space-between !important;
     margin-bottom: 8px !important;
     background: rgba(255, 210, 127, 0.1) !important;
     border-color: rgba(255, 210, 127, 0.35) !important;
+    flex: 0 0 auto !important;
 }
 details.hud-drawer[open] > .side-panel-summary::after {
     transform: rotate(180deg);
@@ -452,6 +475,104 @@ details.hud-drawer[open] > .side-panel-summary::after {
 .side-panel-summary:hover {
     border-color: rgba(255, 210, 127, 0.5) !important;
     color: #fff4d6 !important;
+}
+
+/* 抽屜標題列中的尺寸快捷控制項 (Size Presets & Reset) */
+.drawer-size-btn-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: auto !important;
+    margin-right: 8px !important;
+    z-index: 2 !important;
+}
+.drawer-size-action-btn {
+    background: rgba(255, 210, 127, 0.12) !important;
+    border: 1px solid rgba(255, 210, 127, 0.32) !important;
+    color: var(--gold) !important;
+    border-radius: 5px !important;
+    font-size: 0.76rem !important;
+    padding: 1px 6px !important;
+    line-height: 1.25 !important;
+    cursor: pointer !important;
+    transition: all 0.16s ease !important;
+    user-select: none !important;
+}
+.drawer-size-action-btn:hover {
+    background: rgba(255, 210, 127, 0.3) !important;
+    border-color: rgba(255, 210, 127, 0.75) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 全域拉伸拖曳狀態保護 */
+body.hud-drawer-resizing {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+details.hud-drawer.is-resizing {
+    border-color: rgba(255, 210, 127, 0.8) !important;
+    box-shadow: 0 0 25px rgba(255, 210, 127, 0.35), 0 20px 50px rgba(0, 0, 0, 0.95) !important;
+    transition: none !important;
+}
+
+/* 抽屜自訂拉伸把手 (Corner Grip & Edge Resizers) */
+.hud-drawer-resizer {
+    position: absolute !important;
+    z-index: 90 !important;
+    user-select: none !important;
+    touch-action: none !important;
+}
+.hud-drawer-resizer.resizer-right {
+    top: 0 !important;
+    right: -5px !important;
+    width: 10px !important;
+    height: 100% !important;
+    cursor: ew-resize !important;
+}
+.hud-drawer-resizer.resizer-left {
+    top: 0 !important;
+    left: -5px !important;
+    width: 10px !important;
+    height: 100% !important;
+    cursor: ew-resize !important;
+}
+.hud-drawer-resizer.resizer-bottom {
+    bottom: -5px !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 10px !important;
+    cursor: ns-resize !important;
+}
+.hud-drawer-resizer.resizer-corner {
+    bottom: 2px !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.55 !important;
+    transition: opacity 0.18s ease, transform 0.18s ease !important;
+}
+.hud-drawer-resizer.resizer-corner:hover,
+details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
+    opacity: 1 !important;
+    transform: scale(1.2) !important;
+}
+.hud-drawer-resizer.corner-se {
+    right: 3px !important;
+    cursor: nwse-resize !important;
+}
+.hud-drawer-resizer.corner-sw {
+    left: 3px !important;
+    cursor: nesw-resize !important;
+}
+.hud-drawer-resizer svg {
+    width: 13px !important;
+    height: 13px !important;
+    fill: var(--gold) !important;
+    filter: drop-shadow(0 0 3px rgba(255, 210, 127, 0.6)) !important;
+    pointer-events: none !important;
 }
 
 /* 抽屜內容排版統一：日誌、出牌、歷史、進化與各角色狀態 */

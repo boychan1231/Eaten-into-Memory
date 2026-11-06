@@ -26,7 +26,10 @@
                 players_scores: '👥 各角色與積分',
                 played_cards: '⚔️ 本回合出牌',
                 history: '📜 出牌記錄',
-                played_scores: '📊 出牌與積分'
+                played_scores: '📊 出牌與積分',
+                size_preset: '切換寬度 (標準 260px / 中 390px / 寬 520px)',
+                size_reset: '重置預設尺寸',
+                resize_grip: '拖曳調整大小 (雙擊重置)'
             },
             buttons: {
                 confirm_move: '確認出牌',
