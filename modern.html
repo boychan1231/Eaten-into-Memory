@@ -177,19 +177,19 @@
 				<div class="main-area">
 					<!-- 左側懸浮抽屜群：對局情報（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-left">
-						<!-- 1. 👥 角色（預設展開） -->
-						<details id="players-panel-details" class="players-block side-panel-group hud-drawer" open>
+						<!-- 1. 📝 遊戲日誌（預設展開） -->
+						<details id="log-panel-details" class="log-section side-panel-group hud-drawer" open>
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.players">👥 角色</span>
+								<span class="summary-label" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
-								<div id="players-section" class="players-grid">
-									<div class="player-card placeholder">
-										<p>等待遊戲開始...</p>
-									</div>
+								<div id="game-log-container">
+									<ul id="log-list">
+										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
+									</ul>
 								</div>
 							</div>
 						</details>
@@ -218,19 +218,19 @@
 							</div>
 						</details>
 
-						<!-- 3. 📝 遊戲日誌 -->
-						<details id="log-panel-details" class="log-section side-panel-group hud-drawer">
+						<!-- 3. 👥 角色 -->
+						<details id="players-panel-details" class="players-block side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
+								<span class="summary-label" data-i18n="ui.drawers.players">👥 角色</span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
-								<div id="game-log-container">
-									<ul id="log-list">
-										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
-									</ul>
+								<div id="players-section" class="players-grid">
+									<div class="player-card placeholder">
+										<p>等待遊戲開始...</p>
+									</div>
 								</div>
 							</div>
 						</details>

@@ -558,12 +558,12 @@ document.addEventListener('DOMContentLoaded', () => {
         globalGameState.needsHandDealAnimation = true;
 
         // 遊戲開始時：
-        // 左側對局情報：角色 (players-panel-details) 預設打開
+        // 左側對局情報：遊戲日誌 (log-panel-details) 預設打開
         // 右側自身決策：能力與進化 (evo-panel-details) 預設打開
         const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
         if (leftDrawers.length > 0) {
             leftDrawers.forEach(d => {
-                d.open = (d.id === 'players-panel-details');
+                d.open = (d.id === 'log-panel-details');
             });
         }
         const rightDrawers = document.querySelectorAll('.hud-drawer-right > details.hud-drawer');

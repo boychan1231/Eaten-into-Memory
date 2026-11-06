@@ -1356,7 +1356,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 .clash-card-face {
     position: absolute;
     inset: 0;
-    border-radius: 10px;
+    border-radius: 0 !important;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     display: flex;
@@ -1567,7 +1567,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     font-weight: 800 !important;
     background: linear-gradient(165deg, #4b3817 0%, #2c200c 55%, #191206 100%) !important;
     border: 1px solid rgba(218, 175, 92, 0.55) !important;
-    border-radius: 8px !important;
+    border-radius: 0 !important;
     color: #f4d799 !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 224, 150, 0.22) !important;
@@ -2362,18 +2362,52 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     height: clamp(48px, 4.5vw, 58px) !important;
     background: rgba(14, 17, 26, 0.85) !important;
     border: 1px solid rgba(255, 210, 127, 0.28) !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
 }
 
+/* 有卡牌時：改為反向配色（明亮古金羊皮紙底色 + 銳利深黑文字），並配合分鐘卡改為非圓角 */
+.discard-pile-stack.has-cards {
+    border-radius: 0 !important;
+    border-color: #ffd27f !important;
+    background: #ecd08c !important;
+    box-shadow: 0 0 14px rgba(255, 210, 127, 0.65), 2px 2px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+.discard-pile-stack.has-multiple {
+    box-shadow: 2px 2px 0 #1a1205, 3px 3px 0 #ecd08c, 5px 5px 0 #1a1205, 0 0 16px rgba(255, 210, 127, 0.5) !important;
+}
+
 .discard-top-card {
-    border-radius: 8px !important;
-    border: 1.5px solid rgba(255, 210, 127, 0.7) !important;
-    background: linear-gradient(145deg, rgba(42, 32, 22, 0.95), rgba(22, 18, 14, 0.95)) !important;
+    border-radius: 0 !important;
+    border: 1.5px solid #6b4d1b !important;
+    background: linear-gradient(145deg, #fcedc2 0%, #ecd08c 55%, #dfbb6e 100%) !important;
+    color: #1a1205 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
 }
 
 .discard-top-card .card-val {
     font-size: clamp(0.88rem, 1.25vw, 1.04rem) !important;
+    color: #1a1205 !important;
+    font-weight: 900 !important;
+    text-shadow: none !important;
+}
+
+.discard-top-card .card-gear {
+    color: #5c3e0a !important;
+    font-weight: 800 !important;
+}
+
+.discard-top-card .card-player-tag {
+    background: rgba(26, 18, 5, 0.88) !important;
+    color: #ffe6a0 !important;
+    border: 1px solid rgba(255, 210, 127, 0.45) !important;
+    border-radius: 2px !important;
+}
+
+/* 移除出牌記錄紅色更新提示標籤 */
+.discard-pile-badge {
+    display: none !important;
 }
 
 .discard-pile-modal {
