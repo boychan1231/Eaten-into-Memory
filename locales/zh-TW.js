@@ -27,7 +27,6 @@
                 played_cards: '⚔️ 本回合出牌',
                 history: '📜 出牌記錄',
                 played_scores: '📊 出牌與積分',
-                size_preset: '切換寬度 (標準 260px / 中 390px / 寬 520px)',
                 size_reset: '重置預設尺寸',
                 resize_grip: '拖曳調整大小 (雙擊重置)'
             },
@@ -82,6 +81,13 @@
                 current_round: '本回合',
                 history: '歷史',
                 scores: '積分'
+            },
+            scores: {
+                tab_standings: '🏆 即時總分',
+                tab_history: '📜 得分歷程',
+                round_summary: '第 {round} 局結算',
+                empty_title: '第 1 局進行中',
+                empty_desc: '每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。'
             },
             settings: {
                 title: '⚙️ 遊戲設定',

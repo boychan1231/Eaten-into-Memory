@@ -242,6 +242,7 @@ class GameState {
         
         this.roundMarker = 1;
         this.gameRound = 1;
+        this.scoreHistory = []; // 新增：記錄每局得分結算歷程
         this.activePlayerIndex = 0;
         this.abilityMarker = false;
         this.gameEnded = false;

@@ -743,6 +743,32 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: none;
 }
 
+.score-tab-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 210, 127, 0.2);
+    padding-bottom: 6px;
+}
+.score-tab-btn {
+    flex: 1 1 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 210, 127, 0.22);
+    color: #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 6px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: center;
+}
+.score-tab-btn.active {
+    background: rgba(255, 210, 127, 0.25);
+    border-color: #ffd27f;
+    color: #ffd27f;
+}
+
 @media (max-width: 1100px) {
     .main-area {
         grid-template-columns: 1fr;

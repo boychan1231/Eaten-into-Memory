@@ -182,7 +182,6 @@
 							<summary class="side-panel-summary">
 								<span class="summary-label" data-i18n="ui.drawers.players">👥 角色</span>
 								<span class="drawer-size-btn-group">
-									<button type="button" class="drawer-size-action-btn btn-size-preset" title="切換寬度 (標準 260px / 中 390px / 寬 520px)">⤢</button>
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
@@ -200,14 +199,21 @@
 							<summary class="side-panel-summary">
 								<span class="summary-label" data-i18n="ui.drawers.scores">🏆 積分</span>
 								<span class="drawer-size-btn-group">
-									<button type="button" class="drawer-size-action-btn btn-size-preset" title="切換寬度 (標準 260px / 中 390px / 寬 520px)">⤢</button>
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
 								<div id="score-panel" class="log-side-info score-panel">
-									<div class="deck-title panel-title-highlight" data-i18n="ui.tabs.scores">🏆 積分榜</div>
-									<div id="score-list"></div>
+									<div class="score-tab-bar">
+										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
+										<button type="button" id="tab-score-history" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
+									</div>
+									<div id="score-tab-content-standings" class="score-tab-content active">
+										<div id="score-list"></div>
+									</div>
+									<div id="score-tab-content-history" class="score-tab-content" style="display: none;">
+										<div id="score-history-list"></div>
+									</div>
 								</div>
 							</div>
 						</details>
@@ -217,7 +223,6 @@
 							<summary class="side-panel-summary">
 								<span class="summary-label" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
 								<span class="drawer-size-btn-group">
-									<button type="button" class="drawer-size-action-btn btn-size-preset" title="切換寬度 (標準 260px / 中 390px / 寬 520px)">⤢</button>
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
@@ -255,7 +260,6 @@
 							<summary class="side-panel-summary">
 								<span class="summary-label" data-i18n="ui.drawers.evolution">⚡ 能力與進化</span>
 								<span class="drawer-size-btn-group">
-									<button type="button" class="drawer-size-action-btn btn-size-preset" title="切換寬度 (標準 260px / 中 390px / 寬 520px)">⤢</button>
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>
@@ -269,7 +273,6 @@
 							<summary class="side-panel-summary">
 								<span class="summary-label" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</span>
 								<span class="drawer-size-btn-group">
-									<button type="button" class="drawer-size-action-btn btn-size-preset" title="切換寬度 (標準 260px / 中 390px / 寬 520px)">⤢</button>
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
 							</summary>

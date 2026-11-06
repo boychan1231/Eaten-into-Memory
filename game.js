@@ -1580,6 +1580,31 @@ function endGameRound(gameState) {
         });
     }
 
+    // 記錄局得分歷程快照 (Score History)
+    if (!Array.isArray(gameState.scoreHistory)) {
+        gameState.scoreHistory = [];
+    }
+    const currentFinishedRound = gameState.gameRound;
+    const historyEntry = {
+        round: currentFinishedRound,
+        timestamp: Date.now(),
+        players: gameState.lastRoundSummary.map(item => ({
+            id: item.id,
+            name: item.name,
+            roleCard: item.roleCard,
+            type: item.type,
+            wasEjected: item.wasEjected,
+            roundScore: item.roundScore,
+            totalScore: item.totalScore
+        }))
+    };
+    const existingIndex = gameState.scoreHistory.findIndex(h => h.round === currentFinishedRound);
+    if (existingIndex >= 0) {
+        gameState.scoreHistory[existingIndex] = historyEntry;
+    } else {
+        gameState.scoreHistory.push(historyEntry);
+    }
+
     // ✅ 重點修正 1：在此處檢查是否達到最後一局 (例如第 5 局結束)
     // 如果是，直接結束遊戲，不再進行後續的手牌分發 (避免 Bug)
     if (gameState.gameRound >= numPlayers) {
@@ -1709,6 +1734,17 @@ function endGame(gameState) {
             .forEach(player => {
 			    player.score += 3;
             });
+    }
+
+    // 若有時魔陣營額外加分，同步至最後一筆歷程的總分
+    if (Array.isArray(gameState.scoreHistory) && gameState.scoreHistory.length > 0) {
+        const lastEntry = gameState.scoreHistory[gameState.scoreHistory.length - 1];
+        if (lastEntry && Array.isArray(lastEntry.players)) {
+            lastEntry.players.forEach(item => {
+                const p = gameState.players.find(x => x.id === item.id);
+                if (p) item.totalScore = p.score;
+            });
+        }
     }
 		
     const finalScores = gameState.players.slice().sort((a, b) => b.score - a.score);

@@ -826,6 +826,165 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     text-shadow: 0 0 6px rgba(255, 210, 127, 0.5) !important;
 }
 
+/* 積分面板內部頁籤 (即時總分 / 得分歷程) */
+.score-tab-bar {
+    display: flex !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+    border-bottom: 1px solid rgba(255, 210, 127, 0.2) !important;
+    padding-bottom: 6px !important;
+}
+.score-tab-btn {
+    flex: 1 1 50% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 210, 127, 0.22) !important;
+    color: #e0e0e0 !important;
+    border-radius: 6px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 4px 6px !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    user-select: none !important;
+}
+.score-tab-btn:hover {
+    background: rgba(255, 210, 127, 0.15) !important;
+    border-color: rgba(255, 210, 127, 0.5) !important;
+    color: #fff !important;
+}
+.score-tab-btn.active {
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.25), rgba(255, 170, 50, 0.15)) !important;
+    border-color: var(--gold) !important;
+    color: var(--gold) !important;
+    box-shadow: 0 0 10px rgba(255, 210, 127, 0.25) !important;
+}
+
+/* 得分歷程內容樣式 */
+.score-history-empty {
+    text-align: center;
+    padding: 16px 8px;
+    color: #aaa;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 210, 127, 0.2);
+    border-radius: 8px;
+    margin-top: 4px;
+}
+.score-history-empty-icon {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+.score-history-empty-title {
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+}
+.score-history-empty-desc {
+    font-size: 0.74rem;
+    color: #888;
+}
+
+.score-history-section-title {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 5px;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+}
+
+/* 玩家歷程總覽卡 */
+.score-player-summary-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    padding: 5px 7px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.score-player-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.score-round-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.score-round-chip {
+    font-size: 0.7rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 210, 127, 0.18);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: #ddd;
+}
+.score-round-chip.ejected {
+    border-color: rgba(255, 75, 75, 0.3);
+    color: #ff7575;
+    text-decoration: line-through;
+}
+
+/* 各局明細結算卡 */
+.score-history-round-card {
+    background: rgba(14, 17, 26, 0.6);
+    border: 1px solid rgba(255, 210, 127, 0.16);
+    border-radius: 7px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
+.score-history-round-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(255, 210, 127, 0.12);
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.score-history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+.score-history-row:last-child {
+    border-bottom: none;
+}
+.score-history-numbers {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.score-history-gain {
+    font-weight: 700;
+    color: #4cd137;
+}
+.score-history-gain.zero {
+    color: #888;
+}
+.score-history-gain.ejected {
+    color: #e84118;
+}
+.score-history-total {
+    color: #ffd27f;
+    font-weight: 600;
+}
+
 /* 2. 出牌記錄條目卡片 */
 .player-history-row {
     display: flex !important;

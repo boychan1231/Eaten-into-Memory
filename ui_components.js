@@ -400,41 +400,156 @@ function renderPlayedCardsPanel(gameState) {
     }
 }
 
-// ✅ 新增：渲染右側積分榜
+// 綁定積分面板頁籤 (即時總分 / 得分歷程)
+function bindScoreTabs() {
+    const tabButtons = document.querySelectorAll('.score-tab-btn');
+    tabButtons.forEach(btn => {
+        if (btn._tabBound) return;
+        btn._tabBound = true;
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetTab = btn.getAttribute('data-score-tab');
+            const parentPanel = btn.closest('.score-panel');
+            if (!parentPanel) return;
+            parentPanel.querySelectorAll('.score-tab-btn').forEach(b => {
+                b.classList.toggle('active', b === btn);
+            });
+            const standingsPane = parentPanel.querySelector('#score-tab-content-standings');
+            const historyPane = parentPanel.querySelector('#score-tab-content-history');
+            if (standingsPane) standingsPane.style.display = (targetTab === 'standings') ? 'block' : 'none';
+            if (historyPane) historyPane.style.display = (targetTab === 'history') ? 'block' : 'none';
+        });
+    });
+}
+
+// ✅ 渲染積分面板 (支援即時總分與得分歷程分頁)
 function renderScorePanel(gameState) {
-    const list = document.getElementById('score-list');
-    if (!list) return;
-    list.innerHTML = '';
+    if (!gameState) return;
+    bindScoreTabs();
 
-    // 依分數高低排序 (高分在前)
-    const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
-    const maxScore = sortedPlayers.length > 0 ? sortedPlayers[0].score : -999;
+    // 1. 渲染即時總分榜 (score-list)
+    const lists = document.querySelectorAll('#score-list');
+    lists.forEach(list => {
+        list.innerHTML = '';
+        const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+        const maxScore = sortedPlayers.length > 0 ? sortedPlayers[0].score : -999;
 
-    sortedPlayers.forEach(p => {
-        const row = document.createElement('div');
-        row.className = 'score-row';
+        sortedPlayers.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'score-row';
 
-        // 若是最高分且分數 > 0，標記為領先者
-        if (p.score === maxScore && p.score > 0) {
-            row.classList.add('leader');
+            if (p.score === maxScore && p.score > 0) {
+                row.classList.add('leader');
+            }
+            if (p.isEjected) {
+                row.style.opacity = '0.5';
+                row.style.textDecoration = 'line-through';
+            }
+
+            const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
+            const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey])
+                ? window.UI_CONFIG.ROLE_COLORS[roleKey]
+                : '#ccc';
+
+            row.innerHTML = `
+                <span class="score-name" style="color:${color}">${p.name}</span>
+                <span class="score-val">${p.score}</span>
+            `;
+            list.appendChild(row);
+        });
+    });
+
+    // 2. 渲染得分歷程分頁 (score-history-list)
+    const histContainers = document.querySelectorAll('#score-history-list');
+    histContainers.forEach(container => {
+        container.innerHTML = '';
+
+        if (!Array.isArray(gameState.scoreHistory) || gameState.scoreHistory.length === 0) {
+            container.innerHTML = `
+                <div class="score-history-empty">
+                    <div class="score-history-empty-icon">⏳</div>
+                    <div class="score-history-empty-title">第 1 局進行中</div>
+                    <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。</div>
+                </div>
+            `;
+            return;
         }
-        // 若被逐出，降低透明度
-        if (p.isEjected) {
-            row.style.opacity = '0.5';
-            row.style.textDecoration = 'line-through';
-        }
 
-        const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
-        // 使用 config 定義的顏色，若無則預設灰色
-        const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey])
-            ? window.UI_CONFIG.ROLE_COLORS[roleKey]
-            : '#ccc';
+        // A. 全體角色歷程總覽 (每位角色的各局得分軌跡)
+        const summaryWrapper = document.createElement('div');
+        summaryWrapper.className = 'score-history-players-overview';
+        summaryWrapper.innerHTML = `<div class="score-history-section-title">📊 角色得分軌跡</div>`;
 
-        row.innerHTML = `
-            <span class="score-name" style="color:${color}">${p.name}</span>
-            <span class="score-val">${p.score}</span>
-        `;
-        list.appendChild(row);
+        const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+        sortedPlayers.forEach(p => {
+            const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
+            const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey])
+                ? window.UI_CONFIG.ROLE_COLORS[roleKey]
+                : '#ccc';
+
+            const roundPills = gameState.scoreHistory.map(entry => {
+                const pEntry = Array.isArray(entry.players) ? entry.players.find(x => x.id === p.id) : null;
+                if (!pEntry) return '';
+                const scoreText = pEntry.wasEjected ? '0齒(逐出)' : `+${pEntry.roundScore}齒`;
+                const extraClass = pEntry.wasEjected ? 'ejected' : '';
+                return `<span class="score-round-chip ${extraClass}">第${entry.round}局: ${scoreText}</span>`;
+            }).join('');
+
+            const playerCard = document.createElement('div');
+            playerCard.className = 'score-player-summary-card';
+            playerCard.innerHTML = `
+                <div class="score-player-summary-header">
+                    <span class="score-name" style="color:${color}">${p.name}</span>
+                    <span class="score-val">${p.score} 分</span>
+                </div>
+                <div class="score-round-chips">${roundPills}</div>
+            `;
+            summaryWrapper.appendChild(playerCard);
+        });
+        container.appendChild(summaryWrapper);
+
+        // B. 各局結算明細清單 (由新到舊倒序呈現)
+        const roundsWrapper = document.createElement('div');
+        roundsWrapper.className = 'score-history-rounds-list';
+        roundsWrapper.innerHTML = `<div class="score-history-section-title" style="margin-top: 10px;">📜 各局結算明細</div>`;
+
+        const reversedHistory = [...gameState.scoreHistory].reverse();
+        reversedHistory.forEach(entry => {
+            const roundCard = document.createElement('div');
+            roundCard.className = 'score-history-round-card';
+
+            let rowsHtml = '';
+            if (Array.isArray(entry.players)) {
+                entry.players.forEach(p => {
+                    const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
+                    const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey])
+                        ? window.UI_CONFIG.ROLE_COLORS[roleKey]
+                        : '#ccc';
+                    const gainClass = p.wasEjected ? 'ejected' : (p.roundScore > 0 ? '' : 'zero');
+                    const gainText = p.wasEjected ? '<s>+0 齒</s> (逐出)' : `+${p.roundScore} 齒`;
+
+                    rowsHtml += `
+                        <div class="score-history-row">
+                            <span class="score-history-name" style="color:${color}">${p.name}</span>
+                            <div class="score-history-numbers">
+                                <span class="score-history-gain ${gainClass}">${gainText}</span>
+                                <span class="score-history-total">累計 ${p.totalScore}分</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            roundCard.innerHTML = `
+                <div class="score-history-round-header">
+                    <span>🏆 第 ${entry.round} 局結算快照</span>
+                </div>
+                <div class="score-history-rows">${rowsHtml}</div>
+            `;
+            roundsWrapper.appendChild(roundCard);
+        });
+        container.appendChild(roundsWrapper);
     });
 }
 

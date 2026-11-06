@@ -27,7 +27,6 @@
                 played_cards: '⚔️ Current Round',
                 history: '📜 Minute History',
                 played_scores: '📊 Played & Scores',
-                size_preset: 'Toggle width (Standard 260px / Medium 390px / Wide 520px)',
                 size_reset: 'Reset to default size',
                 resize_grip: 'Drag to resize (Double click to reset)'
             },
@@ -82,6 +81,13 @@
                 current_round: 'Current',
                 history: 'History',
                 scores: 'Scores'
+            },
+            scores: {
+                tab_standings: '🏆 Standings',
+                tab_history: '📜 Score History',
+                round_summary: 'Round {round} Summary',
+                empty_title: 'Round 1 in Progress',
+                empty_desc: 'After each round ends, round scores, ejection status, and cumulative totals will appear here.'
             },
             settings: {
                 title: '⚙️ Game Settings',

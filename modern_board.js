@@ -1254,37 +1254,8 @@
                     try { localStorage.removeItem(storageKey); } catch (_) { }
                 });
 
-                // 綁定 summary 內的尺寸快捷切換按鈕 (⤢ / ↺)
-                const presetBtn = drawer.querySelector('.btn-size-preset');
+                // 綁定 summary 內的尺寸重置按鈕 (↺)
                 const resetBtn = drawer.querySelector('.btn-size-reset');
-
-                if (presetBtn) {
-                    const widthPresets = [260, 390, 520];
-                    presetBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!drawer.open) return;
-
-                        const currentWidth = drawer.getBoundingClientRect().width;
-                        let nextWidth = widthPresets[0];
-                        for (let i = 0; i < widthPresets.length; i++) {
-                            if (currentWidth < widthPresets[i] - 15) {
-                                nextWidth = widthPresets[i];
-                                break;
-                            }
-                        }
-                        if (currentWidth >= widthPresets[widthPresets.length - 1] - 15) {
-                            nextWidth = widthPresets[0];
-                        }
-
-                        drawer.style.setProperty('--drawer-custom-width', `${nextWidth}px`);
-                        try {
-                            const existing = JSON.parse(localStorage.getItem(storageKey) || '{}');
-                            existing.width = nextWidth;
-                            localStorage.setItem(storageKey, JSON.stringify(existing));
-                        } catch (_) { }
-                    });
-                }
 
                 if (resetBtn) {
                     resetBtn.addEventListener('click', (e) => {
