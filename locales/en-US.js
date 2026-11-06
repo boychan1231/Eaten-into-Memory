@@ -21,7 +21,8 @@
             drawers: {
                 evolution: '⚡ Abilities & Evolution',
                 log: '📝 Game Log',
-                players: '👥 Player Status',
+                players: '👥 Characters',
+                scores: '🏆 Scores',
                 players_scores: '👥 Players & Standings',
                 played_cards: '⚔️ Current Round',
                 history: '📜 Minute History',

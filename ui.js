@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
         globalGameState.needsHandDealAnimation = true;
 
         // 遊戲開始時：
-        // 左側對局情報：各角色與積分 (players-panel-details) 預設打開
+        // 左側對局情報：角色 (players-panel-details) 預設打開
         // 右側自身決策：能力與進化 (evo-panel-details) 預設打開
         const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
         if (leftDrawers.length > 0) {

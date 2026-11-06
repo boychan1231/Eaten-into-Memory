@@ -371,6 +371,7 @@ details.hud-drawer[open] {
 /* 確保新架構下所有懸浮抽屜內嵌面板不受舊樣式影響 */
 .hud-drawer .log-side-info,
 #players-panel-details .score-panel,
+#scores-panel-details .score-panel,
 #history-panel-details .history-panel,
 #played-panel-details #played-cards-panel,
 #evo-panel-details #evolution-progress-area,
@@ -384,11 +385,9 @@ details.hud-drawer[open] {
     box-shadow: none !important;
 }
 
-/* 左側各角色與積分抽屜內的即時積分榜微調 */
-#players-panel-details .score-panel {
-    border-bottom: 1px solid rgba(255, 210, 127, 0.22) !important;
-    padding-bottom: 8px !important;
-    margin-bottom: 8px !important;
+/* 左側積分抽屜內的即時積分榜微調 */
+#scores-panel-details .score-panel {
+    padding-bottom: 4px !important;
 }
 
 /* 所有抽屜子標題統一規範 */
