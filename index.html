@@ -4,23 +4,161 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Eaten into Memory</title>
+	<title>Eaten into Memory (現代 PixiJS 版)</title>
 		<!-- 引入 Google Fonts: Noto Sans TC -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="modern.css">
 </head>
 
 <body>
 
+	<!-- 🎬 現代版開場動畫與整合式初始選單 -->
+	<div id="modern-intro-overlay" class="modern-intro-overlay">
+		<div id="intro-canvas-host" class="intro-canvas-host"></div>
+
+		<button id="intro-skip-btn" class="intro-skip-btn intro-custom-btn" type="button">跳過開場 ⏭</button>
+
+		<div id="intro-ui-container" class="intro-ui-container is-hidden">
+			<div class="intro-title-block">
+				<div class="intro-title-sub-en">CHRONICLES OF THE FORGOTTEN CLOCK</div>
+				<h1 class="intro-title-main">EATEN INTO MEMORY</h1>
+			</div>
+
+			<div class="intro-menu-card intro-menu-compact">
+				<div class="intro-actions-row">
+					<button type="button" id="intro-enter-game-btn" class="intro-enter-btn intro-custom-btn">
+						開始遊戲 (5P)
+					</button>
+					<button type="button" id="intro-view-rules-btn" class="intro-secondary-btn intro-custom-btn">
+						📖 規則
+					</button>
+				</div>
+
+				<details class="intro-settings-drawer">
+					<summary id="intro-drawer-summary" class="intro-drawer-summary">⚙ 變更模式、角色與輔助選項（預設：5P · 時魔）</summary>
+					<div class="intro-drawer-body">
+						<div class="intro-section">
+							<div class="intro-section-label">選擇規模</div>
+							<div class="intro-mode-group">
+								<button type="button" class="intro-mode-btn intro-custom-btn active" data-mode="5P">
+									<span class="mode-name">5P 完整模式</span>
+									<span class="mode-desc">5 局 · 12 張手牌 · 含時之惡與受詛者</span>
+								</button>
+								<button type="button" class="intro-mode-btn intro-custom-btn" data-mode="3P">
+									<span class="mode-name">3P 競速模式</span>
+									<span class="mode-desc">3 局 · 13 張手牌 · 純時魔三針對決</span>
+								</button>
+							</div>
+						</div>
+
+						<div class="intro-section">
+							<div class="intro-section-label">選擇角色</div>
+
+							<!-- 5P 角色清單 -->
+							<div id="intro-roles-5p" class="intro-role-grid">
+								<button type="button" class="intro-role-card intro-custom-btn active" data-role="SM_1">
+									<img src="assets/soul_demon.png" alt="時魔" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">時魔（幼體）</div>
+										<div class="intro-role-tag">收集記憶碎片，進化為三針型態</div>
+									</div>
+								</button>
+								<button type="button" class="intro-role-card intro-custom-btn" data-role="sin">
+									<img src="assets/soul_sin.png" alt="時之惡" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">時之惡</div>
+										<div class="intro-role-tag">掌控罪業引力，吞噬鄰近者的時間</div>
+									</div>
+								</button>
+								<button type="button" class="intro-role-card intro-custom-btn" data-role="SCZ">
+									<img src="assets/soul_scz.png" alt="受詛者" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">受詛者</div>
+										<div class="intro-role-tag">背負時之枷鎖，於絕境中逆轉勝局</div>
+									</div>
+								</button>
+							</div>
+
+							<!-- 3P 角色清單 -->
+							<div id="intro-roles-3p" class="intro-role-grid is-hidden">
+								<button type="button" class="intro-role-card intro-custom-btn active" data-role="時針">
+									<img src="assets/soul_hour.png" alt="時針" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">時針</div>
+										<div class="intro-role-tag">撥動牌堆順序，改寫時辰歸屬</div>
+									</div>
+								</button>
+								<button type="button" class="intro-role-card intro-custom-btn" data-role="分針">
+									<img src="assets/soul_min.png" alt="分針" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">分針</div>
+										<div class="intro-role-tag">順逆時針微調，精準閃避或搶奪</div>
+									</div>
+								</button>
+								<button type="button" class="intro-role-card intro-custom-btn" data-role="秒針">
+									<img src="assets/soul_sec.png" alt="秒針" class="intro-role-img">
+									<div class="intro-role-info">
+										<div class="intro-role-name">秒針</div>
+										<div class="intro-role-tag">雙牌預備出擊，觀察局勢二選一</div>
+									</div>
+								</button>
+							</div>
+						</div>
+
+						<div class="intro-options-row">
+							<label class="intro-chk-label">
+								<input type="checkbox" id="intro-ability-chk" checked>
+								<span>⚡ 啟用特殊能力</span>
+							</label>
+							<label class="intro-chk-label">
+								<input type="checkbox" id="intro-tutorial-chk" checked>
+								<span>💡 教學引導</span>
+							</label>
+						</div>
+					</div>
+				</details>
+			</div>
+		</div>
+	</div>
+
 	<div class="game-wrapper">
 		<header>
 			<div class="tab-nav">
-				<button class="tab-btn active" data-target="game-content">遊戲 (經典 DOM)</button>
-				<a href="modern.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; color:#7c8cff; border-color:rgba(124,140,255,0.4);">🔮 現代 PixiJS 版</a>
-				<button class="tab-btn" data-target="rules-content">規則</button>
-				<button class="tab-btn" data-target="settings-content">設定</button>
+				<button class="tab-btn active" data-target="game-content" data-i18n="ui.tabs.game">遊戲</button>
+				<button class="tab-btn" data-target="rules-content" data-i18n="ui.tabs.rules">規則</button>
+				<button class="tab-btn" data-target="settings-content" data-i18n="ui.tabs.settings">設定</button>
+				<details class="version-switch-details">
+					<summary class="version-switch-summary">🗂 版本切換</summary>
+					<div class="version-switch-menu">
+						<span class="version-item is-current">🔮 現代 PixiJS 版（目前）</span>
+						<a href="classic.html" class="version-item">🔄 經典 DOM 版</a>
+					</div>
+				</details>
+			</div>
+
+			<div id="deck-info" class="hud-top-status-pill no-click">
+				<div class="hud-stat-item">
+					<span class="hud-stat-label">⏳ 局次</span>
+					<span class="deck-count" id="game-round-num">--</span>
+				</div>
+				<span class="hud-stat-sep">｜</span>
+				<div class="hud-stat-item">
+					<span class="hud-stat-label">🔔 回合</span>
+					<span class="deck-count" id="round-count-num">--</span>
+				</div>
+				<span class="hud-stat-sep">｜</span>
+				<div class="hud-stat-item">
+					<span class="hud-stat-label">🃏 牌庫</span>
+					<span class="deck-count" id="deck-count-num">--</span>
+				</div>
+				<span class="hud-stat-sep">｜</span>
+				<div id="round-penalty-display" class="hud-stat-item hud-penalty-badge" data-penalty-mode="time" title="當前生效的受罰規則">
+					<span class="hud-penalty-icon">⚠️</span>
+					<span class="hud-penalty-text">受罰：最高小時值</span>
+				</div>
 			</div>
 
 			<div class="game-status">
@@ -30,100 +168,130 @@
 						<span class="audio-state">開</span>
 					</button>
 				</div>
-				<button id="start-game-btn" class="start-game-btn">開始新遊戲</button>
+				<button id="start-game-btn" class="start-game-btn" data-i18n="ui.buttons.start_game">開始新遊戲</button>
 			</div>
 		</header>
 
 		<div class="tab-wrapper">
 			<div id="game-content" class="tab-content active-tab">
 				<div class="main-area">
-					<div class="log-section game-panel">
-						<div class="log-section-title">📜 遊戲日誌</div>
-						<div id="game-log-container">
-							<ul id="log-list">
-								<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
-							</ul>
-						</div>
-						<div id="evolution-progress-area" class="progress-area"></div>
+					<!-- 左側懸浮抽屜群：對局情報（不擠壓中央鐘面） -->
+					<div class="hud-drawer-stack hud-drawer-left">
+						<!-- 1. 📝 遊戲日誌（預設展開） -->
+						<details id="log-panel-details" class="log-section side-panel-group hud-drawer" open>
+							<summary class="side-panel-summary">
+								<span class="summary-label" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
+								<span class="drawer-size-btn-group">
+									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
+								</span>
+							</summary>
+							<div class="hud-drawer-body">
+								<div id="game-log-container">
+									<ul id="log-list">
+										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
+									</ul>
+								</div>
+							</div>
+						</details>
+
+						<!-- 2. 🏆 積分 -->
+						<details id="scores-panel-details" class="side-panel-group hud-drawer">
+							<summary class="side-panel-summary">
+								<span class="summary-label" data-i18n="ui.drawers.scores">🏆 積分</span>
+								<span class="drawer-size-btn-group">
+									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
+								</span>
+							</summary>
+							<div class="hud-drawer-body">
+								<div id="score-panel" class="log-side-info score-panel">
+									<div class="score-tab-bar">
+										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
+										<button type="button" id="tab-score-history" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
+									</div>
+									<div id="score-tab-content-standings" class="score-tab-content active">
+										<div id="score-list"></div>
+									</div>
+									<div id="score-tab-content-history" class="score-tab-content" style="display: none;">
+										<div id="score-history-list"></div>
+									</div>
+								</div>
+							</div>
+						</details>
+
+						<!-- 3. 👥 角色 -->
+						<details id="players-panel-details" class="players-block side-panel-group hud-drawer">
+							<summary class="side-panel-summary">
+								<span class="summary-label" data-i18n="ui.drawers.players">👥 角色</span>
+								<span class="drawer-size-btn-group">
+									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
+								</span>
+							</summary>
+							<div class="hud-drawer-body">
+								<div id="players-section" class="players-grid">
+									<div class="player-card placeholder">
+										<p>等待遊戲開始...</p>
+									</div>
+								</div>
+							</div>
+						</details>
 					</div>
 
-					<section class="clock-panel game-panel">
+					<!-- 中央全視野動態星芒鐘面 -->
+					<section class="clock-panel">
 						<div class="clock-section">
 							<div id="clock-face">
-								<img src="clock-bg.png" class="clock-bg-img" alt="鐘面">
-								<svg id="connection-lines" class="connection-lines-svg"></svg>
+								<div id="modern-board"></div>
 								<div class="clock-center"></div>
-								<div id="round-penalty-display" class="penalty-display hidden"></div>
 							</div>
+							<!-- 分鐘卡比大小與次序排列動態舞台 -->
+							<div id="minute-clash-overlay" class="minute-clash-overlay hidden" aria-live="polite"></div>
+							<!-- 鐘面置中快捷按鈕 -->
+							<button id="clock-recenter-btn" class="clock-recenter-btn hidden" type="button" aria-label="置中鐘面" title="鐘面視角置中（或雙擊鐘面空白處）">
+								<span class="recenter-icon">⌖</span>
+								<span class="recenter-text" data-i18n="ui.buttons.recenter">置中鐘面</span>
+							</button>
 						</div>
 					</section>
 
-					<details id="side-panel-details" class="side-panel-group game-panel" open>
-						<summary class="side-panel-summary">資訊面板</summary>
-						<div id="deck-info" class="log-side-info no-click">
-							<div class="info-block">
-								<div class="deck-title">小時卡庫</div>
-								<div class="deck-count" id="deck-count-num">--</div>
+					<!-- 右側懸浮抽屜群：自身決策（不擠壓中央鐘面） -->
+					<div class="hud-drawer-stack hud-drawer-right">
+						<!-- 1. ⚡ 能力與進化（預設展開） -->
+						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
+							<summary class="side-panel-summary">
+								<span class="summary-label" data-i18n="ui.drawers.evolution">⚡ 能力與進化</span>
+								<span class="drawer-size-btn-group">
+									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
+								</span>
+							</summary>
+							<div class="hud-drawer-body">
+								<div id="evolution-progress-area" class="progress-area"></div>
 							</div>
+						</details>
 
-							<div class="info-divider"></div>
-
-							<div class="info-block">
-								<div class="deck-title">遊戲局次</div>
-								<div class="deck-count" id="game-round-num">--</div>
+						<!-- 2. ⚔️ 本回合出牌 -->
+						<details id="played-panel-details" class="side-panel-group hud-drawer">
+							<summary class="side-panel-summary">
+								<span class="summary-label" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</span>
+								<span class="drawer-size-btn-group">
+									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
+								</span>
+							</summary>
+							<div class="hud-drawer-body">
+								<div id="played-cards-panel" class="log-side-info">
+									<div class="deck-title panel-title-highlight" data-i18n="ui.tabs.current_round">本回合出牌</div>
+									<div id="played-cards-list"></div>
+								</div>
 							</div>
-
-							<div class="info-divider"></div>
-
-							<div class="info-block">
-								<div class="deck-title">當前回合</div>
-								<div class="deck-count" id="round-count-num">--</div>
-							</div>
-						</div>
-
-						<div class="panel-switcher">
-							<button id="btn-show-played" class="switch-btn active" type="button">本回合</button>
-							<button id="btn-show-history" class="switch-btn" type="button">歷史</button>
-							<button id="btn-show-score" class="switch-btn" type="button">積分</button>
-						</div>
-
-						<div id="played-cards-panel" class="log-side-info">
-							<div class="deck-title panel-title-highlight">本回合出牌</div>
-							<div id="played-cards-list"></div>
-						</div>
-
-						<div id="score-panel" class="log-side-info score-panel">
-							<div class="score-tab-bar">
-								<button type="button" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
-								<button type="button" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
-							</div>
-							<div id="score-tab-content-standings" class="score-tab-content active">
-								<div id="score-list"></div>
-							</div>
-							<div id="score-tab-content-history" class="score-tab-content" style="display: none;">
-								<div id="score-history-list"></div>
-							</div>
-						</div>
-
-						<div id="player-history-panel" class="log-side-info history-panel">
-							<div class="deck-title panel-title-highlight">各角色出牌記錄</div>
-							<div id="player-history-list"></div>
-						</div>
-
-					</details>
-
+						</details>
+					</div>
 				</div>
 
-				<div id="human-player-area" class="human-area game-panel">
+				<!-- 底部無框懸浮手牌塢 -->
+				<div id="human-player-area" class="human-area">
 					<div class="human-top-bar">
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
-							
-							<div>手牌：<span id="h-hand-count">0</span>
-								<span style="border-left: 1px solid #555; height: 16px; margin: 0 6px;"></span>
-								位置： <span id="h-pos">--</span>
-							</div>
-							
+
 							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力乙太發條管 (Mana)">
 								<div class="mech-mana-gauge is-depleted" title="法力乙太發條管 (Mana): 0/1">
 									<span class="mech-gauge-label">Mana 乙太</span>
@@ -160,17 +328,24 @@
 								</div>
 							</div>
 							
-							<div class="resource-chip resource-chip--shield">
+							<div class="resource-chip resource-chip--shield" title="護盾點數">
 								<span class="resource-chip__icon icon-shield-css" aria-hidden="true"></span>
-								護盾： <span id="h-dice">--</span>
+								護盾 <span id="h-dice">--</span>
 							</div>
 							
-							<div>收集小時卡：
-								<span id="h-hour">0</span>
-								 
+							<div class="resource-chip resource-chip--hour" title="已收集小時卡">
+								🃏 收集 <span id="h-hour">0</span>
 								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
 							</div>
-								<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 1rem; padding: 2px 6px;">⇅ 手牌排序</button>
+
+							<details class="human-more-stats-details">
+								<summary class="human-more-summary">更多 ▾</summary>
+								<div class="human-more-body">
+									<span>手牌：<strong id="h-hand-count">0</strong></span>
+									<span>位置：<strong id="h-pos">--</strong></span>
+									<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 0.78rem; padding: 2px 7px;" data-i18n="ui.buttons.sort">⇅ 排序</button>
+								</div>
+							</details>
 						</div>
 					</div>
 					
@@ -191,24 +366,16 @@
 
 									<div id="human-hand" class="hand-display"></div>
 
-									<div class="info-divider"></div>
-
 									<div id="human-controls" class="hand-controls">
 										<div id="action-hint" class="action-hint" role="status" aria-live="polite">
 										</div>
-										<button id="confirm-move-btn" disabled>確認出牌</button>
-										<button id="next-step-btn" disabled>下一回合</button>
+										<div class="hand-action-btns">
+											<button id="confirm-move-btn" disabled data-i18n="ui.buttons.confirm_move">確認出牌</button>
+											<button id="next-step-btn" disabled data-i18n="ui.buttons.next_round">下一回合</button>
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="players-block">
-					<div id="players-section" class="players-grid game-panel">
-						<div class="player-card placeholder">
-							<p>等待遊戲開始...</p>
 						</div>
 					</div>
 				</div>
@@ -217,7 +384,7 @@
 
 			<div id="rules-content" class="tab-content">
 
-				<div class="rules-container"
+				<div class="rules-container" data-i18n-html="rules.manual_html"
 					style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
 
 					<h2
@@ -375,10 +542,29 @@
 
 
 			<div id="settings-content" class="tab-content">
-				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;">⚙️ 遊戲設定</h3>
+				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;" data-i18n="ui.settings.title">⚙️ 遊戲設定</h3>
 
 				<div class="settings-two-column">
 					<div class="settings-column">
+						<div class="setting-item">
+							<h4 data-i18n="ui.settings.language">🌐 語言 / Language</h4>
+							<div class="settings-radio-group">
+								<label class="radio-label">
+									<input type="radio" name="ui-lang" value="zh-TW" checked>
+									<span class="radio-custom"></span>
+									<span>繁體中文</span>
+								</label>
+								<label class="radio-label">
+									<input type="radio" name="ui-lang" value="en-US">
+									<span class="radio-custom"></span>
+									<span>English</span>
+								</label>
+							</div>
+							<p class="setting-note">切換遊戲界面語言 / Switch language</p>
+						</div>
+
+						<hr class="settings-divider">
+
 						<div class="setting-item">
 							<h4>日誌速度</h4>
 							<div class="settings-range-row">
@@ -653,31 +839,34 @@
 						style="color: #ffd27f; font-size: 2rem; margin-bottom: 8px;">第 X 局結算</h2>
 					<p id="round-ready-content" class="modal-desc" style="font-size: 1.1rem; margin-bottom: 16px; color: #a4b0be;">準備進入第
 						Y 局</p>
+					
+					<!-- 📊 局結算分數詳情表格 -->
 					<div id="round-ready-score-table" class="round-score-table-container"></div>
+
 					<div class="modal-actions" style="justify-content: center; margin-top: 20px;">
 						<button id="btn-start-next-round" class="primary" type="button"
-							style="min-width: 180px; font-size: 1.15rem; padding: 10px 24px;">準備完成 ➔</button>
+							style="min-width: 180px; font-size: 1.15rem; padding: 10px 24px;" data-i18n="ui.round_ready.ready_btn">準備完成 ➔</button>
 					</div>
 				</div>
 			</div>
 
 			<div id="game-over-overlay" class="modal-overlay hidden">
 				<div class="modal game-over-modal">
-					<h1 id="winner-title" class="game-over-title">遊戲結束</h1>
+					<h1 id="winner-title" class="game-over-title" data-i18n="ui.buttons.game_over">遊戲結束</h1>
 					<p id="winner-subtitle" class="game-over-subtitle">--</p>
 
 					<div class="ranking-header">
-						<span>排名</span>
-						<span>玩家</span>
-						<span>身份</span>
-						<span>得分</span>
+						<span data-i18n="ui.round_ready.col_rank">排名</span>
+						<span data-i18n="ui.round_ready.col_player">玩家</span>
+						<span data-i18n="ui.round_ready.col_role">身份</span>
+						<span data-i18n="ui.round_ready.col_total_score">得分</span>
 					</div>
 					<div id="game-over-ranking-list" class="ranking-list">
 					</div>
 
 					<div class="modal-actions game-over-actions">
-						<button id="btn-restart-game" class="primary btn-restart-game">🔄 再玩一局</button>
-						<button id="btn-close-gameover" class="btn-close-gameover">👀 查看盤面</button>
+						<button id="btn-restart-game" class="primary btn-restart-game" data-i18n="ui.buttons.restart">🔄 再玩一局</button>
+						<button id="btn-close-gameover" class="btn-close-gameover" data-i18n="ui.buttons.view_board">👀 查看盤面</button>
 					</div>
 				</div>
 			</div>
@@ -687,13 +876,14 @@
 	<!-- 新手教學動態引導氣泡框 -->
 	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
 		<div class="tutorial-tooltip-header">
-			<span class="tutorial-badge">💡 教學指南</span>
+			<span class="tutorial-badge">💡 教學</span>
 			<button id="tutorial-close-btn" class="tutorial-close-x" title="關閉教學" aria-label="關閉教學">&times;</button>
 		</div>
 		<div id="tutorial-tooltip-text" class="tutorial-tooltip-body"></div>
 		<div class="tutorial-pointer-arrow"></div>
 	</div>
 
+	<script src="pixi.min.js"></script>
 	<script src="gsap.min.js"></script>
 	<script src="locales/zh-TW.js"></script>
 	<script src="locales/en-US.js"></script>
@@ -703,15 +893,15 @@
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
 	<script src="audio.js"></script>
-			
-	<script src="abilities.js"></script>	
+	<script src="abilities.js"></script>
 	<script src="game_setup.js"></script>
 	<script src="game.js"></script>
-
 	<script src="ui_modals.js"></script>
 	<script src="ui_components.js"></script>
 	<script src="tutorial_mode.js"></script>
 	<script src="ui.js"></script>
+	<script src="modern_board.js"></script>
+	<script src="modern_intro.js"></script>
 </body>
 
 </html>
