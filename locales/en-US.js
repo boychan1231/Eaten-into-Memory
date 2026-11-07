@@ -94,6 +94,10 @@
                 language: '🌐 語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
                 lang_en: 'English (英文)',
+                ai_difficulty_title: '🤖 AI Difficulty',
+                ai_difficulty_normal: 'Normal (Enhanced Algorithm)',
+                ai_difficulty_easy: 'Easy (Legacy Baseline)',
+                ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
                 sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.'
             },

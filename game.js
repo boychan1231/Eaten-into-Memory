@@ -24,16 +24,66 @@ function activateSinTargetingAbility(gameState) {
     if (timeDemons.length === 0) return;
 
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
-    
-    // 機率改為 60% (0.6)
-    if (sinPlayer.mana >= COST && checkChance(0.6)) {
-        sinPlayer.mana -= COST;
-        gameState.sinTargetingMode = 'sin';
-        appLogger.log(`⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。`);
-    } else {
-        gameState.sinTargetingMode = 'default';
-        appLogger.log(`【時之惡】鐘面數值最大者受罰 (接近12)。`);
+    const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
+
+    if (isEasy) {
+        // 原始基礎行為（簡單）：60% 機率直接發動
+        if (sinPlayer.mana >= COST && checkChance(0.6)) {
+            sinPlayer.mana -= COST;
+            gameState.sinTargetingMode = 'sin';
+            appLogger.log(`⚡【時之惡】(AI-簡單) 發動能力！本回合距離「時之惡」最近者受罰。`);
+        } else {
+            gameState.sinTargetingMode = 'default';
+            appLogger.log(`【時之惡】(AI-簡單) 鐘面數值最大者受罰 (接近12)。`);
+        }
+        return;
     }
+
+    // 新改良演算法（一般）：依環形鐘面幾何距離智能決策
+    if (sinPlayer.mana >= COST) {
+        const clockDist = (a, b) => {
+            if (typeof a !== 'number' || typeof b !== 'number') return 999;
+            const diff = Math.abs(a - b);
+            return Math.min(diff, 12 - diff);
+        };
+
+        const sinPos = sinPlayer.currentClockPosition;
+        const demonsWithPos = timeDemons.filter(d => typeof d.currentClockPosition === 'number');
+
+        let shouldPull = false;
+        if (typeof sinPos === 'number' && demonsWithPos.length > 0) {
+            const minDemonDist = Math.min(...demonsWithPos.map(d => clockDist(d.currentClockPosition, sinPos)));
+            const allPositions = [sinPos, ...demonsWithPos.map(d => d.currentClockPosition)];
+            const maxPos = Math.max(...allPositions);
+
+            // 若預設模式（最大數值受罰）會處罰到時之惡自身（時之惡為最大值或 >= 10），發動牽引避險
+            const sinInDangerByDefault = (sinPos === maxPos || sinPos >= 10);
+            
+            // 若有時魔緊貼時之惡（距離 <= 2），牽引能精準懲罰時魔
+            const demonIsClose = (minDemonDist <= 2);
+
+            // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 Mana，讓預設機制懲罰時魔
+            const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos);
+
+            if (sinInDangerByDefault) {
+                shouldPull = true;
+            } else if (demonIsClose && (!demonAlreadyAtMax || checkChance(0.5))) {
+                shouldPull = true;
+            }
+        } else {
+            shouldPull = checkChance(0.4);
+        }
+
+        if (shouldPull) {
+            sinPlayer.mana -= COST;
+            gameState.sinTargetingMode = 'sin';
+            appLogger.log(`⚡【時之惡】(AI) 發動惡之牽引！本回合距離「時之惡」最近者受罰。`);
+            return;
+        }
+    }
+
+    gameState.sinTargetingMode = 'default';
+    appLogger.log(`【時之惡】(AI) 鐘面數值最大者受罰 (接近12)。`);
 }
 
 
@@ -288,81 +338,206 @@ function makeAIChoice(player, gameState) {
         }
     }
 
+    const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
     let selectedIndex = 0; 
 
-    if (player.type === '時魔') {
-        if (!hasPosition && drawnHours.some(c => c.number > 6)) {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
-            else selectedIndex = pickIndex(1, 2, true);
-        }
-        else if (hasPosition && drawnHours.some(c => c.number > myPos)) {
-            if (handSize > 8) selectedIndex = pickIndex(2, 3, true);
-            else if (handSize >= 5) selectedIndex = pickIndex(1, 2, true);
-            else selectedIndex = pickIndex(1, 1, true);
-        }
-        else if (hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
-            if (handSize > 8) selectedIndex = pickIndex(2, 3, false);
-            else if (handSize >= 5) selectedIndex = pickIndex(1, 2, false);
-            else selectedIndex = pickIndex(1, 1, false);
-        }
-        else if (!hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number < 5)) {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, false);
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false);
-            else selectedIndex = pickIndex(1, 2, false);
-        }
-        else {
-            selectedIndex = Math.floor(handSize / 2);
-        }
-    } 
-    else if (player.type === '時之惡') {
-        const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
-        const demonsNoPosCount = timeDemons.filter(p => p.currentClockPosition === null).length;
-        const demonsLowPosCount = timeDemons.filter(p => p.currentClockPosition !== null && p.currentClockPosition < 4).length;
-        
-        const hasHourOver6 = drawnHours.some(c => c.number > 6);
-        const allHoursUnder6 = drawnHours.length > 0 && drawnHours.every(c => c.number < 6);
-        const allHoursOver8 = drawnHours.length > 0 && drawnHours.every(c => c.number > 8);
+    if (isEasy) {
+        // === 原始基礎行為 (簡單) ===
+        if (player.type === '時魔') {
+            if (!hasPosition && drawnHours.some(c => c.number > 6)) {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
+                else selectedIndex = pickIndex(1, 2, true);
+            }
+            else if (hasPosition && drawnHours.some(c => c.number > myPos)) {
+                if (handSize > 8) selectedIndex = pickIndex(2, 3, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(1, 2, true);
+                else selectedIndex = pickIndex(1, 1, true);
+            }
+            else if (hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
+                if (handSize > 8) selectedIndex = pickIndex(2, 3, false);
+                else if (handSize >= 5) selectedIndex = pickIndex(1, 2, false);
+                else selectedIndex = pickIndex(1, 1, false);
+            }
+            else if (!hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number < 5)) {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, false);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false);
+                else selectedIndex = pickIndex(1, 2, false);
+            }
+            else {
+                selectedIndex = Math.floor(handSize / 2);
+            }
+        } 
+        else if (player.type === '時之惡') {
+            const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+            const demonsNoPosCount = timeDemons.filter(p => p.currentClockPosition === null).length;
+            const demonsLowPosCount = timeDemons.filter(p => p.currentClockPosition !== null && p.currentClockPosition < 4).length;
+            
+            const hasHourOver6 = drawnHours.some(c => c.number > 6);
+            const allHoursUnder6 = drawnHours.length > 0 && drawnHours.every(c => c.number < 6);
+            const allHoursOver8 = drawnHours.length > 0 && drawnHours.every(c => c.number > 8);
 
-        if ( (demonsNoPosCount >= 2 && hasHourOver6) || (demonsLowPosCount >= 2) ) {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
-            else selectedIndex = pickIndex(1, 2, true);
+            if ( (demonsNoPosCount >= 2 && hasHourOver6) || (demonsLowPosCount >= 2) ) {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
+                else selectedIndex = pickIndex(1, 2, true);
+            }
+            else if (allHoursUnder6) {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, false);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false);
+                else selectedIndex = pickIndex(1, 2, false);
+            }
+            else if (allHoursOver8) {
+                if (handSize > 8) selectedIndex = pickIndex(2, 3, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(1, 2, true);
+                else selectedIndex = pickIndex(1, 1, true);
+            }
+            else {
+                selectedIndex = handSize - 1; 
+            }
         }
-        else if (allHoursUnder6) {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, false);
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false);
-            else selectedIndex = pickIndex(1, 2, false);
-        }
-        else if (allHoursOver8) {
-            if (handSize > 8) selectedIndex = pickIndex(2, 3, true);
-            else if (handSize >= 5) selectedIndex = pickIndex(1, 2, true);
-            else selectedIndex = pickIndex(1, 1, true);
+        else if (player.type === '受詛者') {
+            const preciousCount = drawnHours.filter(c => c.isPrecious).length;
+            if (preciousCount === 2) {
+                if (handSize > 8) selectedIndex = pickIndex(2, 3, false); 
+                else if (handSize >= 5) selectedIndex = pickIndex(1, 2, false); 
+                else selectedIndex = pickIndex(1, 1, false); 
+            }
+            else if (preciousCount === 0) {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, true); 
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true); 
+                else selectedIndex = pickIndex(1, 2, true); 
+            }
+            else {
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, false); 
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false); 
+                else selectedIndex = pickIndex(1, 2, false); 
+            }
         }
         else {
             selectedIndex = handSize - 1; 
         }
-    }
-    else if (player.type === '受詛者') {
-        const preciousCount = drawnHours.filter(c => c.isPrecious).length;
-        if (preciousCount === 2) {
-            if (handSize > 8) selectedIndex = pickIndex(2, 3, false); 
-            else if (handSize >= 5) selectedIndex = pickIndex(1, 2, false); 
-            else selectedIndex = pickIndex(1, 1, false); 
+    } else {
+        // === 新改良演算法 (一般) ===
+        // 手牌長線節奏控制輔助：前 4 回合若非關鍵救命或立即進化，保留最強殺手牌 (58-60)
+        const round = gameState.roundMarker || 1;
+        const isEarlyGame = (round <= 4 && handSize >= 5);
+
+        const pickHighPaced = (rankA, rankB, urgent = false) => {
+            const rawIdx = pickIndex(rankA, rankB, false);
+            if (!urgent && isEarlyGame && rawIdx === handSize - 1) {
+                // 節奏保留：將王牌留待中後期關鍵局
+                return Math.max(0, handSize - 2);
+            }
+            return rawIdx;
+        };
+
+        if (player.type === '時魔') {
+            const heldCards = player.hourCards || [];
+            const heldPrecious = heldCards.filter(c => c.isPrecious).length;
+            const hasPreciousOnBoard = drawnHours.some(c => c.isPrecious);
+
+            // 1. 進化目標渴求判定：翻出的小時卡是否能讓幼體時魔立即達成進化條件？
+            let canEvolveNow = false;
+            if (typeof checkEvolutionCondition === 'function') {
+                canEvolveNow = drawnHours.some(card => {
+                    return checkEvolutionCondition({ hourCards: [...heldCards, card] })?.met;
+                });
+            }
+
+            // 2. 鐘面危害判定
+            const activeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+            const demonsWithPos = activeDemons.filter(d => typeof d.currentClockPosition === 'number');
+            const maxDemonPos = demonsWithPos.length > 0 ? Math.max(...demonsWithPos.map(d => d.currentClockPosition)) : null;
+            const isDemonAtMax = (maxDemonPos !== null && myPos === maxDemonPos);
+            const minDrawnHour = drawnHours.length > 0 ? Math.min(...drawnHours.map(c => c.number)) : 6;
+            const maxDrawnHour = drawnHours.length > 0 ? Math.max(...drawnHours.map(c => c.number)) : 6;
+
+            if (canEvolveNow) {
+                // 💥 頂級優先：可立即進化！全力爭奪優先挑牌權
+                selectedIndex = pickHighPaced(1, 2, true);
+            }
+            else if (isDemonAtMax && minDrawnHour < myPos) {
+                // 🚨 救命判定：當前處於全場最危險鐘面位置，場上有安全小數值牌可轉移
+                selectedIndex = pickHighPaced(1, 2, true);
+            }
+            else if (hasPreciousOnBoard && heldPrecious < 2) {
+                // ⭐ 珍貴卡渴求：進化必備珍貴卡，高順位搶奪
+                if (handSize > 8) selectedIndex = pickHighPaced(2, 3, false);
+                else if (handSize >= 5) selectedIndex = pickHighPaced(1, 2, false);
+                else selectedIndex = pickHighPaced(1, 2, true);
+            }
+            else if (hasPosition && myPos <= 4 && maxDrawnHour > 6) {
+                // 🛡️ 守勢避險：自身已在極安全位置 (<= 4)，場上小時卡數值偏高，故意出小/中牌避免被迫拿大數值
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
+                else selectedIndex = pickIndex(1, 2, true);
+            }
+            else if (hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
+                // 場上牌全部比自己目前位置好，搶先出牌以改善位置
+                selectedIndex = pickHighPaced(2, 3, false);
+            }
+            else if (!hasPosition && drawnHours.length > 0 && drawnHours.every(c => c.number <= 5)) {
+                // 首次落位且場上都是優質低數值，積極爭取優良落點
+                selectedIndex = pickHighPaced(2, 3, false);
+            }
+            else {
+                // 穩健過渡牌
+                selectedIndex = Math.floor(handSize / 2);
+            }
         }
-        else if (preciousCount === 0) {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, true); 
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true); 
-            else selectedIndex = pickIndex(1, 2, true); 
+        else if (player.type === '時之惡') {
+            const timeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
+            const demonsWithPos = timeDemons.filter(p => typeof p.currentClockPosition === 'number');
+            const maxDemonPos = demonsWithPos.length > 0 ? Math.max(...demonsWithPos.map(d => d.currentClockPosition)) : null;
+            const minDrawn = drawnHours.length > 0 ? Math.min(...drawnHours.map(c => c.number)) : 6;
+            const maxDrawn = drawnHours.length > 0 ? Math.max(...drawnHours.map(c => c.number)) : 6;
+
+            const isSinPenaltyMode = (gameState.sinTargetingMode === 'sin');
+
+            if (isSinPenaltyMode) {
+                // 惡之牽引模式：距離時之惡最近者受罰
+                selectedIndex = pickHighPaced(2, 3, false);
+            }
+            else {
+                // 預設模式：最大數值 (接近 12) 受罰
+                const sinPos = player.currentClockPosition;
+                const sinInDanger = (typeof sinPos === 'number' && (sinPos >= 10 || (maxDemonPos !== null && sinPos >= maxDemonPos)));
+
+                if (sinInDanger && minDrawn < (sinPos ?? 12)) {
+                    // 時之惡自身受罰危險，搶小牌避險
+                    selectedIndex = pickHighPaced(1, 2, true);
+                }
+                else if (demonsWithPos.length > 0 && maxDrawn >= 8) {
+                    // 場上有危險大牌，故意出小牌讓時魔被迫拿走大牌受罰
+                    if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
+                    else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
+                    else selectedIndex = pickIndex(1, 2, true);
+                }
+                else if (minDrawn <= 4) {
+                    // 場上有安全牌，時之惡嘗試掠奪，封死時魔逃生路徑
+                    selectedIndex = pickHighPaced(2, 3, false);
+                }
+                else {
+                    selectedIndex = pickHighPaced(2, 3, false);
+                }
+            }
+        }
+        else if (player.type === '受詛者') {
+            const preciousCount = drawnHours.filter(c => c.isPrecious).length;
+            if (preciousCount > 0) {
+                // 受詛者接觸珍貴卡即鎖定，全力爭奪！
+                selectedIndex = pickHighPaced(1, 2, true);
+            } else {
+                // 無珍貴卡時積蓄手牌資源
+                if (handSize > 8) selectedIndex = pickIndex(3, 4, true);
+                else if (handSize >= 5) selectedIndex = pickIndex(2, 3, true);
+                else selectedIndex = pickIndex(1, 2, true);
+            }
         }
         else {
-            if (handSize > 8) selectedIndex = pickIndex(3, 4, false); 
-            else if (handSize >= 5) selectedIndex = pickIndex(2, 3, false); 
-            else selectedIndex = pickIndex(1, 2, false); 
+            selectedIndex = pickHighPaced(1, 2, false);
         }
-    }
-    else {
-        selectedIndex = handSize - 1; 
     }
 
     const targetCardValue = sortedHand[selectedIndex].value;
@@ -370,7 +545,6 @@ function makeAIChoice(player, gameState) {
     const chosenCard = player.hand.splice(originalIndex, 1)[0];
     
 	// ✅ 秒針能力：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
-		//讀取秒針能力消耗
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;	
 	if (
 		GAME_CONFIG.enableAbilities &&
@@ -380,7 +554,8 @@ function makeAIChoice(player, gameState) {
 		player.mana >= COST &&
 		player.hand.length >= 1 // chosenCard 已拿走後，還要至少 1 張當第二張
 	) {
-		const usinbility = checkChance(0.7); // AI 使用機率 70%
+		const useChance = isEasy ? 0.7 : 0.8;
+		const usinbility = checkChance(useChance);
 
 		if (usinbility) {
 			const remainingSorted = [...player.hand].sort((a, b) => a.value - b.value);
@@ -679,9 +854,38 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
                 wantsHourCard = true;
             }
 
-            const chosen = wantsHourCard
-                ? ((a.value >= b.value) ? a : b)
-                : ((a.value < b.value) ? a : b);
+            const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
+            let chosen = null;
+
+            if (isEasy) {
+                chosen = wantsHourCard
+                    ? ((a.value >= b.value) ? a : b)
+                    : ((a.value < b.value) ? a : b);
+            } else {
+                // 新改良演算法：檢視其他玩家已揭曉分鐘牌，評估排位競爭力
+                const higherCard = (a.value >= b.value) ? a : b;
+                const lowerCard = (a.value < b.value) ? a : b;
+                const otherValues = choices
+                    .filter(c => c !== pc && c.card && typeof c.card.value === 'number')
+                    .map(c => c.card.value)
+                    .sort((x, y) => y - x);
+
+                if (wantsHourCard) {
+                    // 場上前 2 名有選牌權 (5P/3P 模式每回合 2 張小時卡)
+                    const secondHighestOther = otherValues.length >= 2 ? otherValues[1] : (otherValues[0] ?? 0);
+                    if (lowerCard.value > secondHighestOther) {
+                        // 小牌就足以擠進前 2 名，保送出線並省下大牌！
+                        chosen = lowerCard;
+                    } else if (higherCard.value <= secondHighestOther && otherValues.length >= 2) {
+                        // 即使出大牌也擠不進前 2 名，認賠保留大牌給下一輪
+                        chosen = lowerCard;
+                    } else {
+                        chosen = higherCard;
+                    }
+                } else {
+                    chosen = lowerCard;
+                }
+            }
             const other = (chosen === a) ? b : a;
 
             // 未選擇者回到手牌
@@ -804,63 +1008,142 @@ function processNextHourPicker(gameState) {
 function chooseHourCardForAI(gameState, player, drawnCards) {
     if (!drawnCards || drawnCards.length === 0) return null;
 
-    // 判斷「小時值是否為最大」：以所有未逐出的「時魔」玩家的鐘面位置做比較
-    const activeTimeDemons = (gameState?.players || [])
-        .filter(p => !p.isEjected && typeof p.currentClockPosition === 'number');
+    const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
+    if (isEasy) {
+        // === 原始基礎行為 (簡單) ===
+        const activeTimeDemons = (gameState?.players || [])
+            .filter(p => !p.isEjected && typeof p.currentClockPosition === 'number');
 
-    const maxPos = activeTimeDemons.length
-        ? Math.max(...activeTimeDemons.map(p => p.currentClockPosition))
-        : null;
+        const maxPos = activeTimeDemons.length
+            ? Math.max(...activeTimeDemons.map(p => p.currentClockPosition))
+            : null;
 
-    const isAtMaxHourValue =
-        (maxPos !== null &&
-         typeof player?.currentClockPosition === 'number' &&
-         player.currentClockPosition === maxPos);
+        const isAtMaxHourValue =
+            (maxPos !== null &&
+             typeof player?.currentClockPosition === 'number' &&
+             player.currentClockPosition === maxPos);
 
-    // 已持有的小時卡資訊
-    const heldCards = (player && Array.isArray(player.hourCards)) ? player.hourCards : [];
-    const heldNumbers = new Set(heldCards.map(c => c.number));
-    const heldPreciousCount = heldCards.filter(c => c.isPrecious).length; // ✅ 計算目前擁有的珍貴卡數量
+        const heldCards = (player && Array.isArray(player.hourCards)) ? player.hourCards : [];
+        const heldNumbers = new Set(heldCards.map(c => c.number));
+        const heldPreciousCount = heldCards.filter(c => c.isPrecious).length;
 
-    // (1) 在小時值最大的時候：先取得「小時值低」的小時卡
-    if (isAtMaxHourValue) {
-        const sorted = drawnCards.slice().sort((a, b) => {
-            if (a.number !== b.number) return a.number - b.number; // 先比數值
-            // 若數值相同：如果珍貴卡未滿 2 張，優先選珍貴；否則不特別優先
-            if (heldPreciousCount < 2) {
-                return (b.isPrecious === true) - (a.isPrecious === true);
+        if (isAtMaxHourValue) {
+            const sorted = drawnCards.slice().sort((a, b) => {
+                if (a.number !== b.number) return a.number - b.number;
+                if (heldPreciousCount < 2) {
+                    return (b.isPrecious === true) - (a.isPrecious === true);
+                }
+                return 0;
+            });
+            const target = sorted[0];
+            const idx = drawnCards.findIndex(c => c === target);
+            if (idx === -1) return null;
+            return drawnCards.splice(idx, 1)[0];
+        }
+
+        let candidate = drawnCards.slice();
+        const nonDuplicate = candidate.filter(c => !heldNumbers.has(c.number));
+        if (nonDuplicate.length > 0) {
+            candidate = nonDuplicate;
+        }
+
+        let pool = candidate;
+        if (heldPreciousCount < 2) {
+            const precious = candidate.filter(c => c.isPrecious);
+            if (precious.length > 0) {
+                pool = precious;
             }
-            return 0;
-        });
-        const target = sorted[0];
-        const idx = drawnCards.findIndex(c => c === target);
+        }
+
+        const targetCard = pool.slice().sort((a, b) => a.number - b.number)[0];
+        const idx = drawnCards.findIndex(c => c === targetCard);
         if (idx === -1) return null;
         return drawnCards.splice(idx, 1)[0];
     }
 
-    // (2) 一般情況：避免挑到自己已持有的數字（若可避開）
+    // === 新改良演算法 (一般) ===
+    const heldCards = (player && Array.isArray(player.hourCards)) ? player.hourCards : [];
+    const heldNumbers = new Set(heldCards.map(c => c.number));
+    const heldPreciousCount = heldCards.filter(c => c.isPrecious).length;
+
+    // 1. 進化條件立即達成檢查：若有某張卡能立即讓幼體時魔達成進化，最高優先挑選！
+    if (typeof checkEvolutionCondition === 'function') {
+        const evoCandidate = drawnCards.find(card => {
+            return checkEvolutionCondition({ hourCards: [...heldCards, card] })?.met;
+        });
+        if (evoCandidate) {
+            const idx = drawnCards.findIndex(c => c === evoCandidate);
+            if (idx !== -1) return drawnCards.splice(idx, 1)[0];
+        }
+    }
+
+    // 2. 鐘面受罰危險判定
+    const targetingMode = gameState.sinTargetingMode || 'default';
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    const sinPos = sinPlayer?.currentClockPosition ?? null;
+
+    const clockDist = (a, b) => {
+        if (typeof a !== 'number' || typeof b !== 'number') return 999;
+        const diff = Math.abs(a - b);
+        return Math.min(diff, 12 - diff);
+    };
+
+    const activeDemons = (gameState?.players || [])
+        .filter(p => !p.isEjected && typeof p.currentClockPosition === 'number');
+    const maxDemonPos = activeDemons.length ? Math.max(...activeDemons.map(p => p.currentClockPosition)) : null;
+    const isAtMaxHourValue = (maxDemonPos !== null && player?.currentClockPosition === maxDemonPos);
+
+    if (targetingMode === 'sin' && sinPos !== null) {
+        // 惡之牽引模式：避開離時之惡最近的位置，挑選離時之惡最遠的卡牌
+        const sorted = drawnCards.slice().sort((a, b) => {
+            const distA = clockDist(a.number, sinPos);
+            const distB = clockDist(b.number, sinPos);
+            if (distA !== distB) return distB - distA; // 距離遠者優先
+            if (heldPreciousCount < 2) return (b.isPrecious === true) - (a.isPrecious === true);
+            return a.number - b.number;
+        });
+        const target = sorted[0];
+        const idx = drawnCards.findIndex(c => c === target);
+        if (idx !== -1) return drawnCards.splice(idx, 1)[0];
+    } else if (isAtMaxHourValue) {
+        // 預設模式且自身在最高位：優先挑選數值最小的卡牌避險
+        const sorted = drawnCards.slice().sort((a, b) => {
+            if (a.number !== b.number) return a.number - b.number;
+            if (heldPreciousCount < 2) return (b.isPrecious === true) - (a.isPrecious === true);
+            return 0;
+        });
+        const target = sorted[0];
+        const idx = drawnCards.findIndex(c => c === target);
+        if (idx !== -1) return drawnCards.splice(idx, 1)[0];
+    }
+
+    // 3. 常規挑選：珍貴卡優先 (未滿 2 張時)，並儘量挑選不重複數字與補齊時代
     let candidate = drawnCards.slice();
     const nonDuplicate = candidate.filter(c => !heldNumbers.has(c.number));
     if (nonDuplicate.length > 0) {
         candidate = nonDuplicate;
     }
 
-    // ✅ 修改重點：策略調整
-    // 若「已持有 2 張以上珍貴卡」，則不再優先搶珍貴卡 (視為普通卡池)
-    // 否則 (未滿 2 張)，依舊優先過濾出珍貴卡
-    let pool = candidate;
     if (heldPreciousCount < 2) {
         const precious = candidate.filter(c => c.isPrecious);
         if (precious.length > 0) {
-            pool = precious;
+            candidate = precious;
         }
     }
 
-    // 從最終池中選數字最小的
-    const targetCard = pool.slice().sort((a, b) => a.number - b.number)[0];
-    const idx = drawnCards.findIndex(c => c === targetCard);
-    if (idx === -1) return null;
-    return drawnCards.splice(idx, 1)[0];
+    // 時代補齊加權（進化條件 1：3 種不同時代）
+    const heldAges = new Set(heldCards.map(c => c.ageGroup).filter(Boolean));
+    const sortedByAgeNeed = candidate.slice().sort((a, b) => {
+        const aNewAge = !heldAges.has(a.ageGroup) ? 1 : 0;
+        const bNewAge = !heldAges.has(b.ageGroup) ? 1 : 0;
+        if (aNewAge !== bNewAge) return bNewAge - aNewAge;
+        return a.number - b.number;
+    });
+
+    const finalTarget = sortedByAgeNeed[0];
+    const finalIdx = drawnCards.findIndex(c => c === finalTarget);
+    if (finalIdx === -1) return null;
+    return drawnCards.splice(finalIdx, 1)[0];
 }
 
 // --- 新增輔助函式：受詛者鎖定機制 ---

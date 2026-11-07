@@ -49,6 +49,7 @@ if (GAME_CONFIG.enableAbilities === undefined) GAME_CONFIG.enableAbilities = fal
 if (GAME_CONFIG.testMode === undefined) GAME_CONFIG.testMode = false;
 if (GAME_CONFIG.gameMode === undefined) GAME_CONFIG.gameMode = '5P';
 if (GAME_CONFIG.threePStartingRole === undefined) GAME_CONFIG.threePStartingRole = '時針';
+if (GAME_CONFIG.aiDifficulty === undefined) GAME_CONFIG.aiDifficulty = 'normal';
 
 try { if (typeof window !== 'undefined') window.GAME_CONFIG = GAME_CONFIG; } catch (_) {}
 

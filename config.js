@@ -47,7 +47,8 @@ window.GAME_CONFIG = {
     tutorialMode: true,     // 預設是否開啟新手教學引導模式
     defaultHumanId: 'SM_1',  // 預設人類玩家 ID
     gameMode: '5P',          // 遊戲模式: '5P' (預設) 或 '3P'
-    threePStartingRole: '時針' // 3P 模式下人類玩家初始身份
+    threePStartingRole: '時針', // 3P 模式下人類玩家初始身份
+    aiDifficulty: 'normal'   // AI 對戰難度: 'normal' (一般，新改良演算法) 或 'easy' (簡單，原始基礎行為)
 };
 
 // 2. 介面外觀 (UI Appearance)

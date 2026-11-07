@@ -94,6 +94,10 @@
                 language: '🌐 語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
                 lang_en: 'English (英文)',
+                ai_difficulty_title: '🤖 AI 對戰難度',
+                ai_difficulty_normal: '一般 (新改良演算法)',
+                ai_difficulty_easy: '簡單 (原始基礎行為)',
+                ai_difficulty_desc: '「一般」具備進化目標渴求與長線資源規劃；「簡單」維持原版基礎避險出牌。',
                 sequential_effects: '特效依序播放（逐一發生）',
                 sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。'
             },

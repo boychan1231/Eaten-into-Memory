@@ -44,7 +44,12 @@ let isSkippingLogs = false; // 是否正在進行「瞬間顯示」
 
 // ✅ 保險：避免 GAME_CONFIG 未定義導致 UI 事件中斷
 try {
+    let savedDiff = null;
+    try { savedDiff = localStorage.getItem('eaten_ai_difficulty'); } catch (_) {}
     window.GAME_CONFIG = window.GAME_CONFIG || { enableAbilities: false, testMode: false };
+    if (!window.GAME_CONFIG.aiDifficulty) {
+        window.GAME_CONFIG.aiDifficulty = savedDiff || 'normal';
+    }
 } catch (_) { }
 
 function enforceLogRetention(list) {
@@ -527,12 +532,15 @@ document.addEventListener('DOMContentLoaded', () => {
         window.GAME_CONFIG.tutorialMode = cfgTutorialMode;
         window.GAME_CONFIG.gameMode = selectedMode;
         window.GAME_CONFIG.threePStartingRole = selectedThreePRole;
+        const currentDiff = window.GAME_CONFIG.aiDifficulty || (typeof localStorage !== 'undefined' ? localStorage.getItem('eaten_ai_difficulty') : null) || 'normal';
+        window.GAME_CONFIG.aiDifficulty = currentDiff;
         if (typeof GAME_CONFIG !== 'undefined') {
             GAME_CONFIG.enableAbilities = cfgEnableAbilities;
             GAME_CONFIG.testMode = cfgTestMode;
             GAME_CONFIG.tutorialMode = cfgTutorialMode;
             GAME_CONFIG.gameMode = selectedMode;
             GAME_CONFIG.threePStartingRole = selectedThreePRole;
+            GAME_CONFIG.aiDifficulty = currentDiff;
         }
     };
 
@@ -809,6 +817,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (globalGameState) {
                             updateUI(globalGameState);
                         }
+                    }
+                });
+            });
+        }
+
+        // 🤖 AI 對戰難度設定監聽
+        const aiDiffRadios = document.querySelectorAll('input[name="ai-difficulty"]');
+        if (aiDiffRadios.length > 0) {
+            let savedDiff = null;
+            try {
+                savedDiff = localStorage.getItem('eaten_ai_difficulty');
+            } catch (_) {}
+            const currentDiff = savedDiff || window.GAME_CONFIG?.aiDifficulty || 'normal';
+            if (window.GAME_CONFIG) window.GAME_CONFIG.aiDifficulty = currentDiff;
+            if (typeof GAME_CONFIG !== 'undefined') GAME_CONFIG.aiDifficulty = currentDiff;
+
+            aiDiffRadios.forEach(radio => {
+                if (radio.value === currentDiff) radio.checked = true;
+
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        const newDiff = e.target.value;
+                        if (window.GAME_CONFIG) window.GAME_CONFIG.aiDifficulty = newDiff;
+                        if (typeof GAME_CONFIG !== 'undefined') GAME_CONFIG.aiDifficulty = newDiff;
+                        try {
+                            localStorage.setItem('eaten_ai_difficulty', newDiff);
+                        } catch (_) {}
+                        appLogger.log(`[AI] 對戰難度已切換為: ${newDiff === 'easy' ? '簡單 (原始基礎行為)' : '一般 (新改良演算法)'}`);
                     }
                 });
             });
