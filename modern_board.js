@@ -108,11 +108,14 @@
                 return { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 360 };
             }
             const rect = this.app.view.getBoundingClientRect();
-            const baseDiameter = Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * 1.38;
+            const isMobile = (this.app.screen.width <= 768 || this.app.screen.width < this.app.screen.height);
+            const baseDiameter = isMobile
+                ? Math.min(this.app.screen.width * 0.94, this.app.screen.height * 0.52)
+                : Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
+            const targetDiameter = baseDiameter * (isMobile ? 1.05 : 1.38);
             const s = (targetDiameter / D) * (this.pan.zoom || 1.0);
             const cx = rect.left + (this.app.screen.width) / 2 + this.pan.x;
-            const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y;
+            const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y - (isMobile ? 22 : 0);
             return { x: cx, y: cy, radius: (D * s) / 2 };
         },
 
@@ -1005,13 +1008,16 @@
             if (Math.abs(this.pan.targetZoom - this.pan.zoom) < 0.005) this.pan.zoom = this.pan.targetZoom;
 
             const app = this.app;
-            const baseDiameter = Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * 1.38;
+            const isMobile = (app.screen.width <= 768 || app.screen.width < app.screen.height);
+            const baseDiameter = isMobile
+                ? Math.min(app.screen.width * 0.94, app.screen.height * 0.52)
+                : Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
+            const targetDiameter = baseDiameter * (isMobile ? 1.05 : 1.38);
             const s = (targetDiameter / D) * this.pan.zoom;
             this.stage.scale.set(s);
             this.stage.position.set(
                 (app.screen.width - D * s) / 2 + this.pan.x,
-                (app.screen.height - D * s) / 2 + this.pan.y
+                (app.screen.height - D * s) / 2 + this.pan.y - (isMobile ? 22 : 0)
             );
 
             // 1. 齒輪動態咬合旋轉（回合推進時帶有加速脈衝）
@@ -1121,11 +1127,18 @@
                 const summary = drawer.querySelector(':scope > summary');
                 if (!summary) return;
                 summary.addEventListener('click', () => {
-                    // 點擊前若為收合狀態，代表即將展開 -> 預先收合同側其他已展開的抽屜
+                    // 點擊前若為收合狀態，代表即將展開 -> 預先收合同側（手機端則收合全場）其他已展開的抽屜
                     if (!drawer.open) {
-                        drawers.forEach(other => {
-                            if (other !== drawer && other.open) other.open = false;
-                        });
+                        const isMobile = (window.innerWidth <= 768);
+                        if (isMobile) {
+                            document.querySelectorAll('details.hud-drawer').forEach(other => {
+                                if (other !== drawer && other.open) other.open = false;
+                            });
+                        } else {
+                            drawers.forEach(other => {
+                                if (other !== drawer && other.open) other.open = false;
+                            });
+                        }
                         if (drawer.id === 'log-panel-details' && typeof window.scrollLogToBottom === 'function') {
                             window.scrollLogToBottom();
                         }

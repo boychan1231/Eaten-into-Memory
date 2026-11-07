@@ -210,6 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     try { appLogger.log('[UI] 已載入，等待開始遊戲。'); } catch (_) { }
 
+    // 📱 手機版排版改善：在螢幕寬度 <= 768px 時預設關閉所有懸浮抽屜，避免遮蔽中央鐘面
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        document.querySelectorAll('details.hud-drawer').forEach(d => {
+            d.open = false;
+        });
+    }
+
     setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
 
     const getSelectionValue = (groupName, fallback) => {
@@ -566,18 +573,19 @@ document.addEventListener('DOMContentLoaded', () => {
         globalGameState.needsHandDealAnimation = true;
 
         // 遊戲開始時：
-        // 左側對局情報：遊戲日誌 (log-panel-details) 預設打開
-        // 右側自身決策：能力與進化 (evo-panel-details) 預設打開
+        // 手機版（<= 768px）：全部預設關閉，確保鐘面完全露出，不產生重疊
+        // 桌機版：左側對局情報 (日誌) 與右側自身決策 (能力與進化) 預設打開
+        const isMobileScreen = (typeof window !== 'undefined' && window.innerWidth <= 768);
         const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
         if (leftDrawers.length > 0) {
             leftDrawers.forEach(d => {
-                d.open = (d.id === 'log-panel-details');
+                d.open = !isMobileScreen && (d.id === 'log-panel-details');
             });
         }
         const rightDrawers = document.querySelectorAll('.hud-drawer-right > details.hud-drawer');
         if (rightDrawers.length > 0) {
             rightDrawers.forEach(d => {
-                d.open = (d.id === 'evo-panel-details');
+                d.open = !isMobileScreen && (d.id === 'evo-panel-details');
             });
         }
 

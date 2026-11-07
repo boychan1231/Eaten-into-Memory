@@ -1778,6 +1778,239 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     }
 }
 
+/* =========================================================
+   📱 手機版排版全面改善 (Mobile Responsive Layout <= 768px)
+   ========================================================= */
+@media (max-width: 768px) {
+    /* 1. 全局高度與彈性容器 */
+    html, body {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden !important;
+    }
+    .game-wrapper {
+        padding: 4px 6px !important;
+        height: 100%;
+        height: 100dvh;
+        gap: 2px !important;
+    }
+
+    /* 2. 頂部狀態列精簡微縮 */
+    header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 2px 4px !important;
+        gap: 4px !important;
+    }
+    .tab-nav {
+        gap: 3px !important;
+    }
+    .tab-btn {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+    }
+    .version-switch-summary {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+    }
+
+    #deck-info.hud-top-status-pill {
+        padding: 2px 8px !important;
+        gap: 5px !important;
+        font-size: 0.72rem !important;
+    }
+    .hud-stat-label {
+        display: none !important; /* 隱藏「局次」「回合」「牌庫」文字，保留圖示 */
+    }
+    .hud-stat-sep {
+        font-size: 0.65rem !important;
+    }
+    #deck-info .deck-count {
+        font-size: 0.82rem !important;
+    }
+    #deck-info #round-penalty-display.hud-penalty-badge {
+        padding: 1px 6px !important;
+        font-size: 0.68rem !important;
+    }
+
+    .game-status {
+        gap: 4px !important;
+    }
+    .header-audio-btn {
+        padding: 3px 6px !important;
+        font-size: 0.72rem !important;
+    }
+    .start-game-btn,
+    #start-game-btn {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+    }
+
+    /* 3. 懸浮抽屜系統行動化 (Mobile Bottom Sheet) */
+    .hud-drawer-stack {
+        top: 42px !important;
+        max-height: none !important;
+        gap: 4px !important;
+    }
+    .hud-drawer-left {
+        left: 6px !important;
+    }
+    .hud-drawer-right {
+        right: 6px !important;
+    }
+    .side-panel-summary {
+        padding: 4px 9px !important;
+        font-size: 0.72rem !important;
+    }
+
+    /* 抽屜展開時轉為手機底部滑出浮層 (Bottom Sheet) */
+    details.hud-drawer[open] {
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        height: 62vh !important;
+        max-height: 72vh !important;
+        border-radius: 20px 20px 0 0 !important;
+        z-index: 1000 !important;
+        background: rgba(10, 12, 18, 0.98) !important;
+        box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.9) !important;
+        border-top: 1px solid rgba(255, 210, 127, 0.45) !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        padding: 10px 14px 18px 14px !important;
+        box-sizing: border-box !important;
+    }
+    details.hud-drawer[open] > .hud-drawer-body {
+        max-height: calc(62vh - 60px) !important;
+    }
+    details.hud-drawer[open] > .side-panel-summary::after {
+        content: "✕ 關閉" !important;
+        font-size: 0.74rem !important;
+        font-weight: 700 !important;
+        color: var(--gold) !important;
+        background: rgba(255, 210, 127, 0.15) !important;
+        padding: 2px 8px !important;
+        border-radius: 999px !important;
+        border: 1px solid rgba(255, 210, 127, 0.3) !important;
+        transform: none !important;
+    }
+    /* 手機端停用 resizer 與尺寸按鈕群 */
+    .hud-drawer-resizer,
+    .drawer-size-btn-group {
+        display: none !important;
+    }
+
+    /* 4. 底部手牌塢 (Mobile Hand Dock) */
+    .human-area,
+    #human-player-area {
+        padding: 2px 4px 6px 4px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 3px !important;
+    }
+    .human-top-bar {
+        padding: 2px 8px !important;
+        width: 98% !important;
+    }
+    .human-stats-row {
+        gap: 4px !important;
+        font-size: 0.72rem !important;
+    }
+    .human-stats-row > div:not(.has-mech-gauge) {
+        padding: 1px 6px !important;
+        font-size: 0.7rem !important;
+    }
+    .mech-mana-gauge,
+    .mech-gear-gauge {
+        transform: scale(0.85);
+        transform-origin: center;
+    }
+
+    .human-play-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 4px !important;
+        width: 100% !important;
+    }
+
+    /* 手牌橫向滾動容器 */
+    .hand-display {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 6px 14px 10px 14px !important;
+        justify-content: flex-start !important;
+        scroll-snap-type: x proximity !important;
+        box-sizing: border-box !important;
+    }
+    .hand-display::-webkit-scrollbar {
+        height: 3px !important;
+    }
+    .hand-display::-webkit-scrollbar-thumb {
+        background: rgba(255, 210, 127, 0.3) !important;
+        border-radius: 3px !important;
+    }
+
+    /* 卡牌尺寸保證手機手指易於點擊 */
+    .minute-card {
+        min-width: 36px !important;
+        width: 38px !important;
+        height: 55px !important;
+        font-size: 0.96rem !important;
+        flex: 0 0 auto !important;
+        scroll-snap-align: center !important;
+    }
+    .minute-card.selected:not(.is-dragging):not(.is-committing) {
+        transform: translateY(-8px) scale(1.05) !important;
+    }
+
+    /* 手機端底部整合操作條：出牌記錄在左側，確認/下一回合按鈕在右側 */
+    .hand-controls {
+        width: 100% !important;
+        max-width: calc(100vw - 20px) !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        padding: 0 4px !important;
+    }
+    #action-hint {
+        display: none !important; /* 手機端空間緊張時隱藏多餘提示字，保持清爽 */
+    }
+    .hand-action-btns {
+        width: auto !important;
+        gap: 6px !important;
+    }
+    .hand-action-btns button {
+        padding: 7px 16px !important;
+        font-size: 0.84rem !important;
+        height: 36px !important;
+    }
+
+    .discard-pile-zone {
+        flex: 0 0 auto !important;
+        transform: scale(0.9);
+        transform-origin: left center;
+    }
+}
+
+@media (max-width: 480px) {
+    .human-top-bar h4 {
+        display: none !important; /* 隱藏「您是：時魔」標籤以騰出空間給數值條 */
+    }
+    .hand-action-btns button {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+}
+
 /* ---- 細節 ---- */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 6px; }

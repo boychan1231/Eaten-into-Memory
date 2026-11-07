@@ -3399,3 +3399,25 @@ body {
     border-radius: 1px !important;
     will-change: transform, opacity !important;
 }
+
+/* 📱 經典版手機排版適配 (<= 768px) */
+@media (max-width: 768px) {
+    .hand-display {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        padding: 6px 10px !important;
+        box-sizing: border-box !important;
+    }
+    .minute-card {
+        min-width: 36px !important;
+        width: 38px !important;
+        height: 55px !important;
+        flex: 0 0 auto !important;
+    }
+}
