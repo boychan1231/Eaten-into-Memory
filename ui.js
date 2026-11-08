@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     uiState.selectedCardValues = [];
                     uiState.isSecondHandSelectingTwo = false;
 
-                    confirmMoveBtn.textContent = '本回合出牌';
+                    confirmMoveBtn.textContent = (window.i18n ? window.i18n.t('ui.buttons.confirm_move') : null) || '確認出牌';
                     updateUI(globalGameState);
                 } else {
                     confirmMoveBtn.disabled = false;
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (success) {
                 document.querySelectorAll('.minute-card').forEach(c => c.classList.remove('selected'));
                 uiState.selectedCardValue = null;
-                confirmMoveBtn.textContent = '本回合出牌';
+                confirmMoveBtn.textContent = (window.i18n ? window.i18n.t('ui.buttons.confirm_move') : null) || '確認出牌';
                 updateUI(globalGameState);
             } else {
                 confirmMoveBtn.disabled = false;

@@ -40,6 +40,8 @@
                 view_collection: 'View Collection',
                 sort: '⇅ Sort',
                 recenter: 'Recenter Clock',
+                zoom_in: 'Zoom In',
+                zoom_out: 'Zoom Out',
                 restart: '🔄 Play Again',
                 view_board: '👀 View Board'
             },

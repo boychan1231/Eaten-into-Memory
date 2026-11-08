@@ -74,8 +74,8 @@
             targetY: 0,
             zoom: 1.0,
             targetZoom: 1.0,
-            minZoom: 0.85,
-            maxZoom: 1.75,
+            minZoom: 0.75,
+            maxZoom: 2.6,
             isDragging: false,
             startX: 0,
             startY: 0,
@@ -83,6 +83,12 @@
             startPanY: 0,
             hasMoved: false,
             movedCooldown: 0
+        },
+
+        zoomBy(factor) {
+            const next = Math.min(this.pan.maxZoom, Math.max(this.pan.minZoom, (this.pan.targetZoom || 1.0) * factor));
+            this.pan.targetZoom = next;
+            this.updateRecenterBtn();
         },
 
         recenter() {
@@ -96,7 +102,7 @@
             const btn = document.getElementById('clock-recenter-btn');
             if (!btn) return;
             const isOffset = Math.hypot(this.pan.targetX, this.pan.targetY) > 18 || Math.abs((this.pan.targetZoom || 1.0) - 1.0) > 0.05;
-            btn.classList.toggle('hidden', !isOffset);
+            btn.classList.toggle('is-active', isOffset);
         },
 
         isPanActive() {
@@ -110,12 +116,12 @@
             const rect = this.app.view.getBoundingClientRect();
             const isMobile = (this.app.screen.width <= 768 || this.app.screen.width < this.app.screen.height);
             const baseDiameter = isMobile
-                ? Math.min(this.app.screen.width * 0.94, this.app.screen.height * 0.52)
+                ? Math.min(this.app.screen.width * 0.96, this.app.screen.height * 0.62)
                 : Math.min(920, this.app.screen.height * 0.94, this.app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * (isMobile ? 1.05 : 1.38);
+            const targetDiameter = baseDiameter * (isMobile ? 1.28 : 1.38);
             const s = (targetDiameter / D) * (this.pan.zoom || 1.0);
             const cx = rect.left + (this.app.screen.width) / 2 + this.pan.x;
-            const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y - (isMobile ? 22 : 0);
+            const cy = rect.top + (this.app.screen.height) / 2 + this.pan.y - (isMobile ? 16 : 0);
             return { x: cx, y: cy, radius: (D * s) / 2 };
         },
 
@@ -125,58 +131,94 @@
         },
 
         bindPanEvents(host) {
+            const activePointers = new Map();
+            let initialPinchDist = 0;
+            let pinchStartZoom = 1.0;
+
             host.addEventListener('pointerdown', (e) => {
-                // 僅接受主要點擊（滑鼠左鍵或觸控單指）
+                // 僅接受主要點擊（滑鼠左鍵或觸控）
                 if (e.button !== 0 && e.pointerType === 'mouse') return;
                 // 若正在拖出手牌（避免衝突），不平移鐘面
                 if (window.isDraggingCard) return;
 
-                this.pan.isPotentialPan = true;
-                this.pan.isDragging = false;
-                this.pan.startX = e.clientX;
-                this.pan.startY = e.clientY;
-                this.pan.startPanX = this.pan.targetX;
-                this.pan.startPanY = this.pan.targetY;
-                this.pan.hasMoved = false;
-                // 注意：絕不能在 pointerdown 強行 capture，否則會吞掉 PixiJS 畫布內部的點擊事件！
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                if (activePointers.size === 1) {
+                    this.pan.isPotentialPan = true;
+                    this.pan.isDragging = false;
+                    this.pan.startX = e.clientX;
+                    this.pan.startY = e.clientY;
+                    this.pan.startPanX = this.pan.targetX;
+                    this.pan.startPanY = this.pan.targetY;
+                    this.pan.hasMoved = false;
+                } else if (activePointers.size === 2) {
+                    // 雙指觸控進入縮放模式 (Pinch-to-zoom)
+                    const [p1, p2] = Array.from(activePointers.values());
+                    initialPinchDist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    pinchStartZoom = this.pan.targetZoom || 1.0;
+                    this.pan.isPotentialPan = false;
+                    this.pan.isDragging = false;
+                }
             });
 
             host.addEventListener('pointermove', (e) => {
-                if (!this.pan.isPotentialPan) return;
-                const dx = e.clientX - this.pan.startX;
-                const dy = e.clientY - this.pan.startY;
-                const dist = Math.hypot(dx, dy);
+                if (!activePointers.has(e.pointerId)) return;
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-                // 位移超過 8px 才認定為拖曳鐘面
-                if (dist > 8) {
-                    if (!this.pan.isDragging) {
-                        this.pan.isDragging = true;
-                        this.pan.hasMoved = true;
-                        host.classList.add('is-panning');
-                        try { host.setPointerCapture(e.pointerId); } catch (_) {}
+                // 雙指捏合縮放 (Pinch-to-zoom)
+                if (activePointers.size === 2 && initialPinchDist > 5) {
+                    const [p1, p2] = Array.from(activePointers.values());
+                    const currDist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    const scale = currDist / initialPinchDist;
+                    const nextZoom = Math.min(this.pan.maxZoom, Math.max(this.pan.minZoom, pinchStartZoom * scale));
+                    this.pan.targetZoom = nextZoom;
+                    this.pan.hasMoved = true;
+                    this.updateRecenterBtn();
+                    return;
+                }
+
+                if (activePointers.size === 1 && this.pan.isPotentialPan) {
+                    const dx = e.clientX - this.pan.startX;
+                    const dy = e.clientY - this.pan.startY;
+                    const dist = Math.hypot(dx, dy);
+
+                    // 位移超過 8px 才認定為拖曳鐘面
+                    if (dist > 8) {
+                        if (!this.pan.isDragging) {
+                            this.pan.isDragging = true;
+                            this.pan.hasMoved = true;
+                            host.classList.add('is-panning');
+                            try { host.setPointerCapture(e.pointerId); } catch (_) {}
+                        }
+
+                        // 平移邊界限制：允許鐘面最多移動至視野 85%
+                        const maxPanX = Math.max(300, (this.app?.screen?.width || 800) * 0.85);
+                        const maxPanY = Math.max(300, (this.app?.screen?.height || 800) * 0.85);
+
+                        this.pan.targetX = Math.max(-maxPanX, Math.min(maxPanX, this.pan.startPanX + dx));
+                        this.pan.targetY = Math.max(-maxPanY, Math.min(maxPanY, this.pan.startPanY + dy));
                     }
-
-                    // 平移邊界限制：允許鐘面最多移動至視野 85%
-                    const maxPanX = Math.max(300, (this.app?.screen?.width || 800) * 0.85);
-                    const maxPanY = Math.max(300, (this.app?.screen?.height || 800) * 0.85);
-
-                    this.pan.targetX = Math.max(-maxPanX, Math.min(maxPanX, this.pan.startPanX + dx));
-                    this.pan.targetY = Math.max(-maxPanY, Math.min(maxPanY, this.pan.startPanY + dy));
                 }
             });
 
             const onPanEnd = (e) => {
-                if (this.pan.isDragging) {
-                    this.pan.isDragging = false;
-                    host.classList.remove('is-panning');
-                    try { host.releasePointerCapture(e.pointerId); } catch (_) {}
-                    this.pan.movedCooldown = Date.now() + 80;
-                    this.updateRecenterBtn();
+                activePointers.delete(e.pointerId);
+                if (activePointers.size < 2) {
+                    initialPinchDist = 0;
                 }
-                this.pan.isPotentialPan = false;
-                setTimeout(() => {
-                    this.pan.hasMoved = false;
-                }, 50);
+                if (activePointers.size === 0) {
+                    if (this.pan.isDragging) {
+                        this.pan.isDragging = false;
+                        host.classList.remove('is-panning');
+                        try { host.releasePointerCapture(e.pointerId); } catch (_) {}
+                        this.pan.movedCooldown = Date.now() + 80;
+                        this.updateRecenterBtn();
+                    }
+                    this.pan.isPotentialPan = false;
+                    setTimeout(() => {
+                        this.pan.hasMoved = false;
+                    }, 50);
+                }
             };
 
             host.addEventListener('pointerup', onPanEnd);
@@ -185,10 +227,8 @@
             // 滑鼠滾輪平滑縮放鐘面
             host.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                const factor = e.deltaY < 0 ? 1.08 : 0.92;
-                const nextZoom = Math.min(this.pan.maxZoom, Math.max(this.pan.minZoom, (this.pan.targetZoom || 1.0) * factor));
-                this.pan.targetZoom = nextZoom;
-                this.updateRecenterBtn();
+                const factor = e.deltaY < 0 ? 1.10 : 0.90;
+                this.zoomBy(factor);
             }, { passive: false });
 
             // 雙擊空白處平滑置中鐘面與重設縮放
@@ -196,6 +236,32 @@
                 e.preventDefault();
                 this.recenter();
             });
+
+            // 綁定縮放與置中按鈕
+            const zoomInBtn = document.getElementById('clock-zoom-in-btn');
+            if (zoomInBtn && !zoomInBtn._bound) {
+                zoomInBtn._bound = true;
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.zoomBy(1.22);
+                });
+            }
+            const zoomOutBtn = document.getElementById('clock-zoom-out-btn');
+            if (zoomOutBtn && !zoomOutBtn._bound) {
+                zoomOutBtn._bound = true;
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.zoomBy(0.82);
+                });
+            }
+            const recenterBtn = document.getElementById('clock-recenter-btn');
+            if (recenterBtn && !recenterBtn._bound) {
+                recenterBtn._bound = true;
+                recenterBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.recenter();
+                });
+            }
         },
 
         // ---------- 載入各角色靈魂圖案貼圖 ----------
@@ -310,6 +376,22 @@
                 recenterBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.recenter();
+                });
+            }
+            const zoomInBtn = document.getElementById('clock-zoom-in-btn');
+            if (zoomInBtn && !zoomInBtn._bound) {
+                zoomInBtn._bound = true;
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.zoomBy(1.22);
+                });
+            }
+            const zoomOutBtn = document.getElementById('clock-zoom-out-btn');
+            if (zoomOutBtn && !zoomOutBtn._bound) {
+                zoomOutBtn._bound = true;
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.zoomBy(0.82);
                 });
             }
 
@@ -1010,14 +1092,14 @@
             const app = this.app;
             const isMobile = (app.screen.width <= 768 || app.screen.width < app.screen.height);
             const baseDiameter = isMobile
-                ? Math.min(app.screen.width * 0.94, app.screen.height * 0.52)
+                ? Math.min(app.screen.width * 0.96, app.screen.height * 0.62)
                 : Math.min(920, app.screen.height * 0.94, app.screen.width * 0.92);
-            const targetDiameter = baseDiameter * (isMobile ? 1.05 : 1.38);
+            const targetDiameter = baseDiameter * (isMobile ? 1.28 : 1.38);
             const s = (targetDiameter / D) * this.pan.zoom;
             this.stage.scale.set(s);
             this.stage.position.set(
                 (app.screen.width - D * s) / 2 + this.pan.x,
-                (app.screen.height - D * s) / 2 + this.pan.y - (isMobile ? 22 : 0)
+                (app.screen.height - D * s) / 2 + this.pan.y - (isMobile ? 16 : 0)
             );
 
             // 1. 齒輪動態咬合旋轉（回合推進時帶有加速脈衝）

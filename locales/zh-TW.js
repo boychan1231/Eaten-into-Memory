@@ -40,6 +40,8 @@
                 view_collection: '查看已收集卡片',
                 sort: '⇅ 排序',
                 recenter: '置中鐘面',
+                zoom_in: '放大鐘面',
+                zoom_out: '縮小鐘面',
                 restart: '🔄 再玩一局',
                 view_board: '👀 查看盤面'
             },

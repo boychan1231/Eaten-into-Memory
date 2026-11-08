@@ -2035,11 +2035,15 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             }
         }
 
-        // 確認出牌按鈕狀態：一般拖放模式時隱藏，僅在「秒針」蓋 2 張能力時顯示並啟用點選確認
+        // 確認出牌按鈕狀態：支援「選取手牌 + 點擊確認出牌」與「拖放至鐘面出牌」雙軌操作，手機操作更靈活
         if (confirmBtn) {
-            if (uiState.isSecondHandSelectingTwo) {
+            if (flags.isWaitingMinuteInput) {
                 confirmBtn.style.display = 'inline-block';
-                confirmBtn.disabled = !flags.isWaitingMinuteInput || (uiState.selectedCardValues.length !== 2);
+                if (uiState.isSecondHandSelectingTwo) {
+                    confirmBtn.disabled = (uiState.selectedCardValues.length !== 2);
+                } else {
+                    confirmBtn.disabled = (uiState.selectedCardValue === null);
+                }
             } else {
                 confirmBtn.style.display = 'none';
                 confirmBtn.disabled = true;
@@ -2091,6 +2095,7 @@ window.playHourCardDisintegrateAnimation = function (target, onComplete) {
 function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
     if (!cardEl || typeof cardEl.addEventListener !== 'function') return;
 
+    let isPendingDrag = false;
     let isDragging = false;
     let hasDraggedOut = false; // 是否曾拖離手牌區（只有拖離後再拖回手牌區，才顯示「收回」）
     let activePointerId = null;
@@ -2191,56 +2196,6 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }
     };
 
-    // 2. pointermove（移動）：綁定於整個畫布/視窗（window），即時判定出牌 vs 收回手牌
-    const onStagePointerMove = (e) => {
-        if (!isDragging || hasCommitted) return;
-        if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const vy = e.clientY - lastY; // 當前垂直速度：正值代表向下移動，負值代表向上移動
-        const vx = Math.max(-14, Math.min(14, (e.clientX - lastX) * 0.65));
-        lastX = e.clientX;
-        lastY = e.clientY;
-
-        // 記錄拖曳歷程中的最高點（dy 越負代表向上拉得越高）
-        if (dy < minDy) {
-            minDy = dy;
-        }
-
-        cardEl.dataset.dragDx = String(dx);
-        cardEl.dataset.dragDy = String(dy);
-
-        const inCancelZone = checkIsInCancelZone(e.clientX, e.clientY, dy);
-        const inClock = checkIsInsideClock(e.clientX, e.clientY);
-
-        // 只有當卡牌曾明顯拉出（向上拉超過 70px 或進入鐘面）時，才標記為曾拖出
-        if (minDy < -70 || inClock) {
-            hasDraggedOut = true;
-        }
-
-        const ready = !inCancelZone && (inClock || dy < -110);
-
-        if (ready !== isDropReady) {
-            isDropReady = ready;
-            cardEl.classList.toggle('is-drop-ready', isDropReady);
-            setClockDropHighlight(isDropReady);
-        }
-
-        // ✅ 「收回」判斷：只在卡牌曾拖出手牌且被拖回手牌區域 (inCancelZone) 中才顯示！
-        const isRetrieving = hasDraggedOut && !isDropReady && inCancelZone;
-
-        cardEl.classList.toggle('is-retrieving', isRetrieving);
-        if (isRetrieving) {
-            ensureRetrieveBadge();
-        } else {
-            removeRetrieveBadge();
-        }
-
-        const scale = isDropReady ? 1.22 : 1.10;
-        cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
-    };
-
     const resetCardToHand = () => {
         isDropReady = false;
         hasDraggedOut = false;
@@ -2258,31 +2213,148 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }, 260);
     };
 
-    // 3A. pointerup（正常放開）：在出牌區則出牌，在收回區則彈回原手牌位
-    const onStagePointerUp = (e) => {
+    // 2. pointermove（移動）：智慧判定橫向滑動手牌 vs 向上拖曳出牌
+    const onStagePointerMove = (e) => {
+        if (hasCommitted) return;
+        if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        // 若仍處於判定起點階段，辨析手勢方向
+        if (isPendingDrag && !isDragging) {
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            // A. 水平位移主導：判定為檢視橫向手牌塢，釋放拖曳監聽由原生/容器滾動接手
+            if (absDx > absDy + 3 && dy > -12) {
+                isPendingDrag = false;
+                detachStageListeners();
+                return;
+            }
+
+            // B. 向上拖動主導（垂直向上拉出超過 10px 或滑鼠拖曳）：正式進入出牌拖放
+            const isMouseDrag = (e.pointerType === 'mouse' && Math.hypot(dx, dy) > 5);
+            const isTouchUpward = (dy <= -10);
+
+            if (isTouchUpward || isMouseDrag) {
+                isPendingDrag = false;
+                isDragging = true;
+                window.isDraggingCard = true;
+                cardEl.classList.remove('is-returning', 'is-retrieving');
+                cardEl.classList.add('is-dragging');
+                removeRetrieveBadge();
+                cardEl.style.setProperty('z-index', '9999', 'important');
+                try { cardEl.setPointerCapture(activePointerId); } catch (_) {}
+                if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                    window.gameAudio.playClick();
+                }
+            } else {
+                return;
+            }
+        }
+
         if (!isDragging) return;
+
+        const vy = e.clientY - lastY;
+        const vx = Math.max(-14, Math.min(14, (e.clientX - lastX) * 0.65));
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        if (dy < minDy) {
+            minDy = dy;
+        }
+
+        cardEl.dataset.dragDx = String(dx);
+        cardEl.dataset.dragDy = String(dy);
+
+        const inCancelZone = checkIsInCancelZone(e.clientX, e.clientY, dy);
+        const inClock = checkIsInsideClock(e.clientX, e.clientY);
+
+        if (minDy < -70 || inClock) {
+            hasDraggedOut = true;
+        }
+
+        const ready = !inCancelZone && (inClock || dy < -110);
+
+        if (ready !== isDropReady) {
+            isDropReady = ready;
+            cardEl.classList.toggle('is-drop-ready', isDropReady);
+            setClockDropHighlight(isDropReady);
+        }
+
+        const isRetrieving = hasDraggedOut && !isDropReady && inCancelZone;
+
+        cardEl.classList.toggle('is-retrieving', isRetrieving);
+        if (isRetrieving) {
+            ensureRetrieveBadge();
+        } else {
+            removeRetrieveBadge();
+        }
+
+        const scale = isDropReady ? 1.22 : 1.10;
+        cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
+    };
+
+    // 3A. pointerup（正常放開）：若拖曳出牌則出牌；若僅是點擊（無位移）則切換選取狀態！
+    const onStagePointerUp = (e) => {
         if (activePointerId !== null && e && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
 
+        const wasDragging = isDragging;
+        const wasPending = isPendingDrag;
+
         isDragging = false;
+        isPendingDrag = false;
+        window.isDraggingCard = false;
         hasDraggedOut = false;
         activePointerId = null;
         detachStageListeners();
 
-        if (isDropReady) {
-            commitCardPlay();
-        } else {
-            resetCardToHand();
+        if (wasDragging) {
+            if (isDropReady) {
+                commitCardPlay();
+            } else {
+                resetCardToHand();
+            }
+        } else if (wasPending) {
+            // 單擊/輕觸選取切換（支援手機單手點擊確認出牌）
+            const isAlreadySelected = (uiState.selectedCardValue === cardValue);
+            uiState.selectedCardValue = isAlreadySelected ? null : cardValue;
+
+            const handParent = cardEl.parentElement || document.getElementById('human-hand');
+            if (handParent) {
+                const allCards = handParent.querySelectorAll('.minute-card');
+                allCards.forEach(c => {
+                    const v = parseInt(c.getAttribute('data-value'), 10);
+                    c.classList.toggle('selected', v === uiState.selectedCardValue);
+                });
+            }
+
+            const confirmBtn = document.getElementById('confirm-move-btn');
+            if (confirmBtn && !uiState.isSecondHandSelectingTwo) {
+                confirmBtn.style.display = 'inline-block';
+                confirmBtn.disabled = (uiState.selectedCardValue === null);
+            }
+
+            if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                window.gameAudio.playClick();
+            }
         }
     };
 
-    // 3B. pointerupoutside（拖出視窗外放開或中斷）：防止拖出瀏覽器卡死
+    // 3B. pointerupoutside（拖出視窗外放開或中斷）
     const onStagePointerUpOutside = () => {
-        if (!isDragging) return;
-        isDragging = false;
-        hasDraggedOut = false;
-        activePointerId = null;
-        detachStageListeners();
-        resetCardToHand();
+        if (isDragging) {
+            isDragging = false;
+            window.isDraggingCard = false;
+            hasDraggedOut = false;
+            activePointerId = null;
+            detachStageListeners();
+            resetCardToHand();
+        } else {
+            isPendingDrag = false;
+            detachStageListeners();
+        }
     };
 
     const onStageMouseLeave = (e) => {
@@ -2291,15 +2363,15 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }
     };
 
-    // 1. pointerdown（按下）：提升 zIndex 到最高層，初始剛按下時絕不顯示「收回」
+    // 1. pointerdown（按下）：不強制 preventDefault，保留手牌塢原生橫向滾動
     cardEl.addEventListener('pointerdown', (e) => {
         if (e.button !== undefined && e.button !== 0) return;
         if (uiState.isSecondHandSelectingTwo || hasCommitted) return;
-        if (typeof e.preventDefault === 'function') e.preventDefault();
 
-        isDragging = true;
-        hasDraggedOut = false; // 初始剛按下時，尚未拖離手牌區
-        activePointerId = e.pointerId !== undefined ? e.pointerId : null;
+        isPendingDrag = true;
+        isDragging = false;
+        hasDraggedOut = false;
+        activePointerId = (e.pointerId !== undefined) ? e.pointerId : null;
         startX = e.clientX;
         startY = e.clientY;
         lastX = e.clientX;
@@ -2309,21 +2381,11 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         cardEl.dataset.dragDx = '0';
         cardEl.dataset.dragDy = '0';
 
-        cardEl.classList.remove('is-returning', 'is-retrieving');
-        cardEl.classList.add('is-dragging');
-        removeRetrieveBadge(); // 剛按下手牌時絕不顯示「收回」
-        cardEl.style.setProperty('z-index', '9999', 'important');
-        cardEl.style.setProperty('transform', 'translate3d(0px, -6px, 0) scale(1.10)', 'important');
-
         window.addEventListener('pointermove', onStagePointerMove);
         window.addEventListener('pointerup', onStagePointerUp);
         window.addEventListener('pointercancel', onStagePointerUpOutside);
         window.addEventListener('blur', onStagePointerUpOutside);
         document.addEventListener('mouseleave', onStageMouseLeave);
-
-        if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
-            window.gameAudio.playClick();
-        }
     });
 
     // 無障礙快速後備：雙擊卡牌直接飛入鐘面出牌
