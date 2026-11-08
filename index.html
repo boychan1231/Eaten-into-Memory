@@ -175,6 +175,9 @@
 		<div class="tab-wrapper">
 			<div id="game-content" class="tab-content active-tab">
 				<div class="main-area">
+					<!-- 抽屜全螢幕背景遮罩（行動端點擊收合） -->
+					<div id="hud-drawer-backdrop" class="hud-drawer-backdrop" aria-hidden="true"></div>
+
 					<!-- 左側懸浮抽屜群：對局情報（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-left">
 						<!-- 1. 📝 遊戲日誌（預設展開） -->
@@ -186,6 +189,13 @@
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
+								<div class="drawer-mobile-header">
+									<div class="drawer-mobile-handle"></div>
+									<div class="drawer-mobile-title-bar">
+										<span class="drawer-mobile-title" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
+										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
+									</div>
+								</div>
 								<div id="game-log-container">
 									<ul id="log-list">
 										<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
@@ -203,6 +213,13 @@
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
+								<div class="drawer-mobile-header">
+									<div class="drawer-mobile-handle"></div>
+									<div class="drawer-mobile-title-bar">
+										<span class="drawer-mobile-title" data-i18n="ui.drawers.scores">🏆 即時積分</span>
+										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
+									</div>
+								</div>
 								<div id="score-panel" class="log-side-info score-panel">
 									<div class="score-tab-bar">
 										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
@@ -227,6 +244,13 @@
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
+								<div class="drawer-mobile-header">
+									<div class="drawer-mobile-handle"></div>
+									<div class="drawer-mobile-title-bar">
+										<span class="drawer-mobile-title" data-i18n="ui.drawers.players">👥 場上角色</span>
+										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
+									</div>
+								</div>
 								<div id="players-section" class="players-grid">
 									<div class="player-card placeholder">
 										<p>等待遊戲開始...</p>
@@ -268,6 +292,13 @@
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
+								<div class="drawer-mobile-header">
+									<div class="drawer-mobile-handle"></div>
+									<div class="drawer-mobile-title-bar">
+										<span class="drawer-mobile-title" data-i18n="ui.drawers.evolution">⚡ 能力與進化</span>
+										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
+									</div>
+								</div>
 								<div id="evolution-progress-area" class="progress-area"></div>
 							</div>
 						</details>
@@ -281,6 +312,13 @@
 								</span>
 							</summary>
 							<div class="hud-drawer-body">
+								<div class="drawer-mobile-header">
+									<div class="drawer-mobile-handle"></div>
+									<div class="drawer-mobile-title-bar">
+										<span class="drawer-mobile-title" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</span>
+										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
+									</div>
+								</div>
 								<div id="played-cards-panel" class="log-side-info">
 									<div class="deck-title panel-title-highlight" data-i18n="ui.tabs.current_round">本回合出牌</div>
 									<div id="played-cards-list"></div>

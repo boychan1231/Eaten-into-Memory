@@ -1197,19 +1197,66 @@
         }
     }
 
-    // 左右兩側懸浮抽屜手風琴互斥：在同側點擊某個抽屜標題即將展開時，自動收合同側其他已展開的抽屜
+    // 左右兩側懸浮抽屜手風琴互斥與行動端 Bottom Sheet 開關管理
     function initHudDrawerAccordions() {
+        const isMobileInit = (window.innerWidth <= 768);
+        if (isMobileInit) {
+            // 手機版載入時預先收合所有抽屜，確保鐘面不被遮擋
+            document.querySelectorAll('details.hud-drawer').forEach(d => {
+                d.open = false;
+            });
+            document.body.classList.remove('mobile-drawer-open');
+        }
+
+        const updateMobileDrawerState = () => {
+            if (window.innerWidth <= 768) {
+                const anyOpen = Array.from(document.querySelectorAll('details.hud-drawer')).some(d => d.open);
+                document.body.classList.toggle('mobile-drawer-open', anyOpen);
+            } else {
+                document.body.classList.remove('mobile-drawer-open');
+            }
+        };
+
+        // 綁定全螢幕背景遮罩（點擊關閉所有開啟的抽屜）
+        const backdrop = document.getElementById('hud-drawer-backdrop');
+        if (backdrop && !backdrop._bound) {
+            backdrop._bound = true;
+            backdrop.addEventListener('click', () => {
+                document.querySelectorAll('details.hud-drawer').forEach(d => {
+                    d.open = false;
+                });
+                updateMobileDrawerState();
+            });
+        }
+
+        // 綁定行動端抽屜頂部專屬關閉鈕 (✕)
+        document.querySelectorAll('.drawer-mobile-close-btn').forEach(btn => {
+            if (btn._bound) return;
+            btn._bound = true;
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const drawer = btn.closest('details.hud-drawer');
+                if (drawer) drawer.open = false;
+                updateMobileDrawerState();
+            });
+        });
+
         ['.hud-drawer-left', '.hud-drawer-right'].forEach(selector => {
             const stack = document.querySelector(selector);
             if (!stack) return;
             const drawers = Array.from(stack.querySelectorAll(':scope > details.hud-drawer'));
             drawers.forEach(drawer => {
+                drawer.addEventListener('toggle', () => {
+                    updateMobileDrawerState();
+                });
+
                 if (drawer._accordionBound) return;
                 drawer._accordionBound = true;
                 const summary = drawer.querySelector(':scope > summary');
                 if (!summary) return;
                 summary.addEventListener('click', () => {
-                    // 點擊前若為收合狀態，代表即將展開 -> 預先收合同側（手機端則收合全場）其他已展開的抽屜
+                    // 若點擊前為收合狀態，代表即將展開 -> 預先收合同側（手機端則收合全場）其他已展開的抽屜
                     if (!drawer.open) {
                         const isMobile = (window.innerWidth <= 768);
                         if (isMobile) {
@@ -1222,9 +1269,10 @@
                             });
                         }
                         if (drawer.id === 'log-panel-details' && typeof window.scrollLogToBottom === 'function') {
-                            window.scrollLogToBottom();
+                            setTimeout(window.scrollLogToBottom, 60);
                         }
                     }
+                    setTimeout(updateMobileDrawerState, 30);
                 });
             });
         });
