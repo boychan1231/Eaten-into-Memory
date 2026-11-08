@@ -3,6 +3,8 @@
 
 
 
+var GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG) ? window.GAME_CONFIG : (typeof GAME_CONFIG !== 'undefined' ? GAME_CONFIG : { enableAbilities: false });
+
 // --- 6. 遊戲流程控制 ---
 
 function activateSinTargetingAbility(gameState) {
@@ -151,19 +153,36 @@ function hourHandPreMinuteAI(gameState) {
 
             let shouldMove = false;
 
-            // 決策：
-            // 1. 若頂牌是珍貴卡，時魔視為關鍵獲勝目標，保留在牌頂以供下回合奪取
-            if (topCard.isPrecious) {
-                shouldMove = false;
-            } else if (topCard.number === 12) {
-                // 2. 12 號是最高危險區，極高風險，強烈建議移到底部
-                shouldMove = true;
-            } else if (topCard.number >= 10 && checkChance(0.6)) {
-                // 3. 高數值卡偏危險，有較大機率移開
-                shouldMove = true;
-            } else if (aiPlayer.currentClockPosition !== null && topCard.number === aiPlayer.currentClockPosition && checkChance(0.5)) {
-                // 4. 與自身位置相同，若抽出無法推進，考慮移開
-                shouldMove = true;
+            if (gameState.gameMode === '3P') {
+                // === 3P 時針專屬移牌判定 ===
+                // 3P 模式沒有珍貴卡，純粹依據鐘面安全性調度：
+                // 12 與 11 是致命大牌，強烈建議移到底部避險
+                if (topCard.number >= 11) {
+                    shouldMove = true;
+                } else if (topCard.number >= 9 && checkChance(0.7)) {
+                    shouldMove = true;
+                } else if (aiPlayer.currentClockPosition !== null && topCard.number >= aiPlayer.currentClockPosition && topCard.number >= 8 && checkChance(0.6)) {
+                    // 比自己當前位置大且偏高，移開以策安全
+                    shouldMove = true;
+                } else {
+                    // 1~7 號相對安全或具有優良落點價值，保留在牌頂
+                    shouldMove = false;
+                }
+            } else {
+                // 決策：
+                // 1. 若頂牌是珍貴卡，時魔視為關鍵獲勝目標，保留在牌頂以供下回合奪取
+                if (topCard.isPrecious) {
+                    shouldMove = false;
+                } else if (topCard.number === 12) {
+                    // 2. 12 號是最高危險區，極高風險，強烈建議移到底部
+                    shouldMove = true;
+                } else if (topCard.number >= 10 && checkChance(0.6)) {
+                    // 3. 高數值卡偏危險，有較大機率移開
+                    shouldMove = true;
+                } else if (aiPlayer.currentClockPosition !== null && topCard.number === aiPlayer.currentClockPosition && checkChance(0.5)) {
+                    // 4. 與自身位置相同，若抽出無法推進，考慮移開
+                    shouldMove = true;
+                }
             }
 
             if (shouldMove && typeof hourHandMoveTopToBottom === 'function') {
@@ -321,8 +340,170 @@ function startRound(gameState) {
 
 
 
+// =========================================================
+// ⏱️ 3P 競速對抗模式專屬 AI 決策系統 (Dedicated 3P Mode AI)
+// =========================================================
+
+function makeAIChoice3P(player, gameState) {
+    if (!player.hand || player.hand.length === 0) return null;
+    const sortedHand = [...player.hand].sort((a, b) => a.value - b.value);
+    const handSize = sortedHand.length;
+    const drawnHours = gameState.currentDrawnHourCards || [];
+    const myPos = player.currentClockPosition;
+    const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
+
+    function pickIndex(rankA, rankB, isFromSmallest) {
+        const chosenRank = checkChance(0.5) ? rankA : rankB;
+        if (isFromSmallest) {
+            return Math.min(chosenRank - 1, handSize - 1);
+        } else {
+            return Math.max(handSize - chosenRank, 0);
+        }
+    }
+
+    let selectedIndex = 0;
+
+    if (isEasy) {
+        // === 3P 簡單模式 (基礎啟發式) ===
+        // 若自身面臨較高數值 (>= 8)，嘗試出大牌搶翻出的小時卡避險
+        if (myPos !== null && myPos >= 8 && drawnHours.some(c => c.number < myPos)) {
+            selectedIndex = pickIndex(1, 2, false); // 搶前排
+        } else if (drawnHours.every(c => c.number >= 10)) {
+            // 場上都是危險大牌，故意出小牌避坑
+            selectedIndex = pickIndex(1, 2, true);
+        } else {
+            // 隨機平均出牌
+            selectedIndex = Math.floor(handSize / 2);
+        }
+    } else {
+        // === 3P 一般模式 (新改良三角博弈演算法) ===
+        const otherAlive = (gameState.players || []).filter(p => p.id !== player.id && !p.isEjected);
+        const otherPositions = otherAlive
+            .map(p => p.currentClockPosition)
+            .filter(pos => typeof pos === 'number');
+        const maxOtherPos = otherPositions.length > 0 ? Math.max(...otherPositions) : null;
+
+        const round = gameState.roundMarker || 1;
+        const isEarly = (round <= 4 && handSize >= 5);
+
+        // 輔助函式：出大牌時在前期適度保留王牌 (58-60)
+        const pickAggressive = (rankA, rankB, urgent = false) => {
+            const rawIdx = pickIndex(rankA, rankB, false);
+            if (!urgent && isEarly && rawIdx === handSize - 1) {
+                return Math.max(0, handSize - 2);
+            }
+            return rawIdx;
+        };
+
+        const minDrawn = drawnHours.length > 0 ? Math.min(...drawnHours.map(c => c.number)) : 6;
+
+        // 1. 致命毒牌判定 (Poison Hour Check)：
+        // 若場上翻出的 2 張小時卡都比其他對手當前位置還要大 (例如對手在 4、6，場上是 10、11)
+        // 且自己目前位置安全 (myPos < minDrawn 或尚未落位)
+        // 此時若拿小時卡必成最大值受罰，反之拿第 3 名 (不拿牌) 100% 安全！
+        const isPoisonTrap = (maxOtherPos !== null && drawnHours.length > 0 &&
+            drawnHours.every(c => c.number > maxOtherPos) &&
+            (myPos === null || myPos < minDrawn));
+
+        // 2. 救命逃生判定 (Emergency Escape Check)：
+        // 若自身當前已經是場上最高位置 (或 >= 9 極高危險)，且場上有更小的小時卡可以逃離
+        const isCurrentlyHighest = (maxOtherPos !== null && myPos !== null && myPos >= maxOtherPos);
+        const hasEscapeCard = (myPos !== null && minDrawn < myPos);
+        const isUrgentEscape = (isCurrentlyHighest || (myPos !== null && myPos >= 9)) && hasEscapeCard;
+
+        // 3. 完美佔點 (Sweet Spot Capture)：
+        // 場上有極度安全的低數值卡 (<= 3)，且搶先拿到可以長期處於安全區
+        const hasSuperSafeCard = (minDrawn <= 3);
+
+        // 4. 優勢巡航 (Safe Stalling)：
+        // 自身當前已在極安全位置 (<= 4)，且其他對手有更高數值擋在前方
+        const isComfortablySafe = (myPos !== null && myPos <= 4 && maxOtherPos !== null && maxOtherPos > myPos);
+
+        if (isPoisonTrap) {
+            // 🚨 陷阱回合：全力出小牌以求落入第 3 名，讓對手被迫吃毒牌受罰
+            selectedIndex = pickIndex(1, 2, true);
+        }
+        else if (isUrgentEscape) {
+            // 💥 逃生回合：必須擠進前 2 名挑牌以洗掉身上的危險位置
+            selectedIndex = pickAggressive(1, 2, true);
+        }
+        else if (hasSuperSafeCard && (myPos === null || minDrawn < myPos)) {
+            // ⭐ 搶佔安全刻度：穩健爭取前 2 名
+            selectedIndex = pickAggressive(2, 3, false);
+        }
+        else if (isComfortablySafe) {
+            // 🛡️ 優勢巡航：自己位置已經很好，出中低牌省大牌，第 2 或第 3 名皆可接受
+            selectedIndex = pickIndex(2, 3, true);
+        }
+        else if (myPos === null) {
+            // 開局首輪尚未落點：以中上位牌爭取適中落點
+            selectedIndex = pickAggressive(2, 3, false);
+        }
+        else {
+            // 穩健過渡
+            selectedIndex = Math.floor(handSize / 2);
+        }
+    }
+
+    const targetCardValue = sortedHand[selectedIndex].value;
+    const originalIndex = player.hand.findIndex(c => c.value === targetCardValue);
+    const chosenCard = player.hand.splice(originalIndex, 1)[0];
+
+    // --- 3P 秒針專屬能力判定 ---
+    const SEC_COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
+    if (
+        GAME_CONFIG.enableAbilities &&
+        player.roleCard === '秒針' &&
+        !gameState.abilityMarker &&
+        !player.specialAbilityUsed &&
+        player.mana >= SEC_COST &&
+        player.hand.length >= 1
+    ) {
+        let shouldActivateSec = false;
+        if (isEasy) {
+            shouldActivateSec = checkChance(0.6);
+        } else {
+            const hasDangerHour = drawnHours.some(c => c.number >= 9);
+            const hasSafeHour = drawnHours.some(c => c.number <= 4);
+            const isHighStakes = (hasDangerHour && hasSafeHour) || (myPos !== null && myPos >= 8);
+            shouldActivateSec = isHighStakes ? checkChance(0.85) : checkChance(0.5);
+        }
+
+        if (shouldActivateSec) {
+            const remainingSorted = [...player.hand].sort((a, b) => a.value - b.value);
+            const altLow = remainingSorted[0];
+            const altHigh = remainingSorted[remainingSorted.length - 1];
+
+            const altCard =
+                (Math.abs((altHigh?.value ?? 0) - chosenCard.value) >= Math.abs(chosenCard.value - (altLow?.value ?? 0)))
+                    ? altHigh
+                    : altLow;
+
+            const altIdx = player.hand.indexOf(altCard);
+            if (altIdx !== -1) {
+                player.hand.splice(altIdx, 1);
+                player.mana -= SEC_COST;
+                player.specialAbilityUsed = true;
+                if (window.gameAudio) window.gameAudio.playAbility();
+                appLogger.log(`⏱️【秒針】${player.name} (3P AI) 耗用 ${SEC_COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+                return {
+                    type: 'seconds_pending',
+                    options: [chosenCard, altCard]
+                };
+            }
+        }
+    }
+
+    return chosenCard;
+}
+
 function makeAIChoice(player, gameState) {
     if (player.hand.length === 0) return null;
+
+    // ✅ 3P 模式分流至專屬 AI 決策
+    if (gameState.gameMode === '3P') {
+        return makeAIChoice3P(player, gameState);
+    }
     const sortedHand = [...player.hand].sort((a, b) => a.value - b.value);
     const handSize = sortedHand.length;
     const drawnHours = gameState.currentDrawnHourCards || [];
@@ -845,13 +1026,39 @@ function resolveMinuteCardSelection(gameState, choices, options = {}) {
             const drawnHours = gameState.currentDrawnHourCards || [];
             const myPos = player ? player.currentClockPosition : null;
             let wantsHourCard = true;
-            if (myPos !== null && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
-                // 全部小時卡都小於目前位置，拿了無法推進且易受罰，傾向選小牌防守
-                wantsHourCard = false;
-            }
-            if (drawnHours.some(c => c.isPrecious)) {
-                // 有珍貴卡，強烈想要搶先選牌
-                wantsHourCard = true;
+
+            if (gameState.gameMode === '3P') {
+                // === 3P 秒針專屬翻牌二選一意向判定 ===
+                const otherAlive = (gameState.players || []).filter(p => p.id !== player.id && !p.isEjected);
+                const otherPositions = otherAlive
+                    .map(p => p.currentClockPosition)
+                    .filter(pos => typeof pos === 'number');
+                const maxOtherPos = otherPositions.length > 0 ? Math.max(...otherPositions) : null;
+                const minDrawn = drawnHours.length > 0 ? Math.min(...drawnHours.map(c => c.number)) : 6;
+
+                // 毒牌陷阱判定：場上所有小時卡皆大於其他對手當前位置，且自己目前比翻出的小時卡安全
+                const isPoisonTrap = (maxOtherPos !== null && drawnHours.length > 0 &&
+                    drawnHours.every(c => c.number > maxOtherPos) &&
+                    (myPos === null || myPos < minDrawn));
+
+                if (isPoisonTrap) {
+                    wantsHourCard = false; // 故意不要小時卡，爭取第 3 名！
+                } else if (myPos !== null && maxOtherPos !== null && myPos >= maxOtherPos && minDrawn < myPos) {
+                    wantsHourCard = true; // 緊急逃生，務必拿下前 2 名
+                } else if (myPos !== null && myPos <= 4 && maxOtherPos !== null && maxOtherPos > myPos && minDrawn >= 6) {
+                    wantsHourCard = false; // 當前位置極優，場上牌沒自己好，不強求拿牌
+                } else {
+                    wantsHourCard = true;
+                }
+            } else {
+                if (myPos !== null && drawnHours.length > 0 && drawnHours.every(c => c.number < myPos)) {
+                    // 全部小時卡都小於目前位置，拿了無法推進且易受罰，傾向選小牌防守
+                    wantsHourCard = false;
+                }
+                if (drawnHours.some(c => c.isPrecious)) {
+                    // 有珍貴卡，強烈想要搶先選牌
+                    wantsHourCard = true;
+                }
             }
 
             const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
@@ -1005,8 +1212,69 @@ function processNextHourPicker(gameState) {
     }, pickDelay); 
 }
 
+// =========================================================
+// ⏱️ 3P 模式專屬小時卡挑選演算法 (3P Hour Card Selection)
+// =========================================================
+function chooseHourCardForAI3P(gameState, player, drawnCards) {
+    if (!drawnCards || drawnCards.length === 0) return null;
+
+    const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
+    const otherAlive = (gameState?.players || []).filter(p => p.id !== player.id && !p.isEjected);
+    const otherPositions = otherAlive
+        .map(p => p.currentClockPosition)
+        .filter(pos => typeof pos === 'number');
+
+    if (isEasy || otherPositions.length === 0) {
+        // 簡單模式或對手尚未落位：純粹挑選數值最小的小時卡 (離 12 越遠越好)
+        const sorted = drawnCards.slice().sort((a, b) => a.number - b.number);
+        const target = sorted[0];
+        const idx = drawnCards.findIndex(c => c === target);
+        if (idx !== -1) return drawnCards.splice(idx, 1)[0];
+        return null;
+    }
+
+    // === 3P 一般模式：精準避罰與位置控制演算法 ===
+    const otherMax = Math.max(...otherPositions);
+
+    // 評估每張候選牌的受罰風險：
+    // 若 card.number < otherMax -> 風險 0 (其他對手比我高，本回合絕對安全)
+    // 若 card.number === otherMax -> 風險 1 (並列最高，會受罰)
+    // 若 card.number > otherMax -> 風險 2 (全場最高，必受罰)
+    const scoredCards = drawnCards.slice().map(c => {
+        let risk = 0;
+        if (c.number > otherMax) risk = 2;
+        else if (c.number === otherMax) risk = 1;
+        else risk = 0;
+
+        // 分針專屬加權：若身為分針且 Mana >= 2，評估跳躍逃生彈性
+        if (player.roleCard === '分針' && player.mana >= 2 && risk > 0) {
+            risk = 0.5; // 分針可透過技能跳走，風險折半
+        }
+
+        return { card: c, risk, number: c.number };
+    });
+
+    // 排序優先序：風險低者優先；同風險時數值小者優先 (離 12 越遠越好)
+    scoredCards.sort((a, b) => {
+        if (a.risk !== b.risk) return a.risk - b.risk;
+        return a.number - b.number;
+    });
+
+    const chosen = scoredCards[0].card;
+    const idx = drawnCards.findIndex(c => c === chosen);
+    if (idx !== -1) {
+        return drawnCards.splice(idx, 1)[0];
+    }
+    return null;
+}
+
 function chooseHourCardForAI(gameState, player, drawnCards) {
     if (!drawnCards || drawnCards.length === 0) return null;
+
+    // ✅ 3P 模式分流至專屬挑牌演算法
+    if (gameState.gameMode === '3P') {
+        return chooseHourCardForAI3P(gameState, player, drawnCards);
+    }
 
     const isEasy = (window.GAME_CONFIG?.aiDifficulty === 'easy');
     if (isEasy) {
