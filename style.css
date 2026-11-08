@@ -3402,6 +3402,12 @@ body {
 
 /* 📱 經典版手機排版適配 (<= 768px) */
 @media (max-width: 768px) {
+    .human-play-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
     .hand-display {
         width: 100% !important;
         max-width: 100vw !important;
@@ -3419,5 +3425,16 @@ body {
         width: 38px !important;
         height: 55px !important;
         flex: 0 0 auto !important;
+    }
+    .hand-controls {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    }
+    .hand-action-btns button {
+        height: 38px !important;
+        padding: 0 16px !important;
+        font-size: 0.85rem !important;
     }
 }
