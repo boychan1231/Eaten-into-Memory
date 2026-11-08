@@ -441,6 +441,11 @@ function initializeGame(roles = null) {
         assignThreePlayerRoles(gameState);
     }
     
+    // 若開啟新手教學模式，在新遊戲初始化時重置步驟記錄
+    if (typeof window !== 'undefined' && window.TutorialModeManager && typeof window.TutorialModeManager.resetTutorialProgress === 'function') {
+        window.TutorialModeManager.resetTutorialProgress();
+    }
+
     appLogger.log("遊戲初始化完成！");
     return gameState;
 }

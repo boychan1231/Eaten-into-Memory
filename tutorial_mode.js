@@ -3,7 +3,7 @@
 (function () {
     let tutorialSpotlightEl = null;
     let autoDismissTimer = null;
-    const TOOLTIP_AUTO_DISMISS_SECONDS = 10;
+    const TOOLTIP_AUTO_DISMISS_SECONDS = 25; // 延長自動關閉倒數至 25 秒，提供充足閱讀時間
 
     // 清除自動隱藏計時器
     function clearAutoDismissTimer() {
@@ -38,8 +38,109 @@
         }
     }
 
+    // 檢驗 DOM 元素是否處於可見狀態（支援 fixed 定位與自訂容器）
+    function isElementVisible(el) {
+        if (!el) return false;
+        if (el.id === 'clock-face' || el.id === 'modern-board' || el.id === 'table-top') return true;
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) return true;
+        if (typeof el.getClientRects === 'function' && el.getClientRects().length > 0) return true;
+        return false;
+    }
+
+    // 計算提示框的最佳定位與指向箭頭
+    function computeOptimalPosition(targetEl, tooltipEl, preferredPlacement = 'auto') {
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // 預估或實測提示框尺寸
+        const tooltipRect = tooltipEl.getBoundingClientRect();
+        const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
+        const tooltipHeight = tooltipRect.height || 110;
+
+        // 若目標為全屏鐘面/桌面容器，居中懸浮於畫面上方，不施加外框變形
+        if (isClockContainer) {
+            const left = Math.max(12, Math.round((viewportWidth - tooltipWidth) / 2));
+            const top = Math.max(68, Math.min(130, Math.round(viewportHeight * 0.14)));
+            return { left, top, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
+        }
+
+        const rect = targetEl.getBoundingClientRect();
+        const spaceAbove = rect.top;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceLeft = rect.left;
+        const spaceRight = viewportWidth - rect.right;
+
+        let chosen = preferredPlacement;
+
+        // 智慧評估空間：若偏好方位放不下，自動翻轉至空間充裕的方位
+        if (chosen === 'auto' || !['top', 'bottom', 'left', 'right'].includes(chosen)) {
+            if (spaceAbove >= tooltipHeight + 16) {
+                chosen = 'top';
+            } else if (spaceBelow >= tooltipHeight + 16) {
+                chosen = 'bottom';
+            } else if (spaceLeft >= tooltipWidth + 16) {
+                chosen = 'left';
+            } else if (spaceRight >= tooltipWidth + 16) {
+                chosen = 'right';
+            } else {
+                chosen = spaceAbove >= spaceBelow ? 'top' : 'bottom';
+            }
+        }
+
+        // 邊界防禦與覆蓋重疊翻轉
+        if (chosen === 'left' && spaceLeft < tooltipWidth + 14) {
+            chosen = spaceAbove >= tooltipHeight + 14 ? 'top' : (spaceBelow >= tooltipHeight + 14 ? 'bottom' : 'top');
+        } else if (chosen === 'right' && spaceRight < tooltipWidth + 14) {
+            chosen = spaceAbove >= tooltipHeight + 14 ? 'top' : (spaceBelow >= tooltipHeight + 14 ? 'bottom' : 'left');
+        } else if (chosen === 'top' && spaceAbove < tooltipHeight + 14 && spaceBelow > spaceAbove) {
+            chosen = 'bottom';
+        } else if (chosen === 'bottom' && spaceBelow < tooltipHeight + 14 && spaceAbove > spaceBelow) {
+            chosen = 'top';
+        }
+
+        let top = 0;
+        let left = 0;
+        let arrow = 'bottom';
+
+        if (chosen === 'top') {
+            // 氣泡位於目標上方，箭頭朝下指向目標
+            top = rect.top - tooltipHeight - 12;
+            left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            arrow = 'bottom';
+        } else if (chosen === 'bottom') {
+            // 氣泡位於目標下方，箭頭朝上指向目標
+            top = rect.bottom + 12;
+            left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            arrow = 'top';
+        } else if (chosen === 'left') {
+            // 氣泡位於目標左方，箭頭朝右指向目標
+            left = rect.left - tooltipWidth - 12;
+            top = rect.top + rect.height / 2 - tooltipHeight / 2;
+            arrow = 'right';
+        } else if (chosen === 'right') {
+            // 氣泡位於目標右方，箭頭朝左指向目標
+            left = rect.right + 12;
+            top = rect.top + rect.height / 2 - tooltipHeight / 2;
+            arrow = 'left';
+        }
+
+        // 確保提示框完全在可視視窗安全邊界之內
+        const safeLeft = Math.max(10, Math.min(left, viewportWidth - tooltipWidth - 10));
+        const safeTop = Math.max(10, Math.min(top, viewportHeight - tooltipHeight - 10));
+
+        // 計算箭頭在氣泡上的相對座標，精確直指目標中心
+        const targetCenterX = rect.left + rect.width / 2;
+        const targetCenterY = rect.top + rect.height / 2;
+        const arrowX = Math.max(18, Math.min(tooltipWidth - 18, Math.round(targetCenterX - safeLeft)));
+        const arrowY = Math.max(14, Math.min(tooltipHeight - 14, Math.round(targetCenterY - safeTop)));
+
+        return { left: safeLeft, top: safeTop, arrow, arrowX, arrowY };
+    }
+
     // 將動態氣泡提示框指向目標 DOM 元素
-    function showTutorialPointer(targetSelector, messageText, arrowDirection = 'bottom') {
+    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
         // 若玩家停用教學模式，不動作
         if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
             clearTutorialPointers();
@@ -53,98 +154,61 @@
         let targetEl = null;
         if (typeof targetSelector === 'string') {
             targetEl = document.querySelector(targetSelector);
-        } else if (targetSelector instanceof HTMLElement) {
+        } else if ((typeof HTMLElement !== 'undefined' && targetSelector instanceof HTMLElement) || (targetSelector && typeof targetSelector === 'object' && (targetSelector.nodeType === 1 || targetSelector._rect))) {
             targetEl = targetSelector;
         }
 
-        if (!targetEl || targetEl.offsetParent === null) {
+        if (!targetEl || !isElementVisible(targetEl)) {
             clearTutorialPointers();
             return;
         }
 
         const wasHidden = tooltip.classList.contains('hidden');
 
-        // 高亮目標元素
+        // 清除舊高亮
         clearTutorialPointers();
-        targetEl.classList.add('tutorial-spotlight');
-        tutorialSpotlightEl = targetEl;
+
+        // 目標高亮：若非全屏容器，加上聚光燈樣式（純光暈無 scale 變形）
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
+        if (!isClockContainer) {
+            targetEl.classList.add('tutorial-spotlight');
+            tutorialSpotlightEl = targetEl;
+        }
 
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
-        // 重新顯示 tooltip（若為初次／重新浮現，加入淡入動畫）
+        // 重新顯示 tooltip
         tooltip.classList.remove('hidden');
         if (wasHidden) {
             tooltip.classList.add('tutorial-fade-in');
         }
-        tooltip.setAttribute('data-arrow', arrowDirection);
 
-        // 計算定位
-        const rect = targetEl.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-
-        let top = 0;
-        let left = 0;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        if (arrowDirection === 'bottom') {
-            top = rect.top - tooltipRect.height - 14;
-            left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-        } else if (arrowDirection === 'top') {
-            top = rect.bottom + 14;
-            left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-        } else if (arrowDirection === 'left') {
-            top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-            left = rect.right + 14;
-        } else if (arrowDirection === 'right') {
-            top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-            left = rect.left - tooltipRect.width - 14;
+        // 計算最佳定位座標
+        const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
+        tooltip.setAttribute('data-arrow', pos.arrow);
+        tooltip.style.left = `${pos.left}px`;
+        tooltip.style.top = `${pos.top}px`;
+        if (typeof tooltip.style.setProperty === 'function') {
+            tooltip.style.setProperty('--arrow-x', `${pos.arrowX}px`);
+            tooltip.style.setProperty('--arrow-y', `${pos.arrowY}px`);
+        } else {
+            tooltip.style['--arrow-x'] = `${pos.arrowX}px`;
+            tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
 
-        // 邊界防禦與防遮擋修正
-        left = Math.max(10, Math.min(left, viewportWidth - tooltipRect.width - 10));
-        top = Math.max(10, Math.min(top, viewportHeight - tooltipRect.height - 10));
-
-        // 若計算出的框位與目標按鈕有重疊碰撞，向上挪移避開按鈕
-        if (
-            left < rect.right &&
-            left + tooltipRect.width > rect.left &&
-            top < rect.bottom &&
-            top + tooltipRect.height > rect.top
-        ) {
-            top = Math.max(10, rect.top - tooltipRect.height - 14);
-            tooltip.setAttribute('data-arrow', 'bottom');
-        }
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-
-        // 每次成功展示教學提示時，啟動 10 秒自動隱藏倒數，避免提示永久滯留遮擋盤面
+        // 啟動自動隱藏倒數計時（滑鼠或觸控懸停時自動暫停計時）
         scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
     }
 
-    // 追蹤已顯示過的教學指南步驟；當核心步驟顯示並推進後，自動關閉教學
+    // 追蹤已顯示過的教學步驟，避免同步驟於同一局對局中重複彈出干擾玩家
     const shownSteps = new Set();
 
     function hasCompletedAllTutorialSteps(gameState) {
-        // 情況 A：若當前對局已推進至第 3 回合以上 (roundMarker >= 3 或 gameRound > 1)，
-        // 且玩家已體驗過拖曳出牌，代表初期教學已足夠，自動關閉教學以避免干擾
-        if (gameState && ((gameState.roundMarker && gameState.roundMarker >= 3) || gameState.gameRound > 1) && shownSteps.has('step1_drag_minute')) {
-            return true;
-        }
-
-        // 情況 B：玩家已完整走過一輪核心流程（出牌 + 進鐘面選小時卡 + 結算進入下一輪）
-        // 依使用者規則：未取得小時卡之戰術提醒不納入教學自動關閉的計算中
+        // 核心流程：出牌 + 完成回合
         const hasPlayedCard = shownSteps.has('step1_drag_minute');
-        const hasExperiencedPickHour = shownSteps.has('step3_select_hour');
-        const hasFinishedRound = shownSteps.has('step4_next_round');
-        if (hasPlayedCard && hasExperiencedPickHour && hasFinishedRound) {
-            return true;
-        }
-
-        return false;
+        const hasFinishedRound = shownSteps.has('step4_next_round') || shownSteps.has('step4_no_hour_card');
+        return hasPlayedCard && hasFinishedRound;
     }
 
     // 根據當前遊戲階段 (GameState & Flags) 自動評判教學引導
@@ -154,13 +218,7 @@
             return;
         }
 
-        // 核心檢查：若玩家已經完成新手教學步驟或已完成第 1 回合完整循環，立即自動關閉教學模式
-        if (hasCompletedAllTutorialSteps(gameState)) {
-            disableTutorialMode(true);
-            return;
-        }
-
-        // 若現代版進場動畫 (modern-intro-overlay) 尚未完全結束，暫不顯示教學提示，待進場動畫結束後再顯示
+        // 若現代版進場動畫 (modern-intro-overlay) 尚未完全結束，暫不顯示教學提示
         const introOverlay = document.getElementById('modern-intro-overlay');
         const introStillVisible = introOverlay && (
             typeof window.getComputedStyle === 'function'
@@ -182,21 +240,23 @@
             ? window.getEffectiveHumanPlayerId()
             : 'SM_1';
 
-        // 若進入新一場遊戲（第 1 局、第 1 回合、尚未翻開小時卡），自動重置教學步驟紀錄
-        if (!shownSteps.has('step1_drag_minute') && gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && (!gameState.currentDrawnHourCards || gameState.currentDrawnHourCards.length === 0)) {
-            shownSteps.clear();
+        // 若進入全新對局（第 1 局、第 1 回合、尚未翻開小時卡），自動重置步驟紀錄
+        if (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && (!gameState.currentDrawnHourCards || gameState.currentDrawnHourCards.length === 0)) {
+            if (!shownSteps.has('step0_welcome')) {
+                shownSteps.clear();
+            }
         }
 
-        // 【優先檢查 0】：開局初始歡迎提示（第 1 局、第 1 回合、尚未展開出牌）
+        // 【階段 0】：開局初始歡迎提示（第 1 局、第 1 回合、尚未展開出牌）
         const nextBtn = document.getElementById('next-step-btn');
         const isInitialOpening = (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && !shownSteps.has('step1_drag_minute'));
-        if (isInitialOpening) {
+        if (isInitialOpening && !shownSteps.has('step0_welcome')) {
             shownSteps.add('step0_welcome');
             shownSteps.add('has_shown_welcome');
             const welcomeMsg = window.i18n
                 ? window.i18n.t('tutorial.step0_welcome')
                 : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-            if (nextBtn && nextBtn.offsetParent !== null) {
+            if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
                 showTutorialPointer(nextBtn, welcomeMsg, 'left');
                 return;
@@ -207,10 +267,11 @@
             ? (window.i18n ? window.i18n.t('tutorial.welcome_prefix') : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>')
             : '';
 
-        // 階段 1：等待人類出牌 (分鐘卡)
+        // 【階段 1】：等待人類出牌 (分鐘卡)
         if (gameState.currentRoundAIChoices !== null) {
-            if (hasCompletedAllTutorialSteps(gameState)) {
-                disableTutorialMode(true);
+            // 若玩家已在初期掌握出牌方式，不再重複彈出拖牌教學，保持遊戲流暢
+            if (shownSteps.has('step1_drag_minute') && gameState.roundMarker > 1) {
+                clearTutorialPointers();
                 return;
             }
 
@@ -218,7 +279,7 @@
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
 
-            // 若玩家啟動了「秒針」蓋 2 張特殊能力，則保留「點選 2 張卡牌 + 點擊確認出牌」的教學提示
+            // 若玩家啟動了「秒針」蓋 2 張特殊能力，則提供「點選 2 張卡牌 + 點擊確認出牌」的教學提示
             if (typeof uiState !== 'undefined' && uiState.isSecondHandSelectingTwo) {
                 shownSteps.add('has_shown_welcome');
                 const selectedCount = Array.isArray(uiState.selectedCardValues) ? uiState.selectedCardValues.length : 0;
@@ -231,23 +292,30 @@
                     const msg = window.i18n
                         ? window.i18n.t('tutorial.step1_sec_ability_confirm')
                         : '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出！';
-                    showTutorialPointer('#confirm-move-btn', welcomePrefix + turnPrefix + msg, 'bottom');
+                    showTutorialPointer('#confirm-move-btn', welcomePrefix + turnPrefix + msg, 'top');
                 }
                 return;
             }
 
-            // 一般出牌：引導玩家直接將分鐘卡向上拖曳至鐘面出牌
-            shownSteps.add('step1_drag_minute');
-            shownSteps.add('has_shown_welcome');
-            const step1Msg = window.i18n
-                ? window.i18n.t('tutorial.step1_drag_minute')
-                : '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開出牌。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
-            showTutorialPointer('#human-hand', welcomePrefix + turnPrefix + step1Msg, 'top');
-            return;
+            // 一般出牌：引導玩家將分鐘卡向上拖曳至鐘面出牌（僅於第 1 回合或首次出牌時引導）
+            if (!shownSteps.has('step1_drag_minute')) {
+                shownSteps.add('step1_drag_minute');
+                shownSteps.add('has_shown_welcome');
+                const step1Msg = window.i18n
+                    ? window.i18n.t('tutorial.step1_drag_minute')
+                    : '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開出牌。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
+                showTutorialPointer('#human-hand', welcomePrefix + turnPrefix + step1Msg, 'top');
+                return;
+            }
         }
 
-        // 階段 2：等待挑選小時卡 (輪到人類選卡)
+        // 【階段 2】：等待挑選小時卡 (輪到人類選卡)
         if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
+            if (shownSteps.has('step3_select_hour') && gameState.roundMarker > 1) {
+                clearTutorialPointers();
+                return;
+            }
+
             const isSinDist = gameState.sinTargetingMode === 'sin' && gameState.gameMode !== '3P';
             const penaltyHint = isSinDist
                 ? (window.i18n ? window.i18n.t('tutorial.penalty_sin') : '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>')
@@ -259,15 +327,15 @@
             shownSteps.add('step3_select_hour');
             const step3Msg = (window.i18n ? window.i18n.t('tutorial.step3_select_hour') : '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡！') + penaltyHint;
             const highlightSpot = document.querySelector('.clock-spot.highlight-target');
-            if (highlightSpot && highlightSpot.offsetParent !== null) {
+            if (highlightSpot && isElementVisible(highlightSpot)) {
                 showTutorialPointer(highlightSpot, turnPrefix + step3Msg, 'top');
             } else {
-                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'left');
+                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'center');
             }
             return;
         }
 
-        // 階段 2-B：等待挑選小時卡，但人類玩家未進前 2 名（無須挑選小時卡）
+        // 【階段 2-B】：等待挑選小時卡，但人類玩家未進前 2 名（無須挑選小時卡）
         const isHourPhase = (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) || gameState.waitingHourChoice;
         const humanNotPicker = gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && !gameState.hourPickOrder.some(p => p.playerId === humanId);
         if (isHourPhase && humanNotPicker && !shownSteps.has('step3_no_hour_notice')) {
@@ -278,12 +346,12 @@
             const noHourNotice = window.i18n
                 ? window.i18n.t('tutorial.step3_no_hour_notice')
                 : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
-            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'left');
+            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center');
             return;
         }
 
-        // 階段 3：分針能力選擇中
-        if (gameState.waitingMinuteHandChoice) {
+        // 【階段 3】：分針能力選擇中
+        if (gameState.waitingMinuteHandChoice && !shownSteps.has('step_minute_ability')) {
             const turnPrefix = gameState.roundMarker > 1
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
@@ -291,12 +359,22 @@
             const minMsg = window.i18n
                 ? window.i18n.t('tutorial.step_minute_ability')
                 : '<strong>分針能力：</strong>可選擇順/逆時針移動一格，或點擊「下一回合」略過能力。';
-            showTutorialPointer('#evolution-progress-area', turnPrefix + minMsg, 'right');
+
+            // 若能力抽屜折疊，自動展開以便玩家選取
+            const evoDrawer = document.getElementById('evo-panel-details');
+            if (evoDrawer && !evoDrawer.open) {
+                evoDrawer.open = true;
+            }
+
+            const target = document.querySelector('#evolution-progress-area .evo-btn')
+                || document.getElementById('evolution-progress-area')
+                || document.getElementById('next-step-btn');
+            showTutorialPointer(target, turnPrefix + minMsg, 'top');
             return;
         }
 
-        // 階段 4：秒針二選一
-        if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId) {
+        // 【階段 4】：秒針二選一
+        if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId && !shownSteps.has('step_second_ability')) {
             const turnPrefix = gameState.roundMarker > 1
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
@@ -308,17 +386,19 @@
             return;
         }
 
-        // 階段 5：回合結束，準備進入下一回合
-        if (nextBtn && !nextBtn.disabled && nextBtn.offsetParent !== null) {
+        // 【階段 5】：回合結束，準備進入下一回合
+        if (nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
             const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
             if (isInitialStart) {
-                shownSteps.add('step0_welcome');
-                shownSteps.add('has_shown_welcome');
-                const welcomeMsg = window.i18n
-                    ? window.i18n.t('tutorial.step0_welcome')
-                    : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                showTutorialPointer(nextBtn, welcomeMsg, 'left');
-            } else {
+                if (!shownSteps.has('step0_welcome')) {
+                    shownSteps.add('step0_welcome');
+                    shownSteps.add('has_shown_welcome');
+                    const welcomeMsg = window.i18n
+                        ? window.i18n.t('tutorial.step0_welcome')
+                        : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                    showTutorialPointer(nextBtn, welcomeMsg, 'left');
+                }
+            } else if (!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) {
                 const turnPrefix = gameState.roundMarker > 1
                     ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                     : '';
@@ -333,8 +413,6 @@
                         : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
                     showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg, 'left');
                 } else {
-                    // 玩家未取得小時卡（未進入鐘面）
-                    // 告知：雖然不進入鐘面能保護齒輪，卻沒法取得變身用的珍貴回憶卡
                     shownSteps.add('step4_no_hour_card');
                     const noHourMsg = window.i18n
                         ? window.i18n.t('tutorial.step4_no_hour_card')
@@ -348,7 +426,7 @@
         clearTutorialPointers();
     }
 
-    // 關閉/停用教學引導
+    // 關閉/停用教學引導模式（主動於設定或點擊「不再提示」時調用）
     function disableTutorialMode(isAutoCompleted = false) {
         if (window.GAME_CONFIG) {
             window.GAME_CONFIG.tutorialMode = false;
@@ -364,8 +442,8 @@
         if (window.appLogger) {
             window.appLogger.log(
                 isAutoCompleted
-                    ? '💡 所有教學指南已顯示完畢，新手教學模式已自動關閉。'
-                    : '💡 新手教學模式已關閉。'
+                    ? '💡 所有教學指南已展示完畢，新手教學模式已自動完成。'
+                    : '💡 新手教學模式已關閉（可隨時於「設定」中重新開啟）。'
             );
         }
     }
@@ -392,15 +470,44 @@
         }
     });
 
-    // 頁面載入與點擊視窗外部關閉處理
+    // 頁面載入與事件綁定處理
     document.addEventListener('DOMContentLoaded', () => {
+        const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const closeBtn = document.getElementById('tutorial-close-btn');
+        const muteBtn = document.getElementById('tutorial-mute-btn');
+
+        // 點擊「✕」：僅關閉當前提示，保留教學模式供後續步驟使用
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearTutorialPointers();
+            });
+        }
+
+        // 點擊「不再提示」：關閉教學模式並同步取消設定勾選
+        if (muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 disableTutorialMode(false);
             });
         }
+
+        // 懸停與觸控暫停倒數：當使用者正在閱讀提示時，自動暫停計時器
+        if (tooltip) {
+            tooltip.addEventListener('mouseenter', clearAutoDismissTimer);
+            tooltip.addEventListener('mouseleave', () => {
+                if (!tooltip.classList.contains('hidden')) {
+                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
+                }
+            });
+            tooltip.addEventListener('touchstart', clearAutoDismissTimer, { passive: true });
+            tooltip.addEventListener('touchend', () => {
+                if (!tooltip.classList.contains('hidden')) {
+                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
+                }
+            }, { passive: true });
+        }
+
         const toggleEl = document.getElementById('tutorial-toggle');
         if (toggleEl) {
             toggleEl.addEventListener('change', (e) => {
@@ -418,18 +525,23 @@
             });
         }
 
-        // 點擊視窗任意外部區域（包含點擊按鈕、卡牌、盤面空白處）：自動關閉當前氣泡提示
+        // 點擊盤面或外部空白處：關閉當前提示氣泡（不打斷框內閱讀或高亮按鈕點擊）
         document.addEventListener('pointerdown', (e) => {
-            const tooltip = document.getElementById('tutorial-pointer-tooltip');
-            if (!tooltip || tooltip.classList.contains('hidden')) return;
+            const currentTooltip = document.getElementById('tutorial-pointer-tooltip');
+            if (!currentTooltip || currentTooltip.classList.contains('hidden')) return;
 
-            // 若點擊的是關閉按鈕，保留其原生點擊行為以觸發 disableTutorialMode(false)
-            if (e.target && (e.target.id === 'tutorial-close-btn' || (e.target.classList && e.target.classList.contains('tutorial-close-x')))) {
+            // 若點擊在提示框內部（閱讀、點擊按鈕、選取文字等），不關閉
+            if (currentTooltip.contains(e.target)) {
                 return;
             }
 
-            // 外部點擊：自動關閉當前提示氣泡
+            // 若點擊在當前高亮目標元素上，保留原生點擊行為，不搶先打斷
+            if (tutorialSpotlightEl && tutorialSpotlightEl.contains(e.target)) {
+                return;
+            }
+
+            // 外部盤面空白處點擊：關閉當前提示氣泡
             clearTutorialPointers();
-        }, true);
+        });
     });
 })();

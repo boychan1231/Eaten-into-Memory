@@ -2340,7 +2340,7 @@ body {
 
 /* --- 🎓 新手教學動態引導指標與高亮視覺樣式 --- */
 
-/* 被引導焦點項目的脈衝高亮效果 */
+/* 被引導焦點項目的柔和金色外框脈衝高亮效果（移除 transform: scale 以免造成畫布變形或卡牌抖動） */
 .tutorial-spotlight {
     position: relative;
     outline: 3px solid #feca57 !important;
@@ -2352,46 +2352,50 @@ body {
 
 @keyframes tutorialPulse {
     0% {
-        box-shadow: 0 0 10px rgba(254, 202, 87, 0.6), inset 0 0 5px rgba(254, 202, 87, 0.3);
-        transform: scale(1.01);
+        box-shadow: 0 0 10px rgba(254, 202, 87, 0.55), inset 0 0 5px rgba(254, 202, 87, 0.3);
+        outline-color: rgba(254, 202, 87, 0.7);
     }
     100% {
-        box-shadow: 0 0 25px rgba(254, 202, 87, 1), inset 0 0 15px rgba(254, 202, 87, 0.7);
-        transform: scale(1.04);
+        box-shadow: 0 0 26px rgba(254, 202, 87, 1), inset 0 0 12px rgba(254, 202, 87, 0.65);
+        outline-color: rgba(254, 202, 87, 1);
     }
 }
 
 /* 浮動氣泡提示框 */
 .tutorial-tooltip {
     position: fixed;
-    width: min(320px, 85vw);
-    background: rgba(22, 33, 62, 0.65);
-    backdrop-filter: blur(6px);
-    border: 2px solid #feca57;
-    border-radius: 10px;
+    width: min(340px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
+    background: rgba(14, 20, 38, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid #feca57;
+    border-radius: 12px;
     padding: 12px 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(254, 202, 87, 0.4);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), 0 0 16px rgba(254, 202, 87, 0.35);
     color: #eee;
     font-size: 0.9rem;
     line-height: 1.5;
-    z-index: 9999;
-    transition: left 0.25s ease-out, top 0.25s ease-out, opacity 0.2s ease-in-out;
-    pointer-events: none; /* 允許點擊直接穿透氣泡框，絕不阻擋底層按鈕操作 */
+    z-index: 10005 !important;
+    transition: left 0.22s ease-out, top 0.22s ease-out, opacity 0.2s ease-in-out;
+    pointer-events: auto !important; /* 確保提示框本體可選取閱讀、點擊關閉與切換設定，不穿透至底層按鈕 */
 }
 
 .tutorial-tooltip.hidden {
     display: none !important;
     opacity: 0;
-    pointer-events: none;
+    pointer-events: none !important;
 }
 
 .tutorial-tooltip-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(254, 202, 87, 0.3);
+    border-bottom: 1px solid rgba(254, 202, 87, 0.25);
     padding-bottom: 6px;
     margin-bottom: 8px;
+    user-select: none;
 }
 
 .tutorial-badge {
@@ -2401,23 +2405,52 @@ body {
     text-shadow: 0 0 6px rgba(254, 202, 87, 0.4);
 }
 
+.tutorial-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tutorial-mute-action {
+    background: transparent;
+    border: none;
+    color: #8892b0;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.tutorial-mute-action:hover {
+    color: #feca57;
+    background: rgba(254, 202, 87, 0.12);
+}
+
 .tutorial-close-x {
     background: transparent;
     border: none;
     color: #aaa;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     cursor: pointer;
     padding: 0 4px;
     line-height: 1;
-    pointer-events: auto; /* 關閉按鈕保持可點擊 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.2s ease, transform 0.15s ease;
 }
 .tutorial-close-x:hover {
     color: #ff6b6b;
+    transform: scale(1.15);
 }
 
 .tutorial-tooltip-body {
     color: #f1f2f6;
     font-size: 0.88rem;
+    word-break: break-word;
 }
 
 .tutorial-tooltip-body strong {
@@ -2429,41 +2462,47 @@ body {
     width: 0;
     height: 0;
     border-style: solid;
+    pointer-events: none;
 }
 
-/* 箭頭朝下 */
+/* 箭頭無（置中提示） */
+.tutorial-tooltip[data-arrow="none"] .tutorial-pointer-arrow {
+    display: none !important;
+}
+
+/* 箭頭朝下（氣泡位於目標上方） */
 .tutorial-tooltip[data-arrow="bottom"] .tutorial-pointer-arrow {
-    bottom: -10px;
-    left: 50%;
+    bottom: -9px;
+    left: var(--arrow-x, 50%);
     transform: translateX(-50%);
-    border-width: 10px 10px 0 10px;
+    border-width: 9px 9px 0 9px;
     border-color: #feca57 transparent transparent transparent;
 }
 
-/* 箭頭朝上 */
+/* 箭頭朝上（氣泡位於目標下方） */
 .tutorial-tooltip[data-arrow="top"] .tutorial-pointer-arrow {
-    top: -10px;
-    left: 50%;
+    top: -9px;
+    left: var(--arrow-x, 50%);
     transform: translateX(-50%);
-    border-width: 0 10px 10px 10px;
+    border-width: 0 9px 9px 9px;
     border-color: transparent transparent #feca57 transparent;
 }
 
-/* 箭頭朝左 */
+/* 箭頭朝左（氣泡位於目標右方） */
 .tutorial-tooltip[data-arrow="left"] .tutorial-pointer-arrow {
-    left: -10px;
-    top: 50%;
+    left: -9px;
+    top: var(--arrow-y, 50%);
     transform: translateY(-50%);
-    border-width: 10px 10px 10px 0;
+    border-width: 9px 9px 9px 0;
     border-color: transparent #feca57 transparent transparent;
 }
 
-/* 箭頭朝右 */
+/* 箭頭朝右（氣泡位於目標左方） */
 .tutorial-tooltip[data-arrow="right"] .tutorial-pointer-arrow {
-    right: -10px;
-    top: 50%;
+    right: -9px;
+    top: var(--arrow-y, 50%);
     transform: translateY(-50%);
-    border-width: 10px 0 10px 10px;
+    border-width: 9px 0 9px 9px;
     border-color: transparent transparent transparent #feca57;
 }
 

@@ -270,14 +270,14 @@ a.version-item:hover {
 }
 
 /* ---- 通用按鈕（暗金星夜風格） ---- */
-button:not(.header-audio-btn):not(.tutorial-close-x):not(.switch-btn):not(.tab-btn):not(.intro-custom-btn):not(.icon-btn) {
+button:not(.header-audio-btn):not(.tutorial-close-x):not(.tutorial-mute-action):not(.switch-btn):not(.tab-btn):not(.intro-custom-btn):not(.icon-btn) {
     border-radius: 999px !important;
     background: linear-gradient(135deg, #5c441e 0%, #38280f 100%) !important;
     border: 1px solid rgba(255, 210, 127, 0.45) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
     color: var(--gold) !important;
 }
-button:not(.header-audio-btn):not(.tutorial-close-x):not(.switch-btn):not(.tab-btn):not(.intro-custom-btn):not(.icon-btn):hover:not(:disabled) {
+button:not(.header-audio-btn):not(.tutorial-close-x):not(.tutorial-mute-action):not(.switch-btn):not(.tab-btn):not(.intro-custom-btn):not(.icon-btn):hover:not(:disabled) {
     background: linear-gradient(135deg, #735626 0%, #4a3514 100%) !important;
     border-color: rgba(255, 210, 127, 0.75) !important;
     color: #fff4d6 !important;
@@ -1790,8 +1790,11 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     text-shadow: 0 0 6px rgba(255, 210, 127, 0.8);
 }
 .tutorial-tooltip {
-    background: rgba(6, 7, 10, 0.92) !important;
-    border: 1px solid rgba(255, 210, 127, 0.5) !important; border-radius: 14px !important;
+    background: rgba(8, 12, 22, 0.95) !important;
+    border: 1.5px solid rgba(255, 210, 127, 0.65) !important;
+    border-radius: 14px !important;
+    z-index: 10005 !important;
+    pointer-events: auto !important;
 }
 .tutorial-tooltip.tutorial-fade-in {
     animation: tutorialBubbleFadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;

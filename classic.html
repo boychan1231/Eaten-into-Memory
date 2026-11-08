@@ -707,7 +707,10 @@
 	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
 		<div class="tutorial-tooltip-header">
 			<span class="tutorial-badge">💡 教學指南</span>
-			<button id="tutorial-close-btn" class="tutorial-close-x" title="關閉教學" aria-label="關閉教學">&times;</button>
+			<div class="tutorial-header-actions">
+				<button id="tutorial-mute-btn" class="tutorial-mute-action" type="button" title="關閉教學模式">不再提示</button>
+				<button id="tutorial-close-btn" class="tutorial-close-x" type="button" title="關閉此提示" aria-label="關閉此提示">&times;</button>
+			</div>
 		</div>
 		<div id="tutorial-tooltip-text" class="tutorial-tooltip-body"></div>
 		<div class="tutorial-pointer-arrow"></div>
