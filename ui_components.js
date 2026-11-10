@@ -305,6 +305,10 @@ function updateNextStepButton(gameState, flags) {
     const nextStepBtn = document.getElementById('next-step-btn');
     if (!nextStepBtn) return;
 
+    if (!nextStepBtn.onclick && typeof window.bindNextStepButton === 'function') {
+        window.bindNextStepButton();
+    }
+
     if (flags.gameEnded) {
         nextStepBtn.disabled = true;
         nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.game_over') : '遊戲結束';

@@ -2347,7 +2347,8 @@ body {
     outline-offset: 4px;
     box-shadow: 0 0 20px rgba(254, 202, 87, 0.95), inset 0 0 10px rgba(254, 202, 87, 0.5) !important;
     animation: tutorialPulse 1.2s ease-in-out infinite alternate !important;
-    z-index: 1000 !important;
+    z-index: 10010 !important; /* 保證高於 tooltip 的 10005，防止氣泡本體或箭頭邊緣誤遮擋按鈕點擊 */
+    pointer-events: auto !important;
 }
 
 @keyframes tutorialPulse {

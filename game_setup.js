@@ -41,7 +41,7 @@ if (typeof window !== 'undefined') {
 let humanChoiceCardValue = null; 
 
 // 遊戲設定（與 UI 共用同一份 window.GAME_CONFIG）
-const GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG)
+var GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG)
     ? window.GAME_CONFIG
     : { enableAbilities: false, testMode: false };
 

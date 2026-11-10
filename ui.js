@@ -218,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setupTabNavigation('.tab-btn', '.tab-content', 'active', 'active-tab');
+    bindNextStepButton();
 
     const getSelectionValue = (groupName, fallback) => {
         const groupEl = document.querySelector(`[data-selection-group="${groupName}"]`);
@@ -442,8 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function bindNextStepButton() {
         const nextBtn = document.getElementById('next-step-btn');
         if (!nextBtn) return;
-        nextBtn.disabled = false;
-        nextBtn.textContent = "下一回合";
         nextBtn.onclick = () => {
             if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.stop === 'function') {
                 window.AutoNextRoundTimer.stop();
@@ -451,53 +450,57 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.TutorialModeManager && typeof window.TutorialModeManager.clearTutorialPointers === 'function') {
                 window.TutorialModeManager.clearTutorialPointers();
             }
-            if (!globalGameState) return;
+            const currentGs = window.globalGameState || globalGameState;
+            if (!currentGs) {
+                appLogger.log('【UI】遊戲尚未開始，請先點擊「開始遊戲」。');
+                return;
+            }
 
             // 若處於「分針能力選擇中」，點擊此按鈕等同於「略過」
-            if (globalGameState.waitingMinuteHandChoice) {
+            if (currentGs.waitingMinuteHandChoice) {
                 appLogger.log("【UI】玩家直接點擊下一回合，視為略過分針能力。");
                 if (typeof handleHumanAbilityChoice === 'function') {
-                    handleHumanAbilityChoice(globalGameState, 'skip');
+                    handleHumanAbilityChoice(currentGs, 'skip');
                 }
                 
-                if (!globalGameState.gameEnded) {
+                if (!currentGs.gameEnded) {
                     try {
-                        if (typeof window.startRound === 'function') window.startRound(globalGameState);
-                        else if (typeof startRound === 'function') startRound(globalGameState);
+                        if (typeof window.startRound === 'function') window.startRound(currentGs);
+                        else if (typeof startRound === 'function') startRound(currentGs);
                         else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
                     } catch (e) {
                         appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
                         console.error(e);
                     }
-                    updateUI(globalGameState);
+                    updateUI(currentGs);
                 }
                 return; 
             }
 
             const humanId = getCurrentHumanPlayerId();
-            const waitingMinute = globalGameState.currentRoundAIChoices !== null;
-            const waitingHour = !!globalGameState.waitingHourChoice && globalGameState.waitingHourChoicePlayerId === humanId;
-            const waitingAbility = !!globalGameState.waitingAbilityChoice && globalGameState.waitingAbilityChoicePlayerId === humanId;
-            const waitingSecondFinal = !!globalGameState.waitingSecondHandFinalChoice && globalGameState.waitingSecondHandFinalChoicePlayerId === humanId;
-            const playingClash = !!globalGameState.isPlayingMinuteClash;
+            const waitingMinute = currentGs.currentRoundAIChoices !== null;
+            const waitingHour = !!currentGs.waitingHourChoice && currentGs.waitingHourChoicePlayerId === humanId;
+            const waitingAbility = !!currentGs.waitingAbilityChoice && currentGs.waitingAbilityChoicePlayerId === humanId;
+            const waitingSecondFinal = !!currentGs.waitingSecondHandFinalChoice && currentGs.waitingSecondHandFinalChoicePlayerId === humanId;
+            const playingClash = !!currentGs.isPlayingMinuteClash;
 
             if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal || playingClash) {
                 appLogger.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
-                updateUI(globalGameState);
+                updateUI(currentGs);
                 return;
             }
 
-            if (!globalGameState.gameEnded) {
+            if (!currentGs.gameEnded) {
                 try {
                     // 👇 改用 Try-Catch 捕捉真正的錯誤 👇
-                    if (typeof window.startRound === 'function') window.startRound(globalGameState);
-                    else if (typeof startRound === 'function') startRound(globalGameState);
+                    if (typeof window.startRound === 'function') window.startRound(currentGs);
+                    else if (typeof startRound === 'function') startRound(currentGs);
                     else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
                 } catch (e) {
                     appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
                     console.error(e);
                 }
-                updateUI(globalGameState);
+                updateUI(currentGs);
 
             } else {
                 appLogger.log("遊戲已結束。");
@@ -505,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+    window.bindNextStepButton = bindNextStepButton;
 
     const startGameBtn = document.getElementById('start-game-btn');
     const roleOverlay = document.getElementById('role-choice-overlay');
