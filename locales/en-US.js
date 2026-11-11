@@ -43,7 +43,24 @@
                 zoom_in: 'Zoom In',
                 zoom_out: 'Zoom Out',
                 restart: '🔄 Play Again',
-                view_board: '👀 View Board'
+                view_board: '👀 View Board',
+                tutorial_hint: 'Hint',
+                tutorial_hint_tip: 'Replay tutorial guidance for the current step'
+            },
+            phase_tracker: {
+                bid: 'Minute Bidding',
+                reveal: 'Card Reveal',
+                pick: 'Hour Selection',
+                resolve: 'Resolution',
+                status_bid: 'Choose 1 Minute Card to play',
+                status_reveal: 'Revealing cards & comparing ranks',
+                status_pick: 'Claim Hour Cards in rank order',
+                status_your_pick: '👉 [{rank}] Your turn to pick an Hour Card',
+                status_ai_pick: '⏳ [{rank}] {name} is picking an Hour Card',
+                status_minute_jump: '👟 Minute Hand: Decide jump direction',
+                status_second_choice: '🃏 Second Hand: Pick final card from 2 cards',
+                status_resolve: 'Round resolved · Click "Next Round"',
+                status_round_end: 'Resolving round penalties'
             },
             discard_pile: {
                 title: 'Played Cards Record',

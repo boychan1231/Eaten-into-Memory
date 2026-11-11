@@ -48,6 +48,40 @@
 					</div>
 
 					<section class="clock-panel game-panel">
+						<!-- 🧭 本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) -->
+						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
+							<div class="phase-track-steps">
+								<div class="phase-step active" data-phase="bid">
+									<span class="step-num">1</span>
+									<span class="step-icon">🎴</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="reveal">
+									<span class="step-num">2</span>
+									<span class="step-icon">⚔️</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="pick">
+									<span class="step-num">3</span>
+									<span class="step-icon">⌛</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
+									<span class="step-sub" id="phase-step-pick-sub"></span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="resolve">
+									<span class="step-num">4</span>
+									<span class="step-icon">⚖️</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
+								</div>
+							</div>
+							<div class="phase-status-badge" id="phase-status-badge">
+								<span class="status-pulse-dot"></span>
+								<span class="status-text" id="phase-status-text" data-i18n="ui.phase_tracker.status_bid">請挑選 1 張分鐘卡出牌</span>
+							</div>
+						</div>
+
 						<div class="clock-section">
 							<div id="clock-face">
 								<img src="clock-bg.png" class="clock-bg-img" alt="鐘面">
@@ -118,6 +152,10 @@
 					<div class="human-top-bar">
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
+							<button id="btn-replay-tutorial" class="tutorial-replay-btn icon-btn" type="button" title="重新查看當前步驟教學提示" aria-label="教學提示" data-i18n-title="ui.buttons.tutorial_hint_tip">
+								<span class="replay-icon">💡</span>
+								<span class="replay-text" data-i18n="ui.buttons.tutorial_hint">教學提示</span>
+							</button>
 							
 							<div>手牌：<span id="h-hand-count">0</span>
 								<span style="border-left: 1px solid #555; height: 16px; margin: 0 6px;"></span>

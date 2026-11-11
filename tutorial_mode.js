@@ -242,9 +242,9 @@
         }
     }
 
-    // 根據當前遊戲階段 (GameState & Flags) 自動評判教學引導
-    function updateTutorialPointers(gameState) {
-        if (!gameState || (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false)) {
+    // 根據當前遊戲階段 (GameState & Flags) 自動評判教學引導 (支援 force 重播模式)
+    function updateTutorialPointers(gameState, force = false) {
+        if (!gameState || (!force && window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false)) {
             clearTutorialPointers();
             return;
         }
@@ -283,7 +283,7 @@
         // 【階段 0】：開局初始歡迎提示（第 1 局、第 1 回合、尚未展開出牌）
         const nextBtn = document.getElementById('next-step-btn');
         const isInitialOpening = (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && !shownSteps.has('step1_drag_minute'));
-        if (isInitialOpening && !shownSteps.has('step0_welcome')) {
+        if (isInitialOpening && (!shownSteps.has('step0_welcome') || force)) {
             shownSteps.add('step0_welcome');
             shownSteps.add('step0_role_scoring');
             shownSteps.add('has_shown_welcome');
@@ -366,25 +366,27 @@
             }
 
             // 若玩家已在初期掌握出牌方式，第 2 回合後不再重複彈出拖牌教學，保持遊戲流暢
-            if (shownSteps.has('step1_drag_minute') && gameState.roundMarker > 1) {
+            if (!force && shownSteps.has('step1_drag_minute') && gameState.roundMarker > 1) {
                 clearTutorialPointers();
                 return;
             }
 
             // 未選卡牌時，引導玩家挑選一張分鐘卡出牌
-            shownSteps.add('step1_drag_minute');
-            shownSteps.add('has_shown_welcome');
-            const step1Msg = window.i18n
-                ? window.i18n.t('tutorial.step1_drag_minute')
-                : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
-            const handTarget = document.querySelector('#human-hand .minute-card') || '#human-hand';
-            showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
-            return;
+            if (!shownSteps.has('step1_drag_minute') || force) {
+                shownSteps.add('step1_drag_minute');
+                shownSteps.add('has_shown_welcome');
+                const step1Msg = window.i18n
+                    ? window.i18n.t('tutorial.step1_drag_minute')
+                    : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
+                const handTarget = document.querySelector('#human-hand .minute-card') || '#human-hand';
+                showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
+                return;
+            }
         }
 
         // 【階段 2】：等待挑選小時卡 (輪到人類選卡)
         if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
-            if (shownSteps.has('step3_select_hour') && gameState.roundMarker > 1) {
+            if (!force && shownSteps.has('step3_select_hour') && gameState.roundMarker > 1) {
                 clearTutorialPointers();
                 return;
             }
@@ -423,7 +425,7 @@
         // 【階段 2-B】：等待挑選小時卡，但人類玩家未進前 2 名（無須挑選小時卡）
         const isHourPhase = (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) || gameState.waitingHourChoice;
         const humanNotPicker = gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && !gameState.hourPickOrder.some(p => p.playerId === humanId);
-        if (isHourPhase && humanNotPicker && !shownSteps.has('step3_no_hour_notice')) {
+        if (isHourPhase && humanNotPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
             const turnPrefix = gameState.roundMarker > 1
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
@@ -436,7 +438,7 @@
         }
 
         // 【階段 3】：分針能力選擇中
-        if (gameState.waitingMinuteHandChoice && !shownSteps.has('step_minute_ability')) {
+        if (gameState.waitingMinuteHandChoice && (!shownSteps.has('step_minute_ability') || force)) {
             const turnPrefix = gameState.roundMarker > 1
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
@@ -459,7 +461,7 @@
         }
 
         // 【階段 4】：秒針二選一
-        if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId && !shownSteps.has('step_second_ability')) {
+        if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId && (!shownSteps.has('step_second_ability') || force)) {
             const turnPrefix = gameState.roundMarker > 1
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
@@ -475,7 +477,7 @@
         if (nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
             const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
             if (isInitialStart) {
-                if (!shownSteps.has('step0_welcome')) {
+                if (!shownSteps.has('step0_welcome') || force) {
                     shownSteps.add('step0_welcome');
                     shownSteps.add('has_shown_welcome');
                     const welcomeMsg = window.i18n
@@ -483,7 +485,7 @@
                         : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                     showTutorialPointer(nextBtn, welcomeMsg, 'left');
                 }
-            } else if (!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) {
+            } else if ((!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) || force) {
                 const turnPrefix = gameState.roundMarker > 1
                     ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                     : '';
@@ -555,6 +557,53 @@
         shownSteps.clear();
     }
 
+    // 重播當前步驟教學提示（使用者手動點擊「💡 提示」按鈕時調用）
+    function replayCurrentTutorial(gameState) {
+        const gs = gameState || window.globalGameState;
+        if (!gs) return;
+
+        // 若先前已關閉教學模式，點擊提示按鈕自動重啟
+        if (window.GAME_CONFIG) {
+            window.GAME_CONFIG.tutorialMode = true;
+        }
+        if (typeof GAME_CONFIG !== 'undefined') {
+            GAME_CONFIG.tutorialMode = true;
+        }
+        const toggleEl = document.getElementById('tutorial-toggle');
+        if (toggleEl) toggleEl.checked = true;
+        const introToggleEl = document.getElementById('intro-tutorial-chk');
+        if (introToggleEl) introToggleEl.checked = true;
+
+        if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+            window.gameAudio.playClick();
+        }
+
+        const replayBtn = document.getElementById('btn-replay-tutorial');
+        if (replayBtn) {
+            replayBtn.classList.remove('tutorial-btn-pulse');
+            void replayBtn.offsetWidth;
+            replayBtn.classList.add('tutorial-btn-pulse');
+        }
+
+        updateTutorialPointers(gs, true);
+
+        const tooltip = document.getElementById('tutorial-pointer-tooltip');
+        if (!tooltip || tooltip.classList.contains('hidden')) {
+            const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+                ? window.getEffectiveHumanPlayerId()
+                : 'SM_1';
+            const humanPlayer = gs.players ? gs.players.find(p => p && (p.isHuman || p.id === humanId || p.id === 0)) : null;
+            const currentRoleKey = getHumanRoleKey(humanPlayer);
+            const roleScoringMsg = window.i18n
+                ? window.i18n.t(`tutorial.role_scoring_${currentRoleKey}`)
+                : getDefaultRoleScoringText(currentRoleKey);
+            const roleTarget = document.getElementById('human-role-display')
+                || document.querySelector('#human-player-area .human-top-bar')
+                || '#human-hand';
+            showTutorialPointer(roleTarget, roleScoringMsg, 'top');
+        }
+    }
+
     // 掛載全域物件
     window.TutorialModeManager = {
         showTutorialPointer,
@@ -563,6 +612,7 @@
         dismissTooltip: clearTutorialPointers,
         disableTutorialMode,
         resetTutorialProgress,
+        replayCurrentTutorial,
         hasCompletedAllTutorialSteps
     };
 
@@ -661,6 +711,15 @@
                     ? window.i18n.t(`tutorial.role_scoring_${currentRoleKey}`)
                     : getDefaultRoleScoringText(currentRoleKey);
                 showTutorialPointer(roleDisplayEl, roleScoringMsg, 'top');
+            });
+        }
+
+        // 點擊「💡 提示」常駐按鈕：隨時重播當前步驟教學提示
+        const replayBtn = document.getElementById('btn-replay-tutorial');
+        if (replayBtn) {
+            replayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                replayCurrentTutorial(window.globalGameState);
             });
         }
     });

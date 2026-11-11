@@ -3855,3 +3855,20 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 .card-damage-shake {
     animation: shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
 }
+
+/* 現代版鐘面全屏圖層內的階段進度條定位 */
+.clock-panel .round-phase-tracker {
+    position: absolute !important;
+    top: 14px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 70 !important;
+    pointer-events: auto !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .clock-panel .round-phase-tracker {
+        top: 8px !important;
+    }
+}

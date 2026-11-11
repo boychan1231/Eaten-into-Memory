@@ -258,6 +258,7 @@ function updateUI(gameState) {
     // 3. 呼叫各個子函式進行繪製
     updateNextStepButton(gameState, flags);        // 按鈕狀態
     renderTopInfo(gameState);                      // A. 頂部資訊
+    renderRoundPhaseTracker(gameState, flags);     // 🧭 本回合行動序列與競標階段進度條
     renderPlayedCardsPanel(gameState);             // A-2. 出牌列表與歷史
     renderScorePanel(gameState);                   // 呼叫積分榜渲染
     renderClockFace(gameState, flags);             // B. 鐘面 (含堆疊查看器)
@@ -359,6 +360,101 @@ function renderTopInfo(gameState) {
     // ✅ 新增：更新中間的「遊戲輪次」數值
     const gameRoundEl = document.getElementById('game-round-num');
     if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound;
+}
+
+// --- 🧭 渲染本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---
+function renderRoundPhaseTracker(gameState, flags) {
+    const trackerEl = document.getElementById('round-phase-tracker');
+    if (!trackerEl) return;
+
+    if (!gameState) {
+        trackerEl.style.display = 'none';
+        return;
+    }
+    trackerEl.style.display = 'flex';
+
+    // 評判當前階段
+    let currentPhase = 'bid';
+    let statusText = '';
+    let pickSub = '';
+
+    const humanId = (typeof window.getEffectiveHumanPlayerId === 'function')
+        ? window.getEffectiveHumanPlayerId()
+        : 'SM_1';
+
+    const isBiddingPhase = flags.isWaitingMinuteInput || (gameState.currentRoundAIChoices !== null && !flags.isPlayingMinuteClash && (!gameState.currentMinuteChoices || gameState.currentMinuteChoices.length === 0));
+
+    if (isBiddingPhase) {
+        currentPhase = 'bid';
+        statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_bid') : '請挑選 1 張分鐘卡出牌';
+    } else if (flags.isPlayingMinuteClash) {
+        currentPhase = 'reveal';
+        statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_reveal') : '揭開分鐘卡 · 比較大小排序中';
+    } else if (gameState.waitingHourChoice || gameState.waitingMinuteHandChoice || gameState.waitingSecondHandFinalChoice || (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0 && gameState.currentMinuteChoices && gameState.currentMinuteChoices.length > 0)) {
+        currentPhase = 'pick';
+        if (gameState.waitingMinuteHandChoice) {
+            pickSub = '分針躍遷';
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_minute_jump') : '👟 分針能力：決定是否躍遷刻度';
+        } else if (gameState.waitingSecondHandFinalChoice) {
+            pickSub = '秒針二選一';
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_second_choice') : '🃏 秒針能力：二選一決定打出卡牌';
+        } else if (gameState.waitingHourChoice) {
+            const isHuman = (gameState.waitingHourChoicePlayerId === humanId);
+            const rankLabel = (gameState.nextHourPickerIndex === 0) ? '第 1 順位' : '第 2 順位';
+            pickSub = rankLabel;
+            if (isHuman) {
+                statusText = window.i18n
+                    ? window.i18n.t('ui.phase_tracker.status_your_pick', { rank: rankLabel })
+                    : `👉 【${rankLabel}】輪到您挑選小時卡`;
+            } else {
+                const picker = (gameState.players || []).find(p => p.id === gameState.waitingHourChoicePlayerId);
+                const pName = picker?.name || '對手';
+                statusText = window.i18n
+                    ? window.i18n.t('ui.phase_tracker.status_ai_pick', { name: pName, rank: rankLabel })
+                    : `⏳ 【${rankLabel}】${pName} 正在挑選小時卡`;
+            }
+        } else {
+            pickSub = '選卡中';
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_pick') : '依名次順序挑選小時卡';
+        }
+    } else {
+        // 回合結算 / 等待點擊下一回合
+        currentPhase = 'resolve';
+        const nextBtn = document.getElementById('next-step-btn');
+        if (nextBtn && !nextBtn.disabled) {
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_resolve') : '回合結算完畢 · 請點擊「下一回合」';
+        } else {
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_round_end') : '回合結算中';
+        }
+    }
+
+    // 順序權重：bid (1) -> reveal (2) -> pick (3) -> resolve (4)
+    const phaseWeights = { bid: 1, reveal: 2, pick: 3, resolve: 4 };
+    const currWeight = phaseWeights[currentPhase] || 1;
+
+    // 更新各步驟節點
+    const steps = trackerEl.querySelectorAll('.phase-step');
+    steps.forEach(stepEl => {
+        const p = stepEl.getAttribute('data-phase');
+        const w = phaseWeights[p] || 1;
+        const isActive = (p === currentPhase);
+        const isCompleted = (w < currWeight);
+
+        stepEl.classList.toggle('active', isActive);
+        stepEl.classList.toggle('completed', isCompleted);
+    });
+
+    // 更新順位標籤
+    const pickSubEl = document.getElementById('phase-step-pick-sub');
+    if (pickSubEl) {
+        pickSubEl.textContent = pickSub ? `(${pickSub})` : '';
+    }
+
+    // 更新動態狀態提示
+    const statusTextEl = document.getElementById('phase-status-text');
+    if (statusTextEl && statusText) {
+        statusTextEl.textContent = statusText;
+    }
 }
 
 // --- A-2. 出牌列表與歷史 ---
@@ -1815,6 +1911,17 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
         const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
         const youAreLabel = window.i18n ? window.i18n.t('ui.labels.you_are') : '您是：';
         humanRoleEl.innerHTML = `${youAreLabel}${roleName} ${shieldHtml}`;
+    }
+
+    const replayBtn = document.getElementById('btn-replay-tutorial');
+    if (replayBtn && !replayBtn._bound) {
+        replayBtn._bound = true;
+        replayBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.TutorialModeManager && typeof window.TutorialModeManager.replayCurrentTutorial === 'function') {
+                window.TutorialModeManager.replayCurrentTutorial(gameState);
+            }
+        });
     }
 
     setText('h-hand-count', String(humanPlayer.hand.length));

@@ -43,7 +43,24 @@
                 zoom_in: '放大鐘面',
                 zoom_out: '縮小鐘面',
                 restart: '🔄 再玩一局',
-                view_board: '👀 查看盤面'
+                view_board: '👀 查看盤面',
+                tutorial_hint: '教學提示',
+                tutorial_hint_tip: '重新顯示當前步驟的新手教學提示'
+            },
+            phase_tracker: {
+                bid: '出牌競標',
+                reveal: '比牌揭曉',
+                pick: '挑選小時卡',
+                resolve: '處決結算',
+                status_bid: '請挑選 1 張分鐘卡出牌',
+                status_reveal: '揭開分鐘卡 · 比較大小排序中',
+                status_pick: '依名次順序挑選小時卡',
+                status_your_pick: '👉 【{rank}】輪到您挑選小時卡',
+                status_ai_pick: '⏳ 【{rank}】{name} 正在挑選小時卡',
+                status_minute_jump: '👟 分針能力：決定是否躍遷刻度',
+                status_second_choice: '🃏 秒針能力：二選一決定打出卡牌',
+                status_resolve: '回合結算完畢 · 請點擊「下一回合」',
+                status_round_end: '回合結算中'
             },
             discard_pile: {
                 title: '出牌記錄',

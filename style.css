@@ -3478,3 +3478,192 @@ body {
         font-size: 0.85rem !important;
     }
 }
+
+/* ---- 🧭 本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---- */
+.round-phase-tracker {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(9, 12, 22, 0.85);
+    border: 1px solid rgba(255, 210, 127, 0.35);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(255, 210, 127, 0.15);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    user-select: none;
+    margin: 4px auto 8px auto;
+    max-width: 95vw;
+    box-sizing: border-box;
+}
+
+.phase-track-steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.phase-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #8c96b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.phase-step .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: #aaa;
+    font-weight: 700;
+}
+
+.phase-step .step-icon {
+    font-size: 0.88rem;
+    line-height: 1;
+}
+
+.phase-step .step-sub {
+    font-size: 0.74rem;
+    color: #ffd27f;
+    margin-left: 2px;
+}
+
+.phase-step.active {
+    color: #fff2c4;
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.22), rgba(124, 140, 255, 0.15));
+    border-color: rgba(255, 210, 127, 0.75);
+    box-shadow: 0 0 12px rgba(255, 210, 127, 0.4), inset 0 0 8px rgba(255, 210, 127, 0.2);
+    transform: scale(1.04);
+}
+
+.phase-step.active .step-num {
+    background: #ffd27f;
+    color: #121420;
+    box-shadow: 0 0 6px rgba(255, 210, 127, 0.8);
+}
+
+.phase-step.completed {
+    color: #a8f0c6;
+    border-color: rgba(168, 240, 198, 0.3);
+    background: rgba(168, 240, 198, 0.06);
+}
+
+.phase-step.completed .step-num {
+    background: rgba(168, 240, 198, 0.2);
+    color: #a8f0c6;
+}
+
+.phase-track-arrow {
+    color: rgba(255, 210, 127, 0.35);
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
+.phase-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: #e2e8f5;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ffd27f;
+    box-shadow: 0 0 6px #ffd27f;
+    animation: statusDotPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes statusDotPulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 10px #ffd27f; }
+}
+
+/* 常駐「💡 教學提示重播」按鈕 */
+.tutorial-replay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffd27f;
+    background: rgba(255, 210, 127, 0.12);
+    border: 1px solid rgba(255, 210, 127, 0.45);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.tutorial-replay-btn:hover {
+    background: rgba(255, 210, 127, 0.25);
+    border-color: #ffd27f;
+    box-shadow: 0 0 10px rgba(255, 210, 127, 0.5);
+    transform: translateY(-1px);
+}
+
+.tutorial-replay-btn:active,
+.tutorial-replay-btn.tutorial-btn-pulse {
+    animation: replayBtnPulse 0.5s ease-out;
+}
+
+@keyframes replayBtnPulse {
+    0% { transform: scale(0.92); box-shadow: 0 0 2px #ffd27f; }
+    50% { transform: scale(1.12); box-shadow: 0 0 16px #ffd27f; }
+    100% { transform: scale(1.0); box-shadow: 0 0 8px rgba(255, 210, 127, 0.4); }
+}
+
+@media (max-width: 768px) {
+    .round-phase-tracker {
+        padding: 4px 8px;
+        gap: 2px;
+    }
+    .phase-track-steps {
+        gap: 4px;
+    }
+    .phase-step {
+        padding: 2px 6px;
+        font-size: 0.72rem;
+        gap: 3px;
+    }
+    .phase-step .step-title {
+        display: none;
+    }
+    .phase-step.active .step-title {
+        display: inline;
+    }
+    .phase-track-arrow {
+        font-size: 0.65rem;
+    }
+    .phase-status-badge {
+        font-size: 0.7rem;
+        padding: 0 4px;
+    }
+    .tutorial-replay-btn {
+        padding: 1px 6px;
+        font-size: 0.72rem;
+    }
+}
