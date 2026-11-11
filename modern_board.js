@@ -1290,11 +1290,24 @@
                 if (drawer._resizeBound) return;
                 drawer._resizeBound = true;
 
+                const clampWidth = (w) => {
+                    if (!w) return null;
+                    const maxAllowedW = Math.max(190, Math.min(Math.floor(window.innerWidth * 0.45) - 20, 750));
+                    return Math.max(190, Math.min(w, maxAllowedW));
+                };
+                const clampHeight = (h) => {
+                    if (!h) return null;
+                    const maxAllowedH = Math.max(120, window.innerHeight - 190);
+                    return Math.max(120, Math.min(h, maxAllowedH));
+                };
+
                 const storageKey = `eaten_hud_drawer_size_${drawer.id}`;
                 const applySize = (w, h) => {
-                    if (w) drawer.style.setProperty('--drawer-custom-width', `${w}px`);
+                    const cw = clampWidth(w);
+                    const ch = clampHeight(h);
+                    if (cw) drawer.style.setProperty('--drawer-custom-width', `${Math.round(cw)}px`);
                     else drawer.style.removeProperty('--drawer-custom-width');
-                    if (h) drawer.style.setProperty('--drawer-custom-height', `${h}px`);
+                    if (ch) drawer.style.setProperty('--drawer-custom-height', `${Math.round(ch)}px`);
                     else drawer.style.removeProperty('--drawer-custom-height');
                 };
 
@@ -1305,6 +1318,16 @@
                         applySize(saved.width, saved.height);
                     }
                 } catch (_) { }
+
+                // 當 PC 視窗大小改變時，動態重新夾限自訂寬高，防止左右側欄或上下重疊
+                window.addEventListener('resize', () => {
+                    try {
+                        const saved = JSON.parse(localStorage.getItem(storageKey));
+                        if (saved && (saved.width || saved.height)) {
+                            applySize(saved.width, saved.height);
+                        }
+                    } catch (_) { }
+                });
 
                 // 注入角落拉伸把手與邊界把手
                 const corner = document.createElement('div');
@@ -1353,12 +1376,12 @@
 
                             if (resizeType.includes('w') || resizeType.includes('e')) {
                                 const newW = isLeft ? (startWidth + dx) : (startWidth - dx);
-                                currentW = Math.max(200, Math.min(newW, Math.min(window.innerWidth - 60, 750)));
+                                currentW = clampWidth(newW);
                                 drawer.style.setProperty('--drawer-custom-width', `${Math.round(currentW)}px`);
                             }
                             if (resizeType.includes('s')) {
                                 const newH = startHeight + dy;
-                                currentH = Math.max(130, Math.min(newH, window.innerHeight - 130));
+                                currentH = clampHeight(newH);
                                 drawer.style.setProperty('--drawer-custom-height', `${Math.round(currentH)}px`);
                             }
                         };

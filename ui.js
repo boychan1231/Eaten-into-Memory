@@ -578,13 +578,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 遊戲開始時：
         // 手機版（<= 768px）：全部預設關閉，確保鐘面完全露出，不產生重疊
-        // 桌機版：左側對局情報 (日誌) 與右側自身決策 (能力與進化) 預設打開
+        // 桌機版：左側抽屜（含遊戲日誌）預設關閉，由玩家按需自行打開；右側「能力與進化」預設打開
         const isMobileScreen = (typeof window !== 'undefined' && window.innerWidth <= 768);
         const leftDrawers = document.querySelectorAll('.hud-drawer-left > details.hud-drawer');
         if (leftDrawers.length > 0) {
             leftDrawers.forEach(d => {
-                d.open = !isMobileScreen && (d.id === 'log-panel-details');
+                d.open = false;
             });
+        }
+        const classicLogDetails = document.getElementById('log-panel-details');
+        if (classicLogDetails) {
+            classicLogDetails.open = false;
         }
         const rightDrawers = document.querySelectorAll('.hud-drawer-right > details.hud-drawer');
         if (rightDrawers.length > 0) {

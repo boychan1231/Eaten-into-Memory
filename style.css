@@ -38,13 +38,15 @@ body {
 
 /* --- 頂部區域 Header --- */
 header {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
-    padding: 8px 8px;
+    gap: 8px 12px;
+    padding: 8px 10px;
     background-color: var(--clock-bg);
     border-radius: 8px;
-    margin-bottom: 1px;
+    margin-bottom: 4px;
     border-bottom: 2px solid var(--accent-color);
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
@@ -53,30 +55,31 @@ header h1 {
     margin: 0; 
     font-size: 1.5rem; 
     text-shadow: 0 0 5px var(--accent-color); 
-    grid-column: 2;
     text-align: center;
 }
 
 .game-status {
-    grid-column: 3;
-    justify-self: end;
+    margin-left: auto;
     text-align: right;
     display: flex;
     align-items: center;
+    flex-wrap: nowrap;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 /* --- Tab 導航 --- */
 .tab-nav {
-    grid-column: 1 / span 2;
-    justify-self: start;
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 5px;
-    margin-bottom: -10px;
-    padding-top: 5px;
+    margin-bottom: 0;
+    padding-top: 0;
     z-index: 50;
     position: relative;
     padding-left: 0;
+    min-width: 0;
 }
 
 .tab-btn {
@@ -89,6 +92,8 @@ header h1 {
     cursor: pointer;
     border-radius: 6px 6px 0 0;
     transition: background-color 0.3s;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .tab-btn:hover { background-color: #1f4287; }
@@ -280,9 +285,11 @@ input:checked + .slider:before { transform: translateX(16px); }
 /* --- 主遊戲區域 (鐘面 + 日誌) --- */
 .main-area {
     display: grid;
-	grid-template-columns: 420px auto 265px;/* 左(彈性) 中(適應內容) 右(固定 260px) */
-    gap: 15px;
+    grid-template-columns: minmax(220px, 340px) minmax(300px, 1fr) minmax(220px, 280px);
+    gap: 12px;
     width: 100%;
+    align-items: start;
+    box-sizing: border-box;
 }
 
 /* --- 通用面板與區塊標題 --- */
@@ -292,14 +299,17 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-radius: 10px;
     padding: 5px 5px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .log-section.game-panel,
 .side-panel-group.game-panel {
-    resize: horizontal;
-    overflow: auto;
-    min-width: 220px;
-    max-width: 600px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .panel-header {
@@ -322,6 +332,8 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+    width: 100%;
 }
 
 .clock-panel__title {
@@ -331,7 +343,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 .clock-panel .clock-section {
-    margin: 20px auto 10px auto;
+    margin: 12px auto 10px auto;
 }
 
 .players-block {
@@ -342,10 +354,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* --- 鐘面區域 --- */
 .clock-section {
-    width: min(500px, 90vw, 70vh); 
+    width: min(480px, 100%, 66vh); 
     height: auto;
     aspect-ratio: 1 / 1;
-	margin: 20px auto 20px auto;
+	margin: 12px auto 12px auto;
 }
 
 #clock-face {
@@ -590,6 +602,40 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-bottom: 1px solid #444;
 }
 
+.classic-log-details {
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.classic-log-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.classic-log-summary::-webkit-details-marker {
+    display: none;
+}
+
+.classic-log-summary::after {
+    content: '▾';
+    font-size: 0.85rem;
+    color: #ffd27f;
+    transition: transform 0.2s ease;
+}
+
+.classic-log-details:not([open]) .classic-log-summary::after {
+    transform: rotate(-90deg);
+}
+
+.classic-log-summary:hover {
+    background: #2d2d44;
+    border-color: #ffd27f;
+}
+
 
 /* 日誌列表容器 */
 #log-list { 
@@ -638,15 +684,16 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* 右側資訊面板群組 */
 .side-panel-group {
-    width: 260px;
-    flex: 0 0 320px;
+    width: 100%;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     border-radius: 10px;
     background: rgba(15, 52, 96, 0.35);
-    padding: 3px;
+    padding: 6px;
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .side-panel-summary {
@@ -688,7 +735,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 10px;
     box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
     box-sizing: border-box;
-	margin: 1px 6px;
+    margin: 2px 0;
 }
 
 #deck-info {

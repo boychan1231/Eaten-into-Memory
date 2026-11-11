@@ -50,8 +50,10 @@ header {
     position: relative;
     z-index: 90;
     display: grid !important;
-    grid-template-columns: 1fr auto 1fr !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
     align-items: center !important;
+    column-gap: 10px !important;
+    row-gap: 4px !important;
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
@@ -59,22 +61,33 @@ header {
     margin-bottom: 0 !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
+    flex-shrink: 0 !important;
 }
 .tab-nav {
     grid-column: 1 !important;
     justify-self: start !important;
     display: flex !important;
     align-items: center !important;
+    flex-wrap: nowrap !important;
     gap: 6px !important;
     margin-bottom: 0 !important;
     padding-top: 0 !important;
+    min-width: 0 !important;
 }
 .game-status {
     grid-column: 3 !important;
     justify-self: end !important;
     display: flex !important;
     align-items: center !important;
+    flex-wrap: nowrap !important;
     gap: 8px !important;
+    min-width: 0 !important;
+}
+.tab-btn,
+.start-game-btn,
+.header-audio-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
 }
 .tab-btn {
     background: rgba(255, 255, 255, 0.03) !important;
@@ -105,6 +118,7 @@ header {
     display: inline-flex !important;
     flex-direction: row !important;
     align-items: center !important;
+    flex-wrap: nowrap !important;
     gap: 10px !important;
     height: auto !important;
     padding: 4px 16px !important;
@@ -114,27 +128,35 @@ header {
     border-radius: 999px !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65) !important;
     backdrop-filter: blur(12px);
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 .hud-stat-item {
     display: inline-flex !important;
     align-items: center !important;
     gap: 5px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
 }
 .hud-stat-label {
     font-size: 0.76rem !important;
     color: var(--dim) !important;
     font-weight: 600 !important;
+    white-space: nowrap !important;
 }
 .hud-stat-sep {
     color: rgba(255, 210, 127, 0.22) !important;
     font-size: 0.75rem !important;
     user-select: none;
+    flex-shrink: 0 !important;
 }
 #deck-info .deck-count {
     font-size: 0.92rem !important;
     font-weight: 800 !important;
     color: var(--gold) !important;
     line-height: 1 !important;
+    white-space: nowrap !important;
 }
 
 /* 頂部狀態膠囊內的「受罰規則」徽章 (#round-penalty-display) */
@@ -155,6 +177,8 @@ header {
     min-width: 0 !important;
     box-shadow: none !important;
     transition: all 0.25s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
 }
 #deck-info #round-penalty-display.hud-penalty-badge[data-penalty-mode="time"] {
     background: rgba(255, 107, 136, 0.14) !important;
@@ -323,9 +347,9 @@ button:disabled {
 
 /* ---- 左右兩側懸浮抽屜 (Floating Overlay Drawers) ---- */
 .hud-drawer-stack {
-    position: fixed !important;
-    top: 52px !important;
-    max-height: calc(100vh - 140px) !important;
+    position: absolute !important;
+    top: 10px !important;
+    max-height: calc(100% - 20px) !important;
     z-index: 80 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -334,11 +358,11 @@ button:disabled {
     overflow: visible !important;
 }
 .hud-drawer-left {
-    left: 18px !important;
+    left: 0 !important;
     align-items: flex-start !important;
 }
 .hud-drawer-right {
-    right: 18px !important;
+    right: 0 !important;
     align-items: flex-end !important;
 }
 details.hud-drawer {
@@ -365,12 +389,12 @@ details.hud-drawer:not([open]) .drawer-size-btn-group {
 details.hud-drawer[open] {
     display: flex !important;
     flex-direction: column !important;
-    width: var(--drawer-custom-width, min(260px, 88vw)) !important;
+    width: var(--drawer-custom-width, clamp(200px, 21vw, 260px)) !important;
     height: var(--drawer-custom-height, auto) !important;
-    min-width: 200px !important;
-    max-width: min(750px, 92vw) !important;
-    min-height: 130px !important;
-    max-height: calc(100vh - 140px) !important;
+    min-width: 190px !important;
+    max-width: min(46vw, 750px) !important;
+    min-height: 110px !important;
+    max-height: calc(100vh - 190px) !important;
     flex: 0 1 auto !important;
     padding: 7px 8px 14px 8px !important;
     background: rgba(6, 7, 11, 0.95) !important;
@@ -441,6 +465,7 @@ details.hud-drawer[open] {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(12px);
     transition: all 0.2s ease;
+    white-space: nowrap !important;
 }
 .side-panel-summary::-webkit-details-marker { display: none; }
 .side-panel-summary::before { content: none !important; display: none !important; }
@@ -449,6 +474,7 @@ details.hud-drawer[open] {
     font-size: 0.72rem;
     opacity: 0.8;
     transition: transform 0.2s ease;
+    flex-shrink: 0 !important;
 }
 details.hud-drawer:not([open]) > .hud-drawer-body {
     display: none !important;
@@ -459,7 +485,7 @@ details.hud-drawer[open] > .hud-drawer-body {
     gap: 8px !important;
     flex: 1 1 auto !important;
     min-height: 0 !important;
-    max-height: calc(100vh - 220px) !important;
+    max-height: calc(100vh - 255px) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     width: 100% !important;
@@ -1810,9 +1836,77 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     }
 }
 
-@media (max-width: 1024px) {
+/* =========================================================
+   🖥️ 桌機與平板中尺寸視窗縮放防重疊適配 (769px ~ 1280px)
+   ========================================================= */
+@media (max-width: 1280px) and (min-width: 769px) {
+    .tab-btn {
+        padding: 4px 10px !important;
+        font-size: 0.78rem !important;
+    }
+    .version-switch-summary {
+        padding: 4px 10px !important;
+        font-size: 0.78rem !important;
+    }
+    #deck-info.hud-top-status-pill {
+        gap: 6px !important;
+        padding: 3px 12px !important;
+    }
+    .hud-stat-label {
+        font-size: 0.72rem !important;
+    }
+    #deck-info .deck-count {
+        font-size: 0.84rem !important;
+    }
+    #deck-info #round-penalty-display.hud-penalty-badge {
+        padding: 2px 8px !important;
+        font-size: 0.72rem !important;
+    }
+    .header-audio-btn {
+        padding: 4px 9px !important;
+        font-size: 0.78rem !important;
+    }
+    .start-game-btn,
+    #start-game-btn {
+        padding: 5px 12px !important;
+        font-size: 0.78rem !important;
+    }
+    .side-panel-summary {
+        padding: 5px 11px !important;
+        font-size: 0.78rem !important;
+    }
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+    /* 當 PC 視窗縮窄至 1100px 以下時，頂部改為雙列：第一列「左上導覽 + 右上按鈕」，第二列「正中局況膠囊」，徹底防止三欄互撞重疊 */
+    header {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 4px 8px !important;
+        padding: 2px 0 4px 0 !important;
+    }
+    .tab-nav {
+        order: 1 !important;
+    }
+    .game-status {
+        order: 2 !important;
+    }
+    #deck-info.hud-top-status-pill {
+        order: 3 !important;
+        width: auto !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        justify-content: center !important;
+    }
     .hud-drawer-stack {
-        top: 46px !important;
+        top: 6px !important;
+        max-height: calc(100% - 12px) !important;
+    }
+    details.hud-drawer[open] {
+        width: var(--drawer-custom-width, clamp(190px, 24vw, 235px)) !important;
+        max-height: calc(100vh - 220px) !important;
     }
     .human-play-row {
         flex-wrap: wrap !important;
@@ -3856,19 +3950,35 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     animation: shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
 }
 
-/* 現代版鐘面全屏圖層內的階段進度條定位 */
+/* 現代版鐘面全屏圖層內的階段進度條定位（預留左右側欄安全寬度，防止視窗縮小時與左右抽屜重疊） */
 .clock-panel .round-phase-tracker {
     position: absolute !important;
-    top: 14px !important;
+    top: 10px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 70 !important;
     pointer-events: auto !important;
     margin: 0 !important;
+    max-width: calc(100% - 340px) !important;
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    .clock-panel .round-phase-tracker {
+        max-width: calc(100% - 300px) !important;
+        padding: 4px 10px !important;
+    }
+    .clock-panel .round-phase-tracker .phase-step {
+        padding: 2px 7px !important;
+        font-size: 0.75rem !important;
+    }
+    .clock-panel .round-phase-tracker .phase-step:not(.active) .step-title {
+        display: none !important;
+    }
 }
 
 @media (max-width: 768px) {
     .clock-panel .round-phase-tracker {
         top: 8px !important;
+        max-width: calc(100vw - 16px) !important;
     }
 }
