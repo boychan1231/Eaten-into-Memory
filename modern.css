@@ -3268,7 +3268,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 }
 
 
-/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & 乙太能量管 (Modern PixiJS 優化) --- */
+/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & 乙太能量管 (Modern PixiJS 改良) --- */
 .resource-chip.has-mech-gauge {
     display: inline-flex !important;
     align-items: center !important;

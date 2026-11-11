@@ -74,7 +74,8 @@
                 ejected: '驅逐',
                 round: '回合 {round}',
                 game_round: '第 {round} 局',
-                deck_remain: '牌庫剩餘'
+                deck_remain: '牌庫剩餘',
+                precious: '★ 珍貴'
             },
             tabs: {
                 game: '遊戲舞台',

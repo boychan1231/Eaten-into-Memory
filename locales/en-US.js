@@ -74,7 +74,8 @@
                 ejected: 'Ejected',
                 round: 'Round {round}',
                 game_round: 'Game {round}',
-                deck_remain: 'Deck Left'
+                deck_remain: 'Deck Left',
+                precious: '★ Precious'
             },
             tabs: {
                 game: 'Game Stage',

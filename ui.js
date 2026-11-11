@@ -78,7 +78,7 @@ function processLogQueue() {
     const logContainer = document.getElementById('game-log-container');
 
     if (isSkippingLogs || logQueue.length > LOG_ACCEL_THRESHOLD) {
-        // 🚀 批次效能優化：當日誌積壓或處於略過模式時，使用 DocumentFragment 一次性渲染
+        // 🚀 批次效能改良：當日誌積壓或處於略過模式時，使用 DocumentFragment 一次性渲染
         const fragment = document.createDocumentFragment();
         const batchSize = isSkippingLogs ? logQueue.length : Math.min(logQueue.length, 20);
         const batchMessages = logQueue.splice(0, batchSize);

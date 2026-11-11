@@ -575,7 +575,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-radius: 8px;
     padding: 3px;
     overflow-y: auto; /* 內容多時出現捲軸 */
-    /* 視覺優化 */
+    /* 視覺改良 */
     border: 1px solid #333;
 }
 
@@ -2239,7 +2239,7 @@ body {
     animation: pulse-target 1s infinite alternate;
 }
 
-/* --- 優化：可點擊格子的 Hover 狀態 --- */
+/* --- 改良：可點擊格子的 Hover 狀態 --- */
 .clock-spot.highlight-target:hover {
     background-color: rgba(255, 210, 127, 0.4); /* 滑鼠移上去時底色變深 */
     border-color: #fff;
