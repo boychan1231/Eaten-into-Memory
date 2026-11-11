@@ -2343,6 +2343,10 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
             if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
                 window.gameAudio.playClick();
             }
+
+            if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
+                window.TutorialModeManager.updateTutorialPointers(gameState);
+            }
         }
     };
 

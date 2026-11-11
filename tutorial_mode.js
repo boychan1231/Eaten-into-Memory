@@ -285,13 +285,18 @@
         const isInitialOpening = (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && !shownSteps.has('step1_drag_minute'));
         if (isInitialOpening && !shownSteps.has('step0_welcome')) {
             shownSteps.add('step0_welcome');
+            shownSteps.add('step0_role_scoring');
             shownSteps.add('has_shown_welcome');
             const welcomeMsg = window.i18n
                 ? window.i18n.t('tutorial.step0_welcome')
                 : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+            const roleScoringMsg = window.i18n
+                ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
+                : getDefaultRoleScoringText(roleKey);
+            const combinedMsg = `${welcomeMsg}<br><br>${roleScoringMsg}`;
             if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
-                showTutorialPointer(nextBtn, welcomeMsg, 'left');
+                showTutorialPointer(nextBtn, combinedMsg, 'left');
                 return;
             }
         }
@@ -306,21 +311,7 @@
                 ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                 : '';
 
-            // 【1-A】：開局首次出牌前，展示專屬角色得分與勝利目標引導
-            if (!shownSteps.has('step0_role_scoring')) {
-                shownSteps.add('step0_role_scoring');
-                shownSteps.add('has_shown_welcome');
-                const roleScoringMsg = window.i18n
-                    ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
-                    : getDefaultRoleScoringText(roleKey);
-                const roleTarget = document.getElementById('human-role-display')
-                    || document.querySelector('#human-player-area .human-top-bar')
-                    || '#human-hand';
-                showTutorialPointer(roleTarget, welcomePrefix + turnPrefix + roleScoringMsg, 'top');
-                return;
-            }
-
-            // 【1-B】：5P 模式幼體時魔進化為新形態後的專屬得分導引
+            // 【1-A】：5P 模式幼體時魔進化為新形態後的專屬得分導引
             const isEvolvedDemon = (humanPlayer && humanPlayer.type === '時魔' && ['hour', 'minute', 'second'].includes(roleKey));
             const evoStepKey = `step_evolved_${roleKey}`;
             if (isEvolvedDemon && !shownSteps.has(evoStepKey)) {
@@ -336,12 +327,6 @@
                     || document.querySelector('#human-player-area .human-top-bar')
                     || '#human-hand';
                 showTutorialPointer(roleTarget, turnPrefix + evoNotice + '<br><br>' + evoScoring, 'top');
-                return;
-            }
-
-            // 若玩家已在初期掌握出牌方式，不再重複彈出拖牌教學，保持遊戲流暢
-            if (shownSteps.has('step1_drag_minute') && gameState.roundMarker > 1) {
-                clearTutorialPointers();
                 return;
             }
 
@@ -363,16 +348,38 @@
                 return;
             }
 
-            // 一般出牌：引導玩家將分鐘卡向上拖曳至鐘面出牌（僅於第 1 回合或首次出牌時引導）
-            if (!shownSteps.has('step1_drag_minute')) {
-                shownSteps.add('step1_drag_minute');
-                shownSteps.add('has_shown_welcome');
-                const step1Msg = window.i18n
-                    ? window.i18n.t('tutorial.step1_drag_minute')
-                    : '<strong>步驟 1：向上拖曳一張分鐘卡至鐘面出牌</strong><br>按住卡牌往鐘面方向拉動並放開出牌。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
-                showTutorialPointer('#human-hand', welcomePrefix + turnPrefix + step1Msg, 'top');
+            // 【1-B】：一般出牌階段（選牌中 或 點擊出牌確認）
+            const selectedCard = (typeof uiState !== 'undefined' && uiState.selectedCardValue !== null && uiState.selectedCardValue !== undefined)
+                ? uiState.selectedCardValue
+                : null;
+
+            // 若已選中卡牌，引導點擊確認出牌
+            if (selectedCard !== null) {
+                const hintMsg = window.i18n
+                    ? window.i18n.t('tutorial.step1_select_minute_hint', { value: selectedCard })
+                    : `<strong>步驟 1：點擊「確認出牌」</strong><br>已選取 <strong>[${selectedCard}]</strong> 號分鐘卡，點擊「確認出牌」蓋牌送出，或直接將卡牌向上拖曳至鐘面！`;
+                const confirmBtn = document.getElementById('confirm-move-btn');
+                if (confirmBtn && isElementVisible(confirmBtn)) {
+                    showTutorialPointer(confirmBtn, welcomePrefix + turnPrefix + hintMsg, 'top');
+                    return;
+                }
+            }
+
+            // 若玩家已在初期掌握出牌方式，第 2 回合後不再重複彈出拖牌教學，保持遊戲流暢
+            if (shownSteps.has('step1_drag_minute') && gameState.roundMarker > 1) {
+                clearTutorialPointers();
                 return;
             }
+
+            // 未選卡牌時，引導玩家挑選一張分鐘卡出牌
+            shownSteps.add('step1_drag_minute');
+            shownSteps.add('has_shown_welcome');
+            const step1Msg = window.i18n
+                ? window.i18n.t('tutorial.step1_drag_minute')
+                : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
+            const handTarget = document.querySelector('#human-hand .minute-card') || '#human-hand';
+            showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
+            return;
         }
 
         // 【階段 2】：等待挑選小時卡 (輪到人類選卡)
@@ -639,5 +646,22 @@
             // 外部盤面空白處點擊：關閉當前提示氣泡
             clearTutorialPointers();
         });
+
+        // 點擊人類角色徽章：隨時展示該角色專屬得分與勝負指南
+        const roleDisplayEl = document.getElementById('human-role-display');
+        if (roleDisplayEl) {
+            roleDisplayEl.style.cursor = 'pointer';
+            roleDisplayEl.title = '點擊檢視角色得分與玩法教學';
+            roleDisplayEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!window.globalGameState) return;
+                const humanPlayer = (window.globalGameState.players || []).find(p => p && (p.isHuman || p.id === 0));
+                const currentRoleKey = getHumanRoleKey(humanPlayer);
+                const roleScoringMsg = window.i18n
+                    ? window.i18n.t(`tutorial.role_scoring_${currentRoleKey}`)
+                    : getDefaultRoleScoringText(currentRoleKey);
+                showTutorialPointer(roleDisplayEl, roleScoringMsg, 'top');
+            });
+        }
     });
 })();
