@@ -67,6 +67,23 @@
         }
 
         const rect = targetEl.getBoundingClientRect();
+
+        // 若指定為「中央偏右 (center-right)」（如開局歡迎教學指南），懸浮於畫面中央偏右安全區域
+        if (preferredPlacement === 'center-right') {
+            const idealLeft = viewportWidth > 768
+                ? Math.round(viewportWidth * 0.52)
+                : Math.round((viewportWidth - tooltipWidth) / 2);
+            const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.42);
+            const maxAllowedTop = rect.top > tooltipHeight + 24
+                ? rect.top - tooltipHeight - 16
+                : viewportHeight - tooltipHeight - 16;
+            const safeLeft = Math.max(12, Math.min(idealLeft, viewportWidth - tooltipWidth - 16));
+            const safeTop = Math.max(64, Math.min(idealTop, maxAllowedTop));
+            const targetCenterX = rect.left + rect.width / 2;
+            const arrowX = Math.max(18, Math.min(tooltipWidth - 18, Math.round(targetCenterX - safeLeft)));
+            return { left: safeLeft, top: safeTop, arrow: 'bottom', arrowX, arrowY: tooltipHeight };
+        }
+
         const spaceAbove = rect.top;
         const spaceBelow = viewportHeight - rect.bottom;
         const spaceLeft = rect.left;
@@ -296,7 +313,7 @@
             const combinedMsg = `${welcomeMsg}<br><br>${roleScoringMsg}`;
             if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
-                showTutorialPointer(nextBtn, combinedMsg, 'left');
+                showTutorialPointer(nextBtn, combinedMsg, 'center-right');
                 return;
             }
         }
@@ -483,7 +500,7 @@
                     const welcomeMsg = window.i18n
                         ? window.i18n.t('tutorial.step0_welcome')
                         : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                    showTutorialPointer(nextBtn, welcomeMsg, 'left');
+                    showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
                 }
             } else if ((!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) || force) {
                 const turnPrefix = gameState.roundMarker > 1

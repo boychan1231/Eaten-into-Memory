@@ -262,7 +262,28 @@
 
 					<!-- 中央全視野動態星芒鐘面 -->
 					<section class="clock-panel">
-						<!-- 🧭 本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) -->
+						<div class="clock-section">
+							<div id="clock-face">
+								<div id="modern-board"></div>
+								<div class="clock-center"></div>
+							</div>
+							<!-- 分鐘卡比大小與次序排列動態舞台 -->
+							<div id="minute-clash-overlay" class="minute-clash-overlay hidden" aria-live="polite"></div>
+							<!-- 鐘面快捷縮放與置中控制列 -->
+							<div class="clock-zoom-controls" id="clock-zoom-controls">
+								<button id="clock-zoom-in-btn" class="clock-zoom-btn" type="button" aria-label="放大鐘面" title="放大鐘面 (Tap or Wheel)">+</button>
+								<button id="clock-zoom-out-btn" class="clock-zoom-btn" type="button" aria-label="縮小鐘面" title="縮小鐘面 (Tap or Wheel)">−</button>
+								<button id="clock-recenter-btn" class="clock-zoom-btn clock-recenter-btn" type="button" aria-label="置中鐘面" title="鐘面視角置中（或雙擊鐘面空白處）">
+									<span class="recenter-icon">⌖</span>
+									<span class="recenter-text" data-i18n="ui.buttons.recenter">置中</span>
+								</button>
+							</div>
+						</div>
+					</section>
+
+					<!-- 右側懸浮抽屜群：自身決策（不擠壓中央鐘面） -->
+					<div class="hud-drawer-stack hud-drawer-right">
+						<!-- 🧭 0. 本回合行動序列與競標階段進度條 (常駐進度組件 - 右側欄第一項) -->
 						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
@@ -296,27 +317,6 @@
 							</div>
 						</div>
 
-						<div class="clock-section">
-							<div id="clock-face">
-								<div id="modern-board"></div>
-								<div class="clock-center"></div>
-							</div>
-							<!-- 分鐘卡比大小與次序排列動態舞台 -->
-							<div id="minute-clash-overlay" class="minute-clash-overlay hidden" aria-live="polite"></div>
-							<!-- 鐘面快捷縮放與置中控制列 -->
-							<div class="clock-zoom-controls" id="clock-zoom-controls">
-								<button id="clock-zoom-in-btn" class="clock-zoom-btn" type="button" aria-label="放大鐘面" title="放大鐘面 (Tap or Wheel)">+</button>
-								<button id="clock-zoom-out-btn" class="clock-zoom-btn" type="button" aria-label="縮小鐘面" title="縮小鐘面 (Tap or Wheel)">−</button>
-								<button id="clock-recenter-btn" class="clock-zoom-btn clock-recenter-btn" type="button" aria-label="置中鐘面" title="鐘面視角置中（或雙擊鐘面空白處）">
-									<span class="recenter-icon">⌖</span>
-									<span class="recenter-text" data-i18n="ui.buttons.recenter">置中</span>
-								</button>
-							</div>
-						</div>
-					</section>
-
-					<!-- 右側懸浮抽屜群：自身決策（不擠壓中央鐘面） -->
-					<div class="hud-drawer-stack hud-drawer-right">
 						<!-- 1. ⚡ 能力與進化（預設展開） -->
 						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
 							<summary class="side-panel-summary">

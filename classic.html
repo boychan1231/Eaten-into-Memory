@@ -50,7 +50,19 @@
 					</div>
 
 					<section class="clock-panel game-panel">
-						<!-- 🧭 本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) -->
+						<div class="clock-section">
+							<div id="clock-face">
+								<img src="clock-bg.png" class="clock-bg-img" alt="鐘面">
+								<svg id="connection-lines" class="connection-lines-svg"></svg>
+								<div class="clock-center"></div>
+								<div id="round-penalty-display" class="penalty-display hidden"></div>
+							</div>
+						</div>
+					</section>
+
+					<details id="side-panel-details" class="side-panel-group game-panel" open>
+						<summary class="side-panel-summary">資訊面板</summary>
+						<!-- 🧭 本回合行動序列與競標階段進度條 (常駐進度組件 - 右側欄第一項) -->
 						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
@@ -83,19 +95,6 @@
 								<span class="status-text" id="phase-status-text" data-i18n="ui.phase_tracker.status_bid">請挑選 1 張分鐘卡出牌</span>
 							</div>
 						</div>
-
-						<div class="clock-section">
-							<div id="clock-face">
-								<img src="clock-bg.png" class="clock-bg-img" alt="鐘面">
-								<svg id="connection-lines" class="connection-lines-svg"></svg>
-								<div class="clock-center"></div>
-								<div id="round-penalty-display" class="penalty-display hidden"></div>
-							</div>
-						</div>
-					</section>
-
-					<details id="side-panel-details" class="side-panel-group game-panel" open>
-						<summary class="side-panel-summary">資訊面板</summary>
 						<div id="deck-info" class="log-side-info no-click">
 							<div class="info-block">
 								<div class="deck-title">小時卡庫</div>

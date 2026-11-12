@@ -1692,12 +1692,6 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     background: #00d2d3;
     box-shadow: 0 0 4px #00d2d3;
 }
-.minute-card .tier-indicator.tier-high {
-    color: #ffd700;
-    font-size: 0.56rem;
-    text-shadow: 0 0 4px #ffd700;
-    font-weight: 900;
-}
 
 /* 拖放分鐘卡（Drag & Drop）互動狀態 */
 .minute-card {
@@ -3994,35 +3988,80 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     animation: shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
 }
 
-/* 現代版鐘面全屏圖層內的階段進度條定位（預留左右側欄安全寬度，防止視窗縮小時與左右抽屜重疊） */
-.clock-panel .round-phase-tracker {
-    position: absolute !important;
-    top: 10px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+/* 現代版右側欄第一項：常駐本回合行動序列進度組件 */
+.hud-drawer-right > .round-phase-tracker {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
     z-index: 70 !important;
     pointer-events: auto !important;
+    width: clamp(200px, 21vw, 260px) !important;
+    max-width: min(46vw, 750px) !important;
+    padding: 8px 10px !important;
     margin: 0 !important;
-    max-width: calc(100% - 340px) !important;
+    border-radius: 14px !important;
+    background: rgba(6, 7, 11, 0.95) !important;
+    border: 1px solid rgba(255, 210, 127, 0.32) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8) !important;
+    box-sizing: border-box !important;
+    gap: 6px !important;
 }
-
-@media (max-width: 1200px) and (min-width: 769px) {
-    .clock-panel .round-phase-tracker {
-        max-width: calc(100% - 300px) !important;
-        padding: 4px 10px !important;
-    }
-    .clock-panel .round-phase-tracker .phase-step {
-        padding: 2px 7px !important;
-        font-size: 0.75rem !important;
-    }
-    .clock-panel .round-phase-tracker .phase-step:not(.active) .step-title {
-        display: none !important;
-    }
+.hud-drawer-right > .round-phase-tracker .phase-track-steps {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    width: 100% !important;
+}
+.hud-drawer-right > .round-phase-tracker .phase-track-arrow {
+    display: none !important;
+}
+.hud-drawer-right > .round-phase-tracker .phase-step {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 4px 7px !important;
+    font-size: 0.76rem !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.hud-drawer-right > .round-phase-tracker .phase-status-badge {
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    text-align: center !important;
+    white-space: normal !important;
 }
 
 @media (max-width: 768px) {
-    .clock-panel .round-phase-tracker {
-        top: 8px !important;
+    .hud-drawer-right > .round-phase-tracker {
+        position: fixed !important;
+        top: 96px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: auto !important;
         max-width: calc(100vw - 16px) !important;
+        border-radius: 999px !important;
+        padding: 4px 10px !important;
+    }
+    .hud-drawer-right > .round-phase-tracker .phase-track-steps {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        width: auto !important;
+    }
+    .hud-drawer-right > .round-phase-tracker .phase-track-arrow {
+        display: inline !important;
+    }
+    .hud-drawer-right > .round-phase-tracker .phase-step {
+        width: auto !important;
+        padding: 2px 6px !important;
+        font-size: 0.72rem !important;
+    }
+    .hud-drawer-right > .round-phase-tracker .phase-status-badge {
+        width: auto !important;
+        white-space: nowrap !important;
     }
 }

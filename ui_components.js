@@ -2148,8 +2148,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 tierDot = `<span class="tier-indicator tier-low" title="${tipLow}"></span>`;
             } else if (v >= 46) {
                 tierClass = 'card-tier-high';
-                const tipHigh = (window.i18n ? window.i18n.t('ui.tactics.tier_high') : null) || '先驅強奪';
-                tierDot = `<span class="tier-indicator tier-high" title="${tipHigh}">★</span>`;
+                tierDot = '';
             }
             cardEl.className = `minute-card ${tierClass}`;
             cardEl.setAttribute('data-value', card.value);
