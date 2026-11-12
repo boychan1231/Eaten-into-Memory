@@ -134,6 +134,34 @@
                 sec_ability_select_two: '⚡ Second Hand: Select 2 minute cards.',
                 sec_ability_ready: '⚡ 2 cards selected. Click "Confirm Play".'
             },
+            tactics: {
+                danger: '⚠️ Danger',
+                danger_max: '⚠️ High Risk (Max Hour)',
+                danger_sin: '⚠️ High Risk (Near Sin)',
+                safe: '🛡️ Safe',
+                recipe: '⭐ Evolution Fit',
+                precious: '💎 Precious',
+                tier_low: 'Safe Low',
+                tier_mid: 'Mid Range',
+                tier_high: 'High Bid'
+            },
+            combat_float: {
+                penalty_max: '-1 ⚙ (Max Hour Penalty)',
+                penalty_sin: '-1 ⚙ (Sin Encroachment)',
+                ejected: '⚠️ Ejected!',
+                shield_block: '🛡️ Shield Blocked!',
+                mana_spend: '-{n} Mana',
+                mana_gain: '+{n} Mana'
+            },
+            match_highlights: {
+                champion: '👑 Champion',
+                collector: '💎 Memory Collector',
+                survivor: '🛡️ Resilient Survivor',
+                pioneer: '⚡ Speed Pioneer',
+                destiny: '✨ Destiny Seeker',
+                awakened: '⌛ Awakened',
+                hunter: '😈 Apex Hunter'
+            },
             clash: {
                 gathering: '⏳ Players committed cards, preparing to reveal…',
                 revealing: '🃏 Revealing minute cards from all players…',

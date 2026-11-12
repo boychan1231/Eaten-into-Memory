@@ -134,6 +134,34 @@
                 sec_ability_select_two: '⚡ 秒針能力：請點選 2 張分鐘卡。',
                 sec_ability_ready: '⚡ 已選 2 張卡牌，請點擊「確認出牌」。'
             },
+            tactics: {
+                danger: '⚠️ 高危',
+                danger_max: '⚠️ 高危 (受罰預警)',
+                danger_sin: '⚠️ 高危 (接近時之惡)',
+                safe: '🛡️ 安全',
+                recipe: '⭐ 契合配方',
+                precious: '💎 珍貴回憶',
+                tier_low: '避險小牌',
+                tier_mid: '中位牌',
+                tier_high: '先驅強奪'
+            },
+            combat_float: {
+                penalty_max: '-1 ⚙ (最高刻度處決)',
+                penalty_sin: '-1 ⚙ (時之惡侵蝕)',
+                ejected: '⚠️ 逐出出局!',
+                shield_block: '🛡️ 護盾抵免!',
+                mana_spend: '-{n} Mana',
+                mana_gain: '+{n} Mana'
+            },
+            match_highlights: {
+                champion: '👑 榮耀之冠',
+                collector: '💎 記憶收藏家',
+                survivor: '🛡️ 堅毅生還',
+                pioneer: '⚡ 競速先鋒',
+                destiny: '✨ 命運探索者',
+                awakened: '⌛ 覺醒者',
+                hunter: '😈 終焉獵手'
+            },
             clash: {
                 gathering: '⏳ 各玩家已蓋牌集結，準備翻牌…',
                 revealing: '🃏 揭曉各玩家打出的分鐘卡…',

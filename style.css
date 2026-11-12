@@ -1645,6 +1645,100 @@ input:checked + .slider:before { transform: translateX(16px); }
     animation: floatUpFade 1.8s ease-out forwards;
 }
 
+/* 戰鬥浮動回饋深化 */
+.floating-text.combat-float-text {
+    font-size: 1.12rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(10, 14, 25, 0.92);
+    border: 1px solid rgba(255, 215, 127, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.02em;
+}
+
+/* 經典版鐘面格位即時戰術風險標籤 */
+.clock-spot.tactics-danger {
+    box-shadow: 0 0 14px rgba(255, 71, 87, 0.75), inset 0 0 8px rgba(255, 71, 87, 0.5) !important;
+    border-color: #ff4757 !important;
+}
+.clock-spot.tactics-safe {
+    box-shadow: 0 0 14px rgba(0, 210, 211, 0.65), inset 0 0 8px rgba(0, 210, 211, 0.4) !important;
+    border-color: #00d2d3 !important;
+}
+.clock-spot.tactics-recipe {
+    box-shadow: 0 0 16px rgba(255, 210, 127, 0.8), inset 0 0 10px rgba(255, 210, 127, 0.5) !important;
+    border-color: #ffd27f !important;
+}
+.spot-tactics-badge {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+.spot-tactics-badge.danger {
+    background: rgba(235, 77, 75, 0.92);
+    color: #ffffff;
+    border: 1px solid #ff7675;
+}
+.spot-tactics-badge.safe {
+    background: rgba(0, 180, 180, 0.88);
+    color: #ffffff;
+    border: 1px solid #00cec9;
+}
+.spot-tactics-badge.recipe {
+    background: rgba(243, 156, 18, 0.92);
+    color: #1a1003;
+    border: 1px solid #f1c40f;
+    font-weight: 900;
+}
+
+/* 中央小時卡戰術標籤 */
+.hour-tactics-tag {
+    font-size: 0.64rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+.hour-tactics-tag.danger {
+    background: rgba(235, 77, 75, 0.9);
+    color: #fff;
+}
+.hour-tactics-tag.safe {
+    background: rgba(0, 180, 180, 0.85);
+    color: #fff;
+}
+.hour-tactics-tag.recipe {
+    background: rgba(243, 156, 18, 0.92);
+    color: #1a1003;
+}
+
+/* 對局結束排行榜榮譽標籤 */
+.rank-highlight-tag {
+    display: inline-block;
+    font-size: 0.70rem;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(255, 210, 127, 0.16);
+    border: 1px solid rgba(255, 210, 127, 0.45);
+    color: #ffd27f;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
 /* --- 新增：時之惡索命紅線 (SVG) --- */
 .connection-lines-svg {
     position: absolute;

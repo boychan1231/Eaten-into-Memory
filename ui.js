@@ -1190,8 +1190,17 @@ function processFloatingText(gameState) {
             // 2. 齒輪 (生命值) 變動
             const gearDiff = player.gearCards - last.gearCards;
             if (gearDiff !== 0) {
-                const text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
-                const color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
+                let text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
+                let color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
+                if (gearDiff < 0) {
+                    if (player.isEjected) {
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 逐出出局!';
+                    } else if (gameState.gameMode === '3P' || gameState.sinTargetingMode === 'default') {
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_max') : null) || '-1 ⚙ (最高刻度處決)';
+                    } else if (gameState.sinTargetingMode === 'sin') {
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_sin') : null) || '-1 ⚙ (時之惡侵蝕)';
+                    }
+                }
                 pendingEvents.push({
                     playerId: player.id,
                     text,
@@ -1204,15 +1213,27 @@ function processFloatingText(gameState) {
             // 3. Mana 變動
             const manaDiff = player.mana - last.mana;
             if (manaDiff !== 0) {
-                const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
-                const color = manaDiff > 0 ? '#4cd137' : '#e17055';
-                pendingEvents.push({
-                    playerId: player.id,
-                    text,
-                    color,
-                    type: 'mana',
-                    diff: manaDiff
-                });
+                // 若幼體時魔使用護盾抵免傷害 (mana 耗盡且開啟 shieldUsed)
+                if (player.type === '時魔' && player.shieldUsed && !last.shieldUsed && manaDiff < 0 && gearDiff === 0) {
+                    const text = (window.i18n ? window.i18n.t('ui.combat_float.shield_block') : null) || '🛡️ 護盾抵免!';
+                    pendingEvents.push({
+                        playerId: player.id,
+                        text,
+                        color: '#4cd137',
+                        type: 'shield',
+                        diff: 0
+                    });
+                } else {
+                    const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
+                    const color = manaDiff > 0 ? '#4cd137' : '#e17055';
+                    pendingEvents.push({
+                        playerId: player.id,
+                        text,
+                        color,
+                        type: 'mana',
+                        diff: manaDiff
+                    });
+                }
             }
         }
 
@@ -1221,8 +1242,7 @@ function processFloatingText(gameState) {
             mana: player.mana,
             gearCards: player.gearCards,
             d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0,
-
-            // --- 新增 (Add)：將位置也存入紀錄中 ---
+            shieldUsed: !!player.shieldUsed,
             currentClockPosition: player.currentClockPosition
         };
     });
@@ -1246,6 +1266,20 @@ function triggerFloat(playerId, text, color, type, diff) {
     let cardEl = null;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
 
+    // 受到懲罰／扣除齒輪或護盾時觸發棋子受擊震動
+    if (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055'))) {
+        if (window.ModernBoard && typeof window.ModernBoard.shakeToken === 'function') {
+            window.ModernBoard.shakeToken(playerId, true);
+        }
+        if (window.gameAudio && typeof window.gameAudio.playDamage === 'function') {
+            window.gameAudio.playDamage();
+        }
+    } else if (diff > 0 && type === 'mana') {
+        if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
+            window.gameAudio.playConfirm();
+        }
+    }
+
     if (playerId === humanId) {
         targetEl = (type === 'mana') ? document.getElementById('h-mana') : document.getElementById('h-gear');
         cardEl = document.querySelector('.human-top-bar') || document.getElementById('human-player-area');
@@ -1265,22 +1299,30 @@ function triggerFloat(playerId, text, color, type, diff) {
                 if (cardEl) cardEl.classList.remove('card-damage-shake');
             }, 450);
         }
-        if (window.gameAudio && typeof window.gameAudio.playDamage === 'function') {
-            window.gameAudio.playDamage();
-        }
-    } else if (diff > 0 && type === 'mana') {
-        if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
-            window.gameAudio.playConfirm();
-        }
     }
 
-    if (targetEl) spawnFloatingText(targetEl, text, color, playerId);
+    // 優先以鐘面上實體角色棋子 (Token) 的螢幕座標作為浮動戰鬥文字起點
+    let tokenScreenPos = null;
+    if (window.ModernBoard && typeof window.ModernBoard.getTokenScreenPosition === 'function') {
+        tokenScreenPos = window.ModernBoard.getTokenScreenPosition(playerId);
+    }
+
+    spawnFloatingText(targetEl, text, color, playerId, tokenScreenPos);
 }
 
-function spawnFloatingText(targetEl, text, color, playerId) {
-    const rect = targetEl.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const topY = rect.top;
+function spawnFloatingText(targetEl, text, color, playerId, customScreenPos) {
+    let centerX = 0, topY = 0;
+    if (customScreenPos && typeof customScreenPos.x === 'number' && typeof customScreenPos.y === 'number') {
+        centerX = customScreenPos.x;
+        topY = customScreenPos.y - 14;
+    } else if (targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        centerX = rect.left + rect.width / 2;
+        topY = rect.top;
+    } else {
+        centerX = window.innerWidth / 2;
+        topY = window.innerHeight / 2;
+    }
 
     // 計算同一目標短時間內的錯位偏移，避免重疊
     const now = Date.now();
@@ -1299,7 +1341,7 @@ function spawnFloatingText(targetEl, text, color, playerId) {
     const offsetX = (offsetInfo.count % 2 === 1 ? 14 : (offsetInfo.count === 0 ? 0 : -14));
 
     const el = document.createElement('div');
-    el.className = 'floating-text';
+    el.className = 'floating-text combat-float-text';
     el.textContent = text;
     el.style.color = color;
     el.style.left = `${centerX + offsetX}px`;
@@ -1427,9 +1469,27 @@ function renderGameOverPanel(gameState) {
         const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
         const color = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ccc';
 
+        // 戰術榮譽高光標籤 (Match Highlights)
+        let highlight = '';
+        if (rank === 1) {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.champion') : null) || '👑 榮耀之冠';
+        } else if (p.hourCards && p.hourCards.length >= 3) {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.collector') : null) || '💎 記憶收藏家';
+        } else if (!p.isEjected && p.gearCards > 0) {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.survivor') : null) || '🛡️ 堅毅生還';
+        } else if (p.type === '時之惡') {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.hunter') : null) || '😈 終焉獵手';
+        } else if (p.type === '受詛者' && (p.hourCards || []).some(c => c.isPrecious)) {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.destiny') : null) || '✨ 命運探索者';
+        } else if (['時針', '分針', '秒針'].includes(p.roleCard)) {
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.awakened') : null) || '⌛ 覺醒者';
+        }
+
+        const highlightHtml = highlight ? `<span class="rank-highlight-tag">${highlight}</span>` : '';
+
         row.innerHTML = `
             <div class="rank-medal">${medal}</div>
-            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(💀)' : ''}</div>
+            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(💀)' : ''} ${highlightHtml}</div>
             <div style="font-size:0.85rem; color:#aaa;">${p.roleCard}</div>
             <div style="font-family:monospace; font-size:1.2rem; font-weight:bold;">${p.score}</div>
         `;

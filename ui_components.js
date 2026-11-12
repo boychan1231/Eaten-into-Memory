@@ -51,6 +51,78 @@ const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
     '秒針': '#00d2d3'
 };
 
+// ==== 戰術評估輔助函式（小時格即時風險與收益預警） ====
+function assessHourCardTactics(gameState, card, humanPlayer) {
+    if (!gameState || !card) return { riskLevel: 'neutral', riskText: '', isRecipe: false, isPrecious: false, badgeText: '' };
+    const currentMode = gameState.gameMode || '5P';
+    const is3P = currentMode === '3P';
+    const sinMode = gameState.sinTargetingMode === 'sin' && !is3P;
+    const sinPlayer = (gameState.players || []).find(p => p.type === '時之惡' && !p.isEjected);
+    const targetSpot = Number(card.number);
+
+    let riskLevel = 'safe';
+    let riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+
+    if (is3P || !sinMode) {
+        // 最高小時值受罰判定
+        const otherPlayers = (gameState.players || []).filter(p => p.id !== humanPlayer.id && !p.isEjected && p.currentClockPosition !== null && p.currentClockPosition !== undefined);
+        if (otherPlayers.length > 0) {
+            const otherMax = Math.max(...otherPlayers.map(p => Number(p.currentClockPosition)));
+            if (targetSpot > otherMax) {
+                riskLevel = 'danger';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_max') : null) || '⚠️ 高危 (受罰預警)';
+            } else if (targetSpot === otherMax) {
+                riskLevel = 'warning';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger') : null) || '⚠️ 平手危險';
+            } else {
+                riskLevel = 'safe';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+            }
+        }
+    } else if (sinMode && sinPlayer && sinPlayer.currentClockPosition !== null && sinPlayer.currentClockPosition !== undefined) {
+        // 距離時之惡最近受罰判定
+        const getDist = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 12 - d); };
+        const myDist = getDist(targetSpot, Number(sinPlayer.currentClockPosition));
+        const otherTargets = (gameState.players || []).filter(p => (p.type === '時魔' || p.type === '受詛者') && p.id !== humanPlayer.id && !p.isEjected && p.currentClockPosition !== null && p.currentClockPosition !== undefined);
+        if (otherTargets.length > 0) {
+            const otherMinDist = Math.min(...otherTargets.map(p => getDist(Number(p.currentClockPosition), Number(sinPlayer.currentClockPosition))));
+            if (myDist <= otherMinDist) {
+                riskLevel = 'danger';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_sin') : null) || '⚠️ 高危 (接近時之惡)';
+            } else {
+                riskLevel = 'safe';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+            }
+        }
+    }
+
+    // 檢查進化配方或珍貴回憶
+    let isRecipe = false;
+    let isPrecious = !!card.isPrecious;
+    if (humanPlayer && humanPlayer.type === '時魔' && typeof humanPlayer.roleCard === 'string' && humanPlayer.roleCard.includes('幼')) {
+        const mem = humanPlayer.hourCards || [];
+        const sameAgeCount = mem.filter(c => c.ageGroup === card.ageGroup).length;
+        const currentSum = mem.reduce((sum, c) => sum + (c.number || 0), 0);
+        if (sameAgeCount >= 1 || (currentSum + targetSpot >= 14)) {
+            isRecipe = true;
+        }
+    }
+
+    let badgeText = '';
+    if (isPrecious && humanPlayer && humanPlayer.type === '受詛者') {
+        badgeText = (window.i18n ? window.i18n.t('ui.tactics.precious') : null) || '💎 珍貴回憶';
+    } else if (isRecipe) {
+        badgeText = (window.i18n ? window.i18n.t('ui.tactics.recipe') : null) || '⭐ 契合配方';
+    } else {
+        badgeText = riskText;
+    }
+
+    return { riskLevel, riskText, isRecipe, isPrecious, badgeText };
+}
+if (typeof window !== 'undefined') {
+    window.assessHourCardTactics = assessHourCardTactics;
+}
+
 // ==== 右側資訊面板（UI 狀態） ====
 const UI_HISTORY_LIMIT = window.UI_CONFIG?.HISTORY_LIMIT || 12;
 let uiMinuteHistory = {};
@@ -1194,6 +1266,18 @@ function renderClockFace(gameState, flags) {
 				
 			// 讓滑鼠游標變成手指狀，提示可以點擊
             spotEl.style.cursor = 'pointer';
+
+            const card = (gameState.currentDrawnHourCards || []).find(c => c.number === spot.position);
+            if (card && flags.isWaitingHourInput) {
+                const tactics = assessHourCardTactics(gameState, card, humanPlayer);
+                spotEl.classList.add(`tactics-${tactics.riskLevel}`);
+                if (tactics.isRecipe) spotEl.classList.add('tactics-recipe');
+                if (tactics.isPrecious) spotEl.classList.add('tactics-precious');
+                const badgeEl = document.createElement('div');
+                badgeEl.className = `spot-tactics-badge ${tactics.riskLevel} ${tactics.isRecipe ? 'recipe' : ''}`;
+                badgeEl.textContent = tactics.badgeText;
+                spotEl.appendChild(badgeEl);
+            }
             
             // 點擊事件處理
             spotEl.onclick = () => {
@@ -2055,9 +2139,21 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
         sortedHand.forEach(card => {
             const cardEl = document.createElement('div');
-            cardEl.className = 'minute-card';
+            const v = Number(card.value);
+            let tierClass = 'card-tier-mid';
+            let tierDot = '<span class="tier-indicator tier-mid"></span>';
+            if (v <= 20) {
+                tierClass = 'card-tier-low';
+                const tipLow = (window.i18n ? window.i18n.t('ui.tactics.tier_low') : null) || '避險小牌';
+                tierDot = `<span class="tier-indicator tier-low" title="${tipLow}"></span>`;
+            } else if (v >= 46) {
+                tierClass = 'card-tier-high';
+                const tipHigh = (window.i18n ? window.i18n.t('ui.tactics.tier_high') : null) || '先驅強奪';
+                tierDot = `<span class="tier-indicator tier-high" title="${tipHigh}">★</span>`;
+            }
+            cardEl.className = `minute-card ${tierClass}`;
             cardEl.setAttribute('data-value', card.value);
-            cardEl.innerHTML = `<div>${card.value}</div><div class="card-gear">${card.gear}</div>`;
+            cardEl.innerHTML = `${tierDot}<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
@@ -2841,6 +2937,17 @@ function renderDrawnHourCards(gameState, flags) {
 
             if (flags.isWaitingHourInput) {
                 cardEl.classList.add('clickable');
+                const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+                const humanPlayer = (gameState.players || []).find(p => p.id === humanId);
+                const tactics = assessHourCardTactics(gameState, card, humanPlayer);
+                cardEl.classList.add(`tactics-${tactics.riskLevel}`);
+                if (tactics.isRecipe) cardEl.classList.add('tactics-recipe');
+                if (tactics.isPrecious) cardEl.classList.add('tactics-precious');
+                const tagEl = document.createElement('div');
+                tagEl.className = `hour-tactics-tag ${tactics.riskLevel} ${tactics.isRecipe ? 'recipe' : ''}`;
+                tagEl.textContent = tactics.badgeText;
+                cardEl.appendChild(tagEl);
+
                 cardEl.addEventListener('click', () => {
                     const idx = gameState.currentDrawnHourCards.indexOf(card);
                     const fn = (typeof window.handleHumanHourCardChoice === 'function')

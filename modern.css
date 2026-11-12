@@ -1655,6 +1655,50 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     box-shadow: 0 0 0 1.5px #ffd27f, 0 10px 20px rgba(218, 175, 92, 0.4) !important;
 }
 
+/* 手牌牌力區間視覺輔助 */
+.minute-card.card-tier-low {
+    border-color: rgba(0, 210, 211, 0.45) !important;
+    background: linear-gradient(165deg, #182e34 0%, #112126 55%, #0a1417 100%) !important;
+}
+.minute-card.card-tier-low:hover:not(.is-dragging):not(.is-committing) {
+    border-color: rgba(0, 210, 211, 0.88) !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.75), 0 0 10px rgba(0, 210, 211, 0.35) !important;
+}
+.minute-card.card-tier-mid {
+    border-color: rgba(218, 175, 92, 0.55) !important;
+}
+.minute-card.card-tier-high {
+    border-color: rgba(255, 215, 0, 0.7) !important;
+    background: linear-gradient(165deg, #594218 0%, #35250c 55%, #1f1506 100%) !important;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.65), 0 0 8px rgba(255, 215, 0, 0.25) !important;
+}
+.minute-card.card-tier-high:hover:not(.is-dragging):not(.is-committing) {
+    border-color: #ffd700 !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.75), 0 0 14px rgba(255, 215, 0, 0.45) !important;
+}
+
+/* 牌力微指示器 */
+.minute-card .tier-indicator {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    pointer-events: none;
+    line-height: 1;
+}
+.minute-card .tier-indicator.tier-low {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #00d2d3;
+    box-shadow: 0 0 4px #00d2d3;
+}
+.minute-card .tier-indicator.tier-high {
+    color: #ffd700;
+    font-size: 0.56rem;
+    text-shadow: 0 0 4px #ffd700;
+    font-weight: 900;
+}
+
 /* 拖放分鐘卡（Drag & Drop）互動狀態 */
 .minute-card {
     touch-action: pan-x;

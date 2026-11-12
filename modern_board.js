@@ -715,21 +715,42 @@
                 const node = new PIXI.Container();
                 node.position.set(p.x, p.y);
 
+                const targetCard = isTarget ? targets.find(c => c.number === spot.position) : null;
+                const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+                const humanPlayer = (gs.players || []).find(p => p.id === humanId);
+                const isHumanPicking = !!gs.waitingHourChoice && gs.waitingHourChoicePlayerId === humanId;
+                const tactics = (isTarget && targetCard && isHumanPicking && typeof window.assessHourCardTactics === 'function')
+                    ? window.assessHourCardTactics(gs, targetCard, humanPlayer)
+                    : null;
+
+                const isDanger = tactics && tactics.riskLevel === 'danger';
+                const isRecipe = tactics && tactics.isRecipe;
+                const isSafe = tactics && tactics.riskLevel === 'safe';
+
+                const targetAccent = isDanger ? 0xff4757 : (isRecipe ? 0xffd27f : (isSafe ? 0x00d2d3 : PAL.gold));
+                const accent = isTarget ? targetAccent : (isCurrentRoundSpot ? PAL.glow : PAL.gold);
                 const g = new PIXI.Graphics();
-                const accent = isTarget ? PAL.gold : (isCurrentRoundSpot ? PAL.glow : PAL.gold);
-                this.glowCircle(g, 0, 0, 27, accent, isTarget ? 0.42 : (isCurrentRoundSpot ? 0.2 : 0.08));
+                this.glowCircle(g, 0, 0, 27, accent, isTarget ? (isDanger ? 0.6 : 0.45) : (isCurrentRoundSpot ? 0.2 : 0.08));
 
                 // 雙環星芒格位框
-                g.lineStyle(isTarget ? 2.4 : 1.6, isTarget ? PAL.gold : PAL.gold, isTarget ? 1.0 : 0.42)
+                g.lineStyle(isTarget ? 2.6 : 1.6, isTarget ? targetAccent : PAL.gold, isTarget ? 1.0 : 0.42)
                  .beginFill(PAL.shell, 0.9)
                  .drawCircle(0, 0, 27)
                  .endFill();
-                g.lineStyle(1, isTarget ? PAL.goldBright : PAL.glow, isTarget ? 0.8 : 0.3)
+                g.lineStyle(1, isTarget ? (isDanger ? 0xff6b81 : PAL.goldBright) : PAL.glow, isTarget ? 0.8 : 0.3)
                  .drawCircle(0, 0, 22);
                 node.addChild(g);
 
+                if (tactics && isHumanPicking) {
+                    const iconText = isDanger ? '⚠️' : (isRecipe ? '★' : '🛡️');
+                    const iconColor = isDanger ? 0xff4757 : (isRecipe ? 0xffd27f : 0x00d2d3);
+                    const tacticsBadge = this.text(iconText, 12, iconColor, '900');
+                    tacticsBadge.position.set(0, -26);
+                    node.addChild(tacticsBadge);
+                }
+
                 const top = spot.cards[spot.cards.length - 1];
-                const num = this.text(spot.position, 19, isTarget ? PAL.gold : PAL.text, '800');
+                const num = this.text(spot.position, 19, isTarget ? targetAccent : PAL.text, '800');
                 num.y = top ? -5 : 0;
                 node.addChild(num);
 
@@ -821,6 +842,21 @@
                 if (card.isPrecious) { const st = this.text('★', 11, 0x7a5a00, '700'); st.y = 28; c.addChild(st); }
 
                 if (waitingHour) {
+                    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
+                    const humanPlayer = (gs.players || []).find(p => p.id === humanId);
+                    const tactics = (typeof window.assessHourCardTactics === 'function' && humanPlayer)
+                        ? window.assessHourCardTactics(gs, card, humanPlayer)
+                        : null;
+                    if (tactics) {
+                        const isDanger = tactics.riskLevel === 'danger';
+                        const isRecipe = tactics.isRecipe;
+                        const tagCol = isDanger ? 0xff4757 : (isRecipe ? 0xffd27f : 0x00d2d3);
+                        const tagText = isDanger ? '⚠️ 高危' : (isRecipe ? '★ 契合' : '🛡️ 安全');
+                        const tagPill = this.text(tagText, 9.5, tagCol, '800');
+                        tagPill.position.set(0, 42);
+                        c.addChild(tagPill);
+                    }
+
                     c.eventMode = 'static';
                     c.cursor = 'pointer';
                     let downX = 0, downY = 0;
@@ -852,7 +888,7 @@
 
             if (waitingHour) {
                 const hint = this.text('請點選小時卡', 11.5, PAL.gold, '700');
-                hint.position.set(CX, CY + 54);
+                hint.position.set(CX, CY + 58);
                 L.addChild(hint);
             } else if (this.dropHighlightActive) {
                 const dropHint = this.text('⚡ 放開以出牌', 12, PAL.goldBright, '800');
@@ -1036,6 +1072,36 @@
                     this.tokens.delete(id);
                 }
             });
+        },
+
+        // ---------- 取得角色棋子在螢幕視窗上的像素座標 ----------
+        getTokenScreenPosition(playerId) {
+            const node = this.tokens.get(playerId);
+            if (!node || !node.c || !this.app || !this.app.view) return null;
+            try {
+                const globalPos = node.c.toGlobal(new PIXI.Point(0, 0));
+                const rect = this.app.view.getBoundingClientRect();
+                return {
+                    x: rect.left + globalPos.x,
+                    y: rect.top + globalPos.y
+                };
+            } catch (_) {
+                return null;
+            }
+        },
+
+        // ---------- 角色棋子受擊震動與受罰回饋 ----------
+        shakeToken(playerId, isDamage = true) {
+            const node = this.tokens.get(playerId);
+            if (!node || !node.c) return;
+            if (typeof gsap !== 'undefined') {
+                const origX = node.tx || node.c.x;
+                const origY = node.ty || node.c.y;
+                gsap.killTweensOf(node.c);
+                gsap.timeline()
+                    .to(node.c, { x: origX + (Math.random() > 0.5 ? 9 : -9), duration: 0.05, yoyo: true, repeat: 4 })
+                    .to(node.c, { x: origX, y: origY, duration: 0.05 });
+            }
         },
 
         // ---------- 時之惡牽引線 ----------
