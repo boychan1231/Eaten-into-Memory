@@ -5,8 +5,12 @@
  * 輸出檔案：ai_studio/AI_STUDIO_CONTEXT_BUNDLE.md
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const OUTPUT_FILE = path.join(__dirname, 'AI_STUDIO_CONTEXT_BUNDLE.md');
@@ -16,6 +20,8 @@ const CORE_FILES = [
     'README.md',
     'GAMEPLAY.md',
     'PROJECT_HANDOVER_NOTES.md',
+    'package.json',
+    'vite.config.ts',
     'config.js',
     'logger.js',
     'audio.js',
@@ -42,6 +48,7 @@ function getLangByExt(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     switch (ext) {
         case '.js': return 'javascript';
+        case '.ts': return 'typescript';
         case '.html': return 'html';
         case '.css': return 'css';
         case '.md': return 'markdown';

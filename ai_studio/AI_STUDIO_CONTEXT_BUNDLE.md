@@ -1,6 +1,6 @@
 # 《蝕入記憶》(Eaten into Memory) — Google AI Studio 完整專案上下文整合包
 
-> 本檔案由 `node ai_studio/build_context_bundle.js` 自動產生，包含全專案 23 個核心設計文件與原始碼檔案。
+> 本檔案由 `node ai_studio/build_context_bundle.js` 自動產生，包含全專案 25 個核心設計文件與原始碼檔案。
 
 > 已排除第三方函式庫 (`pixi.min.js`, `gsap.min.js`) 與純 Base64 角色圖資 (`role_assets_data.js`) 以節省 Token。
 
@@ -9,26 +9,28 @@
 1. `README.md` (2.2 KB)
 2. `GAMEPLAY.md` (16.5 KB)
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
-4. `config.js` (4.8 KB)
-5. `logger.js` (1.5 KB)
-6. `audio.js` (10.8 KB)
-7. `i18n.js` (5.7 KB)
-8. `locales/zh-TW.js` (25.9 KB)
-9. `locales/en-US.js` (24.1 KB)
-10. `abilities.js` (12.1 KB)
-11. `game_setup.js` (16.7 KB)
-12. `game.js` (98.0 KB)
-13. `ui_modals.js` (1.7 KB)
-14. `ui_components.js` (155.4 KB)
-15. `tutorial_mode.js` (41.1 KB)
-16. `ui.js` (74.3 KB)
-17. `modern_board.js` (68.4 KB)
-18. `modern_intro.js` (40.2 KB)
-19. `index.html` (48.2 KB)
-20. `classic.html` (36.6 KB)
-21. `modern.css` (120.7 KB)
-22. `style.css` (96.0 KB)
-23. `stories_data.js` (12.2 KB)
+4. `package.json` (0.8 KB)
+5. `vite.config.ts` (2.1 KB)
+6. `config.js` (4.8 KB)
+7. `logger.js` (1.5 KB)
+8. `audio.js` (10.8 KB)
+9. `i18n.js` (5.7 KB)
+10. `locales/zh-TW.js` (25.9 KB)
+11. `locales/en-US.js` (24.1 KB)
+12. `abilities.js` (12.1 KB)
+13. `game_setup.js` (16.7 KB)
+14. `game.js` (98.0 KB)
+15. `ui_modals.js` (1.7 KB)
+16. `ui_components.js` (155.4 KB)
+17. `tutorial_mode.js` (41.1 KB)
+18. `ui.js` (74.3 KB)
+19. `modern_board.js` (68.4 KB)
+20. `modern_intro.js` (40.2 KB)
+21. `index.html` (48.2 KB)
+22. `classic.html` (36.6 KB)
+23. `modern.css` (120.7 KB)
+24. `style.css` (96.0 KB)
+25. `stories_data.js` (12.2 KB)
 
 ---
 
@@ -478,6 +480,139 @@ flowchart TD
 * 系統預設 PATH 中未包含 `git.exe` 時，可調用 GitHub Desktop 內建引擎：
   `& "C:\Users\USER\AppData\Local\GitHubDesktop\app-3.6.10\resources\app\git\cmd\git.exe"`
 * 執行 Node.js 腳本修改多行字串時，建議寫入 scratch 暫存腳本執行，避免 PowerShell 引號轉義與換行符（CRLF）造成的破壞。
+
+`````
+
+
+================================================================================
+=== FILE: package.json ===
+================================================================================
+
+`````json
+{
+  "name": "eaten-into-memory",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+
+`````
+
+
+================================================================================
+=== FILE: vite.config.ts ===
+================================================================================
+
+`````typescript
+import fs from 'fs';
+import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
+
+// 複製靜態腳本與資源至 dist/，確保純原生 <script src="..."> 架構在 Vite Build 下完整運作
+function copyStaticGameFilesPlugin() {
+  return {
+    name: 'copy-static-game-files',
+    closeBundle() {
+      const rootDir = process.cwd();
+      const outDir = path.resolve(rootDir, 'dist');
+      if (!fs.existsSync(outDir)) {
+        fs.mkdirSync(outDir, { recursive: true });
+      }
+
+      const filesToCopy = [
+        'pixi.min.js',
+        'gsap.min.js',
+        'i18n.js',
+        'stories_data.js',
+        'role_assets_data.js',
+        'config.js',
+        'logger.js',
+        'audio.js',
+        'abilities.js',
+        'game_setup.js',
+        'game.js',
+        'ui_modals.js',
+        'ui_components.js',
+        'tutorial_mode.js',
+        'ui.js',
+        'modern_board.js',
+        'modern_intro.js',
+        'style.css',
+        'modern.css',
+        'classic.html',
+        'modern.html',
+        'clock-bg.png'
+      ];
+
+      for (const file of filesToCopy) {
+        const src = path.join(rootDir, file);
+        const dest = path.join(outDir, file);
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+        }
+      }
+
+      const dirsToCopy = ['locales', 'assets', 'SFX'];
+      for (const dir of dirsToCopy) {
+        const srcDir = path.join(rootDir, dir);
+        const destDir = path.join(outDir, dir);
+        if (fs.existsSync(srcDir)) {
+          fs.cpSync(srcDir, destDir, { recursive: true });
+        }
+      }
+    }
+  };
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    plugins: [copyStaticGameFilesPlugin()],
+    define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      port: 3000,
+      host: '0.0.0.0',
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modify - file watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+    },
+  };
+});
 
 `````
 

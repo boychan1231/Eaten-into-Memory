@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
 import fs from 'fs';
 import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
 
 // 複製靜態腳本與資源至 dist/，確保純原生 <script src="..."> 架構在 Vite Build 下完整運作
 function copyStaticGameFilesPlugin() {
@@ -58,16 +58,24 @@ function copyStaticGameFilesPlugin() {
   };
 }
 
-export default defineConfig({
-  server: {
-    port: 3000,
-    host: '0.0.0.0',
-    allowedHosts: true
-  },
-  preview: {
-    port: 3000,
-    host: '0.0.0.0',
-    allowedHosts: true
-  },
-  plugins: [copyStaticGameFilesPlugin()]
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    plugins: [copyStaticGameFilesPlugin()],
+    define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      port: 3000,
+      host: '0.0.0.0',
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modify - file watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+    },
+  };
 });
