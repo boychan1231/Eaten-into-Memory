@@ -1,0 +1,16 @@
+{
+  "name": "eaten-into-memory",
+  "private": true,
+  "version": "1.0.0",
+  "description": "《蝕入記憶》(Eaten into Memory) — 星界時鐘策略卡牌桌遊數位版",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "start": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --port=3000 --host=0.0.0.0",
+    "bundle:ai-studio": "node ai_studio/build_context_bundle.js"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  }
+}
