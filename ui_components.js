@@ -2057,7 +2057,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ph.textContent = '尚未收集';
             hourCollectionEl.appendChild(ph);
         } else {
-            const groups = { '少年': [], '青年': [], '中年': [] };
+            const groups = { '幼年': [], '少年': [], '青年': [], '中年': [] };
 
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
@@ -2066,14 +2066,15 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 groups[g].push(card);
             });
 
-            ['少年', '青年', '中年'].forEach(label => {
+            ['幼年', '少年', '青年', '中年'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
 
                     const labelSpan = document.createElement('span');
                     labelSpan.className = 'col-label';
-                    labelSpan.textContent = `${label}：`;
+                    const displayLabel = (window.i18n ? window.i18n.getAgeGroupName(label) : label) || label;
+                    labelSpan.textContent = `${displayLabel}：`;
                     row.appendChild(labelSpan);
 
                     const valuesContainer = document.createElement('div');

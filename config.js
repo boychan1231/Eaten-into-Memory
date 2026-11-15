@@ -17,6 +17,7 @@ window.GAME_IDS = {
         YOUNG_DEMON: 'young_demon'
     },
     AGE_GROUPS: {
+        CHILD: 'child',
         YOUTH: 'youth',
         ADULT: 'adult',
         MIDDLE: 'middle'
@@ -102,21 +103,24 @@ window.GAME_DATA = {
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
 
-    // ✅ 新增：小時卡珍貴配置 (原本在 game.js)
+    // ✅ 小時卡珍貴配置 (4時代平均分配：幼年、少年、青年、中年各3張珍貴)
     HOUR_PRECIOUS_CONFIGS: [
-        {   id: 'CFG_1', label: 'hour123',
-            mapping: { '少年': [1, 5, 8, 10], '青年': [2, 6, 7, 11], '中年': [3, 4, 9, 12] }
+        {   id: 'CFG_1', label: 'hour_rot1',
+            mapping: { '幼年': [1, 5, 9], '少年': [2, 6, 10], '青年': [3, 7, 11], '中年': [4, 8, 12] }
         },
-        {   id: 'CFG_2', label: 'hour231',
-            mapping: { '少年': [2, 6, 7, 11], '青年': [3, 4, 9, 12], '中年': [1, 5, 8, 10] }
+        {   id: 'CFG_2', label: 'hour_rot2',
+            mapping: { '少年': [1, 5, 9], '青年': [2, 6, 10], '中年': [3, 7, 11], '幼年': [4, 8, 12] }
         },
-        {   id: 'CFG_3', label: 'hour312',
-            mapping: { '少年': [3, 4, 9, 12], '青年': [1, 5, 8, 10], '中年': [2, 6, 7, 11] }
+        {   id: 'CFG_3', label: 'hour_rot3',
+            mapping: { '青年': [1, 5, 9], '中年': [2, 6, 10], '幼年': [3, 7, 11], '少年': [4, 8, 12] }
+        },
+        {   id: 'CFG_4', label: 'hour_cross',
+            mapping: { '幼年': [1, 7, 12], '少年': [4, 5, 10], '青年': [3, 6, 9], '中年': [2, 8, 11] }
         }
     ],
 
-    // 卡牌基礎設定 (保持不變)
-    HOUR_CARDS: { ageGroups: ['少年', '青年', '中年'], countsPerGroup: 12 },
+    // 卡牌基礎設定 (4時代平均分配，共36張)
+    HOUR_CARDS: { ageGroups: ['幼年', '少年', '青年', '中年'], countsPerGroup: 9, total: 36 },
     MINUTE_CARDS: { total: 60 }
 };
 

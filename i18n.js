@@ -142,9 +142,11 @@
         getAgeGroupName(ageGroup) {
             if (!ageGroup) return '';
             const keyMap = {
+                '幼年': 'child',
                 '少年': 'youth',
                 '青年': 'adult',
                 '中年': 'middle',
+                'child': 'child',
                 'youth': 'youth',
                 'adult': 'adult',
                 'middle': 'middle'

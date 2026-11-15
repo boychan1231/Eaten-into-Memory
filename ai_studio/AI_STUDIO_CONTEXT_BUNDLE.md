@@ -11,26 +11,26 @@
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
-6. `config.js` (4.8 KB)
+6. `config.js` (5.1 KB)
 7. `logger.js` (1.5 KB)
 8. `audio.js` (10.8 KB)
-9. `i18n.js` (5.7 KB)
+9. `i18n.js` (5.8 KB)
 10. `locales/zh-TW.js` (25.8 KB)
 11. `locales/en-US.js` (24.1 KB)
 12. `abilities.js` (12.1 KB)
-13. `game_setup.js` (16.7 KB)
+13. `game_setup.js` (17.2 KB)
 14. `game.js` (98.0 KB)
 15. `ui_modals.js` (1.7 KB)
-16. `ui_components.js` (155.4 KB)
+16. `ui_components.js` (155.5 KB)
 17. `tutorial_mode.js` (41.1 KB)
 18. `ui.js` (74.3 KB)
 19. `modern_board.js` (68.4 KB)
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (48.2 KB)
-22. `classic.html` (36.6 KB)
+22. `classic.html` (36.7 KB)
 23. `modern.css` (120.7 KB)
 24. `style.css` (96.0 KB)
-25. `locales/stories_data.js` (12.2 KB)
+25. `locales/stories_data.js` (14.7 KB)
 
 ---
 
@@ -640,6 +640,7 @@ window.GAME_IDS = {
         YOUNG_DEMON: 'young_demon'
     },
     AGE_GROUPS: {
+        CHILD: 'child',
         YOUTH: 'youth',
         ADULT: 'adult',
         MIDDLE: 'middle'
@@ -725,21 +726,24 @@ window.GAME_DATA = {
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
 
-    // ✅ 新增：小時卡珍貴配置 (原本在 game.js)
+    // ✅ 小時卡珍貴配置 (4時代平均分配：幼年、少年、青年、中年各3張珍貴)
     HOUR_PRECIOUS_CONFIGS: [
-        {   id: 'CFG_1', label: 'hour123',
-            mapping: { '少年': [1, 5, 8, 10], '青年': [2, 6, 7, 11], '中年': [3, 4, 9, 12] }
+        {   id: 'CFG_1', label: 'hour_rot1',
+            mapping: { '幼年': [1, 5, 9], '少年': [2, 6, 10], '青年': [3, 7, 11], '中年': [4, 8, 12] }
         },
-        {   id: 'CFG_2', label: 'hour231',
-            mapping: { '少年': [2, 6, 7, 11], '青年': [3, 4, 9, 12], '中年': [1, 5, 8, 10] }
+        {   id: 'CFG_2', label: 'hour_rot2',
+            mapping: { '少年': [1, 5, 9], '青年': [2, 6, 10], '中年': [3, 7, 11], '幼年': [4, 8, 12] }
         },
-        {   id: 'CFG_3', label: 'hour312',
-            mapping: { '少年': [3, 4, 9, 12], '青年': [1, 5, 8, 10], '中年': [2, 6, 7, 11] }
+        {   id: 'CFG_3', label: 'hour_rot3',
+            mapping: { '青年': [1, 5, 9], '中年': [2, 6, 10], '幼年': [3, 7, 11], '少年': [4, 8, 12] }
+        },
+        {   id: 'CFG_4', label: 'hour_cross',
+            mapping: { '幼年': [1, 7, 12], '少年': [4, 5, 10], '青年': [3, 6, 9], '中年': [2, 8, 11] }
         }
     ],
 
-    // 卡牌基礎設定 (保持不變)
-    HOUR_CARDS: { ageGroups: ['少年', '青年', '中年'], countsPerGroup: 12 },
+    // 卡牌基礎設定 (4時代平均分配，共36張)
+    HOUR_CARDS: { ageGroups: ['幼年', '少年', '青年', '中年'], countsPerGroup: 9, total: 36 },
     MINUTE_CARDS: { total: 60 }
 };
 
@@ -845,6 +849,7 @@ const AudioConfig = {
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
+    '幼年': {},
     '少年': {
         4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
     },
@@ -1311,9 +1316,11 @@ window.gameVoice = gameVoice;
         getAgeGroupName(ageGroup) {
             if (!ageGroup) return '';
             const keyMap = {
+                '幼年': 'child',
                 '少年': 'youth',
                 '青年': 'adult',
                 '中年': 'middle',
+                'child': 'child',
                 'youth': 'youth',
                 'adult': 'adult',
                 'middle': 'middle'
@@ -1350,6 +1357,7 @@ window.gameVoice = gameVoice;
             young_demon: '時魔幼體'
         },
         age_groups: {
+            child: '幼年',
             youth: '少年',
             adult: '青年',
             middle: '中年'
@@ -1610,7 +1618,7 @@ window.gameVoice = gameVoice;
 						<p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
@@ -1702,6 +1710,7 @@ window.gameVoice = gameVoice;
             young_demon: 'Young Demon'
         },
         age_groups: {
+            child: 'Childhood',
             youth: 'Youth',
             adult: 'Adult',
             middle: 'Middle-aged'
@@ -1962,7 +1971,7 @@ window.gameVoice = gameVoice;
 						<p><strong>Goal:</strong> Players use Minute Cards to bid for selection order of Hour Cards, securing safe positions on the clock face to protect their Gear Life.</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>Clock Hours:</strong> The character whose position is closest to <strong>12</strong> loses 1 Gear at round end.</li>
-							<li><strong>Hour Cards (Board):</strong> Divided into Youth, Adult, and Middle ages. Precious (★) cards are distributed each game.</li>
+							<li><strong>Hour Cards (Board):</strong> Divided into Childhood, Youth, Adult, and Middle ages. Precious (★) cards are distributed each game.</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
 							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
@@ -2455,11 +2464,11 @@ for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-// === 小時卡：少年 / 青年 / 中年 各 12 張（每種 1~12 各 1 張），總計 36 張 ===
-// 每局開局：隨機從 3 組配置中選 1 組，決定哪一組年齡版本是「珍貴(★)」。
-// 珍貴仍然是 12 張（每個數字 1~12 各 1 張是珍貴）。
+// === 小時卡：幼年 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
+// 每個刻度由 4 個時代輪替缺席 1 個時代（各 3 張），每時代正好 9 張卡。
+// 珍貴卡仍然是 12 張（每個數字 1~12 各 1 張是珍貴，四個時代各 3 張珍貴）。
 
-const HOUR_AGE_GROUPS = ['少年', '青年', '中年'];
+const HOUR_AGE_GROUPS = ['幼年', '少年', '青年', '中年'];
 const THREE_PLAYER_HAND_ROLES = ['時針', '分針', '秒針'];
 
 function createHourCard(number, ageGroup, isPrecious = false) {
@@ -2477,7 +2486,7 @@ function pickRandomPreciousConfig() {
 
 function getPreciousAgeGroupForNumber(config, number) {
     if (!config || !config.mapping) return null;
-    // 遍歷 mapping 中的所有年齡層 (少年、青年、中年)
+    // 遍歷 mapping 中的所有年齡層 (幼年、少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
         // 檢查目標數字是否在該年齡層的陣列中
@@ -2490,8 +2499,8 @@ function getPreciousAgeGroupForNumber(config, number) {
 
 /**
  * buildHourDeckWithRandomPrecious()
- * - 生成 36 張小時卡：少年/青年/中年 各 12 張（1~12）
- * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true
+ * - 生成 36 張小時卡：幼年/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
+ * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true (共12張珍貴)
  * - 回傳：{ deck, config }
  */
 function buildHourDeckWithRandomPrecious() {
@@ -2501,19 +2510,24 @@ function buildHourDeckWithRandomPrecious() {
     }
     const deck = [];
 
-    for (const age of HOUR_AGE_GROUPS) {
-        for (let n = 1; n <= 12; n++) {
-            const preciousAge = getPreciousAgeGroupForNumber(config, n);
-           
-			const isPrecious = (age === preciousAge);
+    // 4 個時代平均分配輪替缺席時代：
+    // 刻度 1 缺中年、刻度 2 缺幼年、刻度 3 缺少年、刻度 4 缺青年...循環
+    const missingOrder = ['中年', '幼年', '少年', '青年'];
+    for (let n = 1; n <= 12; n++) {
+        const missingAge = missingOrder[(n - 1) % 4];
+        const spotAges = HOUR_AGE_GROUPS.filter(a => a !== missingAge);
+        const preciousAge = getPreciousAgeGroupForNumber(config, n);
+
+        for (const age of spotAges) {
+            const isPrecious = (age === preciousAge);
             deck.push(createHourCard(n, age, isPrecious));
         }
     }
 
-    // （保險檢查，可留可刪）
+    // （保險檢查）
     const preciousCount = deck.filter(c => c.isPrecious).length;
-    if (preciousCount !== 12) {
-        console.warn(`⚠️ 小時卡珍貴數量異常：${preciousCount}（預期 12）`);
+    if (preciousCount !== 12 || deck.length !== 36) {
+        console.warn(`⚠️ 小時卡牌庫異常：總數 ${deck.length}（預期 36），珍貴數量 ${preciousCount}（預期 12）`);
     }
 
     return { deck, config };
@@ -7312,7 +7326,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ph.textContent = '尚未收集';
             hourCollectionEl.appendChild(ph);
         } else {
-            const groups = { '少年': [], '青年': [], '中年': [] };
+            const groups = { '幼年': [], '少年': [], '青年': [], '中年': [] };
 
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
@@ -7321,14 +7335,15 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 groups[g].push(card);
             });
 
-            ['少年', '青年', '中年'].forEach(label => {
+            ['幼年', '少年', '青年', '中年'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
 
                     const labelSpan = document.createElement('span');
                     labelSpan.className = 'col-label';
-                    labelSpan.textContent = `${label}：`;
+                    const displayLabel = (window.i18n ? window.i18n.getAgeGroupName(label) : label) || label;
+                    labelSpan.textContent = `${displayLabel}：`;
                     row.appendChild(labelSpan);
 
                     const valuesContainer = document.createElement('div');
@@ -14298,7 +14313,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -15112,7 +15127,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為少年、青年、中年三種時代。每局依照特定組合在三個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -23569,6 +23584,7 @@ body {
 
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
+        '幼年': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
 男孩專心感應指尖傳來的微弱的顫動，每個動作都小心翼翼，費了一番功夫才把機關解開，但手提包卻裡沒名貴的東西，只有些他從沒見過的銀亮齒輪和金屬片。男孩不禁沮喪起來，他把指甲大的齒輪拿到眼前，仔細看那些他不懂的細小字符，想著這些東西能賣到多少錢。
@@ -23612,7 +23628,20 @@ body {
 
 女僕摸摸孩子的臉，溫暖從她掌心隔著手帕傳來，這時孩子才清楚聞到它的花香。見他冷靜下來，女僕摸摸他的頭，然後回到夫人身邊。明明同處一室，孩子卻覺得被阻隔開，氣氛彷彿回到從前，他瑟縮在車站一角，在來往的人群中挑選目標：行動不便的貴婦最好下手，可是貼身女僕跟在一旁，很難找到機會，心不在焉紳士是最理想的目標，可是一旦被抓，不斷幾根肋骨絕無法脫身……
 
-鐘錶匠察覺到孩子的視線，皺眉要他趕緊練習，夫人微笑輕拍丈夫，她指向佈置好的茶點，叫大家到小桌邊聚會。女僕默默服侍眾人，技工把孩子拉到身邊，向錶匠和夫人講述孩子平常如何努力。孩子也吃下茶點，奶油與果醬依然美味，但甜膩再沒法將他的心融化。`
+鐘錶匠察覺到孩子的視線，皺眉要他趕緊練習，夫人微笑輕拍丈夫，她指向佈置好的茶點，叫大家到小桌邊聚會。女僕默默服侍眾人，技工把孩子拉到身邊，向錶匠和夫人講述孩子平常如何努力。孩子也吃下茶點，奶油與果醬依然美味，但甜膩再沒法將他的心融化。`,
+			5:
+			`直至嬰孩出生的這天，孩子才終於發現，他已離貧民窟很遠。
+
+為了照顧待產的妻子，鐘錶匠不再接受複雜的訂單，組裝的工作都落到技工和孩子身上。他每隔兩天才回工坊巡視一次，錶芯都沒檢查完就匆匆離開。倒是長高的孩子越發認真，總自律地反覆檢驗，確認分秒無誤才把錶封裝。認真工作的日子過得飛快，轉眼就到預產的日子了。
+
+嬰兒出生那天，鐘錶匠把所有人都叫到了家裡。
+
+孩子第一次走進這樣的大宅。腳下是打磨得發亮的拼花木地板，空氣裡飄著蜜蠟與乾花的香氣，牆上掛著精緻的油畫，連轉角立著的高大座鐘都鑲嵌著細密的金邊。每樣東西都乾淨、規整，孩子悄悄打量著這一切，胸口湧起難以言喻的羨慕——他第一次踏進這樣潔淨無暇的世界。
+
+客廳裡聚集著所有人，女僕、壯漢司機、廚娘、老技工……大家都屏息等待。聽著樓上傳來的動靜，孩子也學著其他人默默祈禱。他想起那天來到工坊的夫人，美麗、優雅，精緻孕裝的她聲音悅耳如銀鈴，孩子沒法以夫人和臨盆生產聯想在一起——貧民窟的孕婦枯瘦如柴但肚子卻異常漲大，在木板上嚎叫整夜來產下死胎。孩子衷心期望夫人不用經歷這些，能在美麗的大宅裡誕下陶瓷般的嬰孩。在夫人痛苦的叫嚎中，孩子吃過吐司作午餐，幫忙燒水又幫忙準備晚餐的燉肉湯……年輕的女僕溫柔地問他會不會害怕，孩子搖搖頭繼續削胡蘿蔔，被憐愛他的女僕摸頭讚揚。
+
+直到深夜，他們才聽到嬰孩的啼哭聲。醫生走下樓梯向眾人報喜，夫人流了許多血，在看過平安出生的孩子後便脫力昏睡過去，但母女也無恙。司機和老技工吐出一口長氣，女僕和廚娘喜極而泣，大家簇擁跑上樓梯擁在門口，爭相探看那裹在錶匠懷中柔軟細布裡的小生命。嬌弱的嬰孩皮膚泛著初生的嫩紅，小小的胸脯微弱卻穩定地起伏著，錶匠也難得地向嬰兒露出溫柔的笑容。看見大家的樣子，孩子發現自己也露出了同樣的表情。貧民窟的人甚少為生產喜悅，這刻孩子真正發現，自己不再是貧民窟的小孩，是金邊座鐘裡的其中一塊零件。
+`
         },
         '青年': {},
         '中年': {}
@@ -23620,6 +23649,7 @@ body {
 
     // 英文故事文本骨架 (可自由擴充)
     window.HOUR_STORIES_DATA['en-US'] = {
+        'child': {},
         'youth': {
             1: `After hours of painstaking effort, the boy finally picked the lock of the leather satchel...`,
             2: `Gears never betray; every component has its designated place...`,
@@ -23631,10 +23661,12 @@ body {
     };
 
     // 別名映射 (英文代碼對應)
+    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
 
+    window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];
     window.HOUR_STORIES_DATA['en-US']['中年'] = window.HOUR_STORIES_DATA['en-US']['middle'];
