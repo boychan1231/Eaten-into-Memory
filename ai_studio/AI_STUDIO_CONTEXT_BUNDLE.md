@@ -7,7 +7,7 @@
 ## 包含檔案目錄 (Table of Contents)
 
 1. `README.md` (2.2 KB)
-2. `GAMEPLAY.md` (17.1 KB)
+2. `GAMEPLAY.md` (17.6 KB)
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
@@ -15,19 +15,19 @@
 7. `logger.js` (1.5 KB)
 8. `audio.js` (10.9 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (26.0 KB)
-11. `locales/en-US.js` (24.2 KB)
+10. `locales/zh-TW.js` (26.5 KB)
+11. `locales/en-US.js` (24.7 KB)
 12. `abilities.js` (12.1 KB)
 13. `game_setup.js` (17.7 KB)
-14. `game.js` (98.0 KB)
+14. `game.js` (99.6 KB)
 15. `ui_modals.js` (1.7 KB)
 16. `ui_components.js` (155.2 KB)
 17. `tutorial_mode.js` (41.1 KB)
-18. `ui.js` (74.3 KB)
+18. `ui.js` (74.8 KB)
 19. `modern_board.js` (68.4 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (48.3 KB)
-22. `classic.html` (36.8 KB)
+21. `index.html` (48.5 KB)
+22. `classic.html` (37.0 KB)
 23. `modern.css` (120.7 KB)
 24. `style.css` (96.0 KB)
 25. `locales/stories_data.js` (15.2 KB)
@@ -204,6 +204,7 @@ flowchart TD
 * 評判鐘面上所有在場角色的位置：
   * **預設規則**：位置最接近 **12**（刻度數值最大）的角色判定受罰，扣除 1 點護盾或齒輪。
   * **時之惡發動「惡之牽引」規則**：距離時之惡自身步數最近的角色受罰。
+  * **⚡ 時之惡庇護與惡念充能**：若處決規則判定之受罰對象為時之惡自身（全場無其他角色受罰），時之惡**免受處罰**，並**恢復 1 點 Mana**（上限為其當前齒輪數）。若與其他角色並列受罰，則照常結算受罰。
 * 若玩家齒輪扣至 0 再次受創，將被逐出場外。
 * 清理鐘面上的小時卡，準備進入下一回合。
 
@@ -246,6 +247,7 @@ flowchart TD
 * **【被動】絕境護符**：整場遊戲限用一次。當自身 Mana $\ge$ 3 且即將遭受處決受罰時，可消耗全部 Mana 完全抵免該次傷害。
 
 ### 😈 時之惡（Time Evil）—— 僅 5P 模式（起始刻度：12）
+* **【被動】惡念充能（庇護）**：若處決結算適用對象為時之惡自身（全場無其他角色受罰），時之惡完全免受處罰，並直接**恢復 1 點 Mana**（上限為當前齒輪數）。
 * **【主動】惡之牽引（消耗 2 Mana）**：扭曲處決規則！本回合不再以「最接近 12」作為處決目標，改為處決「**距離時之惡自身最近**」的角色。
 * **【主動】虛無封鎖（消耗 3 Mana）**：封印全場！本回合封鎖全場所有時魔的特殊能力與進化效果。
 
@@ -1513,7 +1515,8 @@ window.gameVoice = gameVoice;
                 ejected: '⚠️ 逐出出局!',
                 shield_block: '🛡️ 護盾抵免!',
                 mana_spend: '-{n} Mana',
-                mana_gain: '+{n} Mana'
+                mana_gain: '+{n} Mana',
+                sin_recharge: '+{diff} Mana (惡念充能)'
             },
             match_highlights: {
                 champion: '👑 榮耀之冠',
@@ -1602,7 +1605,7 @@ window.gameVoice = gameVoice;
             role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 Mana 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！',
             role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 Mana 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！',
             role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 Mana 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！',
-            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各驅逐一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚠️ 飢餓懲罰：</strong>若連續 2 局無人被驅逐時，將因飢餓扣除 1 齒輪！齒輪歸零時直接敗北！<br>• <strong>專屬異能：</strong>【惡之牽引 (2 Mana)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 Mana)】封印全場技能！',
+            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各驅逐一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）！<br>• <strong>⚠️ 飢餓懲罰：</strong>若連續 2 局無人被驅逐時，將因飢餓扣除 1 齒輪！齒輪歸零時直接敗北！<br>• <strong>專屬異能：</strong>【惡之牽引 (2 Mana)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 Mana)】封印全場技能！',
             role_scoring_scz: '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！',
             role_evolved_notice: '<strong>🎉【恭喜進化為 {roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分！請善用全新的專屬異能保護齒輪，爭取最高積分！',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>',
@@ -1639,6 +1642,7 @@ window.gameVoice = gameVoice;
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
+							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
 						</ul>
 					</div>
 
@@ -1867,7 +1871,8 @@ window.gameVoice = gameVoice;
                 ejected: '⚠️ Ejected!',
                 shield_block: '🛡️ Shield Blocked!',
                 mana_spend: '-{n} Mana',
-                mana_gain: '+{n} Mana'
+                mana_gain: '+{n} Mana',
+                sin_recharge: '+{diff} Mana (Evil Recharge)'
             },
             match_highlights: {
                 champion: '👑 Champion',
@@ -1956,7 +1961,7 @@ window.gameVoice = gameVoice;
             role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend Mana to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
             role_scoring_minute: '<strong>【👟 Minute Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, spend 2 Mana to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
             role_scoring_second: '<strong>【🃏 Second Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 Mana on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
-            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Eject each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚠️ Starvation:</strong> If 2 consecutive games pass with no demon ejected, lose 1 gear to hunger! If gears hit 0, you lose immediately!<br>• <strong>Abilities:</strong> 【Sin\'s Pull (2 Mana)】penalizes whoever is closest to you; 【Seal (3 Mana)】blocks all demon abilities!',
+            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Eject each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚡ Evil Recharge:</strong> If penalty resolution applies to Time Evil itself (no other characters penalized), Time Evil is immune to penalties and <strong>recovers 1 Mana</strong> (up to current gear count)!<br>• <strong>⚠️ Starvation:</strong> If 2 consecutive games pass with no demon ejected, lose 1 gear to hunger! If gears hit 0, you lose immediately!<br>• <strong>Abilities:</strong> 【Sin\'s Pull (2 Mana)】penalizes whoever is closest to you; 【Seal (3 Mana)】blocks all demon abilities!',
             role_scoring_scz: '<strong>【👻 Cursed One: Memory Lock & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🔒 Core Mission:</strong> Land on 【★ Precious Hour Cards】to lock them permanently onto the clock face!<br>• <strong>🏆 Huge Bonus Points:</strong> Locking 12 cards by end of Game 2 / 3 / 4 grants <strong>+9 / +5 / +2 huge bonus points</strong>!<br>• <strong>☠️ Lethal Deadline:</strong> If fewer than 12 cards are locked by the end of Game 5, suffer a devastating <strong>-999 pts penalty</strong>! Prioritize Precious Cards!',
             role_evolved_notice: '<strong>🎉【Evolved into {roleName}!】</strong><br>You have evolved! You will earn a <strong>+3 pts</strong> faction bonus at game end! Use your new powers to safeguard gears and maximize your score!',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
@@ -1993,6 +1998,7 @@ window.gameVoice = gameVoice;
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
 							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
+							<li><strong>Time Evil Protection & Recharge:</strong> If penalty rules target Time Evil itself (no other characters penalized), Time Evil is immune to penalty and <strong>recovers 1 Mana</strong> (up to its current gear count).</li>
 						</ul>
 					</div>
 
@@ -2954,17 +2960,23 @@ function activateSinTargetingAbility(gameState) {
             const allPositions = [sinPos, ...demonsWithPos.map(d => d.currentClockPosition)];
             const maxPos = Math.max(...allPositions);
 
-            // 若預設模式（最大數值受罰）會處罰到時之惡自身（時之惡為最大值或 >= 10），發動牽引避險
-            const sinInDangerByDefault = (sinPos === maxPos || sinPos >= 10);
-            
+            // 評估預設模式（最大數值受罰）局面：
+            const demonsAtMax = demonsWithPos.filter(d => d.currentClockPosition === maxPos);
+            const sinTiedAtMax = (sinPos === maxPos && demonsAtMax.length > 0);
+            const sinAloneAtMax = (sinPos === maxPos && demonsAtMax.length === 0);
+
             // 若有時魔緊貼時之惡（距離 <= 2），牽引能精準懲罰時魔
             const demonIsClose = (minDemonDist <= 2);
 
             // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 Mana，讓預設機制懲罰時魔
-            const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos);
+            const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos && d.currentClockPosition !== sinPos);
 
-            if (sinInDangerByDefault) {
+            if (sinTiedAtMax) {
+                // 與時魔並列最大值時，時之惡會一同受罰，需牽引避險
                 shouldPull = true;
+            } else if (sinAloneAtMax) {
+                // 時之惡獨自處於最大值：預設模式下免罰並回魔 1 點；僅在有時魔近在身邊時考慮主動牽引處決時魔
+                shouldPull = (demonIsClose && checkChance(0.6));
             } else if (demonIsClose && (!demonAlreadyAtMax || checkChance(0.5))) {
                 shouldPull = true;
             }
@@ -4730,6 +4742,26 @@ function deductGearCards(gameState) {
             playersToDeduct = targets.filter(player =>
                 getCircularDistance(player.currentClockPosition, sinPosition) === closestDistance
             );
+        }
+    }
+
+    // 1.5 時之惡庇護與回能機制：
+    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 Mana（上限為齒輪數）
+    if (currentMode !== '3P' && sinPlayer) {
+        const isSinAloneTarget = (playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
+        const isNoOneTargetedInSin = (targetingMode === 'sin' && playersToDeduct.length === 0);
+
+        if (isSinAloneTarget || isNoOneTargetedInSin) {
+            const maxMana = sinPlayer.gearCards;
+            const oldMana = sinPlayer.mana || 0;
+            if (oldMana < maxMana) {
+                sinPlayer.mana = oldMana + 1;
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 Mana (目前: ${sinPlayer.mana}/${maxMana})。`);
+            } else {
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (Mana 已達上限: ${sinPlayer.mana})。`);
+            }
+            // 清空受罰名單，確保時之惡不扣除護盾或齒輪
+            playersToDeduct = [];
         }
     }
 
@@ -10811,6 +10843,16 @@ function processFloatingText(gameState) {
                         type: 'shield',
                         diff: 0
                     });
+                } else if (player.type === '時之惡' && manaDiff > 0 && gearDiff === 0) {
+                    const tpl = window.i18n ? window.i18n.t('ui.combat_float.sin_recharge') : null;
+                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} Mana (惡念充能)`;
+                    pendingEvents.push({
+                        playerId: player.id,
+                        text,
+                        color: '#a29bfe',
+                        type: 'mana',
+                        diff: manaDiff
+                    });
                 } else {
                     const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
                     const color = manaDiff > 0 ? '#4cd137' : '#e17055';
@@ -14355,6 +14397,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
 									(下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
+							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
 						</ul>
 					</div>
 
@@ -15169,6 +15212,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
 									(下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
+							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
 						</ul>
 					</div>
 

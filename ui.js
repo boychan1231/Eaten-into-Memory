@@ -1223,6 +1223,16 @@ function processFloatingText(gameState) {
                         type: 'shield',
                         diff: 0
                     });
+                } else if (player.type === '時之惡' && manaDiff > 0 && gearDiff === 0) {
+                    const tpl = window.i18n ? window.i18n.t('ui.combat_float.sin_recharge') : null;
+                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} Mana (惡念充能)`;
+                    pendingEvents.push({
+                        playerId: player.id,
+                        text,
+                        color: '#a29bfe',
+                        type: 'mana',
+                        diff: manaDiff
+                    });
                 } else {
                     const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
                     const color = manaDiff > 0 ? '#4cd137' : '#e17055';

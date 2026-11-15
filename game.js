@@ -58,17 +58,23 @@ function activateSinTargetingAbility(gameState) {
             const allPositions = [sinPos, ...demonsWithPos.map(d => d.currentClockPosition)];
             const maxPos = Math.max(...allPositions);
 
-            // 若預設模式（最大數值受罰）會處罰到時之惡自身（時之惡為最大值或 >= 10），發動牽引避險
-            const sinInDangerByDefault = (sinPos === maxPos || sinPos >= 10);
-            
+            // 評估預設模式（最大數值受罰）局面：
+            const demonsAtMax = demonsWithPos.filter(d => d.currentClockPosition === maxPos);
+            const sinTiedAtMax = (sinPos === maxPos && demonsAtMax.length > 0);
+            const sinAloneAtMax = (sinPos === maxPos && demonsAtMax.length === 0);
+
             // 若有時魔緊貼時之惡（距離 <= 2），牽引能精準懲罰時魔
             const demonIsClose = (minDemonDist <= 2);
 
             // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 Mana，讓預設機制懲罰時魔
-            const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos);
+            const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos && d.currentClockPosition !== sinPos);
 
-            if (sinInDangerByDefault) {
+            if (sinTiedAtMax) {
+                // 與時魔並列最大值時，時之惡會一同受罰，需牽引避險
                 shouldPull = true;
+            } else if (sinAloneAtMax) {
+                // 時之惡獨自處於最大值：預設模式下免罰並回魔 1 點；僅在有時魔近在身邊時考慮主動牽引處決時魔
+                shouldPull = (demonIsClose && checkChance(0.6));
             } else if (demonIsClose && (!demonAlreadyAtMax || checkChance(0.5))) {
                 shouldPull = true;
             }
@@ -1834,6 +1840,26 @@ function deductGearCards(gameState) {
             playersToDeduct = targets.filter(player =>
                 getCircularDistance(player.currentClockPosition, sinPosition) === closestDistance
             );
+        }
+    }
+
+    // 1.5 時之惡庇護與回能機制：
+    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 Mana（上限為齒輪數）
+    if (currentMode !== '3P' && sinPlayer) {
+        const isSinAloneTarget = (playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
+        const isNoOneTargetedInSin = (targetingMode === 'sin' && playersToDeduct.length === 0);
+
+        if (isSinAloneTarget || isNoOneTargetedInSin) {
+            const maxMana = sinPlayer.gearCards;
+            const oldMana = sinPlayer.mana || 0;
+            if (oldMana < maxMana) {
+                sinPlayer.mana = oldMana + 1;
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 Mana (目前: ${sinPlayer.mana}/${maxMana})。`);
+            } else {
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (Mana 已達上限: ${sinPlayer.mana})。`);
+            }
+            // 清空受罰名單，確保時之惡不扣除護盾或齒輪
+            playersToDeduct = [];
         }
     }
 
