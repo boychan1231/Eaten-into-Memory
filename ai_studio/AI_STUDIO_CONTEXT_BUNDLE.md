@@ -28,7 +28,7 @@
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (48.2 KB)
 22. `classic.html` (36.7 KB)
-23. `modern.css` (120.7 KB)
+23. `modern.css` (121.0 KB)
 24. `style.css` (96.0 KB)
 25. `locales/stories_data.js` (14.7 KB)
 
@@ -17246,6 +17246,14 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     border: none !important;
     box-shadow: none !important;
 }
+.hand-display::before {
+    display: none !important;
+}
+#human-hand.tutorial-spotlight,
+.hand-display.tutorial-spotlight {
+    border-radius: 10px !important;
+    box-shadow: 0 0 20px rgba(254, 202, 87, 0.85), inset 0 0 10px rgba(254, 202, 87, 0.4) !important;
+}
 .human-tabs {
     width: 100% !important;
 }
@@ -17257,12 +17265,13 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     width: 100% !important;
 }
 .hand-display {
+    flex: 0 1 auto !important;
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
     gap: clamp(2px, 0.4vw, 5px) !important;
-    padding: 4px 0 !important;
+    padding: 4px 8px !important;
     max-width: 100% !important;
 }
 
