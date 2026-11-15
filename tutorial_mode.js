@@ -395,7 +395,7 @@
                 const step1Msg = window.i18n
                     ? window.i18n.t('tutorial.step1_drag_minute')
                     : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
-                const handTarget = document.querySelector('#human-hand .minute-card') || '#human-hand';
+                const handTarget = document.getElementById('human-hand') || '#human-hand';
                 showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
                 return;
             }

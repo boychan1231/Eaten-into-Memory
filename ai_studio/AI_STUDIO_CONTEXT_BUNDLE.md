@@ -14,23 +14,23 @@
 6. `config.js` (5.4 KB)
 7. `logger.js` (1.5 KB)
 8. `audio.js` (10.9 KB)
-9. `i18n.js` (5.9 KB)
+9. `i18n.js` (5.8 KB)
 10. `locales/zh-TW.js` (26.0 KB)
 11. `locales/en-US.js` (24.2 KB)
 12. `abilities.js` (12.1 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (98.0 KB)
 15. `ui_modals.js` (1.7 KB)
-16. `ui_components.js` (155.6 KB)
+16. `ui_components.js` (155.2 KB)
 17. `tutorial_mode.js` (41.1 KB)
 18. `ui.js` (74.3 KB)
 19. `modern_board.js` (68.4 KB)
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (48.3 KB)
 22. `classic.html` (36.8 KB)
-23. `modern.css` (121.0 KB)
+23. `modern.css` (120.7 KB)
 24. `style.css` (96.0 KB)
-25. `locales/stories_data.js` (15.4 KB)
+25. `locales/stories_data.js` (15.2 KB)
 
 ---
 
@@ -858,7 +858,6 @@ const AudioConfig = {
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
-    '孩子': {},
     '幼年': {},
     '少年': {
         4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
@@ -1329,7 +1328,6 @@ window.gameVoice = gameVoice;
         getAgeGroupName(ageGroup) {
             if (!ageGroup) return '';
             const keyMap = {
-                '孩子': 'child',
                 '幼年': 'child',
                 '少年': 'youth',
                 '青年': 'adult',
@@ -7372,7 +7370,6 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
                 let g = card.ageGroup || '未知';
-                if (g === '孩子') g = '幼年';
                 if (!groups[g]) groups[g] = [];
                 groups[g].push(card);
             });
@@ -7453,18 +7450,14 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             const cardEl = document.createElement('div');
             const v = Number(card.value);
             let tierClass = 'card-tier-mid';
-            let tierDot = '<span class="tier-indicator tier-mid"></span>';
             if (v <= 20) {
                 tierClass = 'card-tier-low';
-                const tipLow = (window.i18n ? window.i18n.t('ui.tactics.tier_low') : null) || '避險小牌';
-                tierDot = `<span class="tier-indicator tier-low" title="${tipLow}"></span>`;
             } else if (v >= 46) {
                 tierClass = 'card-tier-high';
-                tierDot = '';
             }
             cardEl.className = `minute-card ${tierClass}`;
             cardEl.setAttribute('data-value', card.value);
-            cardEl.innerHTML = `${tierDot}<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
+            cardEl.innerHTML = `<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
@@ -9236,7 +9229,7 @@ if (typeof window !== 'undefined') {
                 const step1Msg = window.i18n
                     ? window.i18n.t('tutorial.step1_drag_minute')
                     : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
-                const handTarget = document.querySelector('#human-hand .minute-card') || '#human-hand';
+                const handTarget = document.getElementById('human-hand') || '#human-hand';
                 showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
                 return;
             }
@@ -17374,22 +17367,6 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.75), 0 0 14px rgba(255, 215, 0, 0.45) !important;
 }
 
-/* 牌力微指示器 */
-.minute-card .tier-indicator {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    pointer-events: none;
-    line-height: 1;
-}
-.minute-card .tier-indicator.tier-low {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #00d2d3;
-    box-shadow: 0 0 4px #00d2d3;
-}
-
 /* 拖放分鐘卡（Drag & Drop）互動狀態 */
 .minute-card {
     touch-action: pan-x;
@@ -23636,7 +23613,6 @@ body {
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
         '幼年': {},
-        '孩子': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
 男孩專心感應指尖傳來的微弱的顫動，每個動作都小心翼翼，費了一番功夫才把機關解開，但手提包卻裡沒名貴的東西，只有些他從沒見過的銀亮齒輪和金屬片。男孩不禁沮喪起來，他把指甲大的齒輪拿到眼前，仔細看那些他不懂的細小字符，想著這些東西能賣到多少錢。
@@ -23720,13 +23696,11 @@ body {
 
     // 別名映射 (英文代碼對應)
     window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
-    window.HOUR_STORIES_DATA['zh-TW']['孩子'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
     window.HOUR_STORIES_DATA['zh-TW']['death'] = window.HOUR_STORIES_DATA['zh-TW']['死亡'];
 
-    window.HOUR_STORIES_DATA['en-US']['孩子'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];

@@ -2062,7 +2062,6 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
                 let g = card.ageGroup || '未知';
-                if (g === '孩子') g = '幼年';
                 if (!groups[g]) groups[g] = [];
                 groups[g].push(card);
             });
@@ -2143,18 +2142,14 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             const cardEl = document.createElement('div');
             const v = Number(card.value);
             let tierClass = 'card-tier-mid';
-            let tierDot = '<span class="tier-indicator tier-mid"></span>';
             if (v <= 20) {
                 tierClass = 'card-tier-low';
-                const tipLow = (window.i18n ? window.i18n.t('ui.tactics.tier_low') : null) || '避險小牌';
-                tierDot = `<span class="tier-indicator tier-low" title="${tipLow}"></span>`;
             } else if (v >= 46) {
                 tierClass = 'card-tier-high';
-                tierDot = '';
             }
             cardEl.className = `minute-card ${tierClass}`;
             cardEl.setAttribute('data-value', card.value);
-            cardEl.innerHTML = `${tierDot}<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
+            cardEl.innerHTML = `<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
