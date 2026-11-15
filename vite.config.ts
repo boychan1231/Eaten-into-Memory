@@ -17,7 +17,6 @@ function copyStaticGameFilesPlugin() {
         'pixi.min.js',
         'gsap.min.js',
         'i18n.js',
-        'stories_data.js',
         'role_assets_data.js',
         'config.js',
         'logger.js',

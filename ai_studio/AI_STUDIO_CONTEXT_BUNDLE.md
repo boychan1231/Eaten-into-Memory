@@ -15,7 +15,7 @@
 7. `logger.js` (1.5 KB)
 8. `audio.js` (10.8 KB)
 9. `i18n.js` (5.7 KB)
-10. `locales/zh-TW.js` (25.9 KB)
+10. `locales/zh-TW.js` (25.8 KB)
 11. `locales/en-US.js` (24.1 KB)
 12. `abilities.js` (12.1 KB)
 13. `game_setup.js` (16.7 KB)
@@ -30,7 +30,7 @@
 22. `classic.html` (36.6 KB)
 23. `modern.css` (120.7 KB)
 24. `style.css` (96.0 KB)
-25. `stories_data.js` (12.2 KB)
+25. `locales/stories_data.js` (12.2 KB)
 
 ---
 
@@ -551,7 +551,6 @@ function copyStaticGameFilesPlugin() {
         'pixi.min.js',
         'gsap.min.js',
         'i18n.js',
-        'stories_data.js',
         'role_assets_data.js',
         'config.js',
         'logger.js',
@@ -744,7 +743,7 @@ window.GAME_DATA = {
     MINUTE_CARDS: { total: 60 }
 };
 
-    // 小時卡故事庫已獨立至 stories_data.js，由 window.getHourCardStory 統一存取
+    // 小時卡故事庫已獨立至 locales/stories_data.js，由 window.getHourCardStory 統一存取
     window.GAME_DATA.HOUR_STORIES = window.GAME_DATA.HOUR_STORIES || {};
 
 `````
@@ -1357,16 +1356,16 @@ window.gameVoice = gameVoice;
         },
         ui: {
             drawers: {
-                evolution: '⚡ 能力與進化',
-                log: '📝 遊戲日誌',
-                players: '👥 角色',
-                scores: '🏆 積分',
-                players_scores: '👥 各角色與積分',
-                played_cards: '⚔️ 本回合出牌',
-                history: '📜 出牌記錄',
-                played_scores: '📊 出牌與積分',
-                size_reset: '重置預設尺寸',
-                resize_grip: '拖曳調整大小 (雙擊重置)'
+                evolution: '⚡能力與進化',
+                log: '📝日誌',
+                players: '👥角色',
+                scores: '🏆積分',
+                players_scores: '角色與積分',
+                played_cards: '⚔️本回合出牌',
+                history: '📜出牌記錄',
+                played_scores: '📊出牌與積分',
+                size_reset: '重置尺寸',
+                resize_grip: '拖曳調整大小'
             },
             buttons: {
                 confirm_move: '確認出牌',
@@ -1374,30 +1373,30 @@ window.gameVoice = gameVoice;
                 next_round_countdown: '下一回合 ({sec}s)',
                 next_round_skip: '下一回合 (略過能力)',
                 game_over: '遊戲結束',
-                start_game: '開始新遊戲',
+                start_game: '開新遊戲',
                 view_collection: '查看已收集卡片',
                 sort: '⇅ 排序',
                 recenter: '置中鐘面',
                 zoom_in: '放大鐘面',
                 zoom_out: '縮小鐘面',
-                restart: '🔄 再玩一局',
-                view_board: '👀 查看盤面',
+                restart: '再玩一局',
+                view_board: '查看盤面',
                 tutorial_hint: '教學提示',
-                tutorial_hint_tip: '重新顯示當前步驟的新手教學提示'
+                tutorial_hint_tip: '重新顯示當前步驟的教學提示'
             },
             phase_tracker: {
                 bid: '出牌競標',
                 reveal: '比牌揭曉',
                 pick: '挑選小時卡',
                 resolve: '處決結算',
-                status_bid: '請挑選 1 張分鐘卡出牌',
-                status_reveal: '揭開分鐘卡 · 比較大小排序中',
-                status_pick: '依名次順序挑選小時卡',
-                status_your_pick: '👉 【{rank}】輪到您挑選小時卡',
-                status_ai_pick: '⏳ 【{rank}】{name} 正在挑選小時卡',
-                status_minute_jump: '👟 分針能力：決定是否躍遷刻度',
-                status_second_choice: '🃏 秒針能力：二選一決定打出卡牌',
-                status_resolve: '回合結算完畢 · 請點擊「下一回合」',
+                status_bid: '請打出分鐘卡',
+                status_reveal: '揭開分鐘卡·比較大小排序',
+                status_pick: '依名次挑選小時卡',
+                status_your_pick: '👉【{rank}】輪到您挑選小時卡',
+                status_ai_pick: '⏳【{rank}】{name} 正在挑選小時卡',
+                status_minute_jump: '👟分針能力：決定是否躍遷刻度',
+                status_second_choice: '🃏秒針能力：二選一決定打出卡牌',
+                status_resolve: '結算完畢 · 請點擊「下一回合」',
                 status_round_end: '回合結算中'
             },
             discard_pile: {
@@ -1405,7 +1404,7 @@ window.gameVoice = gameVoice;
                 empty: '尚無出牌',
                 empty_sub: '點擊查看出牌記錄',
                 last_played: '上一張出牌',
-                modal_title: '📜 出牌記錄',
+                modal_title: '📜出牌記錄',
                 modal_subtitle: '第 {round} 局 · 共出 {count} 張分鐘卡',
                 tab_history: '各角色歷程',
                 tab_timeline: '依回合記錄',
@@ -1413,7 +1412,7 @@ window.gameVoice = gameVoice;
                 trick_title: '第 {trick} 回合',
                 cards_count: '{count} 張',
                 unplayed_count: '剩餘未出 {count} 張',
-                tooltip: '點擊查看出牌記錄 (共 {count} 張)',
+                tooltip: '查看出牌記錄 (共 {count} 張)',
                 retrieve_badge: '↩ 收回'
             },
             labels: {
@@ -14814,7 +14813,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 	<script src="locales/zh-TW.js"></script>
 	<script src="locales/en-US.js"></script>
 	<script src="i18n.js"></script>
-	<script src="stories_data.js"></script>
+	<script src="locales/stories_data.js"></script>
 	<script src="role_assets_data.js"></script>
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
@@ -15605,7 +15604,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 	<script src="locales/zh-TW.js"></script>
 	<script src="locales/en-US.js"></script>
 	<script src="i18n.js"></script>
-	<script src="stories_data.js"></script>
+	<script src="locales/stories_data.js"></script>
 	<script src="role_assets_data.js"></script>
 	<script src="config.js"></script>
 	<script src="logger.js"></script>
@@ -23560,7 +23559,7 @@ body {
 
 
 ================================================================================
-=== FILE: stories_data.js ===
+=== FILE: locales/stories_data.js ===
 ================================================================================
 
 `````javascript

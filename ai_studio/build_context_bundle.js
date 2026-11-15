@@ -41,7 +41,7 @@ const CORE_FILES = [
     'classic.html',
     'modern.css',
     'style.css',
-    'stories_data.js'
+    'locales/stories_data.js'
 ];
 
 function getLangByExt(filePath) {

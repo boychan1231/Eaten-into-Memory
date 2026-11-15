@@ -22,7 +22,7 @@
 - `ui_components.js`：手牌渲染 (`renderPlayerHand`，含 15/30/45/60 刻度階梯視覺)、小時卡戰術風險與報酬評估 (`assessHourCardTactics`)、玩家狀態面板 (`renderPlayersStatus`)。
 - `ui_modals.js`：所有互動彈窗（進化選擇、技能目標、卡牌預覽、規則書、劇本選擇等）。
 - `tutorial_mode.js`：非阻斷式智慧定位教學導覽系統 (`computeOptimalPosition`)。
-- `i18n.js`、`locales/zh-TW.js`、`locales/en-US.js`：雙語本地化系統。
+- `i18n.js`、`locales/zh-TW.js`、`locales/en-US.js`、`locales/stories_data.js`：雙語本地化與小時卡故事系統。
 
 ## 3. 絕對不可違反的防呆與邏輯鐵則 (Critical Rules)
 1. **術語規範（嚴格執行）**：

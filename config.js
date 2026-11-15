@@ -120,5 +120,5 @@ window.GAME_DATA = {
     MINUTE_CARDS: { total: 60 }
 };
 
-    // 小時卡故事庫已獨立至 stories_data.js，由 window.getHourCardStory 統一存取
+    // 小時卡故事庫已獨立至 locales/stories_data.js，由 window.getHourCardStory 統一存取
     window.GAME_DATA.HOUR_STORIES = window.GAME_DATA.HOUR_STORIES || {};
