@@ -5,7 +5,6 @@
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
         '幼年': {},
-        '孩子': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
 男孩專心感應指尖傳來的微弱的顫動，每個動作都小心翼翼，費了一番功夫才把機關解開，但手提包卻裡沒名貴的東西，只有些他從沒見過的銀亮齒輪和金屬片。男孩不禁沮喪起來，他把指甲大的齒輪拿到眼前，仔細看那些他不懂的細小字符，想著這些東西能賣到多少錢。
@@ -89,13 +88,11 @@
 
     // 別名映射 (英文代碼對應)
     window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
-    window.HOUR_STORIES_DATA['zh-TW']['孩子'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
     window.HOUR_STORIES_DATA['zh-TW']['death'] = window.HOUR_STORIES_DATA['zh-TW']['死亡'];
 
-    window.HOUR_STORIES_DATA['en-US']['孩子'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];

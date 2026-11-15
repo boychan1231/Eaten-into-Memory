@@ -1686,22 +1686,6 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.75), 0 0 14px rgba(255, 215, 0, 0.45) !important;
 }
 
-/* 牌力微指示器 */
-.minute-card .tier-indicator {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    pointer-events: none;
-    line-height: 1;
-}
-.minute-card .tier-indicator.tier-low {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #00d2d3;
-    box-shadow: 0 0 4px #00d2d3;
-}
-
 /* 拖放分鐘卡（Drag & Drop）互動狀態 */
 .minute-card {
     touch-action: pan-x;
