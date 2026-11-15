@@ -7,7 +7,7 @@
 ## 包含檔案目錄 (Table of Contents)
 
 1. `README.md` (2.2 KB)
-2. `GAMEPLAY.md` (16.5 KB)
+2. `GAMEPLAY.md` (16.7 KB)
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
@@ -21,7 +21,7 @@
 13. `game_setup.js` (17.2 KB)
 14. `game.js` (98.0 KB)
 15. `ui_modals.js` (1.7 KB)
-16. `ui_components.js` (155.5 KB)
+16. `ui_components.js` (155.6 KB)
 17. `tutorial_mode.js` (41.1 KB)
 18. `ui.js` (74.3 KB)
 19. `modern_board.js` (68.4 KB)
@@ -30,7 +30,7 @@
 22. `classic.html` (36.7 KB)
 23. `modern.css` (121.0 KB)
 24. `style.css` (96.0 KB)
-25. `locales/stories_data.js` (14.7 KB)
+25. `locales/stories_data.js` (14.9 KB)
 
 ---
 
@@ -132,11 +132,12 @@
 * **受罰基準**：預設規則下，刻度數值最大（最接近 12 點鐘位置）的角色在回合結算時會受到處決懲罰。
 
 ### 2. 小時卡（Hour Cards）
-* 數值為 **1 至 12**，分為三個時代：
-  * **少年時代**：刻度 1 ～ 4
-  * **青年時代**：刻度 5 ～ 8
-  * **中年時代**：刻度 9 ～ 12
-* **珍貴小時卡（★）**：每局特定時代中會包含帶有星號的「珍貴卡」，是時魔進化與受詛者達成特殊勝利的關鍵記憶碎片。
+* 數值為 **1 至 12**，總牌庫為 **36 張**（每個鐘點刻度 3 張），平均分配於四個時代（每時代各 9 張）：
+  * **孩子時代**（Child）
+  * **少年時代**（Youth）
+  * **青年時代**（Adult）
+  * **中年時代**（Middle）
+* **珍貴小時卡（★）**：全牌庫共有 **12 張**珍貴卡，每時代各 3 張、每個刻度各 1 張。每局由系統以 4 種平衡輪替配置生成，是時魔進化與受詛者達成特殊勝利的關鍵記憶碎片。
 
 ### 3. 分鐘卡（Minute Cards - 玩家手牌）
 * 牌庫共有數值 **1 至 60** 且完全不重複的分鐘卡。
@@ -259,7 +260,7 @@ flowchart TD
 
 | 進化配方名稱 | 達成條件要求 | 特色與難度 |
 | :--- | :--- | :--- |
-| **久遠一生** | 收集 **3 張不同時代**的小時卡（少年、青年、中年各一），且其中至少包含 **1 張珍貴卡(★)** | 均衡型，需跨足三個時代刻度 |
+| **久遠一生** | 收集 **3 張不同時代**的小時卡（孩子、少年、青年、中年四選三），且其中至少包含 **1 張珍貴卡(★)** | 均衡型，需跨足三個不同時代 |
 | **命途節錄** | 收集 **4 張不同數字**的小時卡，且其中至少包含 **1 張珍貴卡(★)** | 靈活型，容易在前期自然湊成 |
 | **漫長生涯** | 收集 **5 張任意**小時卡，且其中至少包含 **2 張珍貴卡(★)** | 厚積薄發型，適合經常爭取小時卡的玩家 |
 | **銘記珍重** | 收集 **3 張珍貴小時卡(★)** | 精英型，極度依賴爭奪星號珍貴卡 |
@@ -726,24 +727,24 @@ window.GAME_DATA = {
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
 
-    // ✅ 小時卡珍貴配置 (4時代平均分配：幼年、少年、青年、中年各3張珍貴)
+    // ✅ 小時卡珍貴配置 (4時代平均分配：孩子、少年、青年、中年各3張珍貴)
     HOUR_PRECIOUS_CONFIGS: [
         {   id: 'CFG_1', label: 'hour_rot1',
-            mapping: { '幼年': [1, 5, 9], '少年': [2, 6, 10], '青年': [3, 7, 11], '中年': [4, 8, 12] }
+            mapping: { '孩子': [1, 5, 9], '少年': [2, 6, 10], '青年': [3, 7, 11], '中年': [4, 8, 12] }
         },
         {   id: 'CFG_2', label: 'hour_rot2',
-            mapping: { '少年': [1, 5, 9], '青年': [2, 6, 10], '中年': [3, 7, 11], '幼年': [4, 8, 12] }
+            mapping: { '少年': [1, 5, 9], '青年': [2, 6, 10], '中年': [3, 7, 11], '孩子': [4, 8, 12] }
         },
         {   id: 'CFG_3', label: 'hour_rot3',
-            mapping: { '青年': [1, 5, 9], '中年': [2, 6, 10], '幼年': [3, 7, 11], '少年': [4, 8, 12] }
+            mapping: { '青年': [1, 5, 9], '中年': [2, 6, 10], '孩子': [3, 7, 11], '少年': [4, 8, 12] }
         },
         {   id: 'CFG_4', label: 'hour_cross',
-            mapping: { '幼年': [1, 7, 12], '少年': [4, 5, 10], '青年': [3, 6, 9], '中年': [2, 8, 11] }
+            mapping: { '孩子': [1, 7, 12], '少年': [4, 5, 10], '青年': [3, 6, 9], '中年': [2, 8, 11] }
         }
     ],
 
     // 卡牌基礎設定 (4時代平均分配，共36張)
-    HOUR_CARDS: { ageGroups: ['幼年', '少年', '青年', '中年'], countsPerGroup: 9, total: 36 },
+    HOUR_CARDS: { ageGroups: ['孩子', '少年', '青年', '中年'], countsPerGroup: 9, total: 36 },
     MINUTE_CARDS: { total: 60 }
 };
 
@@ -849,6 +850,7 @@ const AudioConfig = {
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
+    '孩子': {},
     '幼年': {},
     '少年': {
         4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
@@ -1316,6 +1318,7 @@ window.gameVoice = gameVoice;
         getAgeGroupName(ageGroup) {
             if (!ageGroup) return '';
             const keyMap = {
+                '孩子': 'child',
                 '幼年': 'child',
                 '少年': 'youth',
                 '青年': 'adult',
@@ -1357,7 +1360,7 @@ window.gameVoice = gameVoice;
             young_demon: '時魔幼體'
         },
         age_groups: {
-            child: '幼年',
+            child: '孩子',
             youth: '少年',
             adult: '青年',
             middle: '中年'
@@ -1618,7 +1621,7 @@ window.gameVoice = gameVoice;
 						<p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
@@ -2464,11 +2467,11 @@ for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-// === 小時卡：幼年 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
+// === 小時卡：孩子 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
 // 每個刻度由 4 個時代輪替缺席 1 個時代（各 3 張），每時代正好 9 張卡。
 // 珍貴卡仍然是 12 張（每個數字 1~12 各 1 張是珍貴，四個時代各 3 張珍貴）。
 
-const HOUR_AGE_GROUPS = ['幼年', '少年', '青年', '中年'];
+const HOUR_AGE_GROUPS = ['孩子', '少年', '青年', '中年'];
 const THREE_PLAYER_HAND_ROLES = ['時針', '分針', '秒針'];
 
 function createHourCard(number, ageGroup, isPrecious = false) {
@@ -2486,7 +2489,7 @@ function pickRandomPreciousConfig() {
 
 function getPreciousAgeGroupForNumber(config, number) {
     if (!config || !config.mapping) return null;
-    // 遍歷 mapping 中的所有年齡層 (幼年、少年、青年、中年)
+    // 遍歷 mapping 中的所有年齡層 (孩子、少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
         // 檢查目標數字是否在該年齡層的陣列中
@@ -2499,7 +2502,7 @@ function getPreciousAgeGroupForNumber(config, number) {
 
 /**
  * buildHourDeckWithRandomPrecious()
- * - 生成 36 張小時卡：幼年/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
+ * - 生成 36 張小時卡：孩子/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
  * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true (共12張珍貴)
  * - 回傳：{ deck, config }
  */
@@ -2511,8 +2514,8 @@ function buildHourDeckWithRandomPrecious() {
     const deck = [];
 
     // 4 個時代平均分配輪替缺席時代：
-    // 刻度 1 缺中年、刻度 2 缺幼年、刻度 3 缺少年、刻度 4 缺青年...循環
-    const missingOrder = ['中年', '幼年', '少年', '青年'];
+    // 刻度 1 缺中年、刻度 2 缺孩子、刻度 3 缺少年、刻度 4 缺青年...循環
+    const missingOrder = ['中年', '孩子', '少年', '青年'];
     for (let n = 1; n <= 12; n++) {
         const missingAge = missingOrder[(n - 1) % 4];
         const spotAges = HOUR_AGE_GROUPS.filter(a => a !== missingAge);
@@ -7326,16 +7329,17 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ph.textContent = '尚未收集';
             hourCollectionEl.appendChild(ph);
         } else {
-            const groups = { '幼年': [], '少年': [], '青年': [], '中年': [] };
+            const groups = { '孩子': [], '少年': [], '青年': [], '中年': [] };
 
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
-                const g = card.ageGroup || '未知';
+                let g = card.ageGroup || '未知';
+                if (g === '幼年') g = '孩子';
                 if (!groups[g]) groups[g] = [];
                 groups[g].push(card);
             });
 
-            ['幼年', '少年', '青年', '中年'].forEach(label => {
+            ['孩子', '少年', '青年', '中年'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
@@ -14313,7 +14317,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -15127,7 +15131,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -23593,7 +23597,7 @@ body {
 
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
-        '幼年': {},
+        '孩子': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
 男孩專心感應指尖傳來的微弱的顫動，每個動作都小心翼翼，費了一番功夫才把機關解開，但手提包卻裡沒名貴的東西，只有些他從沒見過的銀亮齒輪和金屬片。男孩不禁沮喪起來，他把指甲大的齒輪拿到眼前，仔細看那些他不懂的細小字符，想著這些東西能賣到多少錢。
@@ -23670,11 +23674,13 @@ body {
     };
 
     // 別名映射 (英文代碼對應)
-    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
+    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
+    window.HOUR_STORIES_DATA['zh-TW']['幼年'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
 
+    window.HOUR_STORIES_DATA['en-US']['孩子'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];

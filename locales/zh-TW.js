@@ -13,7 +13,7 @@
             young_demon: '時魔幼體'
         },
         age_groups: {
-            child: '幼年',
+            child: '孩子',
             youth: '少年',
             adult: '青年',
             middle: '中年'
@@ -274,7 +274,7 @@
 						<p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為幼年、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>

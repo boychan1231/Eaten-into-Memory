@@ -80,11 +80,11 @@ for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-// === 小時卡：幼年 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
+// === 小時卡：孩子 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
 // 每個刻度由 4 個時代輪替缺席 1 個時代（各 3 張），每時代正好 9 張卡。
 // 珍貴卡仍然是 12 張（每個數字 1~12 各 1 張是珍貴，四個時代各 3 張珍貴）。
 
-const HOUR_AGE_GROUPS = ['幼年', '少年', '青年', '中年'];
+const HOUR_AGE_GROUPS = ['孩子', '少年', '青年', '中年'];
 const THREE_PLAYER_HAND_ROLES = ['時針', '分針', '秒針'];
 
 function createHourCard(number, ageGroup, isPrecious = false) {
@@ -102,7 +102,7 @@ function pickRandomPreciousConfig() {
 
 function getPreciousAgeGroupForNumber(config, number) {
     if (!config || !config.mapping) return null;
-    // 遍歷 mapping 中的所有年齡層 (幼年、少年、青年、中年)
+    // 遍歷 mapping 中的所有年齡層 (孩子、少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
         // 檢查目標數字是否在該年齡層的陣列中
@@ -115,7 +115,7 @@ function getPreciousAgeGroupForNumber(config, number) {
 
 /**
  * buildHourDeckWithRandomPrecious()
- * - 生成 36 張小時卡：幼年/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
+ * - 生成 36 張小時卡：孩子/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
  * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true (共12張珍貴)
  * - 回傳：{ deck, config }
  */
@@ -127,8 +127,8 @@ function buildHourDeckWithRandomPrecious() {
     const deck = [];
 
     // 4 個時代平均分配輪替缺席時代：
-    // 刻度 1 缺中年、刻度 2 缺幼年、刻度 3 缺少年、刻度 4 缺青年...循環
-    const missingOrder = ['中年', '幼年', '少年', '青年'];
+    // 刻度 1 缺中年、刻度 2 缺孩子、刻度 3 缺少年、刻度 4 缺青年...循環
+    const missingOrder = ['中年', '孩子', '少年', '青年'];
     for (let n = 1; n <= 12; n++) {
         const missingAge = missingOrder[(n - 1) % 4];
         const spotAges = HOUR_AGE_GROUPS.filter(a => a !== missingAge);
