@@ -4,6 +4,7 @@
 
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
+        '幼年': {},
         '孩子': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
@@ -64,7 +65,10 @@
 `
         },
         '青年': {},
-        '中年': {}
+        '中年': {},
+        '死亡': {
+            12: `這是時間的終點，也是一切記憶沉澱的歸宿。鐘擺在此停歇，指針不再轉動，唯有曾經銘記的微光，在靜謐的黑暗中永恆閃爍。`
+        }
     };
 
     // 英文故事文本骨架 (可自由擴充)
@@ -77,21 +81,26 @@
             4: `A component must connect to at least two others to operate stably in its place...`
         },
         'adult': {},
-        'middle': {}
+        'middle': {},
+        'death': {
+            12: `The final destination where time stands still and all memories settle into eternity.`
+        }
     };
 
     // 別名映射 (英文代碼對應)
-    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
-    window.HOUR_STORIES_DATA['zh-TW']['幼年'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
+    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
+    window.HOUR_STORIES_DATA['zh-TW']['孩子'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
+    window.HOUR_STORIES_DATA['zh-TW']['death'] = window.HOUR_STORIES_DATA['zh-TW']['死亡'];
 
     window.HOUR_STORIES_DATA['en-US']['孩子'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];
     window.HOUR_STORIES_DATA['en-US']['中年'] = window.HOUR_STORIES_DATA['en-US']['middle'];
+    window.HOUR_STORIES_DATA['en-US']['死亡'] = window.HOUR_STORIES_DATA['en-US']['death'];
 
     // 全域故事查詢函式
     window.getHourCardStory = function (ageGroup, number, customLang) {

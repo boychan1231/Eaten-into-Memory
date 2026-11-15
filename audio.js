@@ -30,6 +30,9 @@ const StoryBgmMap = {
     },
     '中年': {
         // 3: 'SFX/bgm_middle_3.mp3'
+    },
+    '死亡': {
+        // 12: 'SFX/bgm_death_12.mp3'
     }
 };
 

@@ -16,7 +16,8 @@
             child: 'Child',
             youth: 'Youth',
             adult: 'Adult',
-            middle: 'Middle-aged'
+            middle: 'Middle-aged',
+            death: 'Death'
         },
         ui: {
             drawers: {
@@ -274,7 +275,7 @@
 						<p><strong>Goal:</strong> Players use Minute Cards to bid for selection order of Hour Cards, securing safe positions on the clock face to protect their Gear Life.</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>Clock Hours:</strong> The character whose position is closest to <strong>12</strong> loses 1 Gear at round end.</li>
-							<li><strong>Hour Cards (Board):</strong> Divided into Child, Youth, Adult, and Middle ages. Precious (★) cards are distributed each game.</li>
+							<li><strong>Hour Cards (Board):</strong> Divided into Child (5), Youth (10), Adult (10), Middle-aged (10), and Death (1) eras. Precious (★) cards are distributed each game (12 in total, excluding Death).</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
 							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>

@@ -7,18 +7,18 @@
 ## 包含檔案目錄 (Table of Contents)
 
 1. `README.md` (2.2 KB)
-2. `GAMEPLAY.md` (16.7 KB)
+2. `GAMEPLAY.md` (17.1 KB)
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
-6. `config.js` (5.1 KB)
+6. `config.js` (5.4 KB)
 7. `logger.js` (1.5 KB)
-8. `audio.js` (10.8 KB)
-9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (25.8 KB)
-11. `locales/en-US.js` (24.1 KB)
+8. `audio.js` (10.9 KB)
+9. `i18n.js` (5.9 KB)
+10. `locales/zh-TW.js` (26.0 KB)
+11. `locales/en-US.js` (24.2 KB)
 12. `abilities.js` (12.1 KB)
-13. `game_setup.js` (17.2 KB)
+13. `game_setup.js` (17.7 KB)
 14. `game.js` (98.0 KB)
 15. `ui_modals.js` (1.7 KB)
 16. `ui_components.js` (155.6 KB)
@@ -26,11 +26,11 @@
 18. `ui.js` (74.3 KB)
 19. `modern_board.js` (68.4 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (48.2 KB)
-22. `classic.html` (36.7 KB)
+21. `index.html` (48.3 KB)
+22. `classic.html` (36.8 KB)
 23. `modern.css` (121.0 KB)
 24. `style.css` (96.0 KB)
-25. `locales/stories_data.js` (14.9 KB)
+25. `locales/stories_data.js` (15.4 KB)
 
 ---
 
@@ -132,12 +132,13 @@
 * **受罰基準**：預設規則下，刻度數值最大（最接近 12 點鐘位置）的角色在回合結算時會受到處決懲罰。
 
 ### 2. 小時卡（Hour Cards）
-* 數值為 **1 至 12**，總牌庫為 **36 張**（每個鐘點刻度 3 張），平均分配於四個時代（每時代各 9 張）：
-  * **孩子時代**（Child）
-  * **少年時代**（Youth）
-  * **青年時代**（Adult）
-  * **中年時代**（Middle）
-* **珍貴小時卡（★）**：全牌庫共有 **12 張**珍貴卡，每時代各 3 張、每個刻度各 1 張。每局由系統以 4 種平衡輪替配置生成，是時魔進化與受詛者達成特殊勝利的關鍵記憶碎片。
+* 數值為 **1 至 12**，總牌庫為 **36 張**（每個鐘點刻度 3 張），包含五個時代：
+  * **幼年時代**（Child）：**5 張**（分佈於刻度 1 ～ 5 各 1 張）
+  * **少年時代**（Youth）：**10 張**（分佈於刻度 6 ～ 12 各 1 張，以及 1 ～ 3 各 1 張）
+  * **青年時代**（Adult）：**10 張**（分佈於刻度 4 ～ 12 各 1 張，以及 1 號 1 張）
+  * **中年時代**（Middle）：**10 張**（分佈於刻度 2 ～ 11 各 1 張）
+  * **死亡時代**（Death）：**1 張**（固定於刻度 12，為全牌庫第 36 張）
+* **珍貴小時卡（★）**：全牌庫共有 **12 張**珍貴卡，每個鐘點刻度恰好 1 張。每局由系統以 5 種平衡輪替配置生成（幼年 1 張、少年 4 張、青年 4 張、中年 3 張，死亡為普通卡），是時魔進化與受詛者達成特殊勝利的關鍵記憶碎片。
 
 ### 3. 分鐘卡（Minute Cards - 玩家手牌）
 * 牌庫共有數值 **1 至 60** 且完全不重複的分鐘卡。
@@ -260,7 +261,7 @@ flowchart TD
 
 | 進化配方名稱 | 達成條件要求 | 特色與難度 |
 | :--- | :--- | :--- |
-| **久遠一生** | 收集 **3 張不同時代**的小時卡（孩子、少年、青年、中年四選三），且其中至少包含 **1 張珍貴卡(★)** | 均衡型，需跨足三個不同時代 |
+| **久遠一生** | 收集 **3 張不同時代**的小時卡（幼年、少年、青年、中年、死亡中任意收集 3 個時代），且其中至少包含 **1 張珍貴卡(★)** | 均衡型，需跨足三個不同時代 |
 | **命途節錄** | 收集 **4 張不同數字**的小時卡，且其中至少包含 **1 張珍貴卡(★)** | 靈活型，容易在前期自然湊成 |
 | **漫長生涯** | 收集 **5 張任意**小時卡，且其中至少包含 **2 張珍貴卡(★)** | 厚積薄發型，適合經常爭取小時卡的玩家 |
 | **銘記珍重** | 收集 **3 張珍貴小時卡(★)** | 精英型，極度依賴爭奪星號珍貴卡 |
@@ -727,24 +728,31 @@ window.GAME_DATA = {
         YOUNG_SHIELD: 3         // 幼體：護盾
     },
 
-    // ✅ 小時卡珍貴配置 (4時代平均分配：孩子、少年、青年、中年各3張珍貴)
+    // ✅ 小時卡珍貴配置 (幼年 1、少年 4、青年 4、中年 3、死亡 0；共 12 張珍貴卡，1~12 每刻度恰好 1 張)
     HOUR_PRECIOUS_CONFIGS: [
         {   id: 'CFG_1', label: 'hour_rot1',
-            mapping: { '孩子': [1, 5, 9], '少年': [2, 6, 10], '青年': [3, 7, 11], '中年': [4, 8, 12] }
+            mapping: { '幼年': [1], '少年': [3, 6, 10, 12], '青年': [4, 7, 9, 11], '中年': [2, 5, 8] }
         },
         {   id: 'CFG_2', label: 'hour_rot2',
-            mapping: { '少年': [1, 5, 9], '青年': [2, 6, 10], '中年': [3, 7, 11], '孩子': [4, 8, 12] }
+            mapping: { '幼年': [2], '少年': [1, 3, 7, 9], '青年': [4, 6, 11, 12], '中年': [5, 8, 10] }
         },
         {   id: 'CFG_3', label: 'hour_rot3',
-            mapping: { '青年': [1, 5, 9], '中年': [2, 6, 10], '孩子': [3, 7, 11], '少年': [4, 8, 12] }
+            mapping: { '幼年': [3], '少年': [6, 8, 11, 12], '青年': [1, 5, 7, 10], '中年': [2, 4, 9] }
         },
-        {   id: 'CFG_4', label: 'hour_cross',
-            mapping: { '孩子': [1, 7, 12], '少年': [4, 5, 10], '青年': [3, 6, 9], '中年': [2, 8, 11] }
+        {   id: 'CFG_4', label: 'hour_rot4',
+            mapping: { '幼年': [4], '少年': [1, 2, 8, 10], '青年': [6, 7, 9, 12], '中年': [3, 5, 11] }
+        },
+        {   id: 'CFG_5', label: 'hour_rot5',
+            mapping: { '幼年': [5], '少年': [3, 7, 11, 12], '青年': [1, 8, 9, 10], '中年': [2, 4, 6] }
         }
     ],
 
-    // 卡牌基礎設定 (4時代平均分配，共36張)
-    HOUR_CARDS: { ageGroups: ['孩子', '少年', '青年', '中年'], countsPerGroup: 9, total: 36 },
+    // 卡牌基礎設定 (幼年 5、少年 10、青年 10、中年 10、死亡 1，共 36 張)
+    HOUR_CARDS: {
+        ageGroups: ['幼年', '少年', '青年', '中年', '死亡'],
+        countsPerGroup: { '幼年': 5, '少年': 10, '青年': 10, '中年': 10, '死亡': 1 },
+        total: 36
+    },
     MINUTE_CARDS: { total: 60 }
 };
 
@@ -860,6 +868,9 @@ const StoryBgmMap = {
     },
     '中年': {
         // 3: 'SFX/bgm_middle_3.mp3'
+    },
+    '死亡': {
+        // 12: 'SFX/bgm_death_12.mp3'
     }
 };
 
@@ -1323,10 +1334,12 @@ window.gameVoice = gameVoice;
                 '少年': 'youth',
                 '青年': 'adult',
                 '中年': 'middle',
+                '死亡': 'death',
                 'child': 'child',
                 'youth': 'youth',
                 'adult': 'adult',
-                'middle': 'middle'
+                'middle': 'middle',
+                'death': 'death'
             };
             const mappedKey = keyMap[ageGroup] || ageGroup;
             return this.t(`age_groups.${mappedKey}`) || ageGroup;
@@ -1360,10 +1373,11 @@ window.gameVoice = gameVoice;
             young_demon: '時魔幼體'
         },
         age_groups: {
-            child: '孩子',
+            child: '幼年',
             youth: '少年',
             adult: '青年',
-            middle: '中年'
+            middle: '中年',
+            death: '死亡'
         },
         ui: {
             drawers: {
@@ -1621,7 +1635,7 @@ window.gameVoice = gameVoice;
 						<p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
@@ -1713,10 +1727,11 @@ window.gameVoice = gameVoice;
             young_demon: 'Young Demon'
         },
         age_groups: {
-            child: 'Childhood',
+            child: 'Child',
             youth: 'Youth',
             adult: 'Adult',
-            middle: 'Middle-aged'
+            middle: 'Middle-aged',
+            death: 'Death'
         },
         ui: {
             drawers: {
@@ -1974,7 +1989,7 @@ window.gameVoice = gameVoice;
 						<p><strong>Goal:</strong> Players use Minute Cards to bid for selection order of Hour Cards, securing safe positions on the clock face to protect their Gear Life.</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>Clock Hours:</strong> The character whose position is closest to <strong>12</strong> loses 1 Gear at round end.</li>
-							<li><strong>Hour Cards (Board):</strong> Divided into Childhood, Youth, Adult, and Middle ages. Precious (★) cards are distributed each game.</li>
+							<li><strong>Hour Cards (Board):</strong> Divided into Child (5), Youth (10), Adult (10), Middle-aged (10), and Death (1) eras. Precious (★) cards are distributed each game (12 in total, excluding Death).</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
 							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
@@ -2467,12 +2482,39 @@ for (let i = 1; i <= 60; i++) {
     DECK_MINUTE_CARDS.push(createMinuteCard(i));
 }
 
-// === 小時卡：孩子 / 少年 / 青年 / 中年 4 時代平均分配，總計 36 張（12刻度 × 3張）===
-// 每個刻度由 4 個時代輪替缺席 1 個時代（各 3 張），每時代正好 9 張卡。
-// 珍貴卡仍然是 12 張（每個數字 1~12 各 1 張是珍貴，四個時代各 3 張珍貴）。
+// === 小時卡：幼年 5 / 少年 10 / 青年 10 / 中年 10 / 死亡 1，總計 36 張（12刻度 × 3張）===
+// 刻度 1~12 各 3 張：
+// 1: 幼年, 少年, 青年
+// 2: 幼年, 少年, 中年
+// 3: 幼年, 少年, 中年
+// 4: 幼年, 青年, 中年
+// 5: 幼年, 青年, 中年
+// 6: 少年, 青年, 中年
+// 7: 少年, 青年, 中年
+// 8: 少年, 青年, 中年
+// 9: 少年, 青年, 中年
+// 10: 少年, 青年, 中年
+// 11: 少年, 青年, 中年
+// 12: 少年, 青年, 死亡 (第 36 張固定為 12 號死亡)
+// 珍貴卡共 12 張（每個刻度恰 1 張；幼年 1、少年 4、青年 4、中年 3，死亡 0）
 
-const HOUR_AGE_GROUPS = ['孩子', '少年', '青年', '中年'];
+const HOUR_AGE_GROUPS = ['幼年', '少年', '青年', '中年', '死亡'];
 const THREE_PLAYER_HAND_ROLES = ['時針', '分針', '秒針'];
+
+const HOUR_PER_NUMBER_SLOTS = {
+    1: ['幼年', '少年', '青年'],
+    2: ['幼年', '少年', '中年'],
+    3: ['幼年', '少年', '中年'],
+    4: ['幼年', '青年', '中年'],
+    5: ['幼年', '青年', '中年'],
+    6: ['少年', '青年', '中年'],
+    7: ['少年', '青年', '中年'],
+    8: ['少年', '青年', '中年'],
+    9: ['少年', '青年', '中年'],
+    10: ['少年', '青年', '中年'],
+    11: ['少年', '青年', '中年'],
+    12: ['少年', '青年', '死亡']
+};
 
 function createHourCard(number, ageGroup, isPrecious = false) {
     return { type: 'hour', number, ageGroup, isPrecious };
@@ -2489,7 +2531,7 @@ function pickRandomPreciousConfig() {
 
 function getPreciousAgeGroupForNumber(config, number) {
     if (!config || !config.mapping) return null;
-    // 遍歷 mapping 中的所有年齡層 (孩子、少年、青年、中年)
+    // 遍歷 mapping 中的所有年齡層 (幼年、少年、青年、中年)
     for (const ageGroup in config.mapping) {
         const numbers = config.mapping[ageGroup];
         // 檢查目標數字是否在該年齡層的陣列中
@@ -2502,8 +2544,8 @@ function getPreciousAgeGroupForNumber(config, number) {
 
 /**
  * buildHourDeckWithRandomPrecious()
- * - 生成 36 張小時卡：孩子/少年/青年/中年 平均分配（12刻度 × 3張，每時代9張）
- * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true (共12張珍貴)
+ * - 生成 36 張小時卡：幼年 5 / 少年 10 / 青年 10 / 中年 10 / 死亡 1（12刻度 × 3張）
+ * - 隨機挑一個珍貴配置，將對應年齡版本標成 isPrecious=true (共12張珍貴，死亡不含珍貴)
  * - 回傳：{ deck, config }
  */
 function buildHourDeckWithRandomPrecious() {
@@ -2513,12 +2555,8 @@ function buildHourDeckWithRandomPrecious() {
     }
     const deck = [];
 
-    // 4 個時代平均分配輪替缺席時代：
-    // 刻度 1 缺中年、刻度 2 缺孩子、刻度 3 缺少年、刻度 4 缺青年...循環
-    const missingOrder = ['中年', '孩子', '少年', '青年'];
     for (let n = 1; n <= 12; n++) {
-        const missingAge = missingOrder[(n - 1) % 4];
-        const spotAges = HOUR_AGE_GROUPS.filter(a => a !== missingAge);
+        const spotAges = HOUR_PER_NUMBER_SLOTS[n] || ['幼年', '少年', '青年'];
         const preciousAge = getPreciousAgeGroupForNumber(config, n);
 
         for (const age of spotAges) {
@@ -7329,17 +7367,17 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ph.textContent = '尚未收集';
             hourCollectionEl.appendChild(ph);
         } else {
-            const groups = { '孩子': [], '少年': [], '青年': [], '中年': [] };
+            const groups = { '幼年': [], '少年': [], '青年': [], '中年': [], '死亡': [] };
 
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
                 let g = card.ageGroup || '未知';
-                if (g === '幼年') g = '孩子';
+                if (g === '孩子') g = '幼年';
                 if (!groups[g]) groups[g] = [];
                 groups[g].push(card);
             });
 
-            ['孩子', '少年', '青年', '中年'].forEach(label => {
+            ['幼年', '少年', '青年', '中年', '死亡'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
@@ -14317,7 +14355,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -15131,7 +15169,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
 						<ul style="padding-left: 20px; margin-bottom: 0;">
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
-							<li><strong>小時卡 (場上)：</strong>分為孩子、少年、青年、中年四種時代。每局依照特定組合在四個時代中分配<strong>珍貴(★)</strong>小時卡。</li>
+							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
 								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
@@ -23597,6 +23635,7 @@ body {
 
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
+        '幼年': {},
         '孩子': {},
         '少年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
@@ -23657,7 +23696,10 @@ body {
 `
         },
         '青年': {},
-        '中年': {}
+        '中年': {},
+        '死亡': {
+            12: `這是時間的終點，也是一切記憶沉澱的歸宿。鐘擺在此停歇，指針不再轉動，唯有曾經銘記的微光，在靜謐的黑暗中永恆閃爍。`
+        }
     };
 
     // 英文故事文本骨架 (可自由擴充)
@@ -23670,21 +23712,26 @@ body {
             4: `A component must connect to at least two others to operate stably in its place...`
         },
         'adult': {},
-        'middle': {}
+        'middle': {},
+        'death': {
+            12: `The final destination where time stands still and all memories settle into eternity.`
+        }
     };
 
     // 別名映射 (英文代碼對應)
-    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
-    window.HOUR_STORIES_DATA['zh-TW']['幼年'] = window.HOUR_STORIES_DATA['zh-TW']['孩子'];
+    window.HOUR_STORIES_DATA['zh-TW']['child'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
+    window.HOUR_STORIES_DATA['zh-TW']['孩子'] = window.HOUR_STORIES_DATA['zh-TW']['幼年'];
     window.HOUR_STORIES_DATA['zh-TW']['youth'] = window.HOUR_STORIES_DATA['zh-TW']['少年'];
     window.HOUR_STORIES_DATA['zh-TW']['adult'] = window.HOUR_STORIES_DATA['zh-TW']['青年'];
     window.HOUR_STORIES_DATA['zh-TW']['middle'] = window.HOUR_STORIES_DATA['zh-TW']['中年'];
+    window.HOUR_STORIES_DATA['zh-TW']['death'] = window.HOUR_STORIES_DATA['zh-TW']['死亡'];
 
     window.HOUR_STORIES_DATA['en-US']['孩子'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['幼年'] = window.HOUR_STORIES_DATA['en-US']['child'];
     window.HOUR_STORIES_DATA['en-US']['少年'] = window.HOUR_STORIES_DATA['en-US']['youth'];
     window.HOUR_STORIES_DATA['en-US']['青年'] = window.HOUR_STORIES_DATA['en-US']['adult'];
     window.HOUR_STORIES_DATA['en-US']['中年'] = window.HOUR_STORIES_DATA['en-US']['middle'];
+    window.HOUR_STORIES_DATA['en-US']['死亡'] = window.HOUR_STORIES_DATA['en-US']['death'];
 
     // 全域故事查詢函式
     window.getHourCardStory = function (ageGroup, number, customLang) {

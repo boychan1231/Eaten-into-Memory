@@ -147,10 +147,12 @@
                 '少年': 'youth',
                 '青年': 'adult',
                 '中年': 'middle',
+                '死亡': 'death',
                 'child': 'child',
                 'youth': 'youth',
                 'adult': 'adult',
-                'middle': 'middle'
+                'middle': 'middle',
+                'death': 'death'
             };
             const mappedKey = keyMap[ageGroup] || ageGroup;
             return this.t(`age_groups.${mappedKey}`) || ageGroup;

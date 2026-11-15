@@ -2057,17 +2057,17 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ph.textContent = '尚未收集';
             hourCollectionEl.appendChild(ph);
         } else {
-            const groups = { '孩子': [], '少年': [], '青年': [], '中年': [] };
+            const groups = { '幼年': [], '少年': [], '青年': [], '中年': [], '死亡': [] };
 
             // 將卡片實體放入群組，而非字串
             [...hourCards].sort((a, b) => a.number - b.number).forEach(card => {
                 let g = card.ageGroup || '未知';
-                if (g === '幼年') g = '孩子';
+                if (g === '孩子') g = '幼年';
                 if (!groups[g]) groups[g] = [];
                 groups[g].push(card);
             });
 
-            ['孩子', '少年', '青年', '中年'].forEach(label => {
+            ['幼年', '少年', '青年', '中年', '死亡'].forEach(label => {
                 if (groups[label] && groups[label].length > 0) {
                     const row = document.createElement('div');
                     row.className = 'collection-text-row';
