@@ -20,9 +20,11 @@ const AudioConfig = {
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
-    '幼年': {},
+    '幼年': {
+        4: 'SFX/BGM_emotional.mp3',  // 幼年 4 號專屬音樂
+    },
     '少年': {
-        4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
+        4: 'SFX/BGM_emotional.mp3',  // 保留相容
     },
     '青年': {
         // 12: 'SFX/bgm_young_12.mp3'

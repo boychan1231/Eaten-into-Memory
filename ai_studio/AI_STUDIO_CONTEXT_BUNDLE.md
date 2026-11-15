@@ -858,9 +858,11 @@ const AudioConfig = {
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
 // 你可以在這裡自由新增或修改！如果某張卡沒寫在這裡，就會播放上方的 Default 音樂
 const StoryBgmMap = {
-    '幼年': {},
+    '幼年': {
+        4: 'SFX/BGM_emotional.mp3',  // 幼年 4 號專屬音樂
+    },
     '少年': {
-        4: 'SFX/BGM_emotional.mp3',  // 少年 4 號專屬音樂
+        4: 'SFX/BGM_emotional.mp3',  // 保留相容
     },
     '青年': {
         // 12: 'SFX/bgm_young_12.mp3'
@@ -23612,8 +23614,7 @@ body {
 
     // 繁體中文故事文本
     window.HOUR_STORIES_DATA['zh-TW'] = {
-        '幼年': {},
-        '少年': {
+        '幼年': {
             1: `花了許多時間，男孩終於把手提包的鎖打開。一開始他如常用勾針試探鎖的結構，想退出時針卻卡住，為了求回針具，孩子只好硬著頭皮把鎖解開，畢竟這裡沒另一位傷重的小偷要照顧，讓孩子在他死去時把工具當成報酬。
 男孩專心感應指尖傳來的微弱的顫動，每個動作都小心翼翼，費了一番功夫才把機關解開，但手提包卻裡沒名貴的東西，只有些他從沒見過的銀亮齒輪和金屬片。男孩不禁沮喪起來，他把指甲大的齒輪拿到眼前，仔細看那些他不懂的細小字符，想著這些東西能賣到多少錢。
 可是，剛才他太專注於開鎖了，到他聽見腳步聲時已經太遲。一個壯漢闖進他的木板小窩，男孩慌張逃跑，卻被抓住後衣領提起來。
@@ -23671,6 +23672,7 @@ body {
 直到深夜，他們才聽到嬰孩的啼哭聲。醫生走下樓梯向眾人報喜，夫人流了許多血，在看過平安出生的孩子後便脫力昏睡過去，但母女也無恙。司機和老技工吐出一口長氣，女僕和廚娘喜極而泣，大家簇擁跑上樓梯擁在門口，爭相探看那裹在錶匠懷中柔軟細布裡的小生命。嬌弱的嬰孩皮膚泛著初生的嫩紅，小小的胸脯微弱卻穩定地起伏著，錶匠也難得地向嬰兒露出溫柔的笑容。看見大家的樣子，孩子發現自己也露出了同樣的表情。貧民窟的人甚少為生產喜悅，這刻孩子真正發現，自己不再是貧民窟的小孩，是金邊座鐘裡的其中一塊零件。
 `
         },
+        '少年': {},
         '青年': {},
         '中年': {},
         '死亡': {
@@ -23680,13 +23682,13 @@ body {
 
     // 英文故事文本骨架 (可自由擴充)
     window.HOUR_STORIES_DATA['en-US'] = {
-        'child': {},
-        'youth': {
+        'child': {
             1: `After hours of painstaking effort, the boy finally picked the lock of the leather satchel...`,
             2: `Gears never betray; every component has its designated place...`,
             3: `To the master watchmaker, clocks are what truly allow mankind to govern time...`,
             4: `A component must connect to at least two others to operate stably in its place...`
         },
+        'youth': {},
         'adult': {},
         'middle': {},
         'death': {
