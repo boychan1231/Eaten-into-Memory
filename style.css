@@ -2600,42 +2600,6 @@ body {
     color: #ff9ff3;
 }
 
-.tutorial-tooltip-footer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(254, 202, 87, 0.2);
-}
-
-.tutorial-ok-btn {
-    background: linear-gradient(135deg, #feca57 0%, #ff9f43 100%);
-    color: #1e1e2f;
-    border: none;
-    border-radius: 6px;
-    padding: 5px 14px;
-    font-size: 0.82rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(254, 202, 87, 0.35);
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    user-select: none;
-}
-
-.tutorial-ok-btn:hover {
-    background: linear-gradient(135deg, #ffd32a 0%, #ff793f 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(254, 202, 87, 0.5);
-}
-
-.tutorial-ok-btn:active {
-    transform: translateY(0);
-}
-
 .tutorial-pointer-arrow {
     position: absolute;
     width: 0;

@@ -13,7 +13,7 @@
         }
     }
 
-    // 氣泡提示自動隱藏排程（依使用者指示：教學說明不會自動消除，必須經玩家手動點擊關閉，不再設置自動計時器）
+    // 氣泡提示自動隱藏排程（依使用者指示：教學說明不會自動消除，而是在執行教學說明的動作後自動進入下一個說明，不再設置自動定時器）
     function scheduleAutoDismiss() {
         clearAutoDismissTimer();
     }
@@ -672,15 +672,6 @@
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const closeBtn = document.getElementById('tutorial-close-btn');
         const muteBtn = document.getElementById('tutorial-mute-btn');
-        const okBtn = document.getElementById('tutorial-ok-btn');
-
-        // 點擊「我知道了 ✓」：經玩家手動點擊確認後關閉當前提示
-        if (okBtn) {
-            okBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                clearTutorialPointers();
-            });
-        }
 
         // 點擊「✕」：僅關閉當前提示，保留教學模式供後續步驟使用
         if (closeBtn) {
