@@ -121,7 +121,12 @@
         let left = 0;
         let arrow = 'bottom';
 
-        if (chosen === 'top') {
+        if (chosen === 'center') {
+            // 居中懸浮，不顯示指向箭頭
+            top = Math.max(68, Math.min(130, Math.round(viewportHeight * 0.14)));
+            left = Math.max(12, Math.round((viewportWidth - tooltipWidth) / 2));
+            arrow = 'none';
+        } else if (chosen === 'top') {
             // 氣泡位於目標上方，箭頭朝下指向目標
             top = rect.top - tooltipHeight - 12;
             left = rect.left + rect.width / 2 - tooltipWidth / 2;
@@ -195,17 +200,30 @@
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
+        // 計算最佳定位座標
+        const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
+        tooltip.setAttribute('data-arrow', pos.arrow);
+
+        // 若剛從隱藏狀態顯示，暫時關閉 transition，直接在精確目標位置顯現，避免從上一位置飛竄的異常動畫
+        if (wasHidden) {
+            const originalTransition = tooltip.style.transition;
+            tooltip.style.transition = 'none';
+            tooltip.style.left = `${pos.left}px`;
+            tooltip.style.top = `${pos.top}px`;
+            // 強制觸發重繪 (reflow) 使定位立即生效
+            void tooltip.offsetWidth;
+            tooltip.style.transition = originalTransition;
+        } else {
+            tooltip.style.left = `${pos.left}px`;
+            tooltip.style.top = `${pos.top}px`;
+        }
+
         // 重新顯示 tooltip
         tooltip.classList.remove('hidden');
         if (wasHidden) {
             tooltip.classList.add('tutorial-fade-in');
         }
 
-        // 計算最佳定位座標
-        const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
-        tooltip.setAttribute('data-arrow', pos.arrow);
-        tooltip.style.left = `${pos.left}px`;
-        tooltip.style.top = `${pos.top}px`;
         if (typeof tooltip.style.setProperty === 'function') {
             tooltip.style.setProperty('--arrow-x', `${pos.arrowX}px`);
             tooltip.style.setProperty('--arrow-y', `${pos.arrowY}px`);
