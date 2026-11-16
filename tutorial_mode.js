@@ -503,8 +503,29 @@
             }
         }
 
+        // 判斷當前是否處於小時卡挑選階段（無論輪到 AI 或人類）
+        const isHourSelectionActive = !!(
+            (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+            (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length) ||
+            gameState.waitingHourChoice
+        );
+
+        // 判斷人類玩家本回合是否為有權挑選小時卡的玩家
+        const isHumanPicker = !!(
+            gameState.hourPickOrder &&
+            Array.isArray(gameState.hourPickOrder) &&
+            gameState.hourPickOrder.some(p => p.playerId === humanId || String(p.playerId) === String(humanId) || (humanPlayer && p.playerId === humanPlayer.id))
+        );
+        const humanHasPickedHour = !!(humanPlayer && humanPlayer.pickedHourThisTurn);
+
         // 【階段 2】：等待挑選小時卡 (輪到人類選卡)
-        if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
+        const isHumanHourTurn = !!gameState.waitingHourChoice && (
+            gameState.waitingHourChoicePlayerId === humanId ||
+            String(gameState.waitingHourChoicePlayerId) === String(humanId) ||
+            (humanPlayer && gameState.waitingHourChoicePlayerId === humanPlayer.id)
+        );
+
+        if (isHumanHourTurn) {
             if (!force && shownSteps.has('step3_select_hour') && gameState.roundMarker > 1) {
                 clearTutorialPointers();
                 return;
@@ -541,18 +562,30 @@
             return;
         }
 
-        // 【階段 2-B】：等待挑選小時卡，但人類玩家未進前 2 名（無須挑選小時卡）
-        const isHourPhase = (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) || gameState.waitingHourChoice;
-        const humanNotPicker = gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && !gameState.hourPickOrder.some(p => p.playerId === humanId);
-        if (isHourPhase && humanNotPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
-            const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
-                : '';
-            shownSteps.add('step3_no_hour_notice');
-            const noHourNotice = window.i18n
-                ? window.i18n.t('tutorial.step3_no_hour_notice')
-                : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
-            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center-right');
+        // 若當前仍處於小時卡挑選階段（尚未輪到人類，或人類非挑選者）：
+        if (isHourSelectionActive) {
+            // 【重要修復】：若人類玩家是有權挑選者，但目前正等待前面的對手 (AI) 挑選或落子中：
+            // 嚴格禁止彈出「無須挑選小時卡」，清除指針並安靜等待人類輪次到來，徹底杜絕一閃而過的問題
+            if (isHumanPicker && !humanHasPickedHour) {
+                clearTutorialPointers();
+                return;
+            }
+
+            // 【階段 2-B】：人類玩家確定未進挑選名單（確定本回合無須挑選小時卡）
+            // 僅在人類明確「非挑選者」時，在鐘面顯示一次避險提醒
+            if (!isHumanPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
+                const turnPrefix = gameState.roundMarker > 1
+                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                    : '';
+                shownSteps.add('step3_no_hour_notice');
+                const noHourNotice = window.i18n
+                    ? window.i18n.t('tutorial.step3_no_hour_notice')
+                    : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
+                showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center-right');
+                return;
+            }
+
+            // 小時卡階段未完全結束，嚴格禁止進入後續階段 3、4、5
             return;
         }
 
@@ -593,7 +626,8 @@
         }
 
         // 【階段 5】：回合結束，準備進入下一回合
-        if (nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
+        // 嚴格確保小時卡階段已完全結束，且「下一回合」按鈕可用且可見
+        if (!isHourSelectionActive && nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
             const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
             if (isInitialStart) {
                 if (!shownSteps.has('step0_welcome') || force) {

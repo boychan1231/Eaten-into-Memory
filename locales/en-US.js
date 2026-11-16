@@ -128,6 +128,7 @@
                 pick_hour: 'Select an Hour Card',
                 waiting_input: 'Please play a card...',
                 waiting_hour_choice: 'Pick an Hour Card on the board...',
+                waiting_opponents: 'Waiting for opponents to pick hour cards...',
                 waiting_minute_choice: 'Waiting for Minute Hand choice...',
                 waiting_ability_choice: 'Decide whether to use ability...',
                 waiting_second_final: 'Complete Second Hand pick...',

@@ -311,9 +311,16 @@ function updateUI(gameState) {
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
     // 2. 計算等待狀態 (Flags)
+    const isHourSelectionActive = !!(
+        (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length) ||
+        gameState.waitingHourChoice
+    );
+
     const flags = {
         isWaitingMinuteInput: gameState.currentRoundAIChoices !== null,
         isWaitingHourInput: !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId,
+        isHourSelectionActive: isHourSelectionActive,
         isWaitingAbilityChoice: !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId,
         isWaitingSecondFinalChoice: !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId,
         isPlayingMinuteClash: !!gameState.isPlayingMinuteClash,
@@ -395,12 +402,14 @@ function updateNextStepButton(gameState, flags) {
         return; // 直接返回，不執行下方的 disable 邏輯
     }
 
-    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
+    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isHourSelectionActive || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
         nextStepBtn.disabled = true;
         if (flags.isPlayingMinuteClash) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute') : "比較分鐘數值中...";
         } else if (flags.isWaitingHourInput) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_hour_choice') : "請選擇小時卡...";
+        } else if (flags.isHourSelectionActive) {
+            nextStepBtn.textContent = window.i18n ? (window.i18n.t('ui.hints.waiting_opponents') || "等待對手挑選小時卡...") : "等待對手挑選小時卡...";
         } else if (flags.isWaitingAbilityChoice) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_ability_choice') : "請決定是否使用特殊能力...";
         } else if (flags.isWaitingSecondFinalChoice) {

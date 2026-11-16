@@ -210,15 +210,19 @@ function startRound(gameState) {
 		window.AutoNextRoundTimer.stop();
 	}
 	const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
-	// 當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
+	// 當仍在等待人類輸入或小時卡挑選尚未結束時，不允許進入下一回合（避免「未選牌也能按下一回合」）
     const waitingMinute = gameState && gameState.currentRoundAIChoices !== null;
-    const waitingHour = gameState && !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId;
+    const isHourSelectionActive = gameState && (
+        (!!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) ||
+        (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length)
+    );
     const waitingAbility = gameState && !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId;
     const waitingSecondFinal = gameState && !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
-    //防呆：若仍在等待人類輸入（出牌/選卡/能力），禁止直接進入下一回合
-    if (waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
-        appLogger.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
+    //防呆：若仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），禁止直接進入下一回合
+    if (waitingMinute || isHourSelectionActive || waitingAbility || waitingSecondFinal) {
+        appLogger.log("[Game] 仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），不能開始下一回合。");
         return;
     }
 	

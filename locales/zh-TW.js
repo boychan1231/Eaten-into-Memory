@@ -128,6 +128,7 @@
                 pick_hour: '請點選小時卡',
                 waiting_input: '請出牌...',
                 waiting_hour_choice: '請在鐘面挑選小時卡...',
+                waiting_opponents: '等待對手挑選小時卡...',
                 waiting_minute_choice: '等待分針特殊選擇...',
                 waiting_ability_choice: '請決定是否使用特殊能力...',
                 waiting_second_final: '請完成秒針二選一...',
