@@ -537,8 +537,13 @@ input:checked + .slider:before { transform: translateX(16px); }
 .clock-center .drawn-hour-card {
     width: clamp(36px, 10vw, 55px);
     height: clamp(54px, 15vw, 80px);
-    background: linear-gradient(to bottom right, #f7f7f7, #ddd);
-    color: #000;
+    background-color: #1a1a2e;
+    background-image: url('assets/hourCard.png'), linear-gradient(to bottom right, #f7f7f7, #ddd);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.8);
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
     display: flex;
@@ -548,12 +553,35 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: clamp(0.8rem, 2vw, 1rem);
     font-weight: bold;
     line-height: 1.05;
+    position: relative;
+    overflow: hidden;
 }
-.drawn-hour-card.precious { border: 3px solid gold; box-shadow: 0 0 10px gold; }
+.drawn-hour-card.precious {
+    border: 3px solid gold;
+    box-shadow: 0 0 12px gold, inset 0 0 6px rgba(255, 215, 0, 0.5);
+}
 
-.drawn-hour-card .hour-num { font-size: 1.1em; font-weight: 800; }
-.drawn-hour-card .hour-age { font-size: 0.6em; font-weight: 600; color: #222; margin-top: 2px; }
-.drawn-hour-card .hour-star { font-size: 0.9em; margin-top: 2px; }
+.drawn-hour-card .hour-num {
+    font-size: 1.15em;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.9);
+    z-index: 2;
+}
+.drawn-hour-card .hour-age {
+    font-size: 0.65em;
+    font-weight: 700;
+    color: #feca57;
+    margin-top: 2px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+    z-index: 2;
+}
+.drawn-hour-card .hour-star {
+    font-size: 0.9em;
+    margin-top: 2px;
+    filter: drop-shadow(0 0 4px gold);
+    z-index: 2;
+}
 
 .drawn-hour-card.clickable {
     cursor: pointer;
@@ -1918,12 +1946,16 @@ body {
 }
 
 /* 珍貴小時卡：黃金質感 */
-.drawn-hour-card.precious, .stack-item.precious {
+.stack-item.precious {
     /* 金色漸層底 */
     background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #d4af37 100%);
     color: #4a3b00; /* 深色文字讓閱讀更清楚 */
     border: 2px solid #fff;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+.drawn-hour-card.precious {
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 0 8px rgba(255, 215, 0, 0.4);
 }
 
 /* --- 4. 資源圖示 CSS 繪製 --- */
