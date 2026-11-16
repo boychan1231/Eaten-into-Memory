@@ -13,23 +13,23 @@
 5. `vite.config.ts` (2.1 KB)
 6. `config.js` (5.4 KB)
 7. `logger.js` (1.5 KB)
-8. `audio.js` (10.9 KB)
+8. `audio.js` (14.3 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (26.5 KB)
-11. `locales/en-US.js` (24.7 KB)
+10. `locales/zh-TW.js` (26.3 KB)
+11. `locales/en-US.js` (24.6 KB)
 12. `abilities.js` (12.1 KB)
 13. `game_setup.js` (17.7 KB)
-14. `game.js` (99.6 KB)
+14. `game.js` (99.9 KB)
 15. `ui_modals.js` (1.7 KB)
-16. `ui_components.js` (155.2 KB)
-17. `tutorial_mode.js` (41.1 KB)
+16. `ui_components.js` (155.8 KB)
+17. `tutorial_mode.js` (46.9 KB)
 18. `ui.js` (74.8 KB)
-19. `modern_board.js` (68.4 KB)
+19. `modern_board.js` (68.3 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (48.5 KB)
+21. `index.html` (49.1 KB)
 22. `classic.html` (37.0 KB)
 23. `modern.css` (120.7 KB)
-24. `style.css` (96.0 KB)
+24. `style.css` (97.2 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -895,16 +895,23 @@ class AudioManager {
 		
 		this.isBGMMuted = false; // 背景音樂靜音狀態
         this.isSFXMuted = false; // 音效靜音狀態
-        this._bgmFadeTimer = null; // BGM 淡入計時器
+        this._bgmFadeTimer = null; // BGM 淡入/淡出計時器
+        this._fadeResolve = null; // BGM 淡入/淡出 Promise 解析函式
+        this._bgmSwitchToken = 0; // BGM 切換序號（防止快速連點或反覆切換造成非同步競態）
         
         this.updateVolume();
     }
 
-    // 清除進行中的 BGM 淡入計時器
+    // 清除進行中的 BGM 淡入/淡出計時器並喚醒等待中的 Promise
     _clearFadeTimer() {
         if (this._bgmFadeTimer) {
             clearInterval(this._bgmFadeTimer);
             this._bgmFadeTimer = null;
+        }
+        if (this._fadeResolve) {
+            const resolve = this._fadeResolve;
+            this._fadeResolve = null;
+            resolve();
         }
     }
 	
@@ -973,42 +980,100 @@ class AudioManager {
         });
     }
 
-    // BGM 音量由 0 平滑淡入至設定音量
-    fadeInBGM(durationMs = 2800) {
-        this._clearFadeTimer();
-        if (this.isBGMMuted || this.bgmVolume <= 0) {
-            this.bgm.volume = 0;
-            return;
-        }
-
-        const stepMs = 40;
-        const totalSteps = Math.max(1, Math.round(durationMs / stepMs));
-        let currentStep = 0;
-        this.bgm.volume = 0;
-
-        this._bgmFadeTimer = setInterval(() => {
-            if (this.isBGMMuted || this.bgm.paused) {
-                this._clearFadeTimer();
+    // BGM 音量由目前音量平滑淡入至設定音量 (預設淡入 2000ms)
+    fadeInBGM(durationMs = 2000) {
+        return new Promise((resolve) => {
+            this._clearFadeTimer();
+            if (this.isBGMMuted || this.bgmVolume <= 0 || this.bgm.paused) {
                 if (this.isBGMMuted) this.bgm.volume = 0;
+                resolve();
                 return;
             }
-            currentStep++;
-            const progress = Math.min(1, currentStep / totalSteps);
-            // 平滑漸強曲線 (easeInOutQuad)
-            const eased = progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-            const targetVol = this.bgmVolume;
-            this.bgm.volume = Math.max(0, Math.min(1, targetVol * eased));
 
-            if (progress >= 1) {
+            const startVol = Math.max(0, this.bgm.volume);
+            const targetVol = this.bgmVolume;
+            if (startVol >= targetVol) {
                 this.bgm.volume = targetVol;
-                this._clearFadeTimer();
+                resolve();
+                return;
             }
-        }, stepMs);
+
+            const stepMs = 30;
+            const totalSteps = Math.max(1, Math.round(durationMs / stepMs));
+            let currentStep = 0;
+
+            this._fadeResolve = () => {
+                if (!this.isBGMMuted && !this.bgm.paused) {
+                    this.bgm.volume = targetVol;
+                }
+                resolve();
+            };
+
+            this._bgmFadeTimer = setInterval(() => {
+                if (this.isBGMMuted || this.bgm.paused) {
+                    this._clearFadeTimer();
+                    if (this.isBGMMuted) this.bgm.volume = 0;
+                    return;
+                }
+                currentStep++;
+                const progress = Math.min(1, currentStep / totalSteps);
+                // 平滑漸強曲線 (easeInOutQuad)
+                const eased = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                this.bgm.volume = Math.max(0, Math.min(1, startVol + (targetVol - startVol) * eased));
+
+                if (progress >= 1) {
+                    this._clearFadeTimer();
+                }
+            }, stepMs);
+        });
+    }
+
+    // BGM 音量由目前音量平滑淡出至 0 (預設淡出 800ms)
+    fadeOutBGM(durationMs = 800) {
+        return new Promise((resolve) => {
+            this._clearFadeTimer();
+
+            // 若目前已暫停、靜音或音量已為 0，直接完成
+            if (this.bgm.paused || this.isBGMMuted || this.bgm.volume <= 0) {
+                this.bgm.volume = 0;
+                resolve();
+                return;
+            }
+
+            const startVol = this.bgm.volume;
+            const stepMs = 30;
+            const totalSteps = Math.max(1, Math.round(durationMs / stepMs));
+            let currentStep = 0;
+
+            this._fadeResolve = () => {
+                this.bgm.volume = 0;
+                resolve();
+            };
+
+            this._bgmFadeTimer = setInterval(() => {
+                if (this.isBGMMuted || this.bgm.paused) {
+                    this._clearFadeTimer();
+                    return;
+                }
+                currentStep++;
+                const progress = Math.min(1, currentStep / totalSteps);
+                // 平滑漸弱曲線 (easeInOutQuad)
+                const eased = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                this.bgm.volume = Math.max(0, startVol * (1 - eased));
+
+                if (progress >= 1) {
+                    this._clearFadeTimer();
+                }
+            }, stepMs);
+        });
     }
 
     stopBGM() {
+        this._bgmSwitchToken++;
         this._clearFadeTimer();
         this.bgm.pause();
         this.bgm.currentTime = 0;
@@ -1052,7 +1117,7 @@ class AudioManager {
         else this._playSfx(this.sfxLose);
     }
 	
-	switchBGM(type, card = null) {
+	async switchBGM(type, card = null, fadeOutMs = 800, fadeInMs = 1800) {
         let targetSrc = AudioConfig.BGM_PATH;
         let newType = 'main';
 
@@ -1071,13 +1136,32 @@ class AudioManager {
             }
         }
 
-        // 如果類型相同且音檔相同，不需重新加載
-        if (this.currentBgmType === newType && this.bgm.src && this.bgm.src.endsWith(targetSrc)) return;
+        const token = ++this._bgmSwitchToken;
+        const isCurrentSrc = Boolean(this.bgm.src && this.bgm.src.endsWith(targetSrc));
+
+        // 如果曲目與類型完全相同
+        if (this.currentBgmType === newType && isCurrentSrc) {
+            // 若正在播放但音量未達目標（可能先前正在淡出），則平滑淡入恢復滿音量
+            if (!this.bgm.paused && !this.isBGMMuted && this.bgm.volume < this.bgmVolume) {
+                this.fadeInBGM(fadeInMs);
+            }
+            return;
+        }
 
         // 記錄切換前是否正在播放
         const wasPlaying = !this.bgm.paused;
-        
-        // 先暫停目前的音樂與淡入計時器
+
+        // 若舊 BGM 正在播放且未靜音，先將舊 BGM 以淡出效果平滑淡出
+        if (wasPlaying && !this.isBGMMuted && this.bgm.volume > 0 && fadeOutMs > 0) {
+            await this.fadeOutBGM(fadeOutMs);
+        }
+
+        // 若淡出期間有新的切換觸發或主動停止播放，則終止本次後續載入
+        if (this._bgmSwitchToken !== token) {
+            return;
+        }
+
+        // 淡出完成後暫停舊曲目並更換音軌
         this._clearFadeTimer();
         this.bgm.pause();
 
@@ -1085,12 +1169,17 @@ class AudioManager {
         this.currentBgmType = newType;
         this.bgm.load(); // 載入新音檔
 
-        // 如果原本音樂有在播放，且 BGM 沒有被靜音，就自動播放新曲目並淡入
+        // 如果原本音樂有在播放，且 BGM 沒有被靜音，就自動播放新曲目並平滑淡入
         if (wasPlaying && !this.isBGMMuted) {
             this.bgm.volume = 0;
-            this.bgm.play().then(() => {
-                this.fadeInBGM(2000);
-            }).catch(e => console.warn("切換 BGM 播放失敗:", e));
+            try {
+                await this.bgm.play();
+                if (this._bgmSwitchToken === token) {
+                    await this.fadeInBGM(fadeInMs);
+                }
+            } catch (e) {
+                console.warn("切換 BGM 播放失敗:", e);
+            }
         }
     }
 	
@@ -1490,6 +1579,7 @@ window.gameVoice = gameVoice;
                 pick_hour: '請點選小時卡',
                 waiting_input: '請出牌...',
                 waiting_hour_choice: '請在鐘面挑選小時卡...',
+                waiting_opponents: '等待對手挑選小時卡...',
                 waiting_minute_choice: '等待分針特殊選擇...',
                 waiting_ability_choice: '請決定是否使用特殊能力...',
                 waiting_second_final: '請完成秒針二選一...',
@@ -1585,6 +1675,10 @@ window.gameVoice = gameVoice;
             locked_btn: '🚫 能力被封鎖'
         },
         tutorial: {
+            prev_btn: '◀ 上一則教學',
+            next_btn: '下一則 ▶',
+            history_tag: '（歷史閱覽）',
+            latest_tag: '最新進度',
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>',
             welcome_prefix: '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>',
             step0_welcome: '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
@@ -1599,7 +1693,6 @@ window.gameVoice = gameVoice;
             step_minute_ability: '<strong>分針能力：選擇移動方向</strong><br>可消耗 Mana 順時針或逆時針跳躍至下一個有小時卡的格子（若想保留 Mana 可點擊略過）。',
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
             step4_round_done: '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
-            step4_no_hour_card: '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險）：</strong>本回合不進入鐘面，齒輪毫髮無損！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，延緩變身進度。<br>點擊「<strong>下一回合</strong>」展開新回合競標！',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合！',
             role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>驅逐大勝：</strong>若合力將「時之惡」齒輪扣盡驅逐，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>Mana ≥ 3 且即將受罰時，可消耗全部 Mana 抵免傷害一次。',
             role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 Mana 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！',
@@ -1846,6 +1939,7 @@ window.gameVoice = gameVoice;
                 pick_hour: 'Select an Hour Card',
                 waiting_input: 'Please play a card...',
                 waiting_hour_choice: 'Pick an Hour Card on the board...',
+                waiting_opponents: 'Waiting for opponents to pick hour cards...',
                 waiting_minute_choice: 'Waiting for Minute Hand choice...',
                 waiting_ability_choice: 'Decide whether to use ability...',
                 waiting_second_final: 'Complete Second Hand pick...',
@@ -1941,6 +2035,10 @@ window.gameVoice = gameVoice;
             locked_btn: '🚫 Ability Sealed'
         },
         tutorial: {
+            prev_btn: '◀ Previous',
+            next_btn: 'Next ▶',
+            history_tag: '(History)',
+            latest_tag: 'Latest',
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 Tutorial can be disabled in Settings</div>',
             welcome_prefix: '<strong>✨ Welcome to Eaten into Memory!</strong><br>',
             step0_welcome: '<strong>✨ Welcome to Eaten into Memory!</strong><br>Click "<strong>Next Round</strong>" to reveal Hour Cards and start bidding.',
@@ -1955,7 +2053,6 @@ window.gameVoice = gameVoice;
             step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend Mana to jump clockwise or counter-clockwise (or click Skip).',
             step_second_ability: '<strong>Second Hand:</strong> Choose 1 final card from the two committed Minute Cards!',
             step4_round_done: '<strong>Round Resolved!</strong> Click "Next Round" to begin the next round.',
-            step4_no_hour_card: '<strong>【Tactical Notice: Staying Off the Clock Face】</strong><br>🛡️ <strong>Advantage (Safety):</strong> Off the clock face—gears are completely safe from penalties!<br>⚠️ <strong>Disadvantage:</strong> No Hour Card claimed, delaying evolution progress.<br>Click "<strong>Next Round</strong>" to continue!',
             step_next_round: '<strong>Click "Next Round"</strong><br>Resolve movements and start next round!',
             role_scoring_young: '<strong>【🐣 Young Time Demon: Scoring & Goal】</strong><br>• <strong>Base Score:</strong> Each surviving gear at the end of each game converts 1:1 to score points!<br>• <strong>Evolution Goal:</strong> Compete for Hour Cards to satisfy 4 recipe requirements and evolve into Hour, Minute, or Second Hand! Evolved demons gain a <strong>+3 pts</strong> faction bonus at the end of Game 5!<br>• <strong>Ejection Victory:</strong> Eject Time Evil by draining its gears to win immediately!<br>• <strong>Emergency Shield:</strong> If Mana ≥ 3, spend all Mana to completely negate 1 incoming penalty.',
             role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend Mana to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
@@ -3112,15 +3209,19 @@ function startRound(gameState) {
 		window.AutoNextRoundTimer.stop();
 	}
 	const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
-	// 當仍在等待人類輸入時，不允許進入下一回合（避免「未選牌也能按下一回合」）
+	// 當仍在等待人類輸入或小時卡挑選尚未結束時，不允許進入下一回合（避免「未選牌也能按下一回合」）
     const waitingMinute = gameState && gameState.currentRoundAIChoices !== null;
-    const waitingHour = gameState && !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId;
+    const isHourSelectionActive = gameState && (
+        (!!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) ||
+        (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length)
+    );
     const waitingAbility = gameState && !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId;
     const waitingSecondFinal = gameState && !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId;
 
-    //防呆：若仍在等待人類輸入（出牌/選卡/能力），禁止直接進入下一回合
-    if (waitingMinute || waitingHour || waitingAbility || waitingSecondFinal) {
-        appLogger.log("[Game] 仍在等待人類操作（分鐘/小時/能力/秒針最終選擇），不能開始下一回合。");
+    //防呆：若仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），禁止直接進入下一回合
+    if (waitingMinute || isHourSelectionActive || waitingAbility || waitingSecondFinal) {
+        appLogger.log("[Game] 仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），不能開始下一回合。");
         return;
     }
 	
@@ -5653,9 +5754,16 @@ function updateUI(gameState) {
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
     // 2. 計算等待狀態 (Flags)
+    const isHourSelectionActive = !!(
+        (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length) ||
+        gameState.waitingHourChoice
+    );
+
     const flags = {
         isWaitingMinuteInput: gameState.currentRoundAIChoices !== null,
         isWaitingHourInput: !!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId,
+        isHourSelectionActive: isHourSelectionActive,
         isWaitingAbilityChoice: !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId,
         isWaitingSecondFinalChoice: !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId,
         isPlayingMinuteClash: !!gameState.isPlayingMinuteClash,
@@ -5737,12 +5845,14 @@ function updateNextStepButton(gameState, flags) {
         return; // 直接返回，不執行下方的 disable 邏輯
     }
 
-    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
+    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isHourSelectionActive || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
         nextStepBtn.disabled = true;
         if (flags.isPlayingMinuteClash) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute') : "比較分鐘數值中...";
         } else if (flags.isWaitingHourInput) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_hour_choice') : "請選擇小時卡...";
+        } else if (flags.isHourSelectionActive) {
+            nextStepBtn.textContent = window.i18n ? (window.i18n.t('ui.hints.waiting_opponents') || "等待對手挑選小時卡...") : "等待對手挑選小時卡...";
         } else if (flags.isWaitingAbilityChoice) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_ability_choice') : "請決定是否使用特殊能力...";
         } else if (flags.isWaitingSecondFinalChoice) {
@@ -8871,7 +8981,11 @@ if (typeof window !== 'undefined') {
 (function () {
     let tutorialSpotlightEl = null;
     let autoDismissTimer = null;
-    const TOOLTIP_AUTO_DISMISS_SECONDS = 25; // 延長自動關閉倒數至 25 秒，提供充足閱讀時間
+    const TOOLTIP_AUTO_DISMISS_SECONDS = 25; // 備用
+
+    // 教學歷史閱覽記錄與當前檢視索引
+    const tutorialHistory = [];
+    let currentHistoryIndex = -1;
 
     // 清除自動隱藏計時器
     function clearAutoDismissTimer() {
@@ -8881,12 +8995,9 @@ if (typeof window !== 'undefined') {
         }
     }
 
-    // 啟動氣泡提示自動隱藏倒數計時器
-    function scheduleAutoDismiss(seconds = TOOLTIP_AUTO_DISMISS_SECONDS) {
+    // 氣泡提示自動隱藏排程（依使用者指示：教學說明不會自動消除，而是在執行教學說明的動作後自動進入下一個說明，不再設置自動定時器）
+    function scheduleAutoDismiss() {
         clearAutoDismissTimer();
-        autoDismissTimer = setTimeout(() => {
-            clearTutorialPointers();
-        }, seconds * 1000);
     }
 
     // 清除目前畫面上所有引導高亮與氣泡提示
@@ -8903,13 +9014,14 @@ if (typeof window !== 'undefined') {
         if (tooltip) {
             tooltip.classList.add('hidden');
             tooltip.classList.remove('tutorial-fade-in');
+            tooltip.style.visibility = '';
         }
     }
 
     // 檢驗 DOM 元素是否處於可見狀態（支援 fixed 定位與自訂容器）
     function isElementVisible(el) {
         if (!el) return false;
-        if (el.id === 'clock-face' || el.id === 'modern-board' || el.id === 'table-top') return true;
+        if (el === document.body || el.id === 'clock-face' || el.id === 'modern-board' || el.id === 'table-top') return true;
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) return true;
         if (typeof el.getClientRects === 'function' && el.getClientRects().length > 0) return true;
@@ -8918,25 +9030,40 @@ if (typeof window !== 'undefined') {
 
     // 計算提示框的最佳定位與指向箭頭
     function computeOptimalPosition(targetEl, tooltipEl, preferredPlacement = 'auto') {
-        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top' || targetEl === document.body;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // 預估或實測提示框尺寸
+        // 實測提示框真實尺寸
         const tooltipRect = tooltipEl.getBoundingClientRect();
         const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
-        const tooltipHeight = tooltipRect.height || 110;
+        const tooltipHeight = tooltipRect.height || 140;
 
-        // 若目標為全屏鐘面/桌面容器，居中懸浮於畫面上方，不施加外框變形
+        // 【使用者指示】：當視窗寬度足夠時，統一放到畫面最左邊安全區，絕不干擾中央鐘面、右側面板或底部手牌
+        const isWideScreen = viewportWidth >= 1000;
+        if (isWideScreen) {
+            const left = 20;
+            const minTop = 130; // 避開頂部 header 與左上角抽屜按鈕群
+            const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.38);
+            const maxTop = Math.max(minTop, viewportHeight - tooltipHeight - 20);
+            const safeTop = Math.max(minTop, Math.min(idealTop, maxTop));
+            return { left, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
+        }
+
+        // 若目標為全屏鐘面/桌面容器：懸浮於畫面中央偏右安全區，防止阻擋中央鐘面
         if (isClockContainer) {
-            const left = Math.max(12, Math.round((viewportWidth - tooltipWidth) / 2));
-            const top = Math.max(68, Math.min(130, Math.round(viewportHeight * 0.14)));
-            return { left, top, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
+            const idealLeft = viewportWidth > 768
+                ? Math.round(viewportWidth * 0.52)
+                : Math.round((viewportWidth - tooltipWidth) / 2);
+            const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.42);
+            const safeLeft = Math.max(12, Math.min(idealLeft, viewportWidth - tooltipWidth - 16));
+            const safeTop = Math.max(64, Math.min(idealTop, viewportHeight - tooltipHeight - 16));
+            return { left: safeLeft, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
         }
 
         const rect = targetEl.getBoundingClientRect();
 
-        // 若指定為「中央偏右 (center-right)」（如開局歡迎教學指南），懸浮於畫面中央偏右安全區域
+        // 若指定為「中央偏右 (center-right)」（如開局歡迎教學指南指向下一回合按鈕），懸浮於中央偏右安全區並指向目標
         if (preferredPlacement === 'center-right') {
             const idealLeft = viewportWidth > 768
                 ? Math.round(viewportWidth * 0.52)
@@ -8990,30 +9117,34 @@ if (typeof window !== 'undefined') {
         let arrow = 'bottom';
 
         if (chosen === 'top') {
-            // 氣泡位於目標上方，箭頭朝下指向目標
-            top = rect.top - tooltipHeight - 12;
+            // 氣泡位於目標上方，箭頭朝下指向目標，保留 16px 安全淨空，絕不覆蓋目標卡牌
+            top = rect.top - tooltipHeight - 16;
             left = rect.left + rect.width / 2 - tooltipWidth / 2;
             arrow = 'bottom';
         } else if (chosen === 'bottom') {
             // 氣泡位於目標下方，箭頭朝上指向目標
-            top = rect.bottom + 12;
+            top = rect.bottom + 14;
             left = rect.left + rect.width / 2 - tooltipWidth / 2;
             arrow = 'top';
         } else if (chosen === 'left') {
             // 氣泡位於目標左方，箭頭朝右指向目標
-            left = rect.left - tooltipWidth - 12;
+            left = rect.left - tooltipWidth - 14;
             top = rect.top + rect.height / 2 - tooltipHeight / 2;
             arrow = 'right';
         } else if (chosen === 'right') {
             // 氣泡位於目標右方，箭頭朝左指向目標
-            left = rect.right + 12;
+            left = rect.right + 14;
             top = rect.top + rect.height / 2 - tooltipHeight / 2;
             arrow = 'left';
         }
 
         // 確保提示框完全在可視視窗安全邊界之內
+        // 當氣泡位於目標上方時，maxTopAllowed 嚴格限制在目標頂部上方，絕對防止向下推擠覆蓋手牌卡牌
+        const maxTopAllowed = (chosen === 'top')
+            ? Math.max(10, rect.top - tooltipHeight - 12)
+            : viewportHeight - tooltipHeight - 10;
         const safeLeft = Math.max(10, Math.min(left, viewportWidth - tooltipWidth - 10));
-        const safeTop = Math.max(10, Math.min(top, viewportHeight - tooltipHeight - 10));
+        const safeTop = Math.max(10, Math.min(top, maxTopAllowed));
 
         // 計算箭頭在氣泡上的相對座標，精確直指目標中心
         const targetCenterX = rect.left + rect.width / 2;
@@ -9024,14 +9155,61 @@ if (typeof window !== 'undefined') {
         return { left: safeLeft, top: safeTop, arrow, arrowX, arrowY };
     }
 
-    // 將動態氣泡提示框指向目標 DOM 元素
-    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
-        // 若玩家停用教學模式，不動作
-        if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
-            clearTutorialPointers();
+    // 更新教學視窗底部的上一則/下一則導覽狀態
+    function updateTutorialNav() {
+        const prevBtn = document.getElementById('tutorial-prev-btn');
+        const nextBtn = document.getElementById('tutorial-next-btn');
+        const statusEl = document.getElementById('tutorial-history-status');
+        if (!prevBtn || !nextBtn || !statusEl) return;
+
+        const total = tutorialHistory.length;
+        if (total <= 1) {
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            const latestLabel = window.i18n ? window.i18n.t('tutorial.latest_tag') : '最新進度';
+            statusEl.textContent = total === 1 ? latestLabel : '';
+            statusEl.classList.remove('is-historical');
             return;
         }
 
+        const currentPos = currentHistoryIndex + 1;
+        const isLatest = (currentHistoryIndex === total - 1);
+
+        prevBtn.disabled = (currentHistoryIndex <= 0);
+        nextBtn.disabled = isLatest;
+
+        if (isLatest) {
+            statusEl.textContent = `${currentPos} / ${total}`;
+            statusEl.classList.remove('is-historical');
+        } else {
+            const histTag = window.i18n ? window.i18n.t('tutorial.history_tag') : '（歷史閱覽）';
+            statusEl.textContent = `${currentPos} / ${total} ${histTag}`;
+            statusEl.classList.add('is-historical');
+        }
+    }
+
+    // 歷史閱覽切換函式（delta = -1 閱覽上一則，delta = 1 閱覽下一則）
+    function navigateTutorialHistory(delta) {
+        if (tutorialHistory.length === 0) return;
+        const targetIndex = currentHistoryIndex + delta;
+        if (targetIndex < 0 || targetIndex >= tutorialHistory.length) return;
+
+        currentHistoryIndex = targetIndex;
+        const entry = tutorialHistory[currentHistoryIndex];
+        if (!entry) return;
+
+        const isLatest = (currentHistoryIndex === tutorialHistory.length - 1);
+        let displayMsg = entry.messageText;
+        if (!isLatest) {
+            displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">📜【歷史教學回顧】</div>` + displayMsg;
+        }
+
+        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement);
+        updateTutorialNav();
+    }
+
+    // 核心渲染函式：負責幾何測量、定位座標與氣泡框原地淡入顯現
+    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto') {
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const textEl = document.getElementById('tutorial-tooltip-text');
         if (!tooltip || !textEl) return;
@@ -9043,19 +9221,21 @@ if (typeof window !== 'undefined') {
             targetEl = targetSelector;
         }
 
+        // 若目標暫時不可見（例如歷史步驟之按鈕已隱藏），安全退回至 document.body 容器供玩家完整閱讀
         if (!targetEl || !isElementVisible(targetEl)) {
-            clearTutorialPointers();
-            return;
+            targetEl = document.body;
         }
 
-        const wasHidden = tooltip.classList.contains('hidden');
-
         // 清除舊高亮
-        clearTutorialPointers();
+        if (tutorialSpotlightEl) {
+            tutorialSpotlightEl.classList.remove('tutorial-spotlight');
+            tutorialSpotlightEl = null;
+        }
+        document.querySelectorAll('.tutorial-spotlight').forEach(el => el.classList.remove('tutorial-spotlight'));
 
-        // 目標高亮：若非全屏容器，加上聚光燈樣式（純光暈無 scale 變形）
-        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
-        if (!isClockContainer) {
+        // 目標高亮：若非全屏容器或 body，加上聚光燈樣式（純光暈無 scale 變形）
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top' || targetEl === document.body;
+        if (!isClockContainer && isElementVisible(targetEl)) {
             targetEl.classList.add('tutorial-spotlight');
             tutorialSpotlightEl = targetEl;
         }
@@ -9063,17 +9243,20 @@ if (typeof window !== 'undefined') {
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
-        // 重新顯示 tooltip
+        // 關鍵強化：在 visibility: hidden 狀態下解除 display: none，強制瀏覽器重排以獲取注入最新文字後的真實幾何尺寸
         tooltip.classList.remove('hidden');
-        if (wasHidden) {
-            tooltip.classList.add('tutorial-fade-in');
-        }
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.transition = 'none';
+        void tooltip.offsetWidth; // 強制重排
 
-        // 計算最佳定位座標
+        // 計算最佳定位座標（基於實測真實尺寸）
         const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
         tooltip.setAttribute('data-arrow', pos.arrow);
+
+        // 切換教學步驟或重新顯示時，一律先於 DOM 精確設定座標，絕不在畫面上橫向飛竄
         tooltip.style.left = `${pos.left}px`;
         tooltip.style.top = `${pos.top}px`;
+
         if (typeof tooltip.style.setProperty === 'function') {
             tooltip.style.setProperty('--arrow-x', `${pos.arrowX}px`);
             tooltip.style.setProperty('--arrow-y', `${pos.arrowY}px`);
@@ -9082,8 +9265,34 @@ if (typeof window !== 'undefined') {
             tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
 
-        // 啟動自動隱藏倒數計時（滑鼠或觸控懸停時自動暫停計時）
-        scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
+        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現（常駐顯示，直到玩家執行說明動作推進）
+        tooltip.style.visibility = 'visible';
+        tooltip.classList.remove('tutorial-fade-in');
+        void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
+        tooltip.classList.add('tutorial-fade-in');
+    }
+
+    // 將動態氣泡提示框指向目標 DOM 元素（納入歷史記錄佇列供回溯閱覽）
+    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
+        // 若玩家停用教學模式，不動作
+        if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
+            clearTutorialPointers();
+            return;
+        }
+
+        // 記錄至歷史記錄佇列（連續相同訊息不重複新增）
+        const lastEntry = tutorialHistory[tutorialHistory.length - 1];
+        if (!lastEntry || lastEntry.messageText !== messageText) {
+            tutorialHistory.push({
+                targetSelector,
+                messageText,
+                preferredPlacement
+            });
+        }
+        currentHistoryIndex = tutorialHistory.length - 1;
+
+        renderTutorialMessage(targetSelector, messageText, preferredPlacement);
+        updateTutorialNav();
     }
 
     // 追蹤已顯示過的教學步驟，避免同步驟於同一局對局中重複彈出干擾玩家
@@ -9092,7 +9301,7 @@ if (typeof window !== 'undefined') {
     function hasCompletedAllTutorialSteps(gameState) {
         // 核心流程：出牌 + 完成回合
         const hasPlayedCard = shownSteps.has('step1_drag_minute');
-        const hasFinishedRound = shownSteps.has('step4_next_round') || shownSteps.has('step4_no_hour_card');
+        const hasFinishedRound = shownSteps.has('step4_next_round');
         return hasPlayedCard && hasFinishedRound;
     }
 
@@ -9158,10 +9367,13 @@ if (typeof window !== 'undefined') {
         const humanPlayer = gameState.players ? gameState.players.find(p => p.id === humanId) : null;
         const roleKey = getHumanRoleKey(humanPlayer);
 
-        // 若進入全新對局（第 1 局、第 1 回合、尚未翻開小時卡），自動重置步驟紀錄
+        // 若進入全新對局（第 1 局、第 1 回合、尚未翻開小時卡），自動重置步驟紀錄與歷史閱覽佇列
         if (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && (!gameState.currentDrawnHourCards || gameState.currentDrawnHourCards.length === 0)) {
             if (!shownSteps.has('step0_welcome')) {
                 shownSteps.clear();
+                tutorialHistory.length = 0;
+                currentHistoryIndex = -1;
+                updateTutorialNav();
             }
         }
 
@@ -9269,8 +9481,29 @@ if (typeof window !== 'undefined') {
             }
         }
 
+        // 判斷當前是否處於小時卡挑選階段（無論輪到 AI 或人類）
+        const isHourSelectionActive = !!(
+            (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
+            (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length) ||
+            gameState.waitingHourChoice
+        );
+
+        // 判斷人類玩家本回合是否為有權挑選小時卡的玩家
+        const isHumanPicker = !!(
+            gameState.hourPickOrder &&
+            Array.isArray(gameState.hourPickOrder) &&
+            gameState.hourPickOrder.some(p => p.playerId === humanId || String(p.playerId) === String(humanId) || (humanPlayer && p.playerId === humanPlayer.id))
+        );
+        const humanHasPickedHour = !!(humanPlayer && humanPlayer.pickedHourThisTurn);
+
         // 【階段 2】：等待挑選小時卡 (輪到人類選卡)
-        if (gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) {
+        const isHumanHourTurn = !!gameState.waitingHourChoice && (
+            gameState.waitingHourChoicePlayerId === humanId ||
+            String(gameState.waitingHourChoicePlayerId) === String(humanId) ||
+            (humanPlayer && gameState.waitingHourChoicePlayerId === humanPlayer.id)
+        );
+
+        if (isHumanHourTurn) {
             if (!force && shownSteps.has('step3_select_hour') && gameState.roundMarker > 1) {
                 clearTutorialPointers();
                 return;
@@ -9302,23 +9535,35 @@ if (typeof window !== 'undefined') {
             if (highlightSpot && isElementVisible(highlightSpot)) {
                 showTutorialPointer(highlightSpot, turnPrefix + step3Msg, 'top');
             } else {
-                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'center');
+                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'center-right');
             }
             return;
         }
 
-        // 【階段 2-B】：等待挑選小時卡，但人類玩家未進前 2 名（無須挑選小時卡）
-        const isHourPhase = (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) || gameState.waitingHourChoice;
-        const humanNotPicker = gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && !gameState.hourPickOrder.some(p => p.playerId === humanId);
-        if (isHourPhase && humanNotPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
-            const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
-                : '';
-            shownSteps.add('step3_no_hour_notice');
-            const noHourNotice = window.i18n
-                ? window.i18n.t('tutorial.step3_no_hour_notice')
-                : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
-            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center');
+        // 若當前仍處於小時卡挑選階段（尚未輪到人類，或人類非挑選者）：
+        if (isHourSelectionActive) {
+            // 【重要修復】：若人類玩家是有權挑選者，但目前正等待前面的對手 (AI) 挑選或落子中：
+            // 嚴格禁止彈出「無須挑選小時卡」，清除指針並安靜等待人類輪次到來，徹底杜絕一閃而過的問題
+            if (isHumanPicker && !humanHasPickedHour) {
+                clearTutorialPointers();
+                return;
+            }
+
+            // 【階段 2-B】：人類玩家確定未進挑選名單（確定本回合無須挑選小時卡）
+            // 僅在人類明確「非挑選者」時，在鐘面顯示一次避險提醒
+            if (!isHumanPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
+                const turnPrefix = gameState.roundMarker > 1
+                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                    : '';
+                shownSteps.add('step3_no_hour_notice');
+                const noHourNotice = window.i18n
+                    ? window.i18n.t('tutorial.step3_no_hour_notice')
+                    : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
+                showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center-right');
+                return;
+            }
+
+            // 小時卡階段未完全結束，嚴格禁止進入後續階段 3、4、5
             return;
         }
 
@@ -9359,7 +9604,8 @@ if (typeof window !== 'undefined') {
         }
 
         // 【階段 5】：回合結束，準備進入下一回合
-        if (nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
+        // 嚴格確保小時卡階段已完全結束，且「下一回合」按鈕可用且可見
+        if (!isHourSelectionActive && nextBtn && !nextBtn.disabled && isElementVisible(nextBtn)) {
             const isInitialStart = (gameState.gameRound === 1 && gameState.roundMarker === 1 && !shownSteps.has('step1_drag_minute'));
             if (isInitialStart) {
                 if (!shownSteps.has('step0_welcome') || force) {
@@ -9370,12 +9616,10 @@ if (typeof window !== 'undefined') {
                         : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                     showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
                 }
-            } else if ((!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) || force) {
+            } else if (!shownSteps.has('step4_next_round') || force) {
                 const turnPrefix = gameState.roundMarker > 1
                     ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                     : '';
-
-                const didPickHour = !!(humanPlayer && humanPlayer.pickedHourThisTurn);
 
                 // 依角色加入專屬進度與得分反饋
                 let roleProgressHint = '';
@@ -9396,19 +9640,11 @@ if (typeof window !== 'undefined') {
                         : `背包已收集小時卡：${bagCount} 張，繼續收集以達成進化！`) + '</span>';
                 }
 
-                if (didPickHour) {
-                    shownSteps.add('step4_next_round');
-                    const roundDoneMsg = window.i18n
-                        ? window.i18n.t('tutorial.step4_round_done')
-                        : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
-                    showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + roleProgressHint, 'left');
-                } else {
-                    shownSteps.add('step4_no_hour_card');
-                    const noHourMsg = window.i18n
-                        ? window.i18n.t('tutorial.step4_no_hour_card')
-                        : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險）：</strong>本回合不進入鐘面，齒輪毫髮無損！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，延緩變身進度。<br>點擊「<strong>下一回合</strong>」展開新回合競標！';
-                    showTutorialPointer('#next-step-btn', turnPrefix + noHourMsg + roleProgressHint, 'left');
-                }
+                shownSteps.add('step4_next_round');
+                const roundDoneMsg = window.i18n
+                    ? window.i18n.t('tutorial.step4_round_done')
+                    : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
+                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + roleProgressHint, 'left');
             }
             return;
         }
@@ -9440,6 +9676,9 @@ if (typeof window !== 'undefined') {
 
     function resetTutorialProgress() {
         shownSteps.clear();
+        tutorialHistory.length = 0;
+        currentHistoryIndex = -1;
+        updateTutorialNav();
     }
 
     // 重播當前步驟教學提示（使用者手動點擊「💡 提示」按鈕時調用）
@@ -9498,13 +9737,18 @@ if (typeof window !== 'undefined') {
         disableTutorialMode,
         resetTutorialProgress,
         replayCurrentTutorial,
-        hasCompletedAllTutorialSteps
+        hasCompletedAllTutorialSteps,
+        navigateTutorialHistory,
+        getTutorialHistory: () => [...tutorialHistory]
     };
 
-    // 視窗大小改變時重新計算 Tooltip 位置
+    // 視窗大小改變時重新計算 Tooltip 位置（動態響應寬螢幕最左側或自適應佈局）
     window.addEventListener('resize', () => {
         if (window.globalGameState && window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode) {
-            updateTutorialPointers(window.globalGameState);
+            const tooltip = document.getElementById('tutorial-pointer-tooltip');
+            if (tooltip && !tooltip.classList.contains('hidden')) {
+                updateTutorialPointers(window.globalGameState, true);
+            }
         }
     });
 
@@ -9513,6 +9757,24 @@ if (typeof window !== 'undefined') {
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const closeBtn = document.getElementById('tutorial-close-btn');
         const muteBtn = document.getElementById('tutorial-mute-btn');
+        const prevBtn = document.getElementById('tutorial-prev-btn');
+        const nextBtn = document.getElementById('tutorial-next-btn');
+
+        // 點擊「◀ 上一則教學」：閱覽歷史教學說明
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateTutorialHistory(-1);
+            });
+        }
+
+        // 點擊「下一則 ▶」：切換至後續或最新教學說明
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateTutorialHistory(1);
+            });
+        }
 
         // 點擊「✕」：僅關閉當前提示，保留教學模式供後續步驟使用
         if (closeBtn) {
@@ -9528,22 +9790,6 @@ if (typeof window !== 'undefined') {
                 e.stopPropagation();
                 disableTutorialMode(false);
             });
-        }
-
-        // 懸停與觸控暫停倒數：當使用者正在閱讀提示時，自動暫停計時器
-        if (tooltip) {
-            tooltip.addEventListener('mouseenter', clearAutoDismissTimer);
-            tooltip.addEventListener('mouseleave', () => {
-                if (!tooltip.classList.contains('hidden')) {
-                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
-                }
-            });
-            tooltip.addEventListener('touchstart', clearAutoDismissTimer, { passive: true });
-            tooltip.addEventListener('touchend', () => {
-                if (!tooltip.classList.contains('hidden')) {
-                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
-                }
-            }, { passive: true });
         }
 
         const toggleEl = document.getElementById('tutorial-toggle');
@@ -9562,25 +9808,6 @@ if (typeof window !== 'undefined') {
                 }
             });
         }
-
-        // 點擊盤面或外部空白處：關閉當前提示氣泡（不打斷框內閱讀或高亮按鈕點擊）
-        document.addEventListener('pointerdown', (e) => {
-            const currentTooltip = document.getElementById('tutorial-pointer-tooltip');
-            if (!currentTooltip || currentTooltip.classList.contains('hidden')) return;
-
-            // 若點擊在提示框內部（閱讀、點擊按鈕、選取文字等），不關閉
-            if (currentTooltip.contains(e.target)) {
-                return;
-            }
-
-            // 若點擊在當前高亮目標元素上，保留原生點擊行為，不搶先打斷
-            if (tutorialSpotlightEl && tutorialSpotlightEl.contains(e.target)) {
-                return;
-            }
-
-            // 外部盤面空白處點擊：關閉當前提示氣泡
-            clearTutorialPointers();
-        });
 
         // 點擊人類角色徽章：隨時展示該角色專屬得分與勝負指南
         const roleDisplayEl = document.getElementById('human-role-display');
@@ -11723,15 +11950,15 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
                             } catch (_) {}
                             resolve();
                         };
-                        img.onerror = async () => {
-                            if (window.PIXI && PIXI.Assets && typeof PIXI.Assets.load === 'function') {
-                                try {
-                                    this.textures[k] = await PIXI.Assets.load(path);
-                                } catch (_) {}
-                            }
+                        img.onerror = () => {
+                            // 若圖片載入失敗（例如尚未放置資產），安全跳過以純色/文字退回顯示
                             resolve();
                         };
-                        img.src = src;
+                        try {
+                            img.src = src;
+                        } catch (_) {
+                            resolve();
+                        }
                     } else {
                         resolve();
                     }
@@ -12242,8 +12469,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 
                 const g = new PIXI.Graphics();
                 if (waitingHour) this.glowRect(g, W, H, PAL.gold, 0.38);
-                g.lineStyle(card.isPrecious ? 2 : 1.2, card.isPrecious ? PAL.gold : 0xffffff,
-                        card.isPrecious ? 0.95 : 0.3)
+                g.lineStyle(card.isPrecious ? 2.5 : 1.5, card.isPrecious ? PAL.goldBorder : PAL.cardBorder, 0.9)
                  .beginFill(card.isPrecious ? PAL.cardGold : PAL.cardLight)
                  .drawRoundedRect(-W / 2, -H / 2, W, H, 9).endFill();
                 c.addChild(g);
@@ -14900,6 +15126,11 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 			</div>
 		</div>
 		<div id="tutorial-tooltip-text" class="tutorial-tooltip-body"></div>
+		<div id="tutorial-nav-bar" class="tutorial-nav-bar">
+			<button id="tutorial-prev-btn" class="tutorial-nav-btn" type="button" title="閱覽上一則教學" data-i18n="tutorial.prev_btn" disabled>◀ 上一則教學</button>
+			<span id="tutorial-history-status" class="tutorial-history-status" data-i18n="tutorial.latest_tag">最新進度</span>
+			<button id="tutorial-next-btn" class="tutorial-nav-btn" type="button" title="閱覽下一則教學" data-i18n="tutorial.next_btn" disabled>下一則 ▶</button>
+		</div>
 		<div class="tutorial-pointer-arrow"></div>
 	</div>
 
@@ -20330,7 +20561,8 @@ input:checked + .slider:before { transform: translateX(16px); }
 .token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); }   /* 秒針 (玩家) */
 
 /* 鐘面中心的小時卡 */
-.clock-center .drawn-hour-card {
+.clock-center .drawn-hour-card,
+.drawn-hour-card {
     width: clamp(36px, 10vw, 55px);
     height: clamp(54px, 15vw, 80px);
     background: linear-gradient(to bottom right, #f7f7f7, #ddd);
@@ -22316,7 +22548,7 @@ body {
     font-size: 0.9rem;
     line-height: 1.5;
     z-index: 10005 !important;
-    transition: left 0.22s ease-out, top 0.22s ease-out, opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
     pointer-events: auto !important; /* 確保提示框本體可選取閱讀、點擊關閉與切換設定，不穿透至底層按鈕 */
 }
 
@@ -22393,6 +22625,65 @@ body {
 
 .tutorial-tooltip-body strong {
     color: #ff9ff3;
+}
+
+/* 教學視窗上一則/下一則導覽工具列 */
+.tutorial-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(254, 202, 87, 0.2);
+    user-select: none;
+    gap: 6px;
+}
+
+.tutorial-nav-btn {
+    background: rgba(254, 202, 87, 0.12);
+    border: 1px solid rgba(254, 202, 87, 0.45);
+    color: #feca57;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.4;
+}
+
+.tutorial-nav-btn:hover:not(:disabled) {
+    background: rgba(254, 202, 87, 0.28);
+    border-color: #feca57;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(254, 202, 87, 0.4);
+    transform: translateY(-1px);
+}
+
+.tutorial-nav-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.tutorial-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #888;
+}
+
+.tutorial-history-status {
+    font-size: 0.76rem;
+    color: #aaa;
+    letter-spacing: 0.5px;
+    text-align: center;
+    flex: 1;
+}
+
+.tutorial-history-status.is-historical {
+    color: #ff9ff3;
+    font-weight: 500;
 }
 
 .tutorial-pointer-arrow {
