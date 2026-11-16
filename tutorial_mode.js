@@ -323,7 +323,7 @@
     function hasCompletedAllTutorialSteps(gameState) {
         // 核心流程：出牌 + 完成回合
         const hasPlayedCard = shownSteps.has('step1_drag_minute');
-        const hasFinishedRound = shownSteps.has('step4_next_round') || shownSteps.has('step4_no_hour_card');
+        const hasFinishedRound = shownSteps.has('step4_next_round');
         return hasPlayedCard && hasFinishedRound;
     }
 
@@ -638,12 +638,10 @@
                         : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                     showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
                 }
-            } else if ((!shownSteps.has('step4_next_round') && !shownSteps.has('step4_no_hour_card')) || force) {
+            } else if (!shownSteps.has('step4_next_round') || force) {
                 const turnPrefix = gameState.roundMarker > 1
                     ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
                     : '';
-
-                const didPickHour = !!(humanPlayer && humanPlayer.pickedHourThisTurn);
 
                 // 依角色加入專屬進度與得分反饋
                 let roleProgressHint = '';
@@ -664,19 +662,11 @@
                         : `背包已收集小時卡：${bagCount} 張，繼續收集以達成進化！`) + '</span>';
                 }
 
-                if (didPickHour) {
-                    shownSteps.add('step4_next_round');
-                    const roundDoneMsg = window.i18n
-                        ? window.i18n.t('tutorial.step4_round_done')
-                        : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
-                    showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + roleProgressHint, 'left');
-                } else {
-                    shownSteps.add('step4_no_hour_card');
-                    const noHourMsg = window.i18n
-                        ? window.i18n.t('tutorial.step4_no_hour_card')
-                        : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險）：</strong>本回合不進入鐘面，齒輪毫髮無損！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，延緩變身進度。<br>點擊「<strong>下一回合</strong>」展開新回合競標！';
-                    showTutorialPointer('#next-step-btn', turnPrefix + noHourMsg + roleProgressHint, 'left');
-                }
+                shownSteps.add('step4_next_round');
+                const roundDoneMsg = window.i18n
+                    ? window.i18n.t('tutorial.step4_round_done')
+                    : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
+                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + roleProgressHint, 'left');
             }
             return;
         }
