@@ -35,6 +35,7 @@
         if (tooltip) {
             tooltip.classList.add('hidden');
             tooltip.classList.remove('tutorial-fade-in');
+            tooltip.style.visibility = '';
         }
     }
 
@@ -54,13 +55,13 @@
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // 預估或實測提示框尺寸
+        // 實測提示框真實尺寸
         const tooltipRect = tooltipEl.getBoundingClientRect();
         const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
-        const tooltipHeight = tooltipRect.height || 110;
+        const tooltipHeight = tooltipRect.height || 140;
 
-        // 若目標為鐘面容器或指定為「中央偏右 (center-right)」：懸浮於畫面中央偏右安全區，防止阻擋中央鐘面
-        if (isClockContainer || preferredPlacement === 'center-right') {
+        // 若目標為全屏鐘面/桌面容器：懸浮於畫面中央偏右安全區，防止阻擋中央鐘面
+        if (isClockContainer) {
             const idealLeft = viewportWidth > 768
                 ? Math.round(viewportWidth * 0.52)
                 : Math.round((viewportWidth - tooltipWidth) / 2);
@@ -71,6 +72,22 @@
         }
 
         const rect = targetEl.getBoundingClientRect();
+
+        // 若指定為「中央偏右 (center-right)」（如開局歡迎教學指南指向下一回合按鈕），懸浮於中央偏右安全區並指向目標
+        if (preferredPlacement === 'center-right') {
+            const idealLeft = viewportWidth > 768
+                ? Math.round(viewportWidth * 0.52)
+                : Math.round((viewportWidth - tooltipWidth) / 2);
+            const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.42);
+            const maxAllowedTop = rect.top > tooltipHeight + 24
+                ? rect.top - tooltipHeight - 16
+                : viewportHeight - tooltipHeight - 16;
+            const safeLeft = Math.max(12, Math.min(idealLeft, viewportWidth - tooltipWidth - 16));
+            const safeTop = Math.max(64, Math.min(idealTop, maxAllowedTop));
+            const targetCenterX = rect.left + rect.width / 2;
+            const arrowX = Math.max(18, Math.min(tooltipWidth - 18, Math.round(targetCenterX - safeLeft)));
+            return { left: safeLeft, top: safeTop, arrow: 'bottom', arrowX, arrowY: tooltipHeight };
+        }
 
         const spaceAbove = rect.top;
         const spaceBelow = viewportHeight - rect.bottom;
@@ -109,36 +126,35 @@
         let left = 0;
         let arrow = 'bottom';
 
-        if (chosen === 'center') {
-            // 居中懸浮於目標中軸線上方或下方，不產生全域偏移
-            left = rect.left + rect.width / 2 - tooltipWidth / 2;
-            top = rect.top >= tooltipHeight + 16 ? (rect.top - tooltipHeight - 12) : (rect.bottom + 12);
-            arrow = rect.top >= tooltipHeight + 16 ? 'bottom' : 'top';
-        } else if (chosen === 'top') {
-            // 氣泡位於目標上方，箭頭朝下指向目標
-            top = rect.top - tooltipHeight - 12;
+        if (chosen === 'top') {
+            // 氣泡位於目標上方，箭頭朝下指向目標，保留 16px 安全淨空，絕不覆蓋目標卡牌
+            top = rect.top - tooltipHeight - 16;
             left = rect.left + rect.width / 2 - tooltipWidth / 2;
             arrow = 'bottom';
         } else if (chosen === 'bottom') {
             // 氣泡位於目標下方，箭頭朝上指向目標
-            top = rect.bottom + 12;
+            top = rect.bottom + 14;
             left = rect.left + rect.width / 2 - tooltipWidth / 2;
             arrow = 'top';
         } else if (chosen === 'left') {
             // 氣泡位於目標左方，箭頭朝右指向目標
-            left = rect.left - tooltipWidth - 12;
+            left = rect.left - tooltipWidth - 14;
             top = rect.top + rect.height / 2 - tooltipHeight / 2;
             arrow = 'right';
         } else if (chosen === 'right') {
             // 氣泡位於目標右方，箭頭朝左指向目標
-            left = rect.right + 12;
+            left = rect.right + 14;
             top = rect.top + rect.height / 2 - tooltipHeight / 2;
             arrow = 'left';
         }
 
         // 確保提示框完全在可視視窗安全邊界之內
+        // 當氣泡位於目標上方時，maxTopAllowed 嚴格限制在目標頂部上方，絕對防止向下推擠覆蓋手牌卡牌
+        const maxTopAllowed = (chosen === 'top')
+            ? Math.max(10, rect.top - tooltipHeight - 12)
+            : viewportHeight - tooltipHeight - 10;
         const safeLeft = Math.max(10, Math.min(left, viewportWidth - tooltipWidth - 10));
-        const safeTop = Math.max(10, Math.min(top, viewportHeight - tooltipHeight - 10));
+        const safeTop = Math.max(10, Math.min(top, maxTopAllowed));
 
         // 計算箭頭在氣泡上的相對座標，精確直指目標中心
         const targetCenterX = rect.left + rect.width / 2;
@@ -188,7 +204,14 @@
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
-        // 計算最佳定位座標
+        // 關鍵強化：在 visibility: hidden 狀態下解除 display: none，強制瀏覽器重排以獲取注入最新文字後的真實幾何尺寸
+        // 徹底杜絕因 display:none 導致尺寸誤判為 0x0 / 110px 而向下壓迫覆蓋分鐘手牌的重大問題
+        tooltip.classList.remove('hidden');
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.transition = 'none';
+        void tooltip.offsetWidth; // 強制重排
+
+        // 計算最佳定位座標（基於實測真實尺寸）
         const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
         tooltip.setAttribute('data-arrow', pos.arrow);
 
@@ -204,8 +227,8 @@
             tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
 
-        // 重新顯示 tooltip 並以純透明度原地淡入顯現
-        tooltip.classList.remove('hidden');
+        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現
+        tooltip.style.visibility = 'visible';
         tooltip.classList.remove('tutorial-fade-in');
         void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
         tooltip.classList.add('tutorial-fade-in');
