@@ -59,11 +59,23 @@
         const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
         const tooltipHeight = tooltipRect.height || 110;
 
-        // 若目標為全屏鐘面/桌面容器，居中懸浮於畫面上方，不施加外框變形
+        // 若目標為全屏鐘面/桌面容器，以鐘面水平中心居中對齊，避免偏向側邊欄
         if (isClockContainer) {
-            const left = Math.max(12, Math.round((viewportWidth - tooltipWidth) / 2));
-            const top = Math.max(68, Math.min(130, Math.round(viewportHeight * 0.14)));
-            return { left, top, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
+            const rect = targetEl.getBoundingClientRect();
+            const clockCenterX = (rect.width > 0) ? (rect.left + rect.width / 2) : (viewportWidth / 2);
+            const safeLeft = Math.max(12, Math.min(Math.round(clockCenterX - tooltipWidth / 2), viewportWidth - tooltipWidth - 12));
+
+            // 垂直定位：優先置於鐘面上方或鐘面頂部安全區，避免遮擋中央小時卡
+            let safeTop = 68;
+            if (rect.top >= tooltipHeight + 16) {
+                safeTop = Math.round(rect.top - tooltipHeight - 12);
+            } else if (rect.height > tooltipHeight + 40) {
+                safeTop = Math.max(64, Math.round(rect.top + 16));
+            } else {
+                safeTop = Math.max(64, Math.min(130, Math.round(viewportHeight * 0.14)));
+            }
+            safeTop = Math.max(10, Math.min(safeTop, viewportHeight - tooltipHeight - 10));
+            return { left: safeLeft, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
         }
 
         const rect = targetEl.getBoundingClientRect();
@@ -122,10 +134,10 @@
         let arrow = 'bottom';
 
         if (chosen === 'center') {
-            // 居中懸浮，不顯示指向箭頭
-            top = Math.max(68, Math.min(130, Math.round(viewportHeight * 0.14)));
-            left = Math.max(12, Math.round((viewportWidth - tooltipWidth) / 2));
-            arrow = 'none';
+            // 居中懸浮於目標中軸線上方或下方，不產生全域偏移
+            left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            top = rect.top >= tooltipHeight + 16 ? (rect.top - tooltipHeight - 12) : (rect.bottom + 12);
+            arrow = rect.top >= tooltipHeight + 16 ? 'bottom' : 'top';
         } else if (chosen === 'top') {
             // 氣泡位於目標上方，箭頭朝下指向目標
             top = rect.top - tooltipHeight - 12;
@@ -204,25 +216,15 @@
         const pos = computeOptimalPosition(targetEl, tooltip, preferredPlacement);
         tooltip.setAttribute('data-arrow', pos.arrow);
 
-        // 若剛從隱藏狀態顯示，暫時關閉 transition，直接在精確目標位置顯現，避免從上一位置飛竄的異常動畫
-        if (wasHidden) {
-            const originalTransition = tooltip.style.transition;
-            tooltip.style.transition = 'none';
-            tooltip.style.left = `${pos.left}px`;
-            tooltip.style.top = `${pos.top}px`;
-            // 強制觸發重繪 (reflow) 使定位立即生效
-            void tooltip.offsetWidth;
-            tooltip.style.transition = originalTransition;
-        } else {
-            tooltip.style.left = `${pos.left}px`;
-            tooltip.style.top = `${pos.top}px`;
-        }
+        // 切換教學步驟或重新顯示時，一律先於 DOM 精確設定座標，絕不在畫面上橫向飛竄
+        tooltip.style.left = `${pos.left}px`;
+        tooltip.style.top = `${pos.top}px`;
 
-        // 重新顯示 tooltip
+        // 重新顯示 tooltip 並以純透明度淡入顯現
         tooltip.classList.remove('hidden');
-        if (wasHidden) {
-            tooltip.classList.add('tutorial-fade-in');
-        }
+        tooltip.classList.remove('tutorial-fade-in');
+        void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
+        tooltip.classList.add('tutorial-fade-in');
 
         if (typeof tooltip.style.setProperty === 'function') {
             tooltip.style.setProperty('--arrow-x', `${pos.arrowX}px`);

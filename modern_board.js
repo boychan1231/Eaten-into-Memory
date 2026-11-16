@@ -280,9 +280,7 @@
                 'p_scz': 'assets/player/p_soul_scz.png',
                 'p_hour': 'assets/player/p_soul_hour.png',
                 'p_min': 'assets/player/p_soul_min.png',
-                'p_sec': 'assets/player/p_soul_sec.png',
-                // 小時卡專用底圖
-                'hourCard': 'assets/hourCard.png'
+                'p_sec': 'assets/player/p_soul_sec.png'
             };
 
             const base64Map = window.ROLE_SOUL_BASE64 || {};
@@ -833,41 +831,14 @@
 
                 const g = new PIXI.Graphics();
                 if (waitingHour) this.glowRect(g, W, H, PAL.gold, 0.38);
-                g.lineStyle(card.isPrecious ? 2.2 : 1.2, card.isPrecious ? PAL.gold : 0xffffff,
-                        card.isPrecious ? 0.95 : 0.4)
-                 .beginFill(card.isPrecious ? 0x2d2408 : 0x141824, 0.92)
+                g.lineStyle(card.isPrecious ? 2.5 : 1.5, card.isPrecious ? PAL.goldBorder : PAL.cardBorder, 0.9)
+                 .beginFill(card.isPrecious ? PAL.cardGold : PAL.cardLight)
                  .drawRoundedRect(-W / 2, -H / 2, W, H, 9).endFill();
                 c.addChild(g);
 
-                // 小時卡精緻圖案底圖 (Sprite 渲染)
-                const hourCardTex = this.textures['hourCard'];
-                if (hourCardTex) {
-                    const cardSprite = new PIXI.Sprite(hourCardTex);
-                    cardSprite.anchor.set(0.5);
-                    cardSprite.width = W;
-                    cardSprite.height = H;
-                    // 使用遮罩確保 Sprite 符合圓角
-                    const maskG = new PIXI.Graphics();
-                    maskG.beginFill(0xffffff).drawRoundedRect(-W / 2, -H / 2, W, H, 9).endFill();
-                    c.addChild(maskG);
-                    cardSprite.mask = maskG;
-                    c.addChild(cardSprite);
-                }
-
-                // 小時卡文字換成清晰亮白色，搭配高對比層級
-                const num = this.text(card.number, 21, 0xffffff, '800');
-                num.y = -9;
-                c.addChild(num);
-
-                const age = this.text(card.ageGroup || '', 9.5, 0xffffff, '600');
-                age.y = 15;
-                c.addChild(age);
-
-                if (card.isPrecious) {
-                    const st = this.text('★', 12, 0xffd27f, '800');
-                    st.y = 28;
-                    c.addChild(st);
-                }
+                const num = this.text(card.number, 21, 0x1a1f36, '800'); num.y = -9; c.addChild(num);
+                const age = this.text(card.ageGroup || '', 9.5, 0x4a5170, '600'); age.y = 15; c.addChild(age);
+                if (card.isPrecious) { const st = this.text('★', 11, 0x7a5a00, '700'); st.y = 28; c.addChild(st); }
 
                 if (waitingHour) {
                     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
