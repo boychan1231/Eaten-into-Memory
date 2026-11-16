@@ -13,12 +13,9 @@
         }
     }
 
-    // 啟動氣泡提示自動隱藏倒數計時器
-    function scheduleAutoDismiss(seconds = TOOLTIP_AUTO_DISMISS_SECONDS) {
+    // 氣泡提示自動隱藏排程（依使用者指示：教學說明不會自動消除，必須經玩家手動點擊關閉，不再設置自動計時器）
+    function scheduleAutoDismiss() {
         clearAutoDismissTimer();
-        autoDismissTimer = setTimeout(() => {
-            clearTutorialPointers();
-        }, seconds * 1000);
     }
 
     // 清除目前畫面上所有引導高亮與氣泡提示
@@ -59,6 +56,17 @@
         const tooltipRect = tooltipEl.getBoundingClientRect();
         const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
         const tooltipHeight = tooltipRect.height || 140;
+
+        // 【使用者指示】：當視窗寬度足夠時，統一放到畫面最左邊安全區，絕不干擾中央鐘面、右側面板或底部手牌
+        const isWideScreen = viewportWidth >= 1000;
+        if (isWideScreen) {
+            const left = 20;
+            const minTop = 130; // 避開頂部 header 與左上角抽屜按鈕群
+            const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.38);
+            const maxTop = Math.max(minTop, viewportHeight - tooltipHeight - 20);
+            const safeTop = Math.max(minTop, Math.min(idealTop, maxTop));
+            return { left, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
+        }
 
         // 若目標為全屏鐘面/桌面容器：懸浮於畫面中央偏右安全區，防止阻擋中央鐘面
         if (isClockContainer) {
@@ -227,14 +235,11 @@
             tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
 
-        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現
+        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現（常駐顯示，直到玩家點擊關閉）
         tooltip.style.visibility = 'visible';
         tooltip.classList.remove('tutorial-fade-in');
         void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
         tooltip.classList.add('tutorial-fade-in');
-
-        // 啟動自動隱藏倒數計時（滑鼠或觸控懸停時自動暫停計時）
-        scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
     }
 
     // 追蹤已顯示過的教學步驟，避免同步驟於同一局對局中重複彈出干擾玩家
@@ -652,10 +657,13 @@
         hasCompletedAllTutorialSteps
     };
 
-    // 視窗大小改變時重新計算 Tooltip 位置
+    // 視窗大小改變時重新計算 Tooltip 位置（動態響應寬螢幕最左側或自適應佈局）
     window.addEventListener('resize', () => {
         if (window.globalGameState && window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode) {
-            updateTutorialPointers(window.globalGameState);
+            const tooltip = document.getElementById('tutorial-pointer-tooltip');
+            if (tooltip && !tooltip.classList.contains('hidden')) {
+                updateTutorialPointers(window.globalGameState, true);
+            }
         }
     });
 
@@ -664,6 +672,15 @@
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const closeBtn = document.getElementById('tutorial-close-btn');
         const muteBtn = document.getElementById('tutorial-mute-btn');
+        const okBtn = document.getElementById('tutorial-ok-btn');
+
+        // 點擊「我知道了 ✓」：經玩家手動點擊確認後關閉當前提示
+        if (okBtn) {
+            okBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearTutorialPointers();
+            });
+        }
 
         // 點擊「✕」：僅關閉當前提示，保留教學模式供後續步驟使用
         if (closeBtn) {
@@ -679,22 +696,6 @@
                 e.stopPropagation();
                 disableTutorialMode(false);
             });
-        }
-
-        // 懸停與觸控暫停倒數：當使用者正在閱讀提示時，自動暫停計時器
-        if (tooltip) {
-            tooltip.addEventListener('mouseenter', clearAutoDismissTimer);
-            tooltip.addEventListener('mouseleave', () => {
-                if (!tooltip.classList.contains('hidden')) {
-                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
-                }
-            });
-            tooltip.addEventListener('touchstart', clearAutoDismissTimer, { passive: true });
-            tooltip.addEventListener('touchend', () => {
-                if (!tooltip.classList.contains('hidden')) {
-                    scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
-                }
-            }, { passive: true });
         }
 
         const toggleEl = document.getElementById('tutorial-toggle');
@@ -713,25 +714,6 @@
                 }
             });
         }
-
-        // 點擊盤面或外部空白處：關閉當前提示氣泡（不打斷框內閱讀或高亮按鈕點擊）
-        document.addEventListener('pointerdown', (e) => {
-            const currentTooltip = document.getElementById('tutorial-pointer-tooltip');
-            if (!currentTooltip || currentTooltip.classList.contains('hidden')) return;
-
-            // 若點擊在提示框內部（閱讀、點擊按鈕、選取文字等），不關閉
-            if (currentTooltip.contains(e.target)) {
-                return;
-            }
-
-            // 若點擊在當前高亮目標元素上，保留原生點擊行為，不搶先打斷
-            if (tutorialSpotlightEl && tutorialSpotlightEl.contains(e.target)) {
-                return;
-            }
-
-            // 外部盤面空白處點擊：關閉當前提示氣泡
-            clearTutorialPointers();
-        });
 
         // 點擊人類角色徽章：隨時展示該角色專屬得分與勝負指南
         const roleDisplayEl = document.getElementById('human-role-display');
