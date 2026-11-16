@@ -1609,6 +1609,8 @@ window.AutoNextRoundTimer = {
     remainingSeconds: 7,
     targetRoundMarker: null,
     targetGameRound: null,
+    isPaused: false,
+    pausedGameState: null,
 
     start(gameState) {
         this.stop();
@@ -1621,11 +1623,25 @@ window.AutoNextRoundTimer = {
         this.targetRoundMarker = gameState.roundMarker;
         this.targetGameRound = gameState.gameRound;
         this.remainingSeconds = 7;
+        this.pausedGameState = gameState;
+
+        // 若玩家當前處於收集視窗、設定頁或規則頁，先標記暫停掛起，待玩家返回後重新開始
+        if (typeof window.isPlayerAwayFromGame === 'function' && window.isPlayerAwayFromGame()) {
+            this.isPaused = true;
+            if (typeof window.checkGameCountdownState === 'function') {
+                window.checkGameCountdownState();
+            }
+            if (typeof appLogger !== 'undefined') {
+                appLogger.log("⏱️【自動流程】玩家目前處於收集/設定/規則頁，下一回合自動倒數已暫停，等待返回後重新開始。");
+            }
+            return;
+        }
 
         const updateBtn = () => {
             const nextStepBtn = document.getElementById('next-step-btn');
             if (nextStepBtn && !nextStepBtn.disabled) {
-                nextStepBtn.textContent = `下一回合 (${this.remainingSeconds}s)`;
+                const sec = this.remainingSeconds;
+                nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round_countdown', { sec }) : `下一回合 (${sec}s)`;
             }
         };
         updateBtn();
@@ -1642,7 +1658,9 @@ window.AutoNextRoundTimer = {
                 updateBtn();
             } else {
                 this.stop();
-                appLogger.log("⏱️【自動流程】小時卡選擇流程結束後 7 秒已到，自動進入下一回合。");
+                if (typeof appLogger !== 'undefined') {
+                    appLogger.log("⏱️【自動流程】小時卡選擇流程結束後 7 秒已到，自動進入下一回合。");
+                }
                 const nextStepBtn = document.getElementById('next-step-btn');
                 if (nextStepBtn && !nextStepBtn.disabled) {
                     nextStepBtn.click();
@@ -1654,11 +1672,40 @@ window.AutoNextRoundTimer = {
         }, 1000);
     },
 
+    pause() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+            this.isPaused = true;
+        }
+        const nextStepBtn = document.getElementById('next-step-btn');
+        if (nextStepBtn && typeof nextStepBtn.textContent === 'string' && nextStepBtn.textContent.includes('(')) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round') : '下一回合';
+        }
+    },
+
+    resume() {
+        if (!this.isPaused) return;
+        this.isPaused = false;
+
+        const currentGs = window.globalGameState || this.pausedGameState;
+        if (!currentGs || currentGs.gameEnded || currentGs.phase !== 'idle') return;
+        if (currentGs.roundMarker !== this.targetRoundMarker || currentGs.gameRound !== this.targetGameRound) return;
+        if (currentGs.waitingMinuteHandChoice || currentGs.waitingHourChoice || currentGs.isPlayingMinuteClash || currentGs.roundMarker > 12) return;
+
+        if (typeof appLogger !== 'undefined') {
+            appLogger.log("⏱️【自動流程】玩家返回遊戲畫面，重新開始下一回合自動倒數 (7s)。");
+        }
+        this.start(currentGs);
+    },
+
     stop() {
         if (this.timerId) {
             clearInterval(this.timerId);
             this.timerId = null;
         }
+        this.isPaused = false;
+        this.pausedGameState = null;
         this.remainingSeconds = 7;
         const nextStepBtn = document.getElementById('next-step-btn');
         if (nextStepBtn && typeof nextStepBtn.textContent === 'string' && nextStepBtn.textContent.includes('(')) {

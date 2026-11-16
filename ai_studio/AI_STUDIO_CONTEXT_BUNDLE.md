@@ -20,10 +20,10 @@
 12. `abilities.js` (12.1 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (99.9 KB)
-15. `ui_modals.js` (1.7 KB)
-16. `ui_components.js` (155.8 KB)
+15. `ui_modals.js` (4.6 KB)
+16. `ui_components.js` (158.0 KB)
 17. `tutorial_mode.js` (46.9 KB)
-18. `ui.js` (74.8 KB)
+18. `ui.js` (77.0 KB)
 19. `modern_board.js` (68.3 KB)
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (49.1 KB)
@@ -5379,6 +5379,64 @@ try {
 const modalFocusMap = new WeakMap();
 const modalOpenOrder = [];
 
+let _wasPlayerAway = false;
+
+// 判斷玩家當前是否處於「查看非遊戲內容」狀態（如打開收集視窗、切換至設定頁或規則頁）
+function isPlayerAwayFromGame() {
+    if (typeof document === 'undefined') return false;
+
+    // 1. 檢查是否打開了「收集」視窗
+    const colOverlay = document.getElementById('collection-overlay');
+    const isColOpen = Boolean(
+        colOverlay &&
+        !colOverlay.classList.contains('hidden') &&
+        colOverlay.style.display !== 'none'
+    );
+
+    // 2. 檢查當前標籤頁是否為「遊戲」頁（若不是遊戲頁，即代表切換至設定頁或規則頁）
+    const gameTabBtn = document.querySelector('.tab-btn[data-target="game-content"]');
+    const isGameTabActive = gameTabBtn ? gameTabBtn.classList.contains('active') : true;
+
+    // 3. 檢查設定頁與規則頁內容區塊是否處於啟用狀態
+    const settingsEl = document.getElementById('settings-content');
+    const rulesEl = document.getElementById('rules-content');
+    const isSettingsOrRulesActive = Boolean(
+        (settingsEl && (settingsEl.classList.contains('active-tab') || settingsEl.classList.contains('active'))) ||
+        (rulesEl && (rulesEl.classList.contains('active-tab') || rulesEl.classList.contains('active')))
+    );
+
+    return isColOpen || !isGameTabActive || isSettingsOrRulesActive;
+}
+
+// 根據玩家當前所在畫面，動態暫停或重新開始所有自動倒數
+function checkGameCountdownState() {
+    const isAway = isPlayerAwayFromGame();
+
+    if (isAway && !_wasPlayerAway) {
+        _wasPlayerAway = true;
+        if (typeof appLogger !== 'undefined') {
+            appLogger.log('⏱️ [計時器] 玩家進入收集/設定/規則頁，暫停所有自動倒數。');
+        }
+        if (typeof window !== 'undefined' && window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.pause === 'function') {
+            window.AutoNextRoundTimer.pause();
+        }
+        if (typeof window !== 'undefined' && window.AnimationController && typeof window.AnimationController.pauseAll === 'function') {
+            window.AnimationController.pauseAll();
+        }
+    } else if (!isAway && _wasPlayerAway) {
+        _wasPlayerAway = false;
+        if (typeof appLogger !== 'undefined') {
+            appLogger.log('⏱️ [計時器] 玩家返回遊戲畫面，重新開始自動倒數。');
+        }
+        if (typeof window !== 'undefined' && window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.resume === 'function') {
+            window.AutoNextRoundTimer.resume();
+        }
+        if (typeof window !== 'undefined' && window.AnimationController && typeof window.AnimationController.resumeAll === 'function') {
+            window.AnimationController.resumeAll();
+        }
+    }
+}
+
 function getFocusableElement(root) {
     if (!root) return null;
     const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -5406,6 +5464,8 @@ function openModal(overlay, focusTarget) {
     if (focusEl && typeof focusEl.focus === 'function') {
         focusEl.focus();
     }
+
+    checkGameCountdownState();
 }
 
 function closeModal(overlay) {
@@ -5420,6 +5480,8 @@ function closeModal(overlay) {
     modalFocusMap.delete(overlay);
     const idx = modalOpenOrder.indexOf(overlay);
     if (idx >= 0) modalOpenOrder.splice(idx, 1);
+
+    checkGameCountdownState();
 }
 
 function closeTopModal() {
@@ -5431,6 +5493,8 @@ if (typeof window !== 'undefined') {
     window.openModal = openModal;
     window.closeModal = closeModal;
     window.closeTopModal = closeTopModal;
+    window.isPlayerAwayFromGame = isPlayerAwayFromGame;
+    window.checkGameCountdownState = checkGameCountdownState;
 }
 
 `````
@@ -6322,6 +6386,7 @@ const AnimationController = {
             // 無 GSAP 環境（如 Node.js 無頭測試）相容降級時間線
             tl = {
                 _cursor: 0,
+                isPausedByUser: false,
                 fromTo(targets, fromVars, toVars, pos) { return this; },
                 to(targets, toVars, pos) { return this; },
                 set(targets, vars, pos) { return this; },
@@ -6344,7 +6409,12 @@ const AnimationController = {
                 kill() {
                     clearWatchdog();
                 },
-                isActive() { return !resolved; }
+                isActive() { return !resolved; },
+                pause() { return this; },
+                resume() { return this; },
+                play() { return this; },
+                time() { return 0; },
+                seek() { return this; }
             };
         }
 
@@ -6367,18 +6437,62 @@ const AnimationController = {
 
         // 掛載超時保險絲 (Watchdog Timeout)：防止未預期腳本錯誤導致動畫永久卡死
         if (typeof options.watchdogMs === 'number' && options.watchdogMs > 0) {
-            watchdogId = setTimeout(() => {
-                this.pendingTimers.delete(watchdogId);
-                watchdogId = null;
-                if (!resolved) {
-                    console.warn('[AnimationController] Watchdog triggered, forcing safeComplete.');
-                    tl.interrupt();
-                }
-            }, options.watchdogMs);
-            this.pendingTimers.add(watchdogId);
+            const startWatchdog = () => {
+                watchdogId = setTimeout(() => {
+                    this.pendingTimers.delete(watchdogId);
+                    watchdogId = null;
+                    if (!resolved) {
+                        if (tl.isPausedByUser) {
+                            // 若使用者正在暫停狀態（在收集/設定/規則頁），重新掛載保險絲等待，不強制終止演出
+                            startWatchdog();
+                            return;
+                        }
+                        console.warn('[AnimationController] Watchdog triggered, forcing safeComplete.');
+                        tl.interrupt();
+                    }
+                }, options.watchdogMs);
+                this.pendingTimers.add(watchdogId);
+            };
+            startWatchdog();
         }
 
         return tl;
+    },
+
+    // 暫停所有活動中的時間線（玩家打開收集視窗或轉到設定/規則頁時）
+    pauseAll() {
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl) {
+                tl.isPausedByUser = true;
+                if (typeof tl.pause === 'function') {
+                    tl.pause();
+                }
+            }
+        });
+    },
+
+    // 恢復並重新開始倒數（玩家返回遊戲頁面時）
+    resumeAll() {
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl) {
+                tl.isPausedByUser = false;
+                // 若進度已進入比牌 5 秒倒數區間 (>= 4.25s)，倒帶至 4.25s 重新開始 5 秒倒數
+                if (typeof tl.time === 'function' && typeof tl.seek === 'function') {
+                    try {
+                        if (tl.time() >= 4.25) {
+                            tl.seek(4.25);
+                        }
+                    } catch (_) {}
+                }
+                if (typeof tl.resume === 'function') {
+                    tl.resume();
+                } else if (typeof tl.play === 'function') {
+                    tl.play();
+                }
+            }
+        });
     },
 
     // 快進跳過所有活動中的劇情演出（觸發各自的 safeComplete）
@@ -8952,6 +9066,11 @@ function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, active
                     targetEl.classList.add(activeContentClass);
                 }
             }
+
+            // 4. 切換至設定/規則或返回遊戲時即時調度自動倒數
+            if (typeof window !== 'undefined' && typeof window.checkGameCountdownState === 'function') {
+                window.checkGameCountdownState();
+            }
         });
     });
 }
@@ -11456,6 +11575,8 @@ window.AutoNextRoundTimer = {
     remainingSeconds: 7,
     targetRoundMarker: null,
     targetGameRound: null,
+    isPaused: false,
+    pausedGameState: null,
 
     start(gameState) {
         this.stop();
@@ -11468,11 +11589,25 @@ window.AutoNextRoundTimer = {
         this.targetRoundMarker = gameState.roundMarker;
         this.targetGameRound = gameState.gameRound;
         this.remainingSeconds = 7;
+        this.pausedGameState = gameState;
+
+        // 若玩家當前處於收集視窗、設定頁或規則頁，先標記暫停掛起，待玩家返回後重新開始
+        if (typeof window.isPlayerAwayFromGame === 'function' && window.isPlayerAwayFromGame()) {
+            this.isPaused = true;
+            if (typeof window.checkGameCountdownState === 'function') {
+                window.checkGameCountdownState();
+            }
+            if (typeof appLogger !== 'undefined') {
+                appLogger.log("⏱️【自動流程】玩家目前處於收集/設定/規則頁，下一回合自動倒數已暫停，等待返回後重新開始。");
+            }
+            return;
+        }
 
         const updateBtn = () => {
             const nextStepBtn = document.getElementById('next-step-btn');
             if (nextStepBtn && !nextStepBtn.disabled) {
-                nextStepBtn.textContent = `下一回合 (${this.remainingSeconds}s)`;
+                const sec = this.remainingSeconds;
+                nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round_countdown', { sec }) : `下一回合 (${sec}s)`;
             }
         };
         updateBtn();
@@ -11489,7 +11624,9 @@ window.AutoNextRoundTimer = {
                 updateBtn();
             } else {
                 this.stop();
-                appLogger.log("⏱️【自動流程】小時卡選擇流程結束後 7 秒已到，自動進入下一回合。");
+                if (typeof appLogger !== 'undefined') {
+                    appLogger.log("⏱️【自動流程】小時卡選擇流程結束後 7 秒已到，自動進入下一回合。");
+                }
                 const nextStepBtn = document.getElementById('next-step-btn');
                 if (nextStepBtn && !nextStepBtn.disabled) {
                     nextStepBtn.click();
@@ -11501,11 +11638,40 @@ window.AutoNextRoundTimer = {
         }, 1000);
     },
 
+    pause() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+            this.isPaused = true;
+        }
+        const nextStepBtn = document.getElementById('next-step-btn');
+        if (nextStepBtn && typeof nextStepBtn.textContent === 'string' && nextStepBtn.textContent.includes('(')) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.buttons.next_round') : '下一回合';
+        }
+    },
+
+    resume() {
+        if (!this.isPaused) return;
+        this.isPaused = false;
+
+        const currentGs = window.globalGameState || this.pausedGameState;
+        if (!currentGs || currentGs.gameEnded || currentGs.phase !== 'idle') return;
+        if (currentGs.roundMarker !== this.targetRoundMarker || currentGs.gameRound !== this.targetGameRound) return;
+        if (currentGs.waitingMinuteHandChoice || currentGs.waitingHourChoice || currentGs.isPlayingMinuteClash || currentGs.roundMarker > 12) return;
+
+        if (typeof appLogger !== 'undefined') {
+            appLogger.log("⏱️【自動流程】玩家返回遊戲畫面，重新開始下一回合自動倒數 (7s)。");
+        }
+        this.start(currentGs);
+    },
+
     stop() {
         if (this.timerId) {
             clearInterval(this.timerId);
             this.timerId = null;
         }
+        this.isPaused = false;
+        this.pausedGameState = null;
         this.remainingSeconds = 7;
         const nextStepBtn = document.getElementById('next-step-btn');
         if (nextStepBtn && typeof nextStepBtn.textContent === 'string' && nextStepBtn.textContent.includes('(')) {

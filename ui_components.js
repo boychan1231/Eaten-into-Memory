@@ -879,6 +879,7 @@ const AnimationController = {
             // 無 GSAP 環境（如 Node.js 無頭測試）相容降級時間線
             tl = {
                 _cursor: 0,
+                isPausedByUser: false,
                 fromTo(targets, fromVars, toVars, pos) { return this; },
                 to(targets, toVars, pos) { return this; },
                 set(targets, vars, pos) { return this; },
@@ -901,7 +902,12 @@ const AnimationController = {
                 kill() {
                     clearWatchdog();
                 },
-                isActive() { return !resolved; }
+                isActive() { return !resolved; },
+                pause() { return this; },
+                resume() { return this; },
+                play() { return this; },
+                time() { return 0; },
+                seek() { return this; }
             };
         }
 
@@ -924,18 +930,62 @@ const AnimationController = {
 
         // 掛載超時保險絲 (Watchdog Timeout)：防止未預期腳本錯誤導致動畫永久卡死
         if (typeof options.watchdogMs === 'number' && options.watchdogMs > 0) {
-            watchdogId = setTimeout(() => {
-                this.pendingTimers.delete(watchdogId);
-                watchdogId = null;
-                if (!resolved) {
-                    console.warn('[AnimationController] Watchdog triggered, forcing safeComplete.');
-                    tl.interrupt();
-                }
-            }, options.watchdogMs);
-            this.pendingTimers.add(watchdogId);
+            const startWatchdog = () => {
+                watchdogId = setTimeout(() => {
+                    this.pendingTimers.delete(watchdogId);
+                    watchdogId = null;
+                    if (!resolved) {
+                        if (tl.isPausedByUser) {
+                            // 若使用者正在暫停狀態（在收集/設定/規則頁），重新掛載保險絲等待，不強制終止演出
+                            startWatchdog();
+                            return;
+                        }
+                        console.warn('[AnimationController] Watchdog triggered, forcing safeComplete.');
+                        tl.interrupt();
+                    }
+                }, options.watchdogMs);
+                this.pendingTimers.add(watchdogId);
+            };
+            startWatchdog();
         }
 
         return tl;
+    },
+
+    // 暫停所有活動中的時間線（玩家打開收集視窗或轉到設定/規則頁時）
+    pauseAll() {
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl) {
+                tl.isPausedByUser = true;
+                if (typeof tl.pause === 'function') {
+                    tl.pause();
+                }
+            }
+        });
+    },
+
+    // 恢復並重新開始倒數（玩家返回遊戲頁面時）
+    resumeAll() {
+        const list = Array.from(this.activeTimelines);
+        list.forEach(tl => {
+            if (tl) {
+                tl.isPausedByUser = false;
+                // 若進度已進入比牌 5 秒倒數區間 (>= 4.25s)，倒帶至 4.25s 重新開始 5 秒倒數
+                if (typeof tl.time === 'function' && typeof tl.seek === 'function') {
+                    try {
+                        if (tl.time() >= 4.25) {
+                            tl.seek(4.25);
+                        }
+                    } catch (_) {}
+                }
+                if (typeof tl.resume === 'function') {
+                    tl.resume();
+                } else if (typeof tl.play === 'function') {
+                    tl.play();
+                }
+            }
+        });
     },
 
     // 快進跳過所有活動中的劇情演出（觸發各自的 safeComplete）
@@ -3508,6 +3558,11 @@ function setupTabNavigation(btnSelector, contentSelector, activeBtnClass, active
                 if (targetEl) {
                     targetEl.classList.add(activeContentClass);
                 }
+            }
+
+            // 4. 切換至設定/規則或返回遊戲時即時調度自動倒數
+            if (typeof window !== 'undefined' && typeof window.checkGameCountdownState === 'function') {
+                window.checkGameCountdownState();
             }
         });
     });
