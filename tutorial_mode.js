@@ -59,42 +59,18 @@
         const tooltipWidth = tooltipRect.width || Math.min(340, viewportWidth - 24);
         const tooltipHeight = tooltipRect.height || 110;
 
-        // 若目標為全屏鐘面/桌面容器，以鐘面水平中心居中對齊，避免偏向側邊欄
-        if (isClockContainer) {
-            const rect = targetEl.getBoundingClientRect();
-            const clockCenterX = (rect.width > 0) ? (rect.left + rect.width / 2) : (viewportWidth / 2);
-            const safeLeft = Math.max(12, Math.min(Math.round(clockCenterX - tooltipWidth / 2), viewportWidth - tooltipWidth - 12));
-
-            // 垂直定位：優先置於鐘面上方或鐘面頂部安全區，避免遮擋中央小時卡
-            let safeTop = 68;
-            if (rect.top >= tooltipHeight + 16) {
-                safeTop = Math.round(rect.top - tooltipHeight - 12);
-            } else if (rect.height > tooltipHeight + 40) {
-                safeTop = Math.max(64, Math.round(rect.top + 16));
-            } else {
-                safeTop = Math.max(64, Math.min(130, Math.round(viewportHeight * 0.14)));
-            }
-            safeTop = Math.max(10, Math.min(safeTop, viewportHeight - tooltipHeight - 10));
-            return { left: safeLeft, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
-        }
-
-        const rect = targetEl.getBoundingClientRect();
-
-        // 若指定為「中央偏右 (center-right)」（如開局歡迎教學指南），懸浮於畫面中央偏右安全區域
-        if (preferredPlacement === 'center-right') {
+        // 若目標為鐘面容器或指定為「中央偏右 (center-right)」：懸浮於畫面中央偏右安全區，防止阻擋中央鐘面
+        if (isClockContainer || preferredPlacement === 'center-right') {
             const idealLeft = viewportWidth > 768
                 ? Math.round(viewportWidth * 0.52)
                 : Math.round((viewportWidth - tooltipWidth) / 2);
             const idealTop = Math.round((viewportHeight - tooltipHeight) * 0.42);
-            const maxAllowedTop = rect.top > tooltipHeight + 24
-                ? rect.top - tooltipHeight - 16
-                : viewportHeight - tooltipHeight - 16;
             const safeLeft = Math.max(12, Math.min(idealLeft, viewportWidth - tooltipWidth - 16));
-            const safeTop = Math.max(64, Math.min(idealTop, maxAllowedTop));
-            const targetCenterX = rect.left + rect.width / 2;
-            const arrowX = Math.max(18, Math.min(tooltipWidth - 18, Math.round(targetCenterX - safeLeft)));
-            return { left: safeLeft, top: safeTop, arrow: 'bottom', arrowX, arrowY: tooltipHeight };
+            const safeTop = Math.max(64, Math.min(idealTop, viewportHeight - tooltipHeight - 16));
+            return { left: safeLeft, top: safeTop, arrow: 'none', arrowX: tooltipWidth / 2, arrowY: 0 };
         }
+
+        const rect = targetEl.getBoundingClientRect();
 
         const spaceAbove = rect.top;
         const spaceBelow = viewportHeight - rect.bottom;
@@ -220,12 +196,6 @@
         tooltip.style.left = `${pos.left}px`;
         tooltip.style.top = `${pos.top}px`;
 
-        // 重新顯示 tooltip 並以純透明度淡入顯現
-        tooltip.classList.remove('hidden');
-        tooltip.classList.remove('tutorial-fade-in');
-        void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
-        tooltip.classList.add('tutorial-fade-in');
-
         if (typeof tooltip.style.setProperty === 'function') {
             tooltip.style.setProperty('--arrow-x', `${pos.arrowX}px`);
             tooltip.style.setProperty('--arrow-y', `${pos.arrowY}px`);
@@ -233,6 +203,12 @@
             tooltip.style['--arrow-x'] = `${pos.arrowX}px`;
             tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
+
+        // 重新顯示 tooltip 並以純透明度原地淡入顯現
+        tooltip.classList.remove('hidden');
+        tooltip.classList.remove('tutorial-fade-in');
+        void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
+        tooltip.classList.add('tutorial-fade-in');
 
         // 啟動自動隱藏倒數計時（滑鼠或觸控懸停時自動暫停計時）
         scheduleAutoDismiss(TOOLTIP_AUTO_DISMISS_SECONDS);
@@ -454,7 +430,7 @@
             if (highlightSpot && isElementVisible(highlightSpot)) {
                 showTutorialPointer(highlightSpot, turnPrefix + step3Msg, 'top');
             } else {
-                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'center');
+                showTutorialPointer('#clock-face', turnPrefix + step3Msg, 'center-right');
             }
             return;
         }
@@ -470,7 +446,7 @@
             const noHourNotice = window.i18n
                 ? window.i18n.t('tutorial.step3_no_hour_notice')
                 : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
-            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center');
+            showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center-right');
             return;
         }
 
