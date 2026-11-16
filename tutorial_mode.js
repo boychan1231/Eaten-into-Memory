@@ -3,7 +3,11 @@
 (function () {
     let tutorialSpotlightEl = null;
     let autoDismissTimer = null;
-    const TOOLTIP_AUTO_DISMISS_SECONDS = 25; // 延長自動關閉倒數至 25 秒，提供充足閱讀時間
+    const TOOLTIP_AUTO_DISMISS_SECONDS = 25; // 備用
+
+    // 教學歷史閱覽記錄與當前檢視索引
+    const tutorialHistory = [];
+    let currentHistoryIndex = -1;
 
     // 清除自動隱藏計時器
     function clearAutoDismissTimer() {
@@ -39,7 +43,7 @@
     // 檢驗 DOM 元素是否處於可見狀態（支援 fixed 定位與自訂容器）
     function isElementVisible(el) {
         if (!el) return false;
-        if (el.id === 'clock-face' || el.id === 'modern-board' || el.id === 'table-top') return true;
+        if (el === document.body || el.id === 'clock-face' || el.id === 'modern-board' || el.id === 'table-top') return true;
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) return true;
         if (typeof el.getClientRects === 'function' && el.getClientRects().length > 0) return true;
@@ -48,7 +52,7 @@
 
     // 計算提示框的最佳定位與指向箭頭
     function computeOptimalPosition(targetEl, tooltipEl, preferredPlacement = 'auto') {
-        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top' || targetEl === document.body;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
@@ -173,14 +177,61 @@
         return { left: safeLeft, top: safeTop, arrow, arrowX, arrowY };
     }
 
-    // 將動態氣泡提示框指向目標 DOM 元素
-    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
-        // 若玩家停用教學模式，不動作
-        if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
-            clearTutorialPointers();
+    // 更新教學視窗底部的上一則/下一則導覽狀態
+    function updateTutorialNav() {
+        const prevBtn = document.getElementById('tutorial-prev-btn');
+        const nextBtn = document.getElementById('tutorial-next-btn');
+        const statusEl = document.getElementById('tutorial-history-status');
+        if (!prevBtn || !nextBtn || !statusEl) return;
+
+        const total = tutorialHistory.length;
+        if (total <= 1) {
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            const latestLabel = window.i18n ? window.i18n.t('tutorial.latest_tag') : '最新進度';
+            statusEl.textContent = total === 1 ? latestLabel : '';
+            statusEl.classList.remove('is-historical');
             return;
         }
 
+        const currentPos = currentHistoryIndex + 1;
+        const isLatest = (currentHistoryIndex === total - 1);
+
+        prevBtn.disabled = (currentHistoryIndex <= 0);
+        nextBtn.disabled = isLatest;
+
+        if (isLatest) {
+            statusEl.textContent = `${currentPos} / ${total}`;
+            statusEl.classList.remove('is-historical');
+        } else {
+            const histTag = window.i18n ? window.i18n.t('tutorial.history_tag') : '（歷史閱覽）';
+            statusEl.textContent = `${currentPos} / ${total} ${histTag}`;
+            statusEl.classList.add('is-historical');
+        }
+    }
+
+    // 歷史閱覽切換函式（delta = -1 閱覽上一則，delta = 1 閱覽下一則）
+    function navigateTutorialHistory(delta) {
+        if (tutorialHistory.length === 0) return;
+        const targetIndex = currentHistoryIndex + delta;
+        if (targetIndex < 0 || targetIndex >= tutorialHistory.length) return;
+
+        currentHistoryIndex = targetIndex;
+        const entry = tutorialHistory[currentHistoryIndex];
+        if (!entry) return;
+
+        const isLatest = (currentHistoryIndex === tutorialHistory.length - 1);
+        let displayMsg = entry.messageText;
+        if (!isLatest) {
+            displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">📜【歷史教學回顧】</div>` + displayMsg;
+        }
+
+        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement);
+        updateTutorialNav();
+    }
+
+    // 核心渲染函式：負責幾何測量、定位座標與氣泡框原地淡入顯現
+    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto') {
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const textEl = document.getElementById('tutorial-tooltip-text');
         if (!tooltip || !textEl) return;
@@ -192,19 +243,21 @@
             targetEl = targetSelector;
         }
 
+        // 若目標暫時不可見（例如歷史步驟之按鈕已隱藏），安全退回至 document.body 容器供玩家完整閱讀
         if (!targetEl || !isElementVisible(targetEl)) {
-            clearTutorialPointers();
-            return;
+            targetEl = document.body;
         }
 
-        const wasHidden = tooltip.classList.contains('hidden');
-
         // 清除舊高亮
-        clearTutorialPointers();
+        if (tutorialSpotlightEl) {
+            tutorialSpotlightEl.classList.remove('tutorial-spotlight');
+            tutorialSpotlightEl = null;
+        }
+        document.querySelectorAll('.tutorial-spotlight').forEach(el => el.classList.remove('tutorial-spotlight'));
 
-        // 目標高亮：若非全屏容器，加上聚光燈樣式（純光暈無 scale 變形）
-        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top';
-        if (!isClockContainer) {
+        // 目標高亮：若非全屏容器或 body，加上聚光燈樣式（純光暈無 scale 變形）
+        const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top' || targetEl === document.body;
+        if (!isClockContainer && isElementVisible(targetEl)) {
             targetEl.classList.add('tutorial-spotlight');
             tutorialSpotlightEl = targetEl;
         }
@@ -213,7 +266,6 @@
         textEl.innerHTML = messageText;
 
         // 關鍵強化：在 visibility: hidden 狀態下解除 display: none，強制瀏覽器重排以獲取注入最新文字後的真實幾何尺寸
-        // 徹底杜絕因 display:none 導致尺寸誤判為 0x0 / 110px 而向下壓迫覆蓋分鐘手牌的重大問題
         tooltip.classList.remove('hidden');
         tooltip.style.visibility = 'hidden';
         tooltip.style.transition = 'none';
@@ -235,11 +287,34 @@
             tooltip.style['--arrow-y'] = `${pos.arrowY}px`;
         }
 
-        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現（常駐顯示，直到玩家點擊關閉）
+        // 尺寸與座標定錨完成後，恢復可見並以純透明度原地淡入顯現（常駐顯示，直到玩家執行說明動作推進）
         tooltip.style.visibility = 'visible';
         tooltip.classList.remove('tutorial-fade-in');
         void tooltip.offsetWidth; // 強制觸發重繪 (reflow) 使定位立即生效
         tooltip.classList.add('tutorial-fade-in');
+    }
+
+    // 將動態氣泡提示框指向目標 DOM 元素（納入歷史記錄佇列供回溯閱覽）
+    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
+        // 若玩家停用教學模式，不動作
+        if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
+            clearTutorialPointers();
+            return;
+        }
+
+        // 記錄至歷史記錄佇列（連續相同訊息不重複新增）
+        const lastEntry = tutorialHistory[tutorialHistory.length - 1];
+        if (!lastEntry || lastEntry.messageText !== messageText) {
+            tutorialHistory.push({
+                targetSelector,
+                messageText,
+                preferredPlacement
+            });
+        }
+        currentHistoryIndex = tutorialHistory.length - 1;
+
+        renderTutorialMessage(targetSelector, messageText, preferredPlacement);
+        updateTutorialNav();
     }
 
     // 追蹤已顯示過的教學步驟，避免同步驟於同一局對局中重複彈出干擾玩家
@@ -314,10 +389,13 @@
         const humanPlayer = gameState.players ? gameState.players.find(p => p.id === humanId) : null;
         const roleKey = getHumanRoleKey(humanPlayer);
 
-        // 若進入全新對局（第 1 局、第 1 回合、尚未翻開小時卡），自動重置步驟紀錄
+        // 若進入全新對局（第 1 局、第 1 回合、尚未翻開小時卡），自動重置步驟紀錄與歷史閱覽佇列
         if (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && (!gameState.currentDrawnHourCards || gameState.currentDrawnHourCards.length === 0)) {
             if (!shownSteps.has('step0_welcome')) {
                 shownSteps.clear();
+                tutorialHistory.length = 0;
+                currentHistoryIndex = -1;
+                updateTutorialNav();
             }
         }
 
@@ -596,6 +674,9 @@
 
     function resetTutorialProgress() {
         shownSteps.clear();
+        tutorialHistory.length = 0;
+        currentHistoryIndex = -1;
+        updateTutorialNav();
     }
 
     // 重播當前步驟教學提示（使用者手動點擊「💡 提示」按鈕時調用）
@@ -654,7 +735,9 @@
         disableTutorialMode,
         resetTutorialProgress,
         replayCurrentTutorial,
-        hasCompletedAllTutorialSteps
+        hasCompletedAllTutorialSteps,
+        navigateTutorialHistory,
+        getTutorialHistory: () => [...tutorialHistory]
     };
 
     // 視窗大小改變時重新計算 Tooltip 位置（動態響應寬螢幕最左側或自適應佈局）
@@ -672,6 +755,24 @@
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const closeBtn = document.getElementById('tutorial-close-btn');
         const muteBtn = document.getElementById('tutorial-mute-btn');
+        const prevBtn = document.getElementById('tutorial-prev-btn');
+        const nextBtn = document.getElementById('tutorial-next-btn');
+
+        // 點擊「◀ 上一則教學」：閱覽歷史教學說明
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateTutorialHistory(-1);
+            });
+        }
+
+        // 點擊「下一則 ▶」：切換至後續或最新教學說明
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateTutorialHistory(1);
+            });
+        }
 
         // 點擊「✕」：僅關閉當前提示，保留教學模式供後續步驟使用
         if (closeBtn) {

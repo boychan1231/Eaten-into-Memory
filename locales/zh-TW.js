@@ -223,6 +223,10 @@
             locked_btn: '🚫 能力被封鎖'
         },
         tutorial: {
+            prev_btn: '◀ 上一則教學',
+            next_btn: '下一則 ▶',
+            history_tag: '（歷史閱覽）',
+            latest_tag: '最新進度',
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>',
             welcome_prefix: '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>',
             step0_welcome: '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',

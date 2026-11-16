@@ -223,6 +223,10 @@
             locked_btn: '🚫 Ability Sealed'
         },
         tutorial: {
+            prev_btn: '◀ Previous',
+            next_btn: 'Next ▶',
+            history_tag: '(History)',
+            latest_tag: 'Latest',
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 Tutorial can be disabled in Settings</div>',
             welcome_prefix: '<strong>✨ Welcome to Eaten into Memory!</strong><br>',
             step0_welcome: '<strong>✨ Welcome to Eaten into Memory!</strong><br>Click "<strong>Next Round</strong>" to reveal Hour Cards and start bidding.',
