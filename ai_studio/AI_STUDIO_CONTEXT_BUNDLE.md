@@ -21,15 +21,15 @@
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (100.1 KB)
 15. `ui_modals.js` (4.6 KB)
-16. `ui_components.js` (165.1 KB)
+16. `ui_components.js` (167.3 KB)
 17. `tutorial_mode.js` (47.7 KB)
 18. `ui.js` (92.4 KB)
 19. `modern_board.js` (68.8 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (51.6 KB)
-22. `classic.html` (39.5 KB)
-23. `modern.css` (120.7 KB)
-24. `style.css` (102.7 KB)
+21. `index.html` (51.9 KB)
+22. `classic.html` (39.8 KB)
+23. `modern.css` (121.6 KB)
+24. `style.css` (104.1 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -6034,10 +6034,70 @@ function renderTopInfo(gameState) {
     if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound;
 }
 
+// --- 🧭 初始化本回合行動序列與流程提示收合功能 ---
+function initRoundPhaseTrackerToggle() {
+    const trackerEl = document.getElementById('round-phase-tracker');
+    const toggleBtn = document.getElementById('phase-tracker-toggle-btn');
+    if (!trackerEl || !toggleBtn) return;
+
+    if (trackerEl.dataset.collapseInitialized) return;
+    trackerEl.dataset.collapseInitialized = 'true';
+
+    const STORAGE_KEY = 'phase_tracker_collapsed';
+    let isCollapsed = false;
+    try {
+        isCollapsed = (localStorage.getItem(STORAGE_KEY) === 'true');
+    } catch (_) {}
+
+    const updateTrackerState = (collapsed) => {
+        trackerEl.classList.toggle('is-collapsed', collapsed);
+        const iconEl = toggleBtn.querySelector('.toggle-icon');
+        if (iconEl) {
+            iconEl.textContent = collapsed ? '▾' : '▴';
+        } else {
+            toggleBtn.textContent = collapsed ? '▾' : '▴';
+        }
+        toggleBtn.setAttribute('title', collapsed ? '展開完整流程 (點擊展開)' : '收合完整流程 (只顯示現時流程)');
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+
+    updateTrackerState(isCollapsed);
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willCollapse = !trackerEl.classList.contains('is-collapsed');
+        updateTrackerState(willCollapse);
+        try {
+            localStorage.setItem(STORAGE_KEY, willCollapse ? 'true' : 'false');
+        } catch (_) {}
+    });
+
+    // 若處於收合狀態，點擊流程提示本體亦可快速展開
+    trackerEl.addEventListener('click', (e) => {
+        if (trackerEl.classList.contains('is-collapsed') && !e.target.closest('#phase-tracker-toggle-btn')) {
+            updateTrackerState(false);
+            try {
+                localStorage.setItem(STORAGE_KEY, 'false');
+            } catch (_) {}
+        }
+    });
+}
+
+// 掛載 DOMContentLoaded 監聽
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRoundPhaseTrackerToggle);
+    } else {
+        initRoundPhaseTrackerToggle();
+    }
+}
+
 // --- 🧭 渲染本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---
 function renderRoundPhaseTracker(gameState, flags) {
     const trackerEl = document.getElementById('round-phase-tracker');
     if (!trackerEl) return;
+
+    initRoundPhaseTrackerToggle();
 
     if (!gameState) {
         trackerEl.style.display = 'none';
@@ -15175,6 +15235,9 @@ if (document.readyState === 'loading') {
 					<div class="hud-drawer-stack hud-drawer-right">
 						<!-- 🧭 0. 本回合行動序列與競標階段進度條 (常駐進度組件 - 右側欄第一項) -->
 						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
+							<button type="button" id="phase-tracker-toggle-btn" class="phase-tracker-toggle-btn" title="收合/展開流程提示" aria-label="收合/展開流程提示">
+								<span class="toggle-icon">▴</span>
+							</button>
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
 									<span class="step-num">1</span>
@@ -16002,6 +16065,9 @@ if (document.readyState === 'loading') {
 						<summary class="side-panel-summary">資訊面板</summary>
 						<!-- 🧭 本回合行動序列與競標階段進度條 (常駐進度組件 - 右側欄第一項) -->
 						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
+							<button type="button" id="phase-tracker-toggle-btn" class="phase-tracker-toggle-btn" title="收合/展開流程提示" aria-label="收合/展開流程提示">
+								<span class="toggle-icon">▴</span>
+							</button>
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
 									<span class="step-num">1</span>
@@ -20783,6 +20849,32 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     white-space: normal !important;
 }
 
+/* 現代版收合狀態：只顯示現時流程 */
+.hud-drawer-right > .round-phase-tracker.is-collapsed {
+    padding: 5px 32px 5px 12px !important;
+    width: auto !important;
+    min-width: 140px !important;
+    cursor: pointer;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps {
+    display: flex !important;
+    grid-template-columns: none !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0 !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
+    display: none !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
+    display: none !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-step.active {
+    width: auto !important;
+    padding: 3px 12px !important;
+    transform: none !important;
+}
+
 @media (max-width: 768px) {
     .hud-drawer-right > .round-phase-tracker {
         position: fixed !important;
@@ -24877,6 +24969,61 @@ body {
 @keyframes statusDotPulse {
     0%, 100% { opacity: 0.4; transform: scale(0.85); }
     50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 10px #ffd27f; }
+}
+
+/* 收合切換按鈕 */
+.phase-tracker-toggle-btn {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 210, 127, 0.3);
+    color: rgba(255, 210, 127, 0.85);
+    cursor: pointer;
+    font-size: 0.72rem;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    user-select: none;
+}
+.phase-tracker-toggle-btn:hover {
+    color: #ffd27f;
+    background: rgba(255, 210, 127, 0.25);
+    border-color: rgba(255, 210, 127, 0.6);
+    transform: scale(1.1);
+}
+
+/* 收合狀態：只顯示現時流程 */
+.round-phase-tracker.is-collapsed {
+    padding: 5px 32px 5px 12px !important;
+    width: auto !important;
+    min-width: 140px !important;
+    cursor: pointer;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps {
+    display: flex !important;
+    grid-template-columns: none !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0 !important;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
+    display: none !important;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
+    display: none !important;
+}
+.round-phase-tracker.is-collapsed .phase-step.active {
+    width: auto !important;
+    padding: 3px 12px !important;
+    transform: none !important;
 }
 
 /* 經典版右側欄第一項：常駐本回合行動序列進度組件 */

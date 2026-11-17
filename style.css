@@ -4055,6 +4055,61 @@ body {
     50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 10px #ffd27f; }
 }
 
+/* 收合切換按鈕 */
+.phase-tracker-toggle-btn {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 210, 127, 0.3);
+    color: rgba(255, 210, 127, 0.85);
+    cursor: pointer;
+    font-size: 0.72rem;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    user-select: none;
+}
+.phase-tracker-toggle-btn:hover {
+    color: #ffd27f;
+    background: rgba(255, 210, 127, 0.25);
+    border-color: rgba(255, 210, 127, 0.6);
+    transform: scale(1.1);
+}
+
+/* 收合狀態：只顯示現時流程 */
+.round-phase-tracker.is-collapsed {
+    padding: 5px 32px 5px 12px !important;
+    width: auto !important;
+    min-width: 140px !important;
+    cursor: pointer;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps {
+    display: flex !important;
+    grid-template-columns: none !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0 !important;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
+    display: none !important;
+}
+.round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
+    display: none !important;
+}
+.round-phase-tracker.is-collapsed .phase-step.active {
+    width: auto !important;
+    padding: 3px 12px !important;
+    transform: none !important;
+}
+
 /* 經典版右側欄第一項：常駐本回合行動序列進度組件 */
 #side-panel-details > .round-phase-tracker {
     display: flex;

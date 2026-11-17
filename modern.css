@@ -4028,6 +4028,32 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     white-space: normal !important;
 }
 
+/* 現代版收合狀態：只顯示現時流程 */
+.hud-drawer-right > .round-phase-tracker.is-collapsed {
+    padding: 5px 32px 5px 12px !important;
+    width: auto !important;
+    min-width: 140px !important;
+    cursor: pointer;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps {
+    display: flex !important;
+    grid-template-columns: none !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0 !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
+    display: none !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
+    display: none !important;
+}
+.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-step.active {
+    width: auto !important;
+    padding: 3px 12px !important;
+    transform: none !important;
+}
+
 @media (max-width: 768px) {
     .hud-drawer-right > .round-phase-tracker {
         position: fixed !important;

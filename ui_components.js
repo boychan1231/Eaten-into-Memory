@@ -443,10 +443,70 @@ function renderTopInfo(gameState) {
     if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound;
 }
 
+// --- 🧭 初始化本回合行動序列與流程提示收合功能 ---
+function initRoundPhaseTrackerToggle() {
+    const trackerEl = document.getElementById('round-phase-tracker');
+    const toggleBtn = document.getElementById('phase-tracker-toggle-btn');
+    if (!trackerEl || !toggleBtn) return;
+
+    if (trackerEl.dataset.collapseInitialized) return;
+    trackerEl.dataset.collapseInitialized = 'true';
+
+    const STORAGE_KEY = 'phase_tracker_collapsed';
+    let isCollapsed = false;
+    try {
+        isCollapsed = (localStorage.getItem(STORAGE_KEY) === 'true');
+    } catch (_) {}
+
+    const updateTrackerState = (collapsed) => {
+        trackerEl.classList.toggle('is-collapsed', collapsed);
+        const iconEl = toggleBtn.querySelector('.toggle-icon');
+        if (iconEl) {
+            iconEl.textContent = collapsed ? '▾' : '▴';
+        } else {
+            toggleBtn.textContent = collapsed ? '▾' : '▴';
+        }
+        toggleBtn.setAttribute('title', collapsed ? '展開完整流程 (點擊展開)' : '收合完整流程 (只顯示現時流程)');
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+
+    updateTrackerState(isCollapsed);
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willCollapse = !trackerEl.classList.contains('is-collapsed');
+        updateTrackerState(willCollapse);
+        try {
+            localStorage.setItem(STORAGE_KEY, willCollapse ? 'true' : 'false');
+        } catch (_) {}
+    });
+
+    // 若處於收合狀態，點擊流程提示本體亦可快速展開
+    trackerEl.addEventListener('click', (e) => {
+        if (trackerEl.classList.contains('is-collapsed') && !e.target.closest('#phase-tracker-toggle-btn')) {
+            updateTrackerState(false);
+            try {
+                localStorage.setItem(STORAGE_KEY, 'false');
+            } catch (_) {}
+        }
+    });
+}
+
+// 掛載 DOMContentLoaded 監聽
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRoundPhaseTrackerToggle);
+    } else {
+        initRoundPhaseTrackerToggle();
+    }
+}
+
 // --- 🧭 渲染本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---
 function renderRoundPhaseTracker(gameState, flags) {
     const trackerEl = document.getElementById('round-phase-tracker');
     if (!trackerEl) return;
+
+    initRoundPhaseTrackerToggle();
 
     if (!gameState) {
         trackerEl.style.display = 'none';
