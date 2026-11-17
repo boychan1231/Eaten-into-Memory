@@ -273,11 +273,11 @@
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張',
             step4_round_done: '<strong>回合結算完畢，</strong>點擊「下一回合」展開新回合競標。',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合',
-            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成<br>• <strong>吞噬大勝：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
+            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成<br>• <strong>吞噬勝利：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
             role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪',
             role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手',
             role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出精準搶下低刻度安全格或故意落入第 3 名避險',
-            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能',
+            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊加分：</strong>在 5 局內將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊加分<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能',
             role_scoring_scz: '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong><br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>務必全力搶奪珍貴卡',
             role_evolved_notice: '<strong>【進化為 {roleName}】',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者提示：</strong>請優先挑選【★ 珍貴卡】，永久鎖定 12 張珍貴小時卡以避免受到 -999 分懲罰</span>',
@@ -292,11 +292,11 @@
             waiting_minute: '等待玩家打出分鐘卡...',
             sin_pull_activated: '⚡【時之惡】發動能力，本回合距離「時之惡」最近者受罰。',
             sin_rule_default: '【時之惡】鐘面數值最大者受罰 (接近12)。',
-            sin_seal_ai: '😈【時之惡】(AI) 耗用 {cost} MP 發動「封鎖」，本回合所有時魔能力已被封印。',
-            sec_ability_ai: '⏱️【秒針】{name} (AI) 耗用 {cost} MP，蓋放 2 張分鐘卡（翻牌後二選一）。',
-            evolution_success: '🎉【進化成功】{oldRole} 達成條件「{condition}」變身為：{newRole}',
-            hour_top_to_bottom: '🕒【時針能力】{name} 消耗 {cost} MP，將頂牌 ({num}) 移至底部。',
-            minute_hand_moved: '⏱️【分針能力】{name} 耗用 {cost} MP，{dir}移至下一個有小時卡的位置 ({pos} 點)。',
+            sin_seal_ai: '【時之惡】(AI) 耗用 {cost} MP 發動「封鎖」，本回合所有時魔能力已被封印。',
+            sec_ability_ai: '⏱【秒針】{name} (AI) 耗用 {cost} MP，蓋放 2 張分鐘卡（翻牌後二選一）。',
+            evolution_success: '【進化】{oldRole} 達成條件「{condition}」變身為：{newRole}',
+            hour_top_to_bottom: '【時針能力】{name} 消耗 {cost} MP，將頂牌 ({num}) 移至底部。',
+            minute_hand_moved: '️【分針能力】{name} 耗用 {cost} MP，{dir}移至下一個有小時卡的位置 ({pos} 點)。',
             balance_g4: '⚖️【第4局平衡】牌庫>26，強制移除 {count} 張「非珍貴 1 號卡」。',
             balance_g5: '⚖️【第5局平衡】牌庫過厚 ({total}張)，系統已移除 {count} 張非珍貴卡，修正為 24 張。'
         },
@@ -314,7 +314,7 @@
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
 							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家會扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
-							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營勝利）。</li>
 						</ul>
 					</div>
 
@@ -330,7 +330,7 @@
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
-							• <strong>🎯 已進入鐘面（前 2 名）：</strong>成功取得小時卡（第 1 名自選，第 2 名取餘下）。幼體時魔將卡片收入背包累積進化；完全體時魔將卡片留於鐘面；受詛者踩中珍貴卡則永久鎖定。但必須承擔回合末落於 12 點（或靠近時之惡）扣除齒輪的處決風險。<br>
+							• <strong>🎯 已進入鐘面（前 2 名）：</strong>取得小時卡（第 1 名自選，第 2 名取餘下）。幼體時魔將卡片收入背包累積進化；完全體時魔將卡片留於鐘面；受詛者踩中珍貴卡則永久鎖定。但必須承擔回合末落於 12 點（或靠近時之惡）扣除齒輪的處決風險。<br>
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
