@@ -928,9 +928,19 @@
             if (tex) {
                 sprite = new PIXI.Sprite(tex);
                 sprite.anchor.set(0.5);
-                // 大幅放大至 44px（無外框遮蔽，純粹呈現精緻立繪圖案）
+                // 角色專屬縮放比例：幼體時魔 80%，時針、分針、秒針 120%
+                let roleScaleMultiplier = 1.0;
+                if (p.type === '時魔') {
+                    const isEvolved = (p.roleCard === '時針' || p.roleCard === '分針' || p.roleCard === '秒針');
+                    if (isEvolved) {
+                        roleScaleMultiplier = 1.2; // 時針、分針、秒針放大至 120%
+                    } else {
+                        roleScaleMultiplier = 0.8; // 幼體時魔縮小至 80%
+                    }
+                }
+                const targetPixelSize = 44 * roleScaleMultiplier;
                 const origW = (tex.orig && tex.orig.width) || tex.width || 90;
-                baseScale = 44 / Math.max(1, origW);
+                baseScale = targetPixelSize / Math.max(1, origW);
                 sprite.scale.set(baseScale);
                 c.addChild(sprite);
             } else {

@@ -55,7 +55,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
     }
     const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
     if (player.mana < COST) {
-        appLogger.log(`【分針】Mana 不足 (需要 ${COST})，無法發動。`);
+        appLogger.log(`【分針】MP 不足 (需要 ${COST})，無法發動。`);
         return false;
     }
     
@@ -102,7 +102,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
 	if (window.gameAudio) window.gameAudio.playAbility();
 
     const dirText = direction === 'ccw' ? '逆時針' : '順時針';
-    appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
+    appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} MP，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
 
     return true;
 }
@@ -192,7 +192,7 @@ if (typeof window !== 'undefined') {
     window.AVAILABLE_ROLES = AVAILABLE_ROLES;
 }
 
-// === 時針能力：頂牌放到底 (1 Mana 消耗) ===
+// === 時針能力：頂牌放到底 (1 MP 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
     if (!player) return false;
@@ -200,7 +200,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     // 1. 計算當前是第幾次使用 (0=尚未, 1=已用一次)
     const moveCount = player.hourHandMoveCount || 0;
 
-    // 2. 設定消耗：第1次 1 Mana，第2次 2 Mana
+    // 2. 設定消耗：第1次 1 MP，第2次 2 MP
     const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
     const currentCost = (moveCount === 0) ? baseCost : 2;
 
@@ -210,7 +210,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
         return false;
     }
     if (player.mana < currentCost) {
-        console.warn(`Mana 不足 (需 ${currentCost})`);
+        console.warn(`MP 不足 (需 ${currentCost})`);
         return false;
     }
     if (!Array.isArray(gameState.hourDeck) || gameState.hourDeck.length < 1) {
@@ -236,8 +236,8 @@ function hourHandMoveTopToBottom(gameState, playerId) {
         player.specialAbilityUsed = false; 
     }
 
-    const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 Mana 發動一次)" : " (次數已達上限)";
-    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} Mana，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
+    const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 MP 發動一次)" : " (次數已達上限)";
+    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} MP，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
     
     return true;
 }
@@ -267,7 +267,7 @@ function activateSinAbility(gameState, playerId) {
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
-        appLogger.log("⚠️Mana 不足，無法發動。");
+        appLogger.log("⚠️MP 不足，無法發動。");
         return false;
     }
 
@@ -277,7 +277,7 @@ function activateSinAbility(gameState, playerId) {
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
-    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} Mana。`);
+    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} MP。`);
     appLogger.log(`⚠️ 本回合懲罰規則變更為：距離「時之惡」最近者受罰。`);
 
     return true;
@@ -303,10 +303,10 @@ function activateSinSealAbility(gameState, playerId) {
         return false;
     }
     
-    // 2. 讀取消耗 (預設 3 Mana)
+    // 2. 讀取消耗 (預設 3 MP)
     const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     if (player.mana < COST) {
-        appLogger.log(`⚠️Mana 不足 (需 ${COST})，無法發動封印。`);
+        appLogger.log(`⚠️MP 不足 (需 ${COST})，無法發動封印。`);
         return false;
     }
 
@@ -326,7 +326,7 @@ function activateSinSealAbility(gameState, playerId) {
     player.specialAbilityUsed = true;
     gameState.abilityMarker = true; // ✅ 開啟封印標記
 
-    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
+    appLogger.log(`😈【時之惡】耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
     return true;
 }
 

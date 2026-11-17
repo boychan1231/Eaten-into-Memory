@@ -83,14 +83,14 @@
             labels: {
                 you_are: 'You are: ',
                 you_tag: '★Me',
-                mana: 'Mana',
+                mana: 'MP',
                 gear_hp: 'Life',
                 shield: 'Shield',
                 collected: '🃏 Cards',
                 hand_count: 'Hand: ',
                 position: 'Pos: ',
                 not_on_board: 'Not Placed',
-                ejected: 'Ejected',
+                ejected: 'Devoured',
                 round: 'Round {round}',
                 game_round: 'Game {round}',
                 deck_remain: 'Deck Left',
@@ -110,11 +110,11 @@
                 tab_history: '📜 Score History',
                 round_summary: 'Round {round} Summary',
                 empty_title: 'Round 1 in Progress',
-                empty_desc: 'After each round ends, round scores, ejection status, and cumulative totals will appear here.',
+                empty_desc: 'After each round ends, round scores, devouring status, and cumulative totals will appear here.',
                 mini_hunt: 'Hunt',
                 mini_lock: 'Lock',
                 mini_sin: 'Time Sin',
-                mini_sin_ejected: 'Ejected',
+                mini_sin_ejected: 'Devoured',
                 mini_3p_survivors: 'Survived',
                 view_details: 'Click to view details'
             },
@@ -158,11 +158,11 @@
             combat_float: {
                 penalty_max: '-1 ⚙ (Max Hour Penalty)',
                 penalty_sin: '-1 ⚙ (Sin Encroachment)',
-                ejected: '⚠️ Ejected!',
+                ejected: '⚠️ Devoured!',
                 shield_block: '🛡️ Shield Blocked!',
-                mana_spend: '-{n} Mana',
-                mana_gain: '+{n} Mana',
-                sin_recharge: '+{diff} Mana (Evil Recharge)'
+                mana_spend: '-{n} MP',
+                mana_gain: '+{n} MP',
+                sin_recharge: '+{diff} MP (Evil Recharge)'
             },
             match_highlights: {
                 champion: '👑 Champion',
@@ -191,30 +191,30 @@
                 col_total_score: 'Total Pts',
                 pts_gear: '+{gear} Gears',
                 pts_total: '{pts} pts',
-                ejected: '(Ejected)'
+                ejected: '(Devoured)'
             },
             special_victory: {
                 title: '🏆 Special Victory Progress',
                 demon_hunt_title: '😈 Time Sin: Total Hunt',
-                demon_hunt_desc: 'Eject all 3 Time Demons at least once',
+                demon_hunt_desc: 'Devour all 3 Time Demons at least once',
                 demon_hunt_status_achieved: '🎉 Achieved (Total Hunt Complete)',
                 demon_hunt_status_in_progress: 'In Progress ({current}/3)',
-                ejected_tag: '💀 Ejected',
-                not_ejected_tag: '🛡️ Never Ejected',
+                ejected_tag: '💀 Devoured',
+                not_ejected_tag: '🛡️ Never Devoured',
                 curse_lock_title: '🔒 The Cursed: Lock of Memory',
                 curse_lock_desc: 'Lock 12 Precious Cards on the clock face',
                 curse_lock_status_achieved: '🎉 Achieved (Memories Locked)',
                 curse_lock_status_in_progress: 'In Progress ({current}/12)',
                 locked_marks: 'Locked Positions:',
                 locked_none: 'None',
-                time_demon_victory_title: '⚔️ Time Demons: Banish Time Sin',
-                time_demon_victory_desc: 'Exhaust Time Sin gears and eject it',
-                time_demon_status_achieved: '🎉 Achieved (Time Sin Ejected)',
+                time_demon_victory_title: '⚔️ Time Demons: Devour Time Sin',
+                time_demon_victory_desc: 'Exhaust Time Sin gears to devour it',
+                time_demon_status_achieved: '🎉 Achieved (Time Sin Devoured)',
                 time_demon_status_in_progress: 'Incomplete (Time Sin Alive, {gears} ⚙ remaining)',
                 mode_3p_title: '⚙️ 3P Pointer Speed Clash',
                 mode_3p_desc: 'Pure gear score speed clash (highest score wins)',
                 survived_tag: '🛡️ Survived ({gears} ⚙)',
-                defeated_tag: '💀 Ejected'
+                defeated_tag: '💀 Devoured'
             }
         },
         abilities: {
@@ -225,32 +225,32 @@
             cond_numbers: '2. Values {numbers}/4, Precious {precious}/1',
             cond_total: '3. Total {total}/5, Precious {precious}/2',
             cond_precious: '4. Precious {precious}/3 (Any)',
-            hour_desc: '👁️Scry Deck Top + ⚡1 Mana: Move top card to bottom',
+            hour_desc: '👁️Scry Deck Top + ⚡1 MP: Move top card to bottom',
             hour_top_card: '👁️ Top Card: <strong>{number}</strong> <span style="font-size:0.8rem; color:#ccc;">{age}</span> {star}',
             hour_deck_empty: '(Deck Empty)',
             hour_predict_disabled: '🚫 Prediction Disabled',
-            hour_move_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Move top card to bottom</span>',
-            hour_move_again_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 Move again (1 left)</span>',
-            min_desc: '⚡2 Mana: Jump to next space with Hour Card',
+            hour_move_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Move top card to bottom</span>',
+            hour_move_again_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 Move again (1 left)</span>',
+            min_desc: '⚡2 MP: Jump to next space with Hour Card',
             min_prompt: '⚡Select move direction (jump to next occupied space):',
             min_btn_ccw: '↺ Counter-Clockwise',
             min_btn_cw: '↻ Clockwise',
             min_btn_skip: 'Skip',
-            min_passive_text: 'When obtaining Hour Card, spend {cost} Mana to jump to next space with cards.',
-            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">Spend {cost} Mana to move upon getting Hour Card.</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 Sealed this round)</span>',
-            sec_desc: '⚡3 Mana: Play 2 cards, pick 1',
-            sec_btn_play: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Play 2, pick 1 upon reveal</span>',
+            min_passive_text: 'When obtaining Hour Card, spend {cost} MP to jump to next space with cards.',
+            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">Spend {cost} MP to move upon getting Hour Card.</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 Sealed this round)</span>',
+            sec_desc: '⚡3 MP: Play 2 cards, pick 1',
+            sec_btn_play: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Play 2, pick 1 upon reveal</span>',
             sec_btn_cancel: 'Cancel',
             sec_pick_one_prompt: 'Select 1 card...',
             sec_pick_two_hint: '👆 Select 2 cards from your hand',
             sin_mode_near: 'Penalty Target: Nearest (Modified)',
             sin_mode_max: 'Penalty Target: Highest Value (Default)',
-            sin_btn_pull: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Sin Pull</span>',
+            sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Sin Pull</span>',
             sin_pull_tip: 'Penalize nearest player to Time Sin',
-            sin_btn_seal: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Seal Demon</span>',
+            sin_btn_seal: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Seal Demon</span>',
             sin_seal_tip: 'Seal all demon abilities this round',
             sin_acted: 'Acted',
-            sin_lack_mana: 'Need Mana ({cost})',
+            sin_lack_mana: 'Need MP ({cost})',
             locked_btn: '🚫 Ability Sealed'
         },
         tutorial: {
@@ -269,21 +269,21 @@
             step3_no_hour_notice: '<strong>【Tactical Notice: Staying Off the Clock Face】</strong><br>🛡️ <strong>Advantage (Safety):</strong> You do not enter the clock face this round, <strong>completely avoiding</strong> gear/life penalties!<br>⚠️ <strong>Disadvantage:</strong> You gain no Hour Cards, delaying memory collection for character evolution.',
             penalty_sin: '<br><span style="color:#feca57;">⚠️ Current Rule: "Nearest to Sin penalized"!</span>',
             penalty_max: '<br><span style="color:#ff6b6b;">⚠️ Current Rule: "Highest Hour penalized"! Stay away from 12!</span>',
-            step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend Mana to jump clockwise or counter-clockwise (or click Skip).',
+            step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend MP to jump clockwise or counter-clockwise (or click Skip).',
             step_second_ability: '<strong>Second Hand:</strong> Choose 1 final card from the two committed Minute Cards!',
             step4_round_done: '<strong>Round Resolved!</strong> Click "Next Round" to begin the next round.',
             step_next_round: '<strong>Click "Next Round"</strong><br>Resolve movements and start next round!',
-            role_scoring_young: '<strong>【🐣 Young Time Demon: Scoring & Goal】</strong><br>• <strong>Base Score:</strong> Each surviving gear at the end of each game converts 1:1 to score points!<br>• <strong>Evolution Goal:</strong> Compete for Hour Cards to satisfy 4 recipe requirements and evolve into Hour, Minute, or Second Hand! Evolved demons gain a <strong>+3 pts</strong> faction bonus at the end of Game 5!<br>• <strong>Ejection Victory:</strong> Eject Time Evil by draining its gears to win immediately!<br>• <strong>Emergency Shield:</strong> If Mana ≥ 3, spend all Mana to completely negate 1 incoming penalty.',
-            role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend Mana to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
-            role_scoring_minute: '<strong>【👟 Minute Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, spend 2 Mana to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
-            role_scoring_second: '<strong>【🃏 Second Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 Mana on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
-            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Eject each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚡ Evil Recharge:</strong> If penalty resolution applies to Time Evil itself (no other characters penalized), Time Evil is immune to penalties and <strong>recovers 1 Mana</strong> (up to current gear count)!<br>• <strong>⚠️ Starvation:</strong> If 2 consecutive games pass with no demon ejected, lose 1 gear to hunger! If gears hit 0, you lose immediately!<br>• <strong>Abilities:</strong> 【Sin\'s Pull (2 Mana)】penalizes whoever is closest to you; 【Seal (3 Mana)】blocks all demon abilities!',
+            role_scoring_young: '<strong>【🐣 Young Time Demon: Scoring & Goal】</strong><br>• <strong>Base Score:</strong> Each surviving gear at the end of each game converts 1:1 to score points!<br>• <strong>Evolution Goal:</strong> Compete for Hour Cards to satisfy 4 recipe requirements and evolve into Hour, Minute, or Second Hand! Evolved demons gain a <strong>+3 pts</strong> faction bonus at the end of Game 5!<br>• <strong>Devour Victory:</strong> Devour Time Evil by draining its gears to win immediately!<br>• <strong>Emergency Shield:</strong> If MP ≥ 3, spend all MP to completely negate 1 incoming penalty.',
+            role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend MP to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
+            role_scoring_minute: '<strong>【👟 Minute Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, spend 2 MP to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
+            role_scoring_second: '<strong>【🃏 Second Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 MP on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
+            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Devour each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚡ Evil Recharge:</strong> If penalty resolution applies to Time Evil itself (no other characters penalized), Time Evil is immune to penalties and <strong>recovers 1 MP</strong> (up to current gear count)!<br>• <strong>⚠️ Starvation:</strong> If no demon is devoured in a game, lose 2 gears from that game\'s score to hunger! (If gears drop below 0, Time Evil is devoured and loses!)<br>• <strong>Abilities:</strong> Before playing card, activate 【Sin\'s Pull (2 MP)】to penalize whoever is closest to you; 【Seal (3 MP)】blocks all demon abilities!',
             role_scoring_scz: '<strong>【👻 Cursed One: Memory Lock & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🔒 Core Mission:</strong> Land on 【★ Precious Hour Cards】to lock them permanently onto the clock face!<br>• <strong>🏆 Huge Bonus Points:</strong> Locking 12 cards by end of Game 2 / 3 / 4 grants <strong>+9 / +5 / +2 huge bonus points</strong>!<br>• <strong>☠️ Lethal Deadline:</strong> If fewer than 12 cards are locked by the end of Game 5, suffer a devastating <strong>-999 pts penalty</strong>! Prioritize Precious Cards!',
             role_evolved_notice: '<strong>🎉【Evolved into {roleName}!】</strong><br>You have evolved! You will earn a <strong>+3 pts</strong> faction bonus at game end! Use your new powers to safeguard gears and maximize your score!',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
-            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> After moving, activate 【Sin\'s Pull (2 Mana)】to penalize adjacent demons and work towards your 3-ejection Special Victory!</span>',
+            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> Before playing cards, activate 【Sin\'s Pull (2 MP)】to penalize adjacent demons and work towards your 3-demon devouring Special Victory!</span>',
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
-            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Ejected',
+            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Devoured',
             role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!'
         },
         logs: {
@@ -292,11 +292,11 @@
             waiting_minute: 'Waiting for players to play Minute Cards...',
             sin_pull_activated: '⚡【Time Sin】Ability activated! Nearest player will be penalized.',
             sin_rule_default: '【Time Sin】Highest clock position penalized (near 12).',
-            sin_seal_ai: '😈【Time Sin】(AI) Spent {cost} Mana on "Seal"! All demon abilities blocked this round.',
-            sec_ability_ai: '⏱️【Second Hand】{name} (AI) Spent {cost} Mana to commit 2 cards (pick 1).',
+            sin_seal_ai: '😈【Time Sin】(AI) Spent {cost} MP on "Seal"! All demon abilities blocked this round.',
+            sec_ability_ai: '⏱️【Second Hand】{name} (AI) Spent {cost} MP to commit 2 cards (pick 1).',
             evolution_success: '🎉【Evolved】{oldRole} met condition "{condition}"! Evolved into: {newRole}',
-            hour_top_to_bottom: '🕒【Hour Hand】{name} spent {cost} Mana to move top card ({num}) to bottom.',
-            minute_hand_moved: '⏱️【Minute Hand】{name} spent {cost} Mana, moved {dir} to space {pos}.',
+            hour_top_to_bottom: '🕒【Hour Hand】{name} spent {cost} MP to move top card ({num}) to bottom.',
+            minute_hand_moved: '⏱️【Minute Hand】{name} spent {cost} MP, moved {dir} to space {pos}.',
             balance_g4: '⚖️【Balance G4】Deck > 26, removed {count} non-precious 1s.',
             balance_g5: '⚖️【Balance G5】Deck trimmed by {count} cards to 24.'
         },
@@ -312,9 +312,9 @@
 							<li><strong>Clock Hours:</strong> The character whose position is closest to <strong>12</strong> loses 1 Gear at round end.</li>
 							<li><strong>Hour Cards (Board):</strong> Divided into Child (5), Youth (10), Adult (10), Middle-aged (10), and Death (1) eras. Precious (★) cards are distributed each game (12 in total, excluding Death).</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
-							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
+							<li><strong>Gear Points (Life / MP):</strong> Remaining gears become player score at each game (round) end. If gears drop to 0 and take damage again, the soul is <strong>Devoured (returns next game)</strong>.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
-							<li><strong>Time Evil Protection & Recharge:</strong> If penalty rules target Time Evil itself (no other characters penalized), Time Evil is immune to penalty and <strong>recovers 1 Mana</strong> (up to its current gear count).</li>
+							<li><strong>Time Evil Protection & Starvation:</strong> If penalty rules target Time Evil itself (no other characters penalized), Time Evil is immune to penalty and <strong>recovers 1 MP</strong> (up to current gears). If no demon is devoured in a game, Time Evil loses 2 gears from that game's score to hunger (if negative, Time Evil is devoured and loses).</li>
 						</ul>
 					</div>
 
@@ -322,11 +322,11 @@
 					<div style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>Draw Hours:</strong> 2 Hour Cards revealed on board.</li>
-							<li><strong>Blind Bid:</strong> Each player commits 1 Minute Card face down.</li>
+							<li><strong>Blind Bid:</strong> Each player commits 1 Minute Card face down (Time Evil can activate Sin's Pull before bidding).</li>
 							<li><strong>Reveal & Move:</strong> Reveal cards; highest value picks an Hour Card and moves piece there.</li>
 							<li><strong>Execution:</strong> Highest position (closest to 12) penalized by losing gear/shield.</li>
 							<li><strong>Evolution:</strong> Young demons collecting needed sets evolve at round end.</li>
-							<li><strong>Game Resolution:</strong> After 12 rounds, leftover gears convert to score. Redeal 12 cards for next game.</li>
+							<li><strong>Game Resolution:</strong> After 12 rounds, leftover gears convert to score. Redeal cards for next game.</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 Hour Cards: Entering vs Staying Off the Clock Face:</strong><br>
@@ -359,7 +359,7 @@
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>Victory</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">Highest Gear Score wins</td>
-									<td style="padding: 10px; border: 1px solid #555;">Gear Score + special victory conditions</td>
+									<td style="padding: 10px; border: 1px solid #555;">Gear Score + special victory conditions (Cursed One: +9/+5/+2 bonus for locking 12; Devour Time Sin; Sin devours all 3 demons)</td>
 								</tr>
 							</tbody>
 						</table>

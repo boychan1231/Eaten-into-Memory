@@ -694,7 +694,7 @@ function renderScorePanel(gameState) {
                 <div class="score-history-empty">
                     <div class="score-history-empty-icon">⏳</div>
                     <div class="score-history-empty-title">第 1 局進行中</div>
-                    <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。</div>
+                    <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。</div>
                 </div>
             `;
             return;
@@ -715,7 +715,7 @@ function renderScorePanel(gameState) {
             const roundPills = gameState.scoreHistory.map(entry => {
                 const pEntry = Array.isArray(entry.players) ? entry.players.find(x => x.id === p.id) : null;
                 if (!pEntry) return '';
-                const scoreText = pEntry.wasEjected ? '0齒(逐出)' : `+${pEntry.roundScore}齒`;
+                const scoreText = pEntry.wasEjected ? '0齒(被吞噬)' : `+${pEntry.roundScore}齒`;
                 const extraClass = pEntry.wasEjected ? 'ejected' : '';
                 return `<span class="score-round-chip ${extraClass}">第${entry.round}局: ${scoreText}</span>`;
             }).join('');
@@ -751,7 +751,7 @@ function renderScorePanel(gameState) {
                         ? window.UI_CONFIG.ROLE_COLORS[roleKey]
                         : '#ccc';
                     const gainClass = p.wasEjected ? 'ejected' : (p.roundScore > 0 ? '' : 'zero');
-                    const gainText = p.wasEjected ? '<s>+0 齒</s> (逐出)' : `+${p.roundScore} 齒`;
+                    const gainText = p.wasEjected ? '<s>+0 齒</s> (被吞噬)' : `+${p.roundScore} 齒`;
 
                     rowsHtml += `
                         <div class="score-history-row">
@@ -801,7 +801,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
                 </div>
             `;
         } else {
-            // 5P: 狩獵 X/3, 記憶 X/12, 時之惡 X⚙/已逐出
+            // 5P: 狩獵 X/3, 記憶 X/12, 時之惡 X⚙/已吞噬
             const timeDemons = gameState.players.filter(p => p.type === '時魔');
             const totalDemons = timeDemons.length || 3;
             const ejectedCount = timeDemons.filter(p => p.hasEverBeenEjected).length;
@@ -823,7 +823,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
             const labelHunt = t('ui.scores.mini_hunt') || '狩獵';
             const labelLock = t('ui.scores.mini_lock') || '記憶';
             const labelSin = t('ui.scores.mini_sin') || '時之惡';
-            const tagSinEjected = t('ui.scores.mini_sin_ejected') || '已逐出';
+            const tagSinEjected = t('ui.scores.mini_sin_ejected') || '已吞噬';
 
             bar.innerHTML = `
                 <div class="score-mini-pill demon-hunt" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
@@ -1634,7 +1634,7 @@ function renderClockFace(gameState, flags) {
     }
 }
 
-// --- ⚙️ 擬物化儀表生成函式：機芯齒輪鏈 (Gear Life Chain) & 乙太真空發條能量管 (Aether Gauge) ---
+// --- ⚙️ 擬物化儀表生成函式：機芯齒輪鏈 (Gear Life Chain) & MP 真空發條能量管 (MP Gauge) ---
 function createGearChainHtml(count, isCompact = false, idVal = '') {
     const gearCount = Math.max(0, Number(count) || 0);
     const idAttr = idVal ? `id="${idVal}"` : '';
@@ -1699,10 +1699,10 @@ function createManaGaugeHtml(mana, maxCapacity = 0, isCompact = false, idVal = '
 
     const compactModifier = isCompact ? 'mech-mana-gauge--compact' : '';
     const glowClass = (val > 0) ? 'is-energized' : 'is-depleted';
-    const labelText = isCompact ? 'Mana' : 'Mana 乙太';
+    const labelText = 'MP';
 
     return `
-        <div class="mech-mana-gauge ${compactModifier} ${glowClass}" title="法力乙太發條管 (Mana): ${val}/${cap}">
+        <div class="mech-mana-gauge ${compactModifier} ${glowClass}" title="法力發條管 (MP): ${val}/${cap}">
             <span class="mech-gauge-label">${labelText}</span>
             <div class="aether-vial">
                 <div class="vial-cap vial-cap--left">
@@ -1736,7 +1736,7 @@ function renderAIPlayers(gameState, humanId) {
         if (player.isEjected) pCard.classList.add('ejected');
 
         // 護盾可視化邏輯
-        // 條件：是幼體時魔 + Mana >= 3 + 護盾未使用
+        // 條件：是幼體時魔 + MP >= 3 + 護盾未使用
         const isYoung = player.roleCard && player.roleCard.includes('幼');
         // 讀取 config 中的護盾消耗，預設為 3
         const shieldCost = (window.GAME_DATA?.ABILITY_COSTS?.YOUNG_SHIELD) || 3;
@@ -1745,7 +1745,7 @@ function renderAIPlayers(gameState, humanId) {
             const shieldEl = document.createElement('div');
             shieldEl.className = 'shield-indicator';
             shieldEl.textContent = '🛡️';
-            shieldEl.title = `護盾就緒！(Mana ≥ ${shieldCost}，可抵擋傷害)`;
+            shieldEl.title = `護盾就緒！(MP ≥ ${shieldCost}，可抵擋傷害)`;
             pCard.appendChild(shieldEl);
         }
 
@@ -1761,7 +1761,7 @@ function renderAIPlayers(gameState, humanId) {
                     護盾: <strong>${player.d6Die}</strong>
                 </div>`;
         }
-        const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition !== null && player.currentClockPosition !== undefined ? `${player.currentClockPosition} 點` : '未上場');
+        const posDisplay = player.isEjected ? '被吞噬' : (player.currentClockPosition !== null && player.currentClockPosition !== undefined ? `${player.currentClockPosition} 點` : '未上場');
 
         // 齒輪生命顯示：數字為主，佐以單一齒輪圖示，超過 0 顆不橫向溢出
         const gearCount = Math.max(0, player.gearCards || 0);
@@ -2185,7 +2185,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
         // 使用 innerHTML 插入圖示
         const shieldHtml = hasShield
-            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 Mana 抵擋">🛡️</span>`
+            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋">🛡️</span>`
             : '';
 
         const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
@@ -2207,7 +2207,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-score', String(humanPlayer.score));
 
-    // 渲染立體機械生命齒輪鏈與發條乙太管
+    // 渲染立體機械生命齒輪鏈與發條 MP 管
     const gearChip = document.querySelector('.human-top-bar .resource-chip--gear');
     if (gearChip) {
         gearChip.classList.add('has-mech-gauge');
@@ -2223,7 +2223,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     } else {
         setText('h-mana', String(humanPlayer.mana));
     }
-    const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '驅逐';
+    const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '被吞噬';
     const notOnBoardLabel = window.i18n ? window.i18n.t('ui.labels.not_on_board') : '未上場';
     setText('h-pos', humanPlayer.isEjected ? ejectedLabel : String(humanPlayer.currentClockPosition || notOnBoardLabel));
     setText('h-hour', String(humanPlayer.hourCards.length));
@@ -3237,9 +3237,9 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         const targetLabel = window.i18n ? window.i18n.t('abilities.target_role') : '目標身份：';
         const condMetText = window.i18n ? window.i18n.t('abilities.condition_met') : '✨ 條件達成！回合結束時進化';
         const roleDescriptions = {
-            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 Mana：牌頂移底'}</div>`,
-            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 Mana：移至下一個有小時卡的格子'}</div>`,
-            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 Mana：出牌二選一'}</div>`
+            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 MP：牌頂移底'}</div>`,
+            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 MP：移至下一個有小時卡的格子'}</div>`,
+            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 MP：出牌二選一'}</div>`
         };
 
         const cond1Text = window.i18n ? window.i18n.t('abilities.cond_ages', { ages: uniqueAges, precious: preciousCount }) : `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`;
@@ -3354,11 +3354,11 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             if (moveCount === 0) {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_btn', { cost: currentCost })
-                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
             } else {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_again_btn', { cost: currentCost })
-                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
             }
             btn.disabled = !canUse;
             btn.onclick = () => {
@@ -3410,11 +3410,11 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             if (isAbilityLocked) {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_disabled', { cost: COST })
-                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
+                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} MP 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
             } else {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_text', { cost: COST })
-                    : `取得小時卡時，可消耗 ${COST} Mana 跳躍至順/逆時針下一個有卡片的格子。`;
+                    : `取得小時卡時，可消耗 ${COST} MP 跳躍至順/逆時針下一個有卡片的格子。`;
             }
             container.appendChild(info);
         }
@@ -3460,7 +3460,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                     btn.style.backgroundColor = '#00d2d3';
                     btn.innerHTML = window.i18n
                         ? window.i18n.t('abilities.sec_btn_play', { cost: COST })
-                        : `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
+                        : `${COST} MP<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
                     btn.disabled = !canUse;
                     btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
                 }
@@ -3516,7 +3516,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     btnPull.style.color = '#000';
 
     const actedTxt = window.i18n ? window.i18n.t('abilities.sin_acted') : '已行動';
-    const lackManaTxt = (cost) => window.i18n ? window.i18n.t('abilities.sin_lack_mana', { cost }) : `缺 Mana (${cost})`;
+    const lackManaTxt = (cost) => window.i18n ? window.i18n.t('abilities.sin_lack_mana', { cost }) : `缺 MP (${cost})`;
 
     if (humanPlayer.specialAbilityUsed) {
         btnPull.textContent = actedTxt;
@@ -3527,7 +3527,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     } else {
         btnPull.innerHTML = window.i18n
             ? window.i18n.t('abilities.sin_btn_pull', { cost: pullCost })
-            : `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
+            : `${pullCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
         btnPull.title = window.i18n ? window.i18n.t('abilities.sin_pull_tip') : '改為懲罰「距離最近」者';
         btnPull.onclick = () => {
             if (typeof activateSinAbility === 'function') {
@@ -3561,7 +3561,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     } else {
         btnSeal.innerHTML = window.i18n
             ? window.i18n.t('abilities.sin_btn_seal', { cost: sealCost })
-            : `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>`;
+            : `${sealCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>`;
         btnSeal.title = window.i18n ? window.i18n.t('abilities.sin_seal_tip') : '本回合封印全體時魔能力';
         btnSeal.onclick = () => {
             if (typeof activateSinSealAbility === 'function') {
@@ -3620,7 +3620,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const enemyHoldings = [];
 
     gameState.players.forEach(p => {
-        // 條件：是時魔 + 未被逐出
+        // 條件：是時魔 + 未被吞噬
         if (p.type === '時魔' && !p.isEjected) {
 
             // 判定是否為幼體：

@@ -83,14 +83,14 @@
             labels: {
                 you_are: '您是：',
                 you_tag: '★我',
-                MP: 'MP',
+                mana: 'MP',
                 gear_hp: '生命',
                 shield: '護盾',
                 collected: '🃏 收集',
                 hand_count: '手牌：',
                 position: '位置：',
                 not_on_board: '未上場',
-                ejected: '驅逐',
+                ejected: '被吞噬',
                 round: '回合 {round}',
                 game_round: '第 {round} 局',
                 deck_remain: '牌庫剩餘',
@@ -110,13 +110,13 @@
                 tab_history: '📜 得分歷程',
                 round_summary: '第 {round} 局結算',
                 empty_title: '第 1 局進行中',
-                empty_desc: '每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。',
+                empty_desc: '每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。',
                 mini_hunt: '狩獵',
                 mini_lock: '記憶',
                 mini_sin: '時之惡',
-                mini_sin_ejected: '已逐出',
+                mini_sin_ejected: '已吞噬',
                 mini_3p_survivors: '生還',
-                view_details: '特殊勝利詳情'
+                view_details: '點擊查看特殊勝利詳情'
             },
             settings: {
                 title: '⚙️ 遊戲設定',
@@ -145,23 +145,23 @@
                 sec_ability_ready: '⚡ 已選 2 張卡牌，請點擊「確認出牌」。'
             },
             tactics: {
-                danger: '☠',
-                danger_max: '☠受罰預警',
-                danger_sin: '☠接近時之惡',
+                danger: '⚠️ 高危',
+                danger_max: '⚠️ 高危 (受罰預警)',
+                danger_sin: '⚠️ 高危 (接近時之惡)',
                 safe: '🛡️ 安全',
                 recipe: '⭐ 契合配方',
                 precious: '💎 珍貴回憶',
-                tier_low: '避險牌',
+                tier_low: '避險小牌',
                 tier_mid: '中位牌',
                 tier_high: '先驅強奪'
             },
             combat_float: {
                 penalty_max: '-1 ⚙ (最高刻度處決)',
                 penalty_sin: '-1 ⚙ (時之惡侵蝕)',
-                ejected: '☠️吞噬出局!',
-                shield_block: '🛡️抵免!',
-                MP_spend: '-{n} MP',
-                MP_gain: '+{n} MP',
+                ejected: '⚠️ 被吞噬出局!',
+                shield_block: '🛡️ 護盾抵免!',
+                mana_spend: '-{n} MP',
+                mana_gain: '+{n} MP',
                 sin_recharge: '+{diff} MP (惡念充能)'
             },
             match_highlights: {
@@ -191,30 +191,30 @@
                 col_total_score: '累計總分',
                 pts_gear: '+{gear} 齒',
                 pts_total: '{pts} 分',
-                ejected: '(逐出)'
+                ejected: '(被吞噬)'
             },
             special_victory: {
                 title: '🏆 特殊勝利達成進度',
                 demon_hunt_title: '😈 時之惡：完全狩獵',
-                demon_hunt_desc: '將全場 3 位時魔各驅逐出局至少一次',
+                demon_hunt_desc: '將全場 3 位時魔各吞噬出局至少一次',
                 demon_hunt_status_achieved: '🎉 達成 (狩獵完成)',
                 demon_hunt_status_in_progress: '進行中 ({current}/3)',
-                ejected_tag: '💀 已逐出',
-                not_ejected_tag: '🛡️ 未曾逐出',
+                ejected_tag: '💀 已吞噬',
+                not_ejected_tag: '🛡️ 未曾被吞噬',
                 curse_lock_title: '🔒 受詛者：記憶之鎖',
                 curse_lock_desc: '在鐘面上鎖定 12 張珍貴卡',
                 curse_lock_status_achieved: '🎉 達成 (記憶解放)',
                 curse_lock_status_in_progress: '進行中 ({current}/12)',
                 locked_marks: '已鎖定刻度：',
                 locked_none: '無',
-                time_demon_victory_title: '⚔️ 時魔陣營：驅逐時之惡',
-                time_demon_victory_desc: '耗盡時之惡齒輪並將其驅逐出局',
-                time_demon_status_achieved: '🎉 達成 (時之惡已被逐出)',
+                time_demon_victory_title: '⚔️ 時魔陣營：吞噬時之惡',
+                time_demon_victory_desc: '耗盡時之惡齒輪並將其吞噬出局',
+                time_demon_status_achieved: '🎉 達成 (時之惡已被吞噬)',
                 time_demon_status_in_progress: '未達成 (時之惡存活，剩餘 {gears} ⚙)',
                 mode_3p_title: '⚙️ 3P 指針競速對決',
                 mode_3p_desc: '純指針齒輪積分爭奪賽 (以最高積分獲勝)',
                 survived_tag: '🛡️ 生還 ({gears} ⚙)',
-                defeated_tag: '💀 遭逐出'
+                defeated_tag: '💀 遭吞噬'
             }
         },
         abilities: {
@@ -250,7 +250,7 @@
             sin_btn_seal: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>',
             sin_seal_tip: '本回合封印全體時魔能力',
             sin_acted: '已行動',
-            sin_lack_MP: '缺 MP ({cost})',
+            sin_lack_mana: '缺 MP ({cost})',
             locked_btn: '🚫 能力被封鎖'
         },
         tutorial: {
@@ -273,17 +273,17 @@
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
             step4_round_done: '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合！',
-            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>驅逐大勝：</strong>若合力將「時之惡」齒輪扣盡驅逐，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
+            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>吞噬大勝：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
             role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！',
             role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！',
             role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！',
-            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各驅逐一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）！<br>• <strong>⚠️ 飢餓懲罰：</strong>若連續 2 局無人被驅逐時，將因飢餓扣除 1 齒輪！齒輪歸零時直接敗北！<br>• <strong>專屬異能：</strong>【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！',
+            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）！<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！',
             role_scoring_scz: '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！',
             role_evolved_notice: '<strong>🎉【恭喜進化為 {roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分！請善用全新的專屬異能保護齒輪，爭取最高積分！',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>',
-            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>落子後可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「驅逐 3 位時魔各一次」的特殊大勝！</span>',
+            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
-            role_progress_sin: '特殊大勝進度：已逐出時魔 {count}/3 位',
+            role_progress_sin: '特殊大勝進度：已吞噬時魔 {count}/3 位',
             role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化！'
         },
         logs: {
@@ -312,9 +312,9 @@
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
+							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家會扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
-							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
 						</ul>
 					</div>
 
@@ -322,11 +322,11 @@
 					<div style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
-							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」（時之惡可於蓋牌前發動「惡之牽引」）。</li>
 							<li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1 張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
 							<li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
 							<li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
+							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發手牌進入下一局。</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
@@ -334,7 +334,7 @@
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損！面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將「被吞噬」。時魔全滅或時之惡陣亡（被吞噬）將直接結束遊戲。</em>
 						</div>
 					</div>
 
@@ -362,13 +362,18 @@
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>勝利條件</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時齒輪積分最高者勝</td>
-									<td style="padding: 10px; border: 1px solid #555;">齒輪積分＋特殊勝利條件 (受詛者鎖定12張珍貴卡 / 驅逐時之惡)</td>
+									<td style="padding: 10px; border: 1px solid #555;"><u><strong>齒輪積分 ＋ 特殊勝利條件</strong></u><br>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分！第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong>！<br>
+										• <strong>時魔 特殊勝利：</strong>合力將時之惡齒輪耗盡達成「吞噬時之惡」！<br>
+										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵！
+									</td>
 								</tr>
 							</tbody>
 						</table>
 					</div>
 
 					<h4>🧬 進化機制 (時魔專屬)</h4>
+					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營額外加分！</p>
 					<ul>
 						<li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
 						<li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>

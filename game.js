@@ -66,7 +66,7 @@ function activateSinTargetingAbility(gameState) {
             // 若有時魔緊貼時之惡（距離 <= 2），牽引能精準懲罰時魔
             const demonIsClose = (minDemonDist <= 2);
 
-            // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 Mana，讓預設機制懲罰時魔
+            // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 MP，讓預設機制懲罰時魔
             const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos && d.currentClockPosition !== sinPos);
 
             if (sinTiedAtMax) {
@@ -118,13 +118,13 @@ function activateSinSealAI(gameState) {
         ['時針', '分針', '秒針'].includes(p.roleCard)
     ).length;
 
-    // 觸發條件：Mana >= 3, 進化時魔 >= 2, 機率 50%
+    // 觸發條件：MP >= 3, 進化時魔 >= 2, 機率 50%
     if (sinPlayer.mana >= COST && evolvedCount >= 2 && checkChance(0.5)) {
         sinPlayer.mana -= COST;
         sinPlayer.specialAbilityUsed = true; // 標記已使用能力
         gameState.abilityMarker = true;      // ✅ 設定封印標記 (重點)
         
-        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
+        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
     }
 }
 
@@ -495,7 +495,7 @@ function makeAIChoice3P(player, gameState) {
                 player.mana -= SEC_COST;
                 player.specialAbilityUsed = true;
                 if (window.gameAudio) window.gameAudio.playAbility();
-                appLogger.log(`⏱️【秒針】${player.name} (3P AI) 耗用 ${SEC_COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+                appLogger.log(`⏱️【秒針】${player.name} (3P AI) 耗用 ${SEC_COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
                 return {
                     type: 'seconds_pending',
                     options: [chosenCard, altCard]
@@ -735,7 +735,7 @@ function makeAIChoice(player, gameState) {
     const originalIndex = player.hand.findIndex(c => c.value === targetCardValue);
     const chosenCard = player.hand.splice(originalIndex, 1)[0];
     
-	// ✅ 秒針能力：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
+	// ✅ 秒針能力：消耗 3 MP 蓋放 2 張，翻牌後二選一（AI 也可用）
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;	
 	if (
 		GAME_CONFIG.enableAbilities &&
@@ -765,7 +765,7 @@ function makeAIChoice(player, gameState) {
 				player.mana -= COST;
 				player.specialAbilityUsed = true;
 				if (window.gameAudio) window.gameAudio.playAbility();
-				appLogger.log(`⏱️【秒針】${player.name} (AI) 耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+				appLogger.log(`⏱️【秒針】${player.name} (AI) 耗用 ${COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
 				return {
 					type: 'seconds_pending',
 					options: [chosenCard, altCard]
@@ -831,7 +831,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 	//讀取秒針能力消耗
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
     if (humanPlayer.mana < COST) {
-        console.warn("Mana 不足，不能使用秒針能力。");
+        console.warn("MP 不足，不能使用秒針能力。");
         return false;
     }
     if (!Array.isArray(chosenCardValues) || chosenCardValues.length !== 2) {
@@ -852,7 +852,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     }
     const card2 = humanPlayer.hand.splice(idx2, 1)[0];
 
-    // ✅ 只在成功蓋牌後扣 Mana
+    // ✅ 只在成功蓋牌後扣 MP
     humanPlayer.mana -= COST;
 	
 	if (window.gameAudio) window.gameAudio.playAbility();
@@ -881,7 +881,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     // 清掉等待出牌（人類已完成「蓋牌」）
     gameState.currentRoundAIChoices = null;
 
-    appLogger.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+    appLogger.log(`⏱️【秒針】您耗用 ${COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
     appLogger.log("--- ✋ 翻牌時刻！ 🤚 ---");
     aiChoices.forEach(c => {
         if (c.card && c.card.type === 'seconds_pending') {
@@ -1256,7 +1256,7 @@ function chooseHourCardForAI3P(gameState, player, drawnCards) {
         else if (c.number === otherMax) risk = 1;
         else risk = 0;
 
-        // 分針專屬加權：若身為分針且 Mana >= 2，評估跳躍逃生彈性
+        // 分針專屬加權：若身為分針且 MP >= 2，評估跳躍逃生彈性
         if (player.roleCard === '分針' && player.mana >= 2 && risk > 0) {
             risk = 0.5; // 分針可透過技能跳走，風險折半
         }
@@ -1618,7 +1618,7 @@ function minuteHandPostHourAI(gameState) {
                 bestChoice = 'cw';
             }
         } else {
-            // 目前安全：當 Mana 充足 (>= 4) 時，若逆時針能移到更小數值且安全的位置，有一定機率主動移以保持優勢
+            // 目前安全：當 MP 充足 (>= 4) 時，若逆時針能移到更小數值且安全的位置，有一定機率主動移以保持優勢
             if (aiPlayer.mana >= 4 && posCCW !== null && posCCW < oldPos && riskCCW === 0 && checkChance(0.4)) {
                 bestChoice = 'ccw';
             }
@@ -1712,7 +1712,7 @@ function finishHourSelection(gameState) {
     // 定義基礎條件
     const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
     const isAlive = humanPlayer && !humanPlayer.isEjected;
-    const hasMana = humanPlayer && humanPlayer.mana >= 2;
+    const hasMP = humanPlayer && humanPlayer.mana >= 2;
     const notBlocked = !gameState.abilityMarker;
     const notUsed = humanPlayer && !humanPlayer.specialAbilityUsed;
     
@@ -1723,7 +1723,7 @@ function finishHourSelection(gameState) {
         typeof humanPlayer.pickedHourCardThisTurnNumber === 'number';
 
     // 綜合判斷
-    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMana && notBlocked && notUsed && gotCard) {
+    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMP && notBlocked && notUsed && gotCard) {
         
         // 設定專屬等待狀態
         gameState.waitingMinuteHandChoice = true;
@@ -1848,19 +1848,19 @@ function deductGearCards(gameState) {
     }
 
     // 1.5 時之惡庇護與回能機制：
-    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 Mana（上限為齒輪數）
+    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 MP（上限為齒輪數）
     if (currentMode !== '3P' && sinPlayer) {
         const isSinAloneTarget = (playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
         const isNoOneTargetedInSin = (targetingMode === 'sin' && playersToDeduct.length === 0);
 
         if (isSinAloneTarget || isNoOneTargetedInSin) {
-            const maxMana = sinPlayer.gearCards;
-            const oldMana = sinPlayer.mana || 0;
-            if (oldMana < maxMana) {
-                sinPlayer.mana = oldMana + 1;
-                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 Mana (目前: ${sinPlayer.mana}/${maxMana})。`);
+            const maxMP = sinPlayer.gearCards;
+            const oldMP = sinPlayer.mana || 0;
+            if (oldMP < maxMP) {
+                sinPlayer.mana = oldMP + 1;
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 MP (目前: ${sinPlayer.mana}/${maxMana})。`);
             } else {
-                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (Mana 已達上限: ${sinPlayer.mana})。`);
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (MP 已達上限: ${sinPlayer.mana})。`);
             }
             // 清空受罰名單，確保時之惡不扣除護盾或齒輪
             playersToDeduct = [];
@@ -1873,19 +1873,19 @@ function deductGearCards(gameState) {
             // 檢查是否為「幼體」 (只有幼體有護盾)
             const isYoungTimeDemon = typeof player.roleCard === 'string' && player.roleCard.includes('幼');
 
-            // 【幼體防禦】：若是幼體、未用過盾、且 Mana 足夠，則擋下傷害
+            // 【幼體防禦】：若是幼體、未用過盾、且 MP 足夠，則擋下傷害
             if (isYoungTimeDemon && !player.shieldUsed && player.mana >= 3) {
                 const spent = player.mana;
                 player.shieldUsed = true;
                 player.mana = 0;
-                appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
+                appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} MP，抵擋本次攻擊。`);
                 return; // 成功抵擋，不扣齒局
             }
 
-            // 若已進化 (非幼體) 或 Mana 不足，直接扣齒局
+            // 若已進化 (非幼體) 或 MP 不足，直接扣齒局
             player.gearCards--;
             
-            // Mana 不能超過當前齒局數
+            // MP 不能超過當前齒局數
             if (player.mana > player.gearCards) player.mana = Math.max(0, player.gearCards);
             
             appLogger.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒局 (剩餘: ${player.gearCards})。`);
@@ -1899,11 +1899,11 @@ function deductGearCards(gameState) {
     checkEjectionAndWinCondition(gameState);
 }
 
-// --- 檢查逐出與勝利條件 (確認版) ---
+// --- 檢查吞噬與勝利條件 (確認版) ---
 function checkEjectionAndWinCondition(gameState) {
     if (!gameState || !gameState.players) return;
 
-    // 1. 檢查齒局 < 0（即 -1）才逐出。 0 是安全的。
+    // 1. 檢查齒輪 < 0（即 -1）才被吞噬。 0 是安全的。
     gameState.players.forEach(player => {
         if (!player.isEjected && player.gearCards < 0) {
             player.isEjected = true;
@@ -1913,12 +1913,12 @@ function checkEjectionAndWinCondition(gameState) {
             player.currentClockPosition = null;
             if (typeof player.d6Die === 'number') player.d6Die = 0;
 
-            // 標記本局有時魔死亡 (影響時之惡懲罰判定)
+            // 標記本局有時魔被吞噬 (影響時之惡懲罰判定)
             if (player.type === '時魔') {
                 gameState.roundHadTimeDemonEjection = true;
             }
 
-            appLogger.log(`⚠️【逐出】${player.name} 的齒局耗盡 (${player.gearCards})，被逐出遊戲。`);
+            appLogger.log(`⚠️【吞噬】${player.name} 的齒輪耗盡 (${player.gearCards})，被吞噬出局。`);
         }
     });
 
@@ -1927,24 +1927,24 @@ function checkEjectionAndWinCondition(gameState) {
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
     const currentMode = gameState.gameMode || getGameMode();
 
-	// 檢查是否「所有時魔都曾被逐出過」
+	// 檢查是否「所有時魔都曾被吞噬過」
     const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
     const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
 	
-	// 判斷：時之惡死亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被逐出 (累計全滅)
+	// 判斷：時之惡陣亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被吞噬 (累計全滅)
     if (currentMode === '3P') {
         if (aliveTimeDemons.length === 0) {
             gameState.gameEnded = true;
-            appLogger.log('🎉 遊戲結束：所有時魔被逐出。');
+            appLogger.log('🎉 遊戲結束：所有時魔皆被吞噬。');
         }
     } else if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
-            appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
+            appLogger.log('🎉 遊戲結束：時之惡被吞噬，時魔陣營勝利！');
         } else if (sinAlive && (aliveTimeDemons.length === 0 || allDemonsEverEjected)) {
             // ✅ 修改訊息：明確指出獲勝原因
             if (allDemonsEverEjected) {
-                appLogger.log('🎉 遊戲結束：所有時魔皆曾被逐出，時之惡完成「完全狩獵」，時之惡陣營勝利！');
+                appLogger.log('🎉 遊戲結束：所有時魔皆曾被吞噬，時之惡完成「完全狩獵」，時之惡陣營勝利！');
             } else {
                 appLogger.log('🎉 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
             }
@@ -2001,7 +2001,7 @@ function inRoundEndActions(gameState) {
     //    ['時針', '分針', '秒針'].includes(p.roleCard)
     //).length;
 	// 條件：
-    // 1. Mana >= 3
+    // 1. MP >= 3
     // 2. 進化時魔 >= 2
     // 3. 機率 50% (0.5)
 	//const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;//讀取mana設定
@@ -2013,7 +2013,7 @@ function inRoundEndActions(gameState) {
     //) { 
     //    sinPlayer.mana -= COST; 
     //    gameState.abilityMarker = true; 
-    //    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
+    //    appLogger.log(`😈【時之惡】耗用 ${COST} MP 封印全場特殊能力！`);
     //}
 
     // 受詛者保護卡片
@@ -2075,7 +2075,34 @@ function endGameRound(gameState) {
     appLogger.log(`=== 第 ${gameState.gameRound} 局結束 ===`);
     const numPlayers = gameState.players.length;
 
-    // 1. 計算分數（以本局結束時的齒局數為準，出局逐出者為 0 分）
+    // 1. 「時之惡飢餓懲罰」判定：若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成 吞噬時之惡）
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    const noDemonDevouredThisRound = !gameState.roundHadTimeDemonEjection;
+
+    if (sinPlayer && noDemonDevouredThisRound) {
+        sinPlayer.gearCards -= 2;
+        appLogger.log(`⚠️【時之惡懲罰】本局無時魔被吞噬，${sinPlayer.name} 因飢餓從該局得分中扣除 2 齒輪（剩餘 ${sinPlayer.gearCards} 齒輪）。`);
+
+        if (sinPlayer.gearCards < 0) {
+            sinPlayer.isEjected = true;
+            sinPlayer.hasEverBeenEjected = true;
+            sinPlayer.gearCards = 0;
+            sinPlayer.mana = 0;
+            sinPlayer.currentClockPosition = null;
+            if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
+            appLogger.log(`💀【吞噬】${sinPlayer.name} 因飢餓扣至負數，被吞噬出局！`);
+            appLogger.log('🎉 遊戲結束：時之惡被吞噬，時魔陣營勝利！');
+            gameState.gameEnded = true;
+        } else {
+            if (sinPlayer.mana > sinPlayer.gearCards) sinPlayer.mana = sinPlayer.gearCards;
+            if (sinPlayer.mana < 0) sinPlayer.mana = 0;
+        }
+    }
+
+    // 重置本局時魔被吞噬標記
+    gameState.roundHadTimeDemonEjection = false;
+
+    // 2. 計算分數（以本局結束時的齒輪數為準，出局/被吞噬者為 0 分）
     const roundSummary = gameState.players.map(player => {
         const wasEjected = !!player.isEjected;
         const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);
@@ -2093,36 +2120,11 @@ function endGameRound(gameState) {
     });
     gameState.lastRoundSummary = roundSummary;
 
-    // 2. 「時之惡懲罰」：以「局」為單位
-    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-    const currentRoundSafe = !gameState.roundHadTimeDemonEjection;
-
-    if (sinPlayer) {
-        if (currentRoundSafe && gameState.previousRoundSafe) {
-            sinPlayer.gearCards--;
-            appLogger.log(`【時之惡懲罰】連續 2 局無人被逐出，${sinPlayer.name} 扣除 1 齒局。`);
-
-            if (sinPlayer.gearCards < 0) {
-                sinPlayer.isEjected = true;
-                sinPlayer.hasEverBeenEjected = true;
-                sinPlayer.gearCards = 0;
-                sinPlayer.mana = 0;
-                sinPlayer.currentClockPosition = null;
-                if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
-                appLogger.log(`⚠️【逐出】${sinPlayer.name} 齒局耗盡，被逐出遊戲。`);
-                appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
-                endGame(gameState);
-                return;
-            }
-            if (sinPlayer.mana > sinPlayer.gearCards) sinPlayer.mana = sinPlayer.gearCards;
-            if (sinPlayer.mana < 0) sinPlayer.mana = 0;
-        }
-        gameState.previousRoundSafe = currentRoundSafe;
-    } else {
-        gameState.previousRoundSafe = false;
+    // 若時之惡因飢餓被吞噬導致遊戲結束，立即進入 endGame
+    if (sinPlayer && sinPlayer.isEjected && gameState.gameEnded) {
+        endGame(gameState);
+        return;
     }
-
-    gameState.roundHadTimeDemonEjection = false;
 	
 	// 受詛者任務檢查
 	const sczPlayer = gameState.players.find(p => p.type === '受詛者');
@@ -2340,8 +2342,8 @@ function endGame(gameState) {
         const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
         const human = gameState.players.find(p => p.id === humanId);
         
-        // 簡單判定：如果人類沒被逐出，視為勝利 (或是您可以根據 score 排名判定)
-        // 這裡示範：只要沒被逐出就算 Win 音效，被逐出算 Lose 音效
+        // 簡單判定：如果人類沒被吞噬，視為勝利 (或是您可以根據 score 排名判定)
+        // 這裡示範：只要沒被吞噬就算 Win 音效，被吞噬算 Lose 音效
         const isWin = human && !human.isEjected;
         
         window.gameAudio.playGameOver(isWin);

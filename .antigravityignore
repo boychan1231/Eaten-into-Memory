@@ -1,0 +1,46 @@
+# ==============================================================================
+# Antigravity Workspace / Agent Context Ignore Rules
+# 避免代理在啟動或對話時全域遍歷大型二進位素材、音效、大型第三方庫與快取目錄
+# ==============================================================================
+
+# 1. 大型音效與音訊資源 (SFX/BGM)
+SFX/
+*.mp3
+*.wav
+*.ogg
+*.aac
+*.flac
+
+# 2. 靜態圖片、貼圖與模型素材 (除必要引用外不主動全文遍歷)
+assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.ico
+clock-bg.png
+
+# 3. 大型編譯與第三方打包函式庫 (節省 Token 與遍歷時間)
+pixi.min.js
+gsap.min.js
+role_assets_data.js
+ai_studio/AI_STUDIO_CONTEXT_BUNDLE.md
+
+# 4. 編譯輸出、依賴套件與暫存快取
+node_modules/
+dist/
+build/
+Temp/
+Library/
+.cache/
+.vite/
+.parcel-cache/
+scratch/
+
+# 5. Git 與系統雜項
+.git/
+.DS_Store
+Thumbs.db
+*.log

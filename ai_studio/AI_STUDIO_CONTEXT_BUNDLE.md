@@ -7,7 +7,7 @@
 ## 包含檔案目錄 (Table of Contents)
 
 1. `README.md` (2.2 KB)
-2. `GAMEPLAY.md` (17.6 KB)
+2. `GAMEPLAY.md` (18.1 KB)
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
@@ -15,21 +15,21 @@
 7. `logger.js` (1.5 KB)
 8. `audio.js` (14.3 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (28.1 KB)
-11. `locales/en-US.js` (26.4 KB)
-12. `abilities.js` (12.1 KB)
+10. `locales/zh-TW.js` (29.0 KB)
+11. `locales/en-US.js` (26.7 KB)
+12. `abilities.js` (12.0 KB)
 13. `game_setup.js` (17.7 KB)
-14. `game.js` (99.9 KB)
+14. `game.js` (100.1 KB)
 15. `ui_modals.js` (4.6 KB)
-16. `ui_components.js` (165.2 KB)
+16. `ui_components.js` (165.1 KB)
 17. `tutorial_mode.js` (46.9 KB)
 18. `ui.js` (87.3 KB)
-19. `modern_board.js` (68.3 KB)
+19. `modern_board.js` (68.8 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (49.6 KB)
-22. `classic.html` (37.5 KB)
+21. `index.html` (50.4 KB)
+22. `classic.html` (38.3 KB)
 23. `modern.css` (120.7 KB)
-24. `style.css` (102.5 KB)
+24. `style.css` (102.7 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -144,10 +144,10 @@
 * 牌庫共有數值 **1 至 60** 且完全不重複的分鐘卡。
 * 分鐘卡用於每回合的盲出暗拍，數值較大者擁有優先選卡權。
 
-### 4. 齒輪（Gears / 生命值 / Mana / 分數）
+### 4. 齒輪（Gears / 生命值 / MP / 分數）
 * **三重功能一體化**：
-  1. **生命值（HP）**：受到懲罰時扣除 1 點齒輪；當齒輪歸零且再次受傷，角色將被「逐出」（Exile），當局無法再行動，直到下一局遊戲重新發牌時才復活返回。
-  2. **乙太法力（Mana）**：角色的 Mana 上限等同當前擁有的齒輪數，用於施放角色強大主動能力。
+  1. **生命值（HP）**：受到懲罰時扣除 1 點齒輪；當齒輪歸零且再次受傷，角色將「被吞噬」（Devoured），當局無法再行動，直到下一局遊戲重新發牌時才復活返回。
+  2. **法力 (MP)（MP）**：角色的 MP 上限等同當前擁有的齒輪數，用於施放角色強大主動能力。
   3. **終局計分（Score）**：每局結束時，剩餘的齒輪數會全數計入該玩家的累積排行榜總分中。
 
 ### 5. 護盾（Shield）
@@ -161,13 +161,13 @@
 
 ```mermaid
 flowchart TD
-    A["階段 1：翻開 2 張小時卡"] --> B["階段 2：玩家暗蓋 1 張分鐘卡"]
+    A["階段 1：翻開 2 張小時卡"] --> B["階段 2：暗蓋分鐘卡 (時之惡可於蓋牌前發動惡之牽引)"]
     B --> C["階段 3：翻牌比大小與順序結算"]
     C --> D{"比牌結果名次"}
     D -->|"第 1 名 (最大)"| E["優先自選 1 張小時卡，移至該刻度"]
     D -->|"第 2 名 (次大)"| F["獲得餘下 1 張小時卡，移至該刻度"]
     D -->|"第 3 名及以後"| G["🛡️ 安全避險！不進入鐘面，免疫受罰"]
-    E --> H["階段 4：觸發角色異能 (時針/分針/秒針/時之惡)"]
+    E --> H["階段 4：觸發角色異能 (時針/分針/秒針)"]
     F --> H
     G --> H
     H --> I["階段 5：處決結算 (最接近 12 或最接近時之惡扣除齒輪)"]
@@ -177,7 +177,7 @@ flowchart TD
 * 系統由小時卡牌庫頂翻開 **2 張小時卡**，放置於鐘面上對應的刻度位置，作為本回合競標目標。
 
 ### 階段 2：暗拍競標（Secret Bidding）
-* 全體玩家依據當前鐘面牌面、對手手牌推測與自身生命狀態，從手牌中**暗蓋 1 張分鐘卡**（秒針時魔可發動異能暗蓋 2 張）。
+* 全體玩家依據當前鐘面牌面、對手手牌推測與自身生命狀態，從手牌中**暗蓋 1 張分鐘卡**（秒針時魔可發動異能暗蓋 2 張；時之惡若欲發動「惡之牽引」必須在此時出牌前使用）。
 
 ### 階段 3：揭牌判定與選卡移動（Minute Clash & Movement）
 * 全體玩家同時開牌比大小，依數值排序：
@@ -198,14 +198,14 @@ flowchart TD
 | **核心戰略價值** | **進攻與成長**：<br>積極爭取珍貴小時卡（★）與安全低刻度（1～5 點），推進時魔進化或鎖定任務。 | **避險與保命（毒牌避讓）**：<br>當場上翻出 10、11、12 等高危險毒牌時，**刻意打出小牌成為未進入鐘面者**，既能保全自身齒輪，又能坐收對手互踩處決的漁翁之利。 |
 
 ### 階段 4：角色能力發動（Abilities Resolution）
-* 符合條件的角色可在此時消耗 Mana 發動專屬異能（例如分針順/逆時針跳格、時之惡切換受罰規則等）。
+* 符合條件的角色可在此時消耗 MP 發動專屬異能（例如分針順/逆時針跳格、時針移動牌庫等）。
 
 ### 階段 5：處決結算與推進（Penalty Resolution）
 * 評判鐘面上所有在場角色的位置：
   * **預設規則**：位置最接近 **12**（刻度數值最大）的角色判定受罰，扣除 1 點護盾或齒輪。
   * **時之惡發動「惡之牽引」規則**：距離時之惡自身步數最近的角色受罰。
-  * **⚡ 時之惡庇護與惡念充能**：若處決規則判定之受罰對象為時之惡自身（全場無其他角色受罰），時之惡**免受處罰**，並**恢復 1 點 Mana**（上限為其當前齒輪數）。若與其他角色並列受罰，則照常結算受罰。
-* 若玩家齒輪扣至 0 再次受創，將被逐出場外。
+  * **⚡ 時之惡庇護與惡念充能**：若處決規則判定之受罰對象為時之惡自身（全場無其他角色受罰），時之惡**免受處罰**，並**恢復 1 點 MP**（上限為其當前齒輪數）。若與其他角色並列受罰，則照常結算受罰。
+* 若玩家齒輪扣至 0 再次受創，將「被吞噬」出場。
 * 清理鐘面上的小時卡，準備進入下一回合。
 
 ---
@@ -225,9 +225,9 @@ flowchart TD
 | **AI 決策風格** | 專屬 3P AI：主動設陷阱逼對手吃毒牌、緊急逃生算牌 | 5P AI：以收集進化配方、陣營互制為核心策略 |
 
 ### 5P 模式三大特殊勝利條件：
-1. **時魔陣營特殊勝利**：若合力或藉由鐘面處決將「時之惡」成功驅逐，時魔全體立即獲勝並獲得額外積分獎勵。
-2. **時之惡特殊勝利**：在 5 局遊戲結束前，成功將全場 3 位時魔「各驅逐一次」。
-3. **受詛者特殊勝利**：遊戲結束前，在鐘面上成功踩踏並「鎖定 12 張珍貴小時卡」。
+1. **時魔陣營特殊勝利**：若合力或藉由鐘面處決將「時之惡」成功吞噬，時魔全體立即獲勝並獲得額外積分獎勵。
+2. **時之惡特殊勝利**：在 5 局遊戲結束前，成功將全場 3 位時魔「各吞噬一次」完成完全狩獵。
+3. **受詛者特殊勝利**：第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 **+9 / +5 / +2** 巨額獎勵分；第 5 局結束若未滿 12 張則重扣 **-999 分**！
 
 ---
 
@@ -235,31 +235,32 @@ flowchart TD
 
 ### 👁️ 時針（Time Hand）—— 命運的預見者
 * **【被動】預知未來**：每回合自動預知小時卡牌庫的下一張頂牌數值。
-* **【主動】時間操弄（消耗 1 Mana）**：可將當前小時牌庫頂牌移至底部，重塑抽牌格局；同回合可再消耗 2 Mana 執行第二次。
+* **【主動】時間操弄（消耗 1 MP）**：可將當前小時牌庫頂牌移至底部，重塑抽牌格局；同回合可再消耗 2 MP 執行第二次。
 
 ### 👟 分針（Minute Hand）—— 空間的躍遷者
-* **【主動】跳躍移動（消耗 2 Mana）**：挑選小時卡並落子後，可選擇**順時針**或**逆時針**跳躍至下一個有牌的鐘面刻度，靈活擺脫 12 點受罰危險格。
+* **【主動】跳躍移動（消耗 2 MP）**：挑選小時卡並落子後，可選擇**順時針**或**逆時針**跳躍至下一個有牌的鐘面刻度，靈活擺脫 12 點受罰危險格。
 
 ### 🃏 秒針（Second Hand）—— 狡黠的千面者
-* **【主動】雙牌伏擊（消耗 3 Mana）**：出牌階段可同時暗蓋 **2 張分鐘卡**。待全場其餘玩家翻開卡牌後，秒針可觀察全場開牌結果，再決定最終打出哪一張，具備極強的戰術後手優勢。
+* **【主動】雙牌伏擊（消耗 3 MP）**：出牌階段可同時暗蓋 **2 張分鐘卡**。待全場其餘玩家翻開卡牌後，秒針可觀察全場開牌結果，再決定最終打出哪一張，具備極強的戰術後手優勢。
 
 ### 🐣 時魔幼體（Young Time Demon）—— 僅 5P 模式
-* **【被動】絕境護符**：整場遊戲限用一次。當自身 Mana $\ge$ 3 且即將遭受處決受罰時，可消耗全部 Mana 完全抵免該次傷害。
+* **【被動】絕境護符**：整場遊戲限用一次。當自身 MP $\ge$ 3 且即將遭受處決受罰時，可消耗全部 MP 完全抵免該次傷害。
 
 ### 😈 時之惡（Time Evil）—— 僅 5P 模式（起始刻度：12）
-* **【被動】惡念充能（庇護）**：若處決結算適用對象為時之惡自身（全場無其他角色受罰），時之惡完全免受處罰，並直接**恢復 1 點 Mana**（上限為當前齒輪數）。
-* **【主動】惡之牽引（消耗 2 Mana）**：扭曲處決規則！本回合不再以「最接近 12」作為處決目標，改為處決「**距離時之惡自身最近**」的角色。
-* **【主動】虛無封鎖（消耗 3 Mana）**：封印全場！本回合封鎖全場所有時魔的特殊能力與進化效果。
+* **【被動】惡念充能（庇護）**：若處決結算適用對象為時之惡自身（全場無其他角色受罰），時之惡完全免受處罰，並直接**恢復 1 點 MP**（上限為當前齒輪數）。
+* **【主動】惡之牽引（消耗 2 MP）**：**出牌前（暗蓋分鐘卡前）發動！**扭曲處決規則，本回合不再以「最接近 12」作為處決目標，改為處決「**距離時之惡自身最近**」的角色。
+* **【主動】虛無封鎖（消耗 3 MP）**：封印全場！本回合封鎖全場所有時魔的特殊能力與進化效果。
+* **【飢餓懲罰】**：若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，直接出局）。
 
 ### 👻 受詛者（Cursed One）—— 僅 5P 模式（起始刻度：1）
 * **【被動】接觸鎖定**：當受詛者移動至帶有「珍貴小時卡」的刻度時，會永久將該珍貴卡鎖定在鐘面上。
-* **【勝利任務】**：在遊戲結束前於鐘面累積鎖定 12 張珍貴卡即可單獨取得超額大勝。
+* **【勝利任務】**：第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 **+9 / +5 / +2** 巨額獎勵分；第 5 局結束若未滿 12 張則重扣 **-999 分**！
 
 ---
 
 ## 六、時魔進化體系（5P 模式專屬）
 
-在 5P 模式中，3 位時魔開局均為「幼體」，必須於回合中取得小時卡放入回憶行囊。當收集的小時卡組合滿足以下任一配方時，即可在回合結束時進化為強大的**時針、分針或秒針**（全場高階身份具備唯一性，先進化者先得）：
+在 5P 模式中，3 位時魔開局均為「幼體」，必須於回合中取得小時卡放入回憶行囊。當收集的小時卡組合滿足以下任一配方時，即可在回合結束時進化為強大的**時針、分針或秒針**（全場高階身份具備唯一性，先進化者先得；第 5 局結束時，已進化的時魔享有 **+3 分** 陣營額外加分）：
 
 | 進化配方名稱 | 達成條件要求 | 特色與難度 |
 | :--- | :--- | :--- |
@@ -288,7 +289,7 @@ flowchart TD
 
 ### 3. 五大資訊輔助抽屜（HUD Drawers）
 點擊畫面上的標籤按鈕即可展開專屬資訊面板（手機版以優雅的 Bottom Sheet 底部抽屜呈現，再次點擊按鈕即可收合）：
-* 👥 **玩家狀態**：檢視全體玩家的角色身份、剩餘齒輪、Mana 與護盾。
+* 👥 **玩家狀態**：檢視全體玩家的角色身份、剩餘齒輪、MP 與護盾。
 * 🏆 **得分榜**：查看每位玩家當前累計總積分與歷史局次得分。
 * 🗂️ **棄牌記錄**：實時查看已被打出的分鐘卡（標示綠底）與尚未出現的卡牌。
 * ⚡ **能力與進化**：檢視自身角色技能、法力值與幼體進化的即時進度條。
@@ -299,7 +300,7 @@ flowchart TD
 * **動態變身進化教學**：5P 模式中，當幼體時魔湊齊配方進化為時針、分針或秒針時，系統會在新回合開始時自動跳出全新形態的異能操作與得分攻略提示。
 * **局中即時戰術提示**：
   * **受詛者**：挑選小時卡時提示優先鎖定【★ 珍貴卡】，並於回合末回報當前累積鎖定進度（X/12），提醒倒數局數與任務獎勵分。
-  * **時之惡**：挑選小時卡時提示發動【惡之牽引】獵殺時魔，回合末顯示「各驅逐一次」的特殊大勝進度（X/3）與飢餓警報。
+  * **時之惡**：出牌前提示發動【惡之牽引】獵殺時魔，回合末顯示「各吞噬一次」的特殊大勝進度（X/3）與飢餓警報。
   * **時魔幼體**：回合末回報背包小時卡收集數量與進化進度。
 * **輕量直覺互動**：點擊氣泡右上角 `✕` 僅關閉當前提示（不影響後續教學步驟）；點擊標題列「**不再提示**」可隨時完全關閉教學模式。所有提示框支援滑鼠懸停與手指觸控自動暫停計時，確保充分閱讀。
 
@@ -311,8 +312,8 @@ flowchart TD
    * 當鐘面翻出的兩張小時卡為高危數字（如 10、11 或 12）時，打出 1～20 的小分鐘卡爭取落入**第 3 名或更後**，完全不上鐘面，能讓爭搶大牌的對手自相殘殺！
 2. **算牌與棄牌堆追蹤**：
    * 分鐘卡共有 1-60 不重複。隨時開啟「棄牌記錄」抽屜，若發現 50 以上大牌已被消耗殆盡，手中的 40 多號卡牌便能充當全場無敵的決定性王牌。
-3. **時魔的 Mana 資源管理**：
-   * 齒輪既是生命也是 Mana，更是終局分數。切記不要為了瑣碎的跳格而濫用 Mana，將 Mana 保留在關鍵回合施展「分針逃生」或「秒針二選一」，能發揮逆轉乾坤的效果。
+3. **時魔的 MP 資源管理**：
+   * 齒輪既是生命也是 MP，更是終局分數。切記不要為了瑣碎的跳格而濫用 MP，將 MP 保留在關鍵回合施展「分針逃生」或「秒針二選一」，能發揮逆轉乾坤的效果。
 4. **時之惡的心理威懾**：
    * 5P 模式中，時之惡擁有改變處決規則的「惡之牽引」。當玩家站在刻度 1、2 等看似絕對安全的位置時，需提防時之惡突然發動牽引處決身邊角色。
 
@@ -353,11 +354,11 @@ flowchart TD
 | `index.html` | **預設入口：PixiJS 現代動態星芒鐘面版**<br>整合開場動態、PixiJS 全視野鐘面、動態浮動 HUD 抽屜。 | 預設開啟版本，支援版本切換至 `classic.html`。 |
 | `classic.html` | **傳統 DOM 經典備援版**<br>原始靜態 HTML/CSS DOM 鐘面結構與標準版面。 | 供相容性備援測試。 |
 | `modern.html` | **現代版向前相容跳轉頁**<br>自動無縫導向至預設 `index.html`。 | 保證舊書籤與歷史連結有效性。 |
-| `game.js` | **遊戲核心狀態機與規則引擎**<br>處理抽卡、出牌、比大小、小時卡分配、齒輪扣除、逐出判定、局/局數推進與算分結算。 | 全域管理 `gameState`，維護 `lastRoundSummary` 快照。 |
+| `game.js` | **遊戲核心狀態機與規則引擎**<br>處理抽卡、出牌、比大小、小時卡分配、齒輪扣除、吞噬判定、局/局數推進與算分結算。 | 全域管理 `gameState`，維護 `lastRoundSummary` 快照。 |
 | `game_setup.js` | **對局初始化與手牌分配**<br>建構初始玩家資料、洗牌、角色初始手牌與齒輪配置、3P/5P 模式角色初始化。 | 依賴 `config.js`。 |
 | `abilities.js` | **角色技能與時魔進化系統**<br>時針（牌頂移底）、分針（跳躍移動）、秒針（二選一）、時之惡（牽引/封鎖）、幼體時魔進化判定。 | 管理 `AVAILABLE_ROLES`，執行身份全域唯一性檢查。 |
 | `modern_board.js` | **PixiJS 現代鐘面渲染器**<br>繪製動態齒輪背景、鐘面刻度、角色立繪 Token、發光小時格交互、拖曳與縮放（Pan/Zoom）。 | 暴露 `ModernBoard` 模組，支援響應式視窗縮放。 |
-| `ui_components.js` | **操作介面交互與組件邏輯**<br>手牌拖曳（Drag & Drop）狀態機、擬物化齒輪生命值、Mana 乙太管、日誌與懸浮資訊抽屜、Minute Clash 動畫控制器。 | 管理 `bindMinuteCardDragToPlay` 與拖放判定。 |
+| `ui_components.js` | **操作介面交互與組件邏輯**<br>手牌拖曳（Drag & Drop）狀態機、擬物化齒輪生命值、MP 發條管、日誌與懸浮資訊抽屜、Minute Clash 動畫控制器。 | 管理 `bindMinuteCardDragToPlay` 與拖放判定。 |
 | `tutorial_mode.js` | **新手教學指針引導系統**<br>根據當前對局階段自動計算聚光燈（Spotlight）目標與氣泡說明、追蹤步驟、自動關閉條件判定。 | 管理 `TutorialModeManager`。 |
 | `ui.js` | **介面事件綁定與彈窗管理器**<br>局結算彈窗 (`showRoundReadyModal`)、設定頁面、音效開關、手動關閉教學切換。 | 局結算讀取 `lastRoundSummary` 快照。 |
 | `locales/` | **雙語系字典檔** (`zh-TW.js`, `en-US.js`)<br>UI 介面字串、教學提示、日誌字串、規則說明手冊。 | 結構需保持 100% 鍵值同步。 |
@@ -390,7 +391,7 @@ flowchart TD
   * **指針異能專精**：
     * **時針**：在 `hourHandPreMinuteAI` 中針對 3P 安全性調度頂牌，主動將致命大牌（11、12）移至底部。
     * **秒針**：在 `makeAIChoice3P` 與翻牌二選一決策中，依據場上小時卡是否為毒牌或逃生機會智能決定打出大牌或小牌。
-    * **分針**：挑選小時卡時預先考量 Mana 跳躍逃生空間。
+    * **分針**：挑選小時卡時預先考量 MP 跳躍逃生空間。
 
 ### 5. 操作回饋與視覺細節深化
 * **手牌牌力區間視覺輔助（Tier Badges）**：
@@ -398,7 +399,7 @@ flowchart TD
 * **鐘面小時格即時戰術風險預警（`assessHourCardTactics`）**：
   * 挑選小時卡時，即時在鐘面可選刻度與中央卡牌標註「⚠️ 高危 (受罰預警)」、「🛡️ 安全 (避險)」、「⭐ 契合配方」、「💎 珍貴回憶」，省去繁複心算。
 * **戰鬥處決浮動文字與棋子受擊震動（Combat Float & Token Shake）**：
-  * 扣除齒輪時直接以棋子在螢幕上的即時像素座標彈出文字（如 `-1 ⚙ (最高刻度處決)`、`🛡️ 護盾抵免!`、`⚠️ 逐出出局!`），棋子同步觸發受擊抖動。
+  * 扣除齒輪時直接以棋子在螢幕上的即時像素座標彈出文字（如 `-1 ⚙ (最高刻度處決)`、`🛡️ 護盾抵免!`、`⚠️ 被吞噬出局!`），棋子同步觸發受擊抖動。
 * **對局結算戰術榮譽標籤（Match Highlights）**：
   * 局末排行榜為各玩家計算個性化標籤（`👑 榮耀之冠`、`💎 記憶收藏家`、`🛡️ 堅毅生還`、`✨ 命運探索者` 等）。
 
@@ -415,7 +416,7 @@ flowchart TD
 * **鐵律防禦代碼**（`abilities.js`）：
   ```javascript
   // 絕對不可加入 !p.isEjected！
-  // 時針、分針、秒針為全域唯一高階身份，即使暫時被逐出，身份依舊屬於被佔用狀態！
+  // 時針、分針、秒針為全域唯一高階身份，即使暫時被吞噬，身份依舊屬於被佔用狀態！
   const takenRoles = gameState.players
       .filter(p => p !== player && p.type === '時魔')
       .map(p => p.roleCard);
@@ -428,7 +429,7 @@ flowchart TD
   1. 在 `endGameRound` 一開始、尚未重新發牌前，立即生成上一局快照 `gameState.lastRoundSummary`。
   2. 出局者當局得分強制計算為 0：
      `const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);`
-  3. 結算彈窗 `showRoundReadyModal` 必須**優先讀取 `gameState.lastRoundSummary` 快照**渲染排名與得分，若出局則明確顯示 `+0 齒` 與 `<s>角色</s> (逐出)`。
+  3. 結算彈窗 `showRoundReadyModal` 必須**優先讀取 `gameState.lastRoundSummary` 快照**渲染排名與得分，若出局則明確顯示 `+0 齒` 與 `<s>角色</s> (被吞噬)`。
   4. 遊戲結束 `endGame` 的時魔陣營額外加分（+3分）**必須包含 `!p.isEjected`**，已出局陣亡者不得享有加分。
 
 ### 3. 受詛者任務總分同步機制
@@ -478,7 +479,7 @@ flowchart TD
 
 ### 1. 測試標準
 * **非核心微調（文案、單一參數校準）**：執行輕量語法檢查（`node -c`）與邏輯審查即可。
-* **核心機制/狀態機改動（算分、進化、逐出、發牌、動畫控制器）**：必須執行針對性模擬腳本（單元測試）或深度驗證。
+* **核心機制/狀態機改動（算分、進化、吞噬、發牌、動畫控制器）**：必須執行針對性模擬腳本（單元測試）或深度驗證。
 
 ### 2. Windows / PowerShell 環境指令注意
 * 系統預設 PATH 中未包含 `git.exe` 時，可調用 GitHub Desktop 內建引擎：
@@ -854,7 +855,7 @@ const AudioConfig = {
     SFX_ABILITY_PATH: 'SFX/sfx_confirm.wav',  	 // 特殊能力發動音效（暫以確認音提供反饋）
     SFX_CHIME_PATH: 'SFX/sfx_chime.wav',    	 // 遊戲輪開始/鐘聲
     SFX_WIN_PATH: 'SFX/sfx_chime.wav',        	 // 勝利音效（暫以鐘聲提供反饋）
-    SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被逐出音效
+    SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被吞噬音效
 };
 
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
@@ -1534,14 +1535,14 @@ window.gameVoice = gameVoice;
             labels: {
                 you_are: '您是：',
                 you_tag: '★我',
-                mana: 'Mana',
+                mana: 'MP',
                 gear_hp: '生命',
                 shield: '護盾',
                 collected: '🃏 收集',
                 hand_count: '手牌：',
                 position: '位置：',
                 not_on_board: '未上場',
-                ejected: '驅逐',
+                ejected: '被吞噬',
                 round: '回合 {round}',
                 game_round: '第 {round} 局',
                 deck_remain: '牌庫剩餘',
@@ -1561,11 +1562,11 @@ window.gameVoice = gameVoice;
                 tab_history: '📜 得分歷程',
                 round_summary: '第 {round} 局結算',
                 empty_title: '第 1 局進行中',
-                empty_desc: '每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。',
+                empty_desc: '每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。',
                 mini_hunt: '狩獵',
                 mini_lock: '記憶',
                 mini_sin: '時之惡',
-                mini_sin_ejected: '已逐出',
+                mini_sin_ejected: '已吞噬',
                 mini_3p_survivors: '生還',
                 view_details: '點擊查看特殊勝利詳情'
             },
@@ -1609,11 +1610,11 @@ window.gameVoice = gameVoice;
             combat_float: {
                 penalty_max: '-1 ⚙ (最高刻度處決)',
                 penalty_sin: '-1 ⚙ (時之惡侵蝕)',
-                ejected: '⚠️ 逐出出局!',
+                ejected: '⚠️ 被吞噬出局!',
                 shield_block: '🛡️ 護盾抵免!',
-                mana_spend: '-{n} Mana',
-                mana_gain: '+{n} Mana',
-                sin_recharge: '+{diff} Mana (惡念充能)'
+                mana_spend: '-{n} MP',
+                mana_gain: '+{n} MP',
+                sin_recharge: '+{diff} MP (惡念充能)'
             },
             match_highlights: {
                 champion: '👑 榮耀之冠',
@@ -1642,30 +1643,30 @@ window.gameVoice = gameVoice;
                 col_total_score: '累計總分',
                 pts_gear: '+{gear} 齒',
                 pts_total: '{pts} 分',
-                ejected: '(逐出)'
+                ejected: '(被吞噬)'
             },
             special_victory: {
                 title: '🏆 特殊勝利達成進度',
                 demon_hunt_title: '😈 時之惡：完全狩獵',
-                demon_hunt_desc: '將全場 3 位時魔各驅逐出局至少一次',
+                demon_hunt_desc: '將全場 3 位時魔各吞噬出局至少一次',
                 demon_hunt_status_achieved: '🎉 達成 (狩獵完成)',
                 demon_hunt_status_in_progress: '進行中 ({current}/3)',
-                ejected_tag: '💀 已逐出',
-                not_ejected_tag: '🛡️ 未曾逐出',
+                ejected_tag: '💀 已吞噬',
+                not_ejected_tag: '🛡️ 未曾被吞噬',
                 curse_lock_title: '🔒 受詛者：記憶之鎖',
                 curse_lock_desc: '在鐘面上鎖定 12 張珍貴卡',
                 curse_lock_status_achieved: '🎉 達成 (記憶解放)',
                 curse_lock_status_in_progress: '進行中 ({current}/12)',
                 locked_marks: '已鎖定刻度：',
                 locked_none: '無',
-                time_demon_victory_title: '⚔️ 時魔陣營：驅逐時之惡',
-                time_demon_victory_desc: '耗盡時之惡齒輪並將其驅逐出局',
-                time_demon_status_achieved: '🎉 達成 (時之惡已被逐出)',
+                time_demon_victory_title: '⚔️ 時魔陣營：吞噬時之惡',
+                time_demon_victory_desc: '耗盡時之惡齒輪並將其吞噬出局',
+                time_demon_status_achieved: '🎉 達成 (時之惡已被吞噬)',
                 time_demon_status_in_progress: '未達成 (時之惡存活，剩餘 {gears} ⚙)',
                 mode_3p_title: '⚙️ 3P 指針競速對決',
                 mode_3p_desc: '純指針齒輪積分爭奪賽 (以最高積分獲勝)',
                 survived_tag: '🛡️ 生還 ({gears} ⚙)',
-                defeated_tag: '💀 遭逐出'
+                defeated_tag: '💀 遭吞噬'
             }
         },
         abilities: {
@@ -1676,32 +1677,32 @@ window.gameVoice = gameVoice;
             cond_numbers: '2. 數字 {numbers}/4, 珍貴 {precious}/1',
             cond_total: '3. 總數 {total}/5, 珍貴 {precious}/2',
             cond_precious: '4. 珍貴 {precious}/3 (任意)',
-            hour_desc: '👁️預知牌頂 + ⚡1 Mana：牌頂移底',
+            hour_desc: '👁️預知牌頂 + ⚡1 MP：牌頂移底',
             hour_top_card: '👁️ 牌庫頂：<strong>{number}</strong> <span style="font-size:0.8rem; color:#ccc;">{age}</span> {star}',
             hour_deck_empty: '(牌庫已空)',
             hour_predict_disabled: '🚫 預知能力失效',
-            hour_move_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>',
-            hour_move_again_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>',
-            min_desc: '⚡2 Mana：移至下一個有小時卡的格子',
+            hour_move_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>',
+            hour_move_again_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>',
+            min_desc: '⚡2 MP：移至下一個有小時卡的格子',
             min_prompt: '⚡請選擇移動方向 (將跳至下一個有卡片的格子)：',
             min_btn_ccw: '↺ 逆時針',
             min_btn_cw: '↻ 順時針',
             min_btn_skip: '略過',
-            min_passive_text: '取得小時卡時，可消耗 {cost} Mana 跳躍至順/逆時針下一個有卡片的格子。',
-            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 {cost} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>',
-            sec_desc: '⚡3 Mana：出牌二選一',
-            sec_btn_play: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>',
+            min_passive_text: '取得小時卡時，可消耗 {cost} MP 跳躍至順/逆時針下一個有卡片的格子。',
+            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 {cost} MP 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>',
+            sec_desc: '⚡3 MP：出牌二選一',
+            sec_btn_play: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>',
             sec_btn_cancel: '取消選擇',
             sec_pick_one_prompt: '請選擇一張牌...',
             sec_pick_two_hint: '👆 請點擊上方 2 張手牌',
             sin_mode_near: '扣滅目標：距離最近 (已變更)',
             sin_mode_max: '扣滅目標：數值最大 (預設)',
-            sin_btn_pull: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>',
+            sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>',
             sin_pull_tip: '改為懲罰「距離最近」者',
-            sin_btn_seal: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>',
+            sin_btn_seal: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>',
             sin_seal_tip: '本回合封印全體時魔能力',
             sin_acted: '已行動',
-            sin_lack_mana: '缺 Mana ({cost})',
+            sin_lack_mana: '缺 MP ({cost})',
             locked_btn: '🚫 能力被封鎖'
         },
         tutorial: {
@@ -1720,21 +1721,21 @@ window.gameVoice = gameVoice;
             step3_no_hour_notice: '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。',
             penalty_sin: '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>',
             penalty_max: '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>',
-            step_minute_ability: '<strong>分針能力：選擇移動方向</strong><br>可消耗 Mana 順時針或逆時針跳躍至下一個有小時卡的格子（若想保留 Mana 可點擊略過）。',
+            step_minute_ability: '<strong>分針能力：選擇移動方向</strong><br>可消耗 MP 順時針或逆時針跳躍至下一個有小時卡的格子（若想保留 MP 可點擊略過）。',
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張！',
             step4_round_done: '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合！',
-            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>驅逐大勝：</strong>若合力將「時之惡」齒輪扣盡驅逐，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>Mana ≥ 3 且即將受罰時，可消耗全部 Mana 抵免傷害一次。',
-            role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 Mana 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！',
-            role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 Mana 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！',
-            role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 Mana 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！',
-            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各驅逐一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）！<br>• <strong>⚠️ 飢餓懲罰：</strong>若連續 2 局無人被驅逐時，將因飢餓扣除 1 齒輪！齒輪歸零時直接敗北！<br>• <strong>專屬異能：</strong>【惡之牽引 (2 Mana)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 Mana)】封印全場技能！',
+            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>吞噬大勝：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
+            role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！',
+            role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！',
+            role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！',
+            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）！<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！',
             role_scoring_scz: '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！',
             role_evolved_notice: '<strong>🎉【恭喜進化為 {roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分！請善用全新的專屬異能保護齒輪，爭取最高積分！',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>',
-            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>落子後可發動【惡之牽引 (2 Mana)】處決身邊獵物，加速達成「驅逐 3 位時魔各一次」的特殊大勝！</span>',
+            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
-            role_progress_sin: '特殊大勝進度：已逐出時魔 {count}/3 位',
+            role_progress_sin: '特殊大勝進度：已吞噬時魔 {count}/3 位',
             role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化！'
         },
         logs: {
@@ -1743,11 +1744,11 @@ window.gameVoice = gameVoice;
             waiting_minute: '等待玩家打出分鐘卡...',
             sin_pull_activated: '⚡【時之惡】發動能力！本回合距離「時之惡」最近者受罰。',
             sin_rule_default: '【時之惡】鐘面數值最大者受罰 (接近12)。',
-            sin_seal_ai: '😈【時之惡】(AI) 耗用 {cost} Mana 發動「封鎖」！本回合所有時魔能力已被封印。',
-            sec_ability_ai: '⏱️【秒針】{name} (AI) 耗用 {cost} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。',
+            sin_seal_ai: '😈【時之惡】(AI) 耗用 {cost} MP 發動「封鎖」！本回合所有時魔能力已被封印。',
+            sec_ability_ai: '⏱️【秒針】{name} (AI) 耗用 {cost} MP，蓋放 2 張分鐘卡（翻牌後二選一）。',
             evolution_success: '🎉【進化成功】{oldRole} 達成條件「{condition}」！變身為：{newRole}',
-            hour_top_to_bottom: '🕒【時針能力】{name} 消耗 {cost} Mana，將頂牌 ({num}) 移至底部。',
-            minute_hand_moved: '⏱️【分針能力】{name} 耗用 {cost} Mana，{dir}移至下一個有小時卡的位置 ({pos} 點)。',
+            hour_top_to_bottom: '🕒【時針能力】{name} 消耗 {cost} MP，將頂牌 ({num}) 移至底部。',
+            minute_hand_moved: '⏱️【分針能力】{name} 耗用 {cost} MP，{dir}移至下一個有小時卡的位置 ({pos} 點)。',
             balance_g4: '⚖️【第4局平衡】牌庫>26，強制移除 {count} 張「非珍貴 1 號卡」。',
             balance_g5: '⚖️【第5局平衡】牌庫過厚 ({total}張)，系統已移除 {count} 張非珍貴卡，修正為 24 張。'
         },
@@ -1763,9 +1764,9 @@ window.gameVoice = gameVoice;
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐 (下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
+							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家會扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
 							<li><strong>未進入鐘面：</strong>若本回合分鐘卡點數較小未能取得小時卡，角色本回合不進入鐘面。雖然不進入鐘面能保護齒輪免受懲罰，但本回合也無法取得變身用的珍貴回憶卡。</li>
-							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
 						</ul>
 					</div>
 
@@ -1773,11 +1774,11 @@ window.gameVoice = gameVoice;
 					<div style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
-							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」（時之惡可於蓋牌前發動「惡之牽引」）。</li>
 							<li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1 張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
 							<li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
 							<li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
+							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發手牌進入下一局。</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
@@ -1785,7 +1786,7 @@ window.gameVoice = gameVoice;
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損！面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將「被吞噬」。時魔全滅或時之惡陣亡（被吞噬）將直接結束遊戲。</em>
 						</div>
 					</div>
 
@@ -1813,13 +1814,18 @@ window.gameVoice = gameVoice;
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>勝利條件</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時齒輪積分最高者勝</td>
-									<td style="padding: 10px; border: 1px solid #555;">齒輪積分＋特殊勝利條件 (受詛者鎖定12張珍貴卡 / 驅逐時之惡)</td>
+									<td style="padding: 10px; border: 1px solid #555;"><u><strong>齒輪積分 ＋ 特殊勝利條件</strong></u><br>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分！第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong>！<br>
+										• <strong>時魔 特殊勝利：</strong>合力將時之惡齒輪耗盡達成「吞噬時之惡」！<br>
+										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵！
+									</td>
 								</tr>
 							</tbody>
 						</table>
 					</div>
 
 					<h4>🧬 進化機制 (時魔專屬)</h4>
+					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營額外加分！</p>
 					<ul>
 						<li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
 						<li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
@@ -1924,14 +1930,14 @@ window.gameVoice = gameVoice;
             labels: {
                 you_are: 'You are: ',
                 you_tag: '★Me',
-                mana: 'Mana',
+                mana: 'MP',
                 gear_hp: 'Life',
                 shield: 'Shield',
                 collected: '🃏 Cards',
                 hand_count: 'Hand: ',
                 position: 'Pos: ',
                 not_on_board: 'Not Placed',
-                ejected: 'Ejected',
+                ejected: 'Devoured',
                 round: 'Round {round}',
                 game_round: 'Game {round}',
                 deck_remain: 'Deck Left',
@@ -1951,11 +1957,11 @@ window.gameVoice = gameVoice;
                 tab_history: '📜 Score History',
                 round_summary: 'Round {round} Summary',
                 empty_title: 'Round 1 in Progress',
-                empty_desc: 'After each round ends, round scores, ejection status, and cumulative totals will appear here.',
+                empty_desc: 'After each round ends, round scores, devouring status, and cumulative totals will appear here.',
                 mini_hunt: 'Hunt',
                 mini_lock: 'Lock',
                 mini_sin: 'Time Sin',
-                mini_sin_ejected: 'Ejected',
+                mini_sin_ejected: 'Devoured',
                 mini_3p_survivors: 'Survived',
                 view_details: 'Click to view details'
             },
@@ -1999,11 +2005,11 @@ window.gameVoice = gameVoice;
             combat_float: {
                 penalty_max: '-1 ⚙ (Max Hour Penalty)',
                 penalty_sin: '-1 ⚙ (Sin Encroachment)',
-                ejected: '⚠️ Ejected!',
+                ejected: '⚠️ Devoured!',
                 shield_block: '🛡️ Shield Blocked!',
-                mana_spend: '-{n} Mana',
-                mana_gain: '+{n} Mana',
-                sin_recharge: '+{diff} Mana (Evil Recharge)'
+                mana_spend: '-{n} MP',
+                mana_gain: '+{n} MP',
+                sin_recharge: '+{diff} MP (Evil Recharge)'
             },
             match_highlights: {
                 champion: '👑 Champion',
@@ -2032,30 +2038,30 @@ window.gameVoice = gameVoice;
                 col_total_score: 'Total Pts',
                 pts_gear: '+{gear} Gears',
                 pts_total: '{pts} pts',
-                ejected: '(Ejected)'
+                ejected: '(Devoured)'
             },
             special_victory: {
                 title: '🏆 Special Victory Progress',
                 demon_hunt_title: '😈 Time Sin: Total Hunt',
-                demon_hunt_desc: 'Eject all 3 Time Demons at least once',
+                demon_hunt_desc: 'Devour all 3 Time Demons at least once',
                 demon_hunt_status_achieved: '🎉 Achieved (Total Hunt Complete)',
                 demon_hunt_status_in_progress: 'In Progress ({current}/3)',
-                ejected_tag: '💀 Ejected',
-                not_ejected_tag: '🛡️ Never Ejected',
+                ejected_tag: '💀 Devoured',
+                not_ejected_tag: '🛡️ Never Devoured',
                 curse_lock_title: '🔒 The Cursed: Lock of Memory',
                 curse_lock_desc: 'Lock 12 Precious Cards on the clock face',
                 curse_lock_status_achieved: '🎉 Achieved (Memories Locked)',
                 curse_lock_status_in_progress: 'In Progress ({current}/12)',
                 locked_marks: 'Locked Positions:',
                 locked_none: 'None',
-                time_demon_victory_title: '⚔️ Time Demons: Banish Time Sin',
-                time_demon_victory_desc: 'Exhaust Time Sin gears and eject it',
-                time_demon_status_achieved: '🎉 Achieved (Time Sin Ejected)',
+                time_demon_victory_title: '⚔️ Time Demons: Devour Time Sin',
+                time_demon_victory_desc: 'Exhaust Time Sin gears to devour it',
+                time_demon_status_achieved: '🎉 Achieved (Time Sin Devoured)',
                 time_demon_status_in_progress: 'Incomplete (Time Sin Alive, {gears} ⚙ remaining)',
                 mode_3p_title: '⚙️ 3P Pointer Speed Clash',
                 mode_3p_desc: 'Pure gear score speed clash (highest score wins)',
                 survived_tag: '🛡️ Survived ({gears} ⚙)',
-                defeated_tag: '💀 Ejected'
+                defeated_tag: '💀 Devoured'
             }
         },
         abilities: {
@@ -2066,32 +2072,32 @@ window.gameVoice = gameVoice;
             cond_numbers: '2. Values {numbers}/4, Precious {precious}/1',
             cond_total: '3. Total {total}/5, Precious {precious}/2',
             cond_precious: '4. Precious {precious}/3 (Any)',
-            hour_desc: '👁️Scry Deck Top + ⚡1 Mana: Move top card to bottom',
+            hour_desc: '👁️Scry Deck Top + ⚡1 MP: Move top card to bottom',
             hour_top_card: '👁️ Top Card: <strong>{number}</strong> <span style="font-size:0.8rem; color:#ccc;">{age}</span> {star}',
             hour_deck_empty: '(Deck Empty)',
             hour_predict_disabled: '🚫 Prediction Disabled',
-            hour_move_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Move top card to bottom</span>',
-            hour_move_again_btn: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 Move again (1 left)</span>',
-            min_desc: '⚡2 Mana: Jump to next space with Hour Card',
+            hour_move_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Move top card to bottom</span>',
+            hour_move_again_btn: '{cost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 Move again (1 left)</span>',
+            min_desc: '⚡2 MP: Jump to next space with Hour Card',
             min_prompt: '⚡Select move direction (jump to next occupied space):',
             min_btn_ccw: '↺ Counter-Clockwise',
             min_btn_cw: '↻ Clockwise',
             min_btn_skip: 'Skip',
-            min_passive_text: 'When obtaining Hour Card, spend {cost} Mana to jump to next space with cards.',
-            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">Spend {cost} Mana to move upon getting Hour Card.</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 Sealed this round)</span>',
-            sec_desc: '⚡3 Mana: Play 2 cards, pick 1',
-            sec_btn_play: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Play 2, pick 1 upon reveal</span>',
+            min_passive_text: 'When obtaining Hour Card, spend {cost} MP to jump to next space with cards.',
+            min_passive_disabled: '<span style="color:#888; text-decoration:line-through;">Spend {cost} MP to move upon getting Hour Card.</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 Sealed this round)</span>',
+            sec_desc: '⚡3 MP: Play 2 cards, pick 1',
+            sec_btn_play: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Play 2, pick 1 upon reveal</span>',
             sec_btn_cancel: 'Cancel',
             sec_pick_one_prompt: 'Select 1 card...',
             sec_pick_two_hint: '👆 Select 2 cards from your hand',
             sin_mode_near: 'Penalty Target: Nearest (Modified)',
             sin_mode_max: 'Penalty Target: Highest Value (Default)',
-            sin_btn_pull: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Sin Pull</span>',
+            sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Sin Pull</span>',
             sin_pull_tip: 'Penalize nearest player to Time Sin',
-            sin_btn_seal: '{cost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">Seal Demon</span>',
+            sin_btn_seal: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Seal Demon</span>',
             sin_seal_tip: 'Seal all demon abilities this round',
             sin_acted: 'Acted',
-            sin_lack_mana: 'Need Mana ({cost})',
+            sin_lack_mana: 'Need MP ({cost})',
             locked_btn: '🚫 Ability Sealed'
         },
         tutorial: {
@@ -2110,21 +2116,21 @@ window.gameVoice = gameVoice;
             step3_no_hour_notice: '<strong>【Tactical Notice: Staying Off the Clock Face】</strong><br>🛡️ <strong>Advantage (Safety):</strong> You do not enter the clock face this round, <strong>completely avoiding</strong> gear/life penalties!<br>⚠️ <strong>Disadvantage:</strong> You gain no Hour Cards, delaying memory collection for character evolution.',
             penalty_sin: '<br><span style="color:#feca57;">⚠️ Current Rule: "Nearest to Sin penalized"!</span>',
             penalty_max: '<br><span style="color:#ff6b6b;">⚠️ Current Rule: "Highest Hour penalized"! Stay away from 12!</span>',
-            step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend Mana to jump clockwise or counter-clockwise (or click Skip).',
+            step_minute_ability: '<strong>Minute Hand: Choose Move Direction</strong><br>Spend MP to jump clockwise or counter-clockwise (or click Skip).',
             step_second_ability: '<strong>Second Hand:</strong> Choose 1 final card from the two committed Minute Cards!',
             step4_round_done: '<strong>Round Resolved!</strong> Click "Next Round" to begin the next round.',
             step_next_round: '<strong>Click "Next Round"</strong><br>Resolve movements and start next round!',
-            role_scoring_young: '<strong>【🐣 Young Time Demon: Scoring & Goal】</strong><br>• <strong>Base Score:</strong> Each surviving gear at the end of each game converts 1:1 to score points!<br>• <strong>Evolution Goal:</strong> Compete for Hour Cards to satisfy 4 recipe requirements and evolve into Hour, Minute, or Second Hand! Evolved demons gain a <strong>+3 pts</strong> faction bonus at the end of Game 5!<br>• <strong>Ejection Victory:</strong> Eject Time Evil by draining its gears to win immediately!<br>• <strong>Emergency Shield:</strong> If Mana ≥ 3, spend all Mana to completely negate 1 incoming penalty.',
-            role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend Mana to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
-            role_scoring_minute: '<strong>【👟 Minute Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, spend 2 Mana to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
-            role_scoring_second: '<strong>【🃏 Second Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 Mana on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
-            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Eject each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚡ Evil Recharge:</strong> If penalty resolution applies to Time Evil itself (no other characters penalized), Time Evil is immune to penalties and <strong>recovers 1 Mana</strong> (up to current gear count)!<br>• <strong>⚠️ Starvation:</strong> If 2 consecutive games pass with no demon ejected, lose 1 gear to hunger! If gears hit 0, you lose immediately!<br>• <strong>Abilities:</strong> 【Sin\'s Pull (2 Mana)】penalizes whoever is closest to you; 【Seal (3 Mana)】blocks all demon abilities!',
+            role_scoring_young: '<strong>【🐣 Young Time Demon: Scoring & Goal】</strong><br>• <strong>Base Score:</strong> Each surviving gear at the end of each game converts 1:1 to score points!<br>• <strong>Evolution Goal:</strong> Compete for Hour Cards to satisfy 4 recipe requirements and evolve into Hour, Minute, or Second Hand! Evolved demons gain a <strong>+3 pts</strong> faction bonus at the end of Game 5!<br>• <strong>Devour Victory:</strong> Devour Time Evil by draining its gears to win immediately!<br>• <strong>Emergency Shield:</strong> If MP ≥ 3, spend all MP to completely negate 1 incoming penalty.',
+            role_scoring_hour: '<strong>【👁️ Time Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Foresight:</strong> Automatically reveals the next Hour Card atop the deck each round.<br>• <strong>Deck Manipulation:</strong> Spend MP to move lethal high cards (11, 12) to the bottom, ensuring safe low-number cards appear and preserving your gears!',
+            role_scoring_minute: '<strong>【👟 Minute Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, spend 2 MP to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
+            role_scoring_second: '<strong>【🃏 Second Hand: Scoring & Tactics】</strong><br>• <strong>Gears = Score:</strong> Retain gears until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 MP on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
+            role_scoring_sin: '<strong>【😈 Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🩸 Special Win:</strong> Devour each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>⚡ Evil Recharge:</strong> If penalty resolution applies to Time Evil itself (no other characters penalized), Time Evil is immune to penalties and <strong>recovers 1 MP</strong> (up to current gear count)!<br>• <strong>⚠️ Starvation:</strong> If no demon is devoured in a game, lose 2 gears from that game\'s score to hunger! (If gears drop below 0, Time Evil is devoured and loses!)<br>• <strong>Abilities:</strong> Before playing card, activate 【Sin\'s Pull (2 MP)】to penalize whoever is closest to you; 【Seal (3 MP)】blocks all demon abilities!',
             role_scoring_scz: '<strong>【👻 Cursed One: Memory Lock & Scoring Guide】</strong><br>• <strong>Base Score:</strong> Remaining gears at game end convert to score.<br>• <strong>🔒 Core Mission:</strong> Land on 【★ Precious Hour Cards】to lock them permanently onto the clock face!<br>• <strong>🏆 Huge Bonus Points:</strong> Locking 12 cards by end of Game 2 / 3 / 4 grants <strong>+9 / +5 / +2 huge bonus points</strong>!<br>• <strong>☠️ Lethal Deadline:</strong> If fewer than 12 cards are locked by the end of Game 5, suffer a devastating <strong>-999 pts penalty</strong>! Prioritize Precious Cards!',
             role_evolved_notice: '<strong>🎉【Evolved into {roleName}!】</strong><br>You have evolved! You will earn a <strong>+3 pts</strong> faction bonus at game end! Use your new powers to safeguard gears and maximize your score!',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
-            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> After moving, activate 【Sin\'s Pull (2 Mana)】to penalize adjacent demons and work towards your 3-ejection Special Victory!</span>',
+            role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> Before playing cards, activate 【Sin\'s Pull (2 MP)】to penalize adjacent demons and work towards your 3-demon devouring Special Victory!</span>',
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
-            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Ejected',
+            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Devoured',
             role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!'
         },
         logs: {
@@ -2133,11 +2139,11 @@ window.gameVoice = gameVoice;
             waiting_minute: 'Waiting for players to play Minute Cards...',
             sin_pull_activated: '⚡【Time Sin】Ability activated! Nearest player will be penalized.',
             sin_rule_default: '【Time Sin】Highest clock position penalized (near 12).',
-            sin_seal_ai: '😈【Time Sin】(AI) Spent {cost} Mana on "Seal"! All demon abilities blocked this round.',
-            sec_ability_ai: '⏱️【Second Hand】{name} (AI) Spent {cost} Mana to commit 2 cards (pick 1).',
+            sin_seal_ai: '😈【Time Sin】(AI) Spent {cost} MP on "Seal"! All demon abilities blocked this round.',
+            sec_ability_ai: '⏱️【Second Hand】{name} (AI) Spent {cost} MP to commit 2 cards (pick 1).',
             evolution_success: '🎉【Evolved】{oldRole} met condition "{condition}"! Evolved into: {newRole}',
-            hour_top_to_bottom: '🕒【Hour Hand】{name} spent {cost} Mana to move top card ({num}) to bottom.',
-            minute_hand_moved: '⏱️【Minute Hand】{name} spent {cost} Mana, moved {dir} to space {pos}.',
+            hour_top_to_bottom: '🕒【Hour Hand】{name} spent {cost} MP to move top card ({num}) to bottom.',
+            minute_hand_moved: '⏱️【Minute Hand】{name} spent {cost} MP, moved {dir} to space {pos}.',
             balance_g4: '⚖️【Balance G4】Deck > 26, removed {count} non-precious 1s.',
             balance_g5: '⚖️【Balance G5】Deck trimmed by {count} cards to 24.'
         },
@@ -2153,9 +2159,9 @@ window.gameVoice = gameVoice;
 							<li><strong>Clock Hours:</strong> The character whose position is closest to <strong>12</strong> loses 1 Gear at round end.</li>
 							<li><strong>Hour Cards (Board):</strong> Divided into Child (5), Youth (10), Adult (10), Middle-aged (10), and Death (1) eras. Precious (★) cards are distributed each game (12 in total, excluding Death).</li>
 							<li><strong>Minute Cards (Hand):</strong> Values 1 - 60 used for blind bidding. Highest value picks first.</li>
-							<li><strong>Gear Points (Life / Mana):</strong> Remaining gears become player score at game end. Zero life means ejection until next game.</li>
+							<li><strong>Gear Points (Life / MP):</strong> Remaining gears become player score at each game (round) end. If gears drop to 0 and take damage again, the soul is <strong>Devoured (returns next game)</strong>.</li>
 							<li><strong>Off-Clock Protection & Memory Cards:</strong> If you do not acquire an Hour Card in a round (due to lower Minute Card values), your character does not enter the clock face. While staying off the clock protects your gears from penalties, you cannot acquire the precious memory cards needed for evolution this round.</li>
-							<li><strong>Time Evil Protection & Recharge:</strong> If penalty rules target Time Evil itself (no other characters penalized), Time Evil is immune to penalty and <strong>recovers 1 Mana</strong> (up to its current gear count).</li>
+							<li><strong>Time Evil Protection & Starvation:</strong> If penalty rules target Time Evil itself (no other characters penalized), Time Evil is immune to penalty and <strong>recovers 1 MP</strong> (up to current gears). If no demon is devoured in a game, Time Evil loses 2 gears from that game's score to hunger (if negative, Time Evil is devoured and loses).</li>
 						</ul>
 					</div>
 
@@ -2163,11 +2169,11 @@ window.gameVoice = gameVoice;
 					<div style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>Draw Hours:</strong> 2 Hour Cards revealed on board.</li>
-							<li><strong>Blind Bid:</strong> Each player commits 1 Minute Card face down.</li>
+							<li><strong>Blind Bid:</strong> Each player commits 1 Minute Card face down (Time Evil can activate Sin's Pull before bidding).</li>
 							<li><strong>Reveal & Move:</strong> Reveal cards; highest value picks an Hour Card and moves piece there.</li>
 							<li><strong>Execution:</strong> Highest position (closest to 12) penalized by losing gear/shield.</li>
 							<li><strong>Evolution:</strong> Young demons collecting needed sets evolve at round end.</li>
-							<li><strong>Game Resolution:</strong> After 12 rounds, leftover gears convert to score. Redeal 12 cards for next game.</li>
+							<li><strong>Game Resolution:</strong> After 12 rounds, leftover gears convert to score. Redeal cards for next game.</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 Hour Cards: Entering vs Staying Off the Clock Face:</strong><br>
@@ -2200,7 +2206,7 @@ window.gameVoice = gameVoice;
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>Victory</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">Highest Gear Score wins</td>
-									<td style="padding: 10px; border: 1px solid #555;">Gear Score + special victory conditions</td>
+									<td style="padding: 10px; border: 1px solid #555;">Gear Score + special victory conditions (Cursed One: +9/+5/+2 bonus for locking 12; Devour Time Sin; Sin devours all 3 demons)</td>
 								</tr>
 							</tbody>
 						</table>
@@ -2275,7 +2281,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
     }
     const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
     if (player.mana < COST) {
-        appLogger.log(`【分針】Mana 不足 (需要 ${COST})，無法發動。`);
+        appLogger.log(`【分針】MP 不足 (需要 ${COST})，無法發動。`);
         return false;
     }
     
@@ -2322,7 +2328,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
 	if (window.gameAudio) window.gameAudio.playAbility();
 
     const dirText = direction === 'ccw' ? '逆時針' : '順時針';
-    appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} Mana，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
+    appLogger.log(`⏱️【分針能力】${player.name} 耗用 ${COST} MP，${dirText}移至下一個有小時卡的位置 (${oldPos} ➝ ${newPos})。`);
 
     return true;
 }
@@ -2412,7 +2418,7 @@ if (typeof window !== 'undefined') {
     window.AVAILABLE_ROLES = AVAILABLE_ROLES;
 }
 
-// === 時針能力：頂牌放到底 (1 Mana 消耗) ===
+// === 時針能力：頂牌放到底 (1 MP 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
     if (!player) return false;
@@ -2420,7 +2426,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     // 1. 計算當前是第幾次使用 (0=尚未, 1=已用一次)
     const moveCount = player.hourHandMoveCount || 0;
 
-    // 2. 設定消耗：第1次 1 Mana，第2次 2 Mana
+    // 2. 設定消耗：第1次 1 MP，第2次 2 MP
     const baseCost = window.GAME_DATA?.ABILITY_COSTS?.TIME_HAND_MOVE || 1;
     const currentCost = (moveCount === 0) ? baseCost : 2;
 
@@ -2430,7 +2436,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
         return false;
     }
     if (player.mana < currentCost) {
-        console.warn(`Mana 不足 (需 ${currentCost})`);
+        console.warn(`MP 不足 (需 ${currentCost})`);
         return false;
     }
     if (!Array.isArray(gameState.hourDeck) || gameState.hourDeck.length < 1) {
@@ -2456,8 +2462,8 @@ function hourHandMoveTopToBottom(gameState, playerId) {
         player.specialAbilityUsed = false; 
     }
 
-    const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 Mana 發動一次)" : " (次數已達上限)";
-    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} Mana，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
+    const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 MP 發動一次)" : " (次數已達上限)";
+    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} MP，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
     
     return true;
 }
@@ -2487,7 +2493,7 @@ function activateSinAbility(gameState, playerId) {
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
-        appLogger.log("⚠️Mana 不足，無法發動。");
+        appLogger.log("⚠️MP 不足，無法發動。");
         return false;
     }
 
@@ -2497,7 +2503,7 @@ function activateSinAbility(gameState, playerId) {
     player.specialAbilityUsed = true; // 標記已使用
     gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
 
-    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} Mana。`);
+    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} MP。`);
     appLogger.log(`⚠️ 本回合懲罰規則變更為：距離「時之惡」最近者受罰。`);
 
     return true;
@@ -2523,10 +2529,10 @@ function activateSinSealAbility(gameState, playerId) {
         return false;
     }
     
-    // 2. 讀取消耗 (預設 3 Mana)
+    // 2. 讀取消耗 (預設 3 MP)
     const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     if (player.mana < COST) {
-        appLogger.log(`⚠️Mana 不足 (需 ${COST})，無法發動封印。`);
+        appLogger.log(`⚠️MP 不足 (需 ${COST})，無法發動封印。`);
         return false;
     }
 
@@ -2546,7 +2552,7 @@ function activateSinSealAbility(gameState, playerId) {
     player.specialAbilityUsed = true;
     gameState.abilityMarker = true; // ✅ 開啟封印標記
 
-    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
+    appLogger.log(`😈【時之惡】耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
     return true;
 }
 
@@ -2816,7 +2822,7 @@ class GameState {
 			// 加入 ID 判斷，確保受詛者一定有護盾
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
-            hasEverBeenEjected: false,// 永久記錄是否曾被驅逐 (用於時之惡勝利判定)
+            hasEverBeenEjected: false,// 永久記錄是否曾被吞噬 (用於時之惡勝利判定)
 			shieldUsed: false,
             specialAbilityUsed: false,
             giftCards: [],
@@ -2858,10 +2864,10 @@ class GameState {
 
         // 時之惡（sin）目標模式：default = 接近12；sin = 距離時之惡最近
         this.sinTargetingMode = 'default';
-		// 記錄上一局是否「安全」(沒有時魔被逐出)
+		// 記錄上一局是否「安全」(沒有時魔被吞噬)
         // 初始設為 false，確保第一局就算安全也不會觸發「連續兩局」的條件
         this.previousRoundSafe = false;
-		// 記錄本局是否有「時魔被逐出」事件（用於連續兩局懲罰判定）
+		// 記錄本局是否有「時魔被吞噬」事件（用於飢餓懲罰判定）
         this.roundHadTimeDemonEjection = false;
     }
 }
@@ -3125,7 +3131,7 @@ function activateSinTargetingAbility(gameState) {
             // 若有時魔緊貼時之惡（距離 <= 2），牽引能精準懲罰時魔
             const demonIsClose = (minDemonDist <= 2);
 
-            // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 Mana，讓預設機制懲罰時魔
+            // 若時魔本身已在 maxPos 且時之惡安全，不需浪費 MP，讓預設機制懲罰時魔
             const demonAlreadyAtMax = demonsWithPos.some(d => d.currentClockPosition === maxPos && d.currentClockPosition !== sinPos);
 
             if (sinTiedAtMax) {
@@ -3177,13 +3183,13 @@ function activateSinSealAI(gameState) {
         ['時針', '分針', '秒針'].includes(p.roleCard)
     ).length;
 
-    // 觸發條件：Mana >= 3, 進化時魔 >= 2, 機率 50%
+    // 觸發條件：MP >= 3, 進化時魔 >= 2, 機率 50%
     if (sinPlayer.mana >= COST && evolvedCount >= 2 && checkChance(0.5)) {
         sinPlayer.mana -= COST;
         sinPlayer.specialAbilityUsed = true; // 標記已使用能力
         gameState.abilityMarker = true;      // ✅ 設定封印標記 (重點)
         
-        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} Mana 發動「封鎖」！本回合所有時魔能力已被封印。`);
+        appLogger.log(`😈【時之惡】(AI) 耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
     }
 }
 
@@ -3554,7 +3560,7 @@ function makeAIChoice3P(player, gameState) {
                 player.mana -= SEC_COST;
                 player.specialAbilityUsed = true;
                 if (window.gameAudio) window.gameAudio.playAbility();
-                appLogger.log(`⏱️【秒針】${player.name} (3P AI) 耗用 ${SEC_COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+                appLogger.log(`⏱️【秒針】${player.name} (3P AI) 耗用 ${SEC_COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
                 return {
                     type: 'seconds_pending',
                     options: [chosenCard, altCard]
@@ -3794,7 +3800,7 @@ function makeAIChoice(player, gameState) {
     const originalIndex = player.hand.findIndex(c => c.value === targetCardValue);
     const chosenCard = player.hand.splice(originalIndex, 1)[0];
     
-	// ✅ 秒針能力：消耗 3 Mana 蓋放 2 張，翻牌後二選一（AI 也可用）
+	// ✅ 秒針能力：消耗 3 MP 蓋放 2 張，翻牌後二選一（AI 也可用）
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;	
 	if (
 		GAME_CONFIG.enableAbilities &&
@@ -3824,7 +3830,7 @@ function makeAIChoice(player, gameState) {
 				player.mana -= COST;
 				player.specialAbilityUsed = true;
 				if (window.gameAudio) window.gameAudio.playAbility();
-				appLogger.log(`⏱️【秒針】${player.name} (AI) 耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+				appLogger.log(`⏱️【秒針】${player.name} (AI) 耗用 ${COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
 				return {
 					type: 'seconds_pending',
 					options: [chosenCard, altCard]
@@ -3890,7 +3896,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 	//讀取秒針能力消耗
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
     if (humanPlayer.mana < COST) {
-        console.warn("Mana 不足，不能使用秒針能力。");
+        console.warn("MP 不足，不能使用秒針能力。");
         return false;
     }
     if (!Array.isArray(chosenCardValues) || chosenCardValues.length !== 2) {
@@ -3911,7 +3917,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     }
     const card2 = humanPlayer.hand.splice(idx2, 1)[0];
 
-    // ✅ 只在成功蓋牌後扣 Mana
+    // ✅ 只在成功蓋牌後扣 MP
     humanPlayer.mana -= COST;
 	
 	if (window.gameAudio) window.gameAudio.playAbility();
@@ -3940,7 +3946,7 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
     // 清掉等待出牌（人類已完成「蓋牌」）
     gameState.currentRoundAIChoices = null;
 
-    appLogger.log(`⏱️【秒針】您耗用 ${COST} Mana，蓋放 2 張分鐘卡（翻牌後二選一）。`);
+    appLogger.log(`⏱️【秒針】您耗用 ${COST} MP，蓋放 2 張分鐘卡（翻牌後二選一）。`);
     appLogger.log("--- ✋ 翻牌時刻！ 🤚 ---");
     aiChoices.forEach(c => {
         if (c.card && c.card.type === 'seconds_pending') {
@@ -4315,7 +4321,7 @@ function chooseHourCardForAI3P(gameState, player, drawnCards) {
         else if (c.number === otherMax) risk = 1;
         else risk = 0;
 
-        // 分針專屬加權：若身為分針且 Mana >= 2，評估跳躍逃生彈性
+        // 分針專屬加權：若身為分針且 MP >= 2，評估跳躍逃生彈性
         if (player.roleCard === '分針' && player.mana >= 2 && risk > 0) {
             risk = 0.5; // 分針可透過技能跳走，風險折半
         }
@@ -4677,7 +4683,7 @@ function minuteHandPostHourAI(gameState) {
                 bestChoice = 'cw';
             }
         } else {
-            // 目前安全：當 Mana 充足 (>= 4) 時，若逆時針能移到更小數值且安全的位置，有一定機率主動移以保持優勢
+            // 目前安全：當 MP 充足 (>= 4) 時，若逆時針能移到更小數值且安全的位置，有一定機率主動移以保持優勢
             if (aiPlayer.mana >= 4 && posCCW !== null && posCCW < oldPos && riskCCW === 0 && checkChance(0.4)) {
                 bestChoice = 'ccw';
             }
@@ -4771,7 +4777,7 @@ function finishHourSelection(gameState) {
     // 定義基礎條件
     const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
     const isAlive = humanPlayer && !humanPlayer.isEjected;
-    const hasMana = humanPlayer && humanPlayer.mana >= 2;
+    const hasMP = humanPlayer && humanPlayer.mana >= 2;
     const notBlocked = !gameState.abilityMarker;
     const notUsed = humanPlayer && !humanPlayer.specialAbilityUsed;
     
@@ -4782,7 +4788,7 @@ function finishHourSelection(gameState) {
         typeof humanPlayer.pickedHourCardThisTurnNumber === 'number';
 
     // 綜合判斷
-    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMana && notBlocked && notUsed && gotCard) {
+    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMP && notBlocked && notUsed && gotCard) {
         
         // 設定專屬等待狀態
         gameState.waitingMinuteHandChoice = true;
@@ -4907,19 +4913,19 @@ function deductGearCards(gameState) {
     }
 
     // 1.5 時之惡庇護與回能機制：
-    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 Mana（上限為齒輪數）
+    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 MP（上限為齒輪數）
     if (currentMode !== '3P' && sinPlayer) {
         const isSinAloneTarget = (playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
         const isNoOneTargetedInSin = (targetingMode === 'sin' && playersToDeduct.length === 0);
 
         if (isSinAloneTarget || isNoOneTargetedInSin) {
-            const maxMana = sinPlayer.gearCards;
-            const oldMana = sinPlayer.mana || 0;
-            if (oldMana < maxMana) {
-                sinPlayer.mana = oldMana + 1;
-                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 Mana (目前: ${sinPlayer.mana}/${maxMana})。`);
+            const maxMP = sinPlayer.gearCards;
+            const oldMP = sinPlayer.mana || 0;
+            if (oldMP < maxMP) {
+                sinPlayer.mana = oldMP + 1;
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 MP (目前: ${sinPlayer.mana}/${maxMana})。`);
             } else {
-                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (Mana 已達上限: ${sinPlayer.mana})。`);
+                appLogger.log(`😈【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (MP 已達上限: ${sinPlayer.mana})。`);
             }
             // 清空受罰名單，確保時之惡不扣除護盾或齒輪
             playersToDeduct = [];
@@ -4932,19 +4938,19 @@ function deductGearCards(gameState) {
             // 檢查是否為「幼體」 (只有幼體有護盾)
             const isYoungTimeDemon = typeof player.roleCard === 'string' && player.roleCard.includes('幼');
 
-            // 【幼體防禦】：若是幼體、未用過盾、且 Mana 足夠，則擋下傷害
+            // 【幼體防禦】：若是幼體、未用過盾、且 MP 足夠，則擋下傷害
             if (isYoungTimeDemon && !player.shieldUsed && player.mana >= 3) {
                 const spent = player.mana;
                 player.shieldUsed = true;
                 player.mana = 0;
-                appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} Mana，抵擋本次攻擊。`);
+                appLogger.log(`🛡️【幼體防禦】${player.name} 耗用所有 ${spent} MP，抵擋本次攻擊。`);
                 return; // 成功抵擋，不扣齒局
             }
 
-            // 若已進化 (非幼體) 或 Mana 不足，直接扣齒局
+            // 若已進化 (非幼體) 或 MP 不足，直接扣齒局
             player.gearCards--;
             
-            // Mana 不能超過當前齒局數
+            // MP 不能超過當前齒局數
             if (player.mana > player.gearCards) player.mana = Math.max(0, player.gearCards);
             
             appLogger.log(`【時魔】${player.name} (${modeText}) 扣除 1 齒局 (剩餘: ${player.gearCards})。`);
@@ -4958,11 +4964,11 @@ function deductGearCards(gameState) {
     checkEjectionAndWinCondition(gameState);
 }
 
-// --- 檢查逐出與勝利條件 (確認版) ---
+// --- 檢查吞噬與勝利條件 (確認版) ---
 function checkEjectionAndWinCondition(gameState) {
     if (!gameState || !gameState.players) return;
 
-    // 1. 檢查齒局 < 0（即 -1）才逐出。 0 是安全的。
+    // 1. 檢查齒輪 < 0（即 -1）才被吞噬。 0 是安全的。
     gameState.players.forEach(player => {
         if (!player.isEjected && player.gearCards < 0) {
             player.isEjected = true;
@@ -4972,12 +4978,12 @@ function checkEjectionAndWinCondition(gameState) {
             player.currentClockPosition = null;
             if (typeof player.d6Die === 'number') player.d6Die = 0;
 
-            // 標記本局有時魔死亡 (影響時之惡懲罰判定)
+            // 標記本局有時魔被吞噬 (影響時之惡懲罰判定)
             if (player.type === '時魔') {
                 gameState.roundHadTimeDemonEjection = true;
             }
 
-            appLogger.log(`⚠️【逐出】${player.name} 的齒局耗盡 (${player.gearCards})，被逐出遊戲。`);
+            appLogger.log(`⚠️【吞噬】${player.name} 的齒輪耗盡 (${player.gearCards})，被吞噬出局。`);
         }
     });
 
@@ -4986,24 +4992,24 @@ function checkEjectionAndWinCondition(gameState) {
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
     const currentMode = gameState.gameMode || getGameMode();
 
-	// 檢查是否「所有時魔都曾被逐出過」
+	// 檢查是否「所有時魔都曾被吞噬過」
     const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
     const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
 	
-	// 判斷：時之惡死亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被逐出 (累計全滅)
+	// 判斷：時之惡陣亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被吞噬 (累計全滅)
     if (currentMode === '3P') {
         if (aliveTimeDemons.length === 0) {
             gameState.gameEnded = true;
-            appLogger.log('🎉 遊戲結束：所有時魔被逐出。');
+            appLogger.log('🎉 遊戲結束：所有時魔皆被吞噬。');
         }
     } else if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
-            appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
+            appLogger.log('🎉 遊戲結束：時之惡被吞噬，時魔陣營勝利！');
         } else if (sinAlive && (aliveTimeDemons.length === 0 || allDemonsEverEjected)) {
             // ✅ 修改訊息：明確指出獲勝原因
             if (allDemonsEverEjected) {
-                appLogger.log('🎉 遊戲結束：所有時魔皆曾被逐出，時之惡完成「完全狩獵」，時之惡陣營勝利！');
+                appLogger.log('🎉 遊戲結束：所有時魔皆曾被吞噬，時之惡完成「完全狩獵」，時之惡陣營勝利！');
             } else {
                 appLogger.log('🎉 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
             }
@@ -5060,7 +5066,7 @@ function inRoundEndActions(gameState) {
     //    ['時針', '分針', '秒針'].includes(p.roleCard)
     //).length;
 	// 條件：
-    // 1. Mana >= 3
+    // 1. MP >= 3
     // 2. 進化時魔 >= 2
     // 3. 機率 50% (0.5)
 	//const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;//讀取mana設定
@@ -5072,7 +5078,7 @@ function inRoundEndActions(gameState) {
     //) { 
     //    sinPlayer.mana -= COST; 
     //    gameState.abilityMarker = true; 
-    //    appLogger.log(`😈【時之惡】耗用 ${COST} Mana 封印全場特殊能力！`);
+    //    appLogger.log(`😈【時之惡】耗用 ${COST} MP 封印全場特殊能力！`);
     //}
 
     // 受詛者保護卡片
@@ -5134,7 +5140,34 @@ function endGameRound(gameState) {
     appLogger.log(`=== 第 ${gameState.gameRound} 局結束 ===`);
     const numPlayers = gameState.players.length;
 
-    // 1. 計算分數（以本局結束時的齒局數為準，出局逐出者為 0 分）
+    // 1. 「時之惡飢餓懲罰」判定：若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成 吞噬時之惡）
+    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    const noDemonDevouredThisRound = !gameState.roundHadTimeDemonEjection;
+
+    if (sinPlayer && noDemonDevouredThisRound) {
+        sinPlayer.gearCards -= 2;
+        appLogger.log(`⚠️【時之惡懲罰】本局無時魔被吞噬，${sinPlayer.name} 因飢餓從該局得分中扣除 2 齒輪（剩餘 ${sinPlayer.gearCards} 齒輪）。`);
+
+        if (sinPlayer.gearCards < 0) {
+            sinPlayer.isEjected = true;
+            sinPlayer.hasEverBeenEjected = true;
+            sinPlayer.gearCards = 0;
+            sinPlayer.mana = 0;
+            sinPlayer.currentClockPosition = null;
+            if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
+            appLogger.log(`💀【吞噬】${sinPlayer.name} 因飢餓扣至負數，被吞噬出局！`);
+            appLogger.log('🎉 遊戲結束：時之惡被吞噬，時魔陣營勝利！');
+            gameState.gameEnded = true;
+        } else {
+            if (sinPlayer.mana > sinPlayer.gearCards) sinPlayer.mana = sinPlayer.gearCards;
+            if (sinPlayer.mana < 0) sinPlayer.mana = 0;
+        }
+    }
+
+    // 重置本局時魔被吞噬標記
+    gameState.roundHadTimeDemonEjection = false;
+
+    // 2. 計算分數（以本局結束時的齒輪數為準，出局/被吞噬者為 0 分）
     const roundSummary = gameState.players.map(player => {
         const wasEjected = !!player.isEjected;
         const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);
@@ -5152,36 +5185,11 @@ function endGameRound(gameState) {
     });
     gameState.lastRoundSummary = roundSummary;
 
-    // 2. 「時之惡懲罰」：以「局」為單位
-    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
-    const currentRoundSafe = !gameState.roundHadTimeDemonEjection;
-
-    if (sinPlayer) {
-        if (currentRoundSafe && gameState.previousRoundSafe) {
-            sinPlayer.gearCards--;
-            appLogger.log(`【時之惡懲罰】連續 2 局無人被逐出，${sinPlayer.name} 扣除 1 齒局。`);
-
-            if (sinPlayer.gearCards < 0) {
-                sinPlayer.isEjected = true;
-                sinPlayer.hasEverBeenEjected = true;
-                sinPlayer.gearCards = 0;
-                sinPlayer.mana = 0;
-                sinPlayer.currentClockPosition = null;
-                if (typeof sinPlayer.d6Die === 'number') sinPlayer.d6Die = 0;
-                appLogger.log(`⚠️【逐出】${sinPlayer.name} 齒局耗盡，被逐出遊戲。`);
-                appLogger.log('🎉 遊戲結束：時之惡被逐出，時魔陣營勝利！');
-                endGame(gameState);
-                return;
-            }
-            if (sinPlayer.mana > sinPlayer.gearCards) sinPlayer.mana = sinPlayer.gearCards;
-            if (sinPlayer.mana < 0) sinPlayer.mana = 0;
-        }
-        gameState.previousRoundSafe = currentRoundSafe;
-    } else {
-        gameState.previousRoundSafe = false;
+    // 若時之惡因飢餓被吞噬導致遊戲結束，立即進入 endGame
+    if (sinPlayer && sinPlayer.isEjected && gameState.gameEnded) {
+        endGame(gameState);
+        return;
     }
-
-    gameState.roundHadTimeDemonEjection = false;
 	
 	// 受詛者任務檢查
 	const sczPlayer = gameState.players.find(p => p.type === '受詛者');
@@ -5399,8 +5407,8 @@ function endGame(gameState) {
         const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
         const human = gameState.players.find(p => p.id === humanId);
         
-        // 簡單判定：如果人類沒被逐出，視為勝利 (或是您可以根據 score 排名判定)
-        // 這裡示範：只要沒被逐出就算 Win 音效，被逐出算 Lose 音效
+        // 簡單判定：如果人類沒被吞噬，視為勝利 (或是您可以根據 score 排名判定)
+        // 這裡示範：只要沒被吞噬就算 Win 音效，被吞噬算 Lose 音效
         const isWin = human && !human.isEjected;
         
         window.gameAudio.playGameOver(isWin);
@@ -6261,7 +6269,7 @@ function renderScorePanel(gameState) {
                 <div class="score-history-empty">
                     <div class="score-history-empty-icon">⏳</div>
                     <div class="score-history-empty-title">第 1 局進行中</div>
-                    <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。</div>
+                    <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。</div>
                 </div>
             `;
             return;
@@ -6282,7 +6290,7 @@ function renderScorePanel(gameState) {
             const roundPills = gameState.scoreHistory.map(entry => {
                 const pEntry = Array.isArray(entry.players) ? entry.players.find(x => x.id === p.id) : null;
                 if (!pEntry) return '';
-                const scoreText = pEntry.wasEjected ? '0齒(逐出)' : `+${pEntry.roundScore}齒`;
+                const scoreText = pEntry.wasEjected ? '0齒(被吞噬)' : `+${pEntry.roundScore}齒`;
                 const extraClass = pEntry.wasEjected ? 'ejected' : '';
                 return `<span class="score-round-chip ${extraClass}">第${entry.round}局: ${scoreText}</span>`;
             }).join('');
@@ -6318,7 +6326,7 @@ function renderScorePanel(gameState) {
                         ? window.UI_CONFIG.ROLE_COLORS[roleKey]
                         : '#ccc';
                     const gainClass = p.wasEjected ? 'ejected' : (p.roundScore > 0 ? '' : 'zero');
-                    const gainText = p.wasEjected ? '<s>+0 齒</s> (逐出)' : `+${p.roundScore} 齒`;
+                    const gainText = p.wasEjected ? '<s>+0 齒</s> (被吞噬)' : `+${p.roundScore} 齒`;
 
                     rowsHtml += `
                         <div class="score-history-row">
@@ -6368,7 +6376,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
                 </div>
             `;
         } else {
-            // 5P: 狩獵 X/3, 記憶 X/12, 時之惡 X⚙/已逐出
+            // 5P: 狩獵 X/3, 記憶 X/12, 時之惡 X⚙/已吞噬
             const timeDemons = gameState.players.filter(p => p.type === '時魔');
             const totalDemons = timeDemons.length || 3;
             const ejectedCount = timeDemons.filter(p => p.hasEverBeenEjected).length;
@@ -6390,7 +6398,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
             const labelHunt = t('ui.scores.mini_hunt') || '狩獵';
             const labelLock = t('ui.scores.mini_lock') || '記憶';
             const labelSin = t('ui.scores.mini_sin') || '時之惡';
-            const tagSinEjected = t('ui.scores.mini_sin_ejected') || '已逐出';
+            const tagSinEjected = t('ui.scores.mini_sin_ejected') || '已吞噬';
 
             bar.innerHTML = `
                 <div class="score-mini-pill demon-hunt" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
@@ -7201,7 +7209,7 @@ function renderClockFace(gameState, flags) {
     }
 }
 
-// --- ⚙️ 擬物化儀表生成函式：機芯齒輪鏈 (Gear Life Chain) & 乙太真空發條能量管 (Aether Gauge) ---
+// --- ⚙️ 擬物化儀表生成函式：機芯齒輪鏈 (Gear Life Chain) & MP 真空發條能量管 (MP Gauge) ---
 function createGearChainHtml(count, isCompact = false, idVal = '') {
     const gearCount = Math.max(0, Number(count) || 0);
     const idAttr = idVal ? `id="${idVal}"` : '';
@@ -7266,10 +7274,10 @@ function createManaGaugeHtml(mana, maxCapacity = 0, isCompact = false, idVal = '
 
     const compactModifier = isCompact ? 'mech-mana-gauge--compact' : '';
     const glowClass = (val > 0) ? 'is-energized' : 'is-depleted';
-    const labelText = isCompact ? 'Mana' : 'Mana 乙太';
+    const labelText = 'MP';
 
     return `
-        <div class="mech-mana-gauge ${compactModifier} ${glowClass}" title="法力乙太發條管 (Mana): ${val}/${cap}">
+        <div class="mech-mana-gauge ${compactModifier} ${glowClass}" title="法力發條管 (MP): ${val}/${cap}">
             <span class="mech-gauge-label">${labelText}</span>
             <div class="aether-vial">
                 <div class="vial-cap vial-cap--left">
@@ -7303,7 +7311,7 @@ function renderAIPlayers(gameState, humanId) {
         if (player.isEjected) pCard.classList.add('ejected');
 
         // 護盾可視化邏輯
-        // 條件：是幼體時魔 + Mana >= 3 + 護盾未使用
+        // 條件：是幼體時魔 + MP >= 3 + 護盾未使用
         const isYoung = player.roleCard && player.roleCard.includes('幼');
         // 讀取 config 中的護盾消耗，預設為 3
         const shieldCost = (window.GAME_DATA?.ABILITY_COSTS?.YOUNG_SHIELD) || 3;
@@ -7312,7 +7320,7 @@ function renderAIPlayers(gameState, humanId) {
             const shieldEl = document.createElement('div');
             shieldEl.className = 'shield-indicator';
             shieldEl.textContent = '🛡️';
-            shieldEl.title = `護盾就緒！(Mana ≥ ${shieldCost}，可抵擋傷害)`;
+            shieldEl.title = `護盾就緒！(MP ≥ ${shieldCost}，可抵擋傷害)`;
             pCard.appendChild(shieldEl);
         }
 
@@ -7328,7 +7336,7 @@ function renderAIPlayers(gameState, humanId) {
                     護盾: <strong>${player.d6Die}</strong>
                 </div>`;
         }
-        const posDisplay = player.isEjected ? '驅逐' : (player.currentClockPosition !== null && player.currentClockPosition !== undefined ? `${player.currentClockPosition} 點` : '未上場');
+        const posDisplay = player.isEjected ? '被吞噬' : (player.currentClockPosition !== null && player.currentClockPosition !== undefined ? `${player.currentClockPosition} 點` : '未上場');
 
         // 齒輪生命顯示：數字為主，佐以單一齒輪圖示，超過 0 顆不橫向溢出
         const gearCount = Math.max(0, player.gearCards || 0);
@@ -7752,7 +7760,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
         // 使用 innerHTML 插入圖示
         const shieldHtml = hasShield
-            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 Mana 抵擋">🛡️</span>`
+            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋">🛡️</span>`
             : '';
 
         const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
@@ -7774,7 +7782,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-score', String(humanPlayer.score));
 
-    // 渲染立體機械生命齒輪鏈與發條乙太管
+    // 渲染立體機械生命齒輪鏈與發條 MP 管
     const gearChip = document.querySelector('.human-top-bar .resource-chip--gear');
     if (gearChip) {
         gearChip.classList.add('has-mech-gauge');
@@ -7790,7 +7798,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     } else {
         setText('h-mana', String(humanPlayer.mana));
     }
-    const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '驅逐';
+    const ejectedLabel = window.i18n ? window.i18n.t('ui.labels.ejected') : '被吞噬';
     const notOnBoardLabel = window.i18n ? window.i18n.t('ui.labels.not_on_board') : '未上場';
     setText('h-pos', humanPlayer.isEjected ? ejectedLabel : String(humanPlayer.currentClockPosition || notOnBoardLabel));
     setText('h-hour', String(humanPlayer.hourCards.length));
@@ -8804,9 +8812,9 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         const targetLabel = window.i18n ? window.i18n.t('abilities.target_role') : '目標身份：';
         const condMetText = window.i18n ? window.i18n.t('abilities.condition_met') : '✨ 條件達成！回合結束時進化';
         const roleDescriptions = {
-            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 Mana：牌頂移底'}</div>`,
-            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 Mana：移至下一個有小時卡的格子'}</div>`,
-            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 Mana：出牌二選一'}</div>`
+            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 MP：牌頂移底'}</div>`,
+            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 MP：移至下一個有小時卡的格子'}</div>`,
+            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 MP：出牌二選一'}</div>`
         };
 
         const cond1Text = window.i18n ? window.i18n.t('abilities.cond_ages', { ages: uniqueAges, precious: preciousCount }) : `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`;
@@ -8921,11 +8929,11 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             if (moveCount === 0) {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_btn', { cost: currentCost })
-                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">將頂牌移至底部</span>`;
             } else {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_again_btn', { cost: currentCost })
-                    : `${currentCost} Mana<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
             }
             btn.disabled = !canUse;
             btn.onclick = () => {
@@ -8977,11 +8985,11 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             if (isAbilityLocked) {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_disabled', { cost: COST })
-                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} Mana 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
+                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} MP 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
             } else {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_text', { cost: COST })
-                    : `取得小時卡時，可消耗 ${COST} Mana 跳躍至順/逆時針下一個有卡片的格子。`;
+                    : `取得小時卡時，可消耗 ${COST} MP 跳躍至順/逆時針下一個有卡片的格子。`;
             }
             container.appendChild(info);
         }
@@ -9027,7 +9035,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                     btn.style.backgroundColor = '#00d2d3';
                     btn.innerHTML = window.i18n
                         ? window.i18n.t('abilities.sec_btn_play', { cost: COST })
-                        : `${COST} Mana<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
+                        : `${COST} MP<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>`;
                     btn.disabled = !canUse;
                     btn.onclick = () => { uiState.isSecondHandSelectingTwo = true; uiState.selectedCardValue = null; uiState.selectedCardValues = []; updateUI(globalGameState); };
                 }
@@ -9083,7 +9091,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     btnPull.style.color = '#000';
 
     const actedTxt = window.i18n ? window.i18n.t('abilities.sin_acted') : '已行動';
-    const lackManaTxt = (cost) => window.i18n ? window.i18n.t('abilities.sin_lack_mana', { cost }) : `缺 Mana (${cost})`;
+    const lackManaTxt = (cost) => window.i18n ? window.i18n.t('abilities.sin_lack_mana', { cost }) : `缺 MP (${cost})`;
 
     if (humanPlayer.specialAbilityUsed) {
         btnPull.textContent = actedTxt;
@@ -9094,7 +9102,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     } else {
         btnPull.innerHTML = window.i18n
             ? window.i18n.t('abilities.sin_btn_pull', { cost: pullCost })
-            : `${pullCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
+            : `${pullCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>`;
         btnPull.title = window.i18n ? window.i18n.t('abilities.sin_pull_tip') : '改為懲罰「距離最近」者';
         btnPull.onclick = () => {
             if (typeof activateSinAbility === 'function') {
@@ -9128,7 +9136,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     } else {
         btnSeal.innerHTML = window.i18n
             ? window.i18n.t('abilities.sin_btn_seal', { cost: sealCost })
-            : `${sealCost} Mana<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>`;
+            : `${sealCost} MP<br><span style="font-size:0.8rem; font-weight:normal;">封鎖時魔</span>`;
         btnSeal.title = window.i18n ? window.i18n.t('abilities.sin_seal_tip') : '本回合封印全體時魔能力';
         btnSeal.onclick = () => {
             if (typeof activateSinSealAbility === 'function') {
@@ -9187,7 +9195,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const enemyHoldings = [];
 
     gameState.players.forEach(p => {
-        // 條件：是時魔 + 未被逐出
+        // 條件：是時魔 + 未被吞噬
         if (p.type === '時魔' && !p.isEjected) {
 
             // 判定是否為幼體：
@@ -9640,18 +9648,18 @@ if (typeof window !== 'undefined') {
     function getDefaultRoleScoringText(roleKey) {
         switch (roleKey) {
             case 'sin':
-                return '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各驅逐一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚠️ 飢餓懲罰：</strong>若連續 2 局無人被驅逐時，將因飢餓扣除 1 齒輪！齒輪歸零時直接敗北！<br>• <strong>專屬異能：</strong>【惡之牽引 (2 Mana)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 Mana)】封印全場技能！';
+                return '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
             case 'scz':
                 return '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！';
             case 'hour':
-                return '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 Mana 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！';
+                return '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！';
             case 'minute':
-                return '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 Mana 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！';
+                return '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！';
             case 'second':
-                return '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 Mana 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！';
+                return '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！';
             case 'young':
             default:
-                return '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>驅逐大勝：</strong>若合力將「時之惡」齒輪扣盡驅逐，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>Mana ≥ 3 且即將受罰時，可消耗全部 Mana 抵免傷害一次。';
+                return '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>吞噬大勝：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。';
         }
     }
 
@@ -9845,7 +9853,7 @@ if (typeof window !== 'undefined') {
             } else if (roleKey === 'sin') {
                 roleHourHint = window.i18n
                     ? window.i18n.t('tutorial.role_sin_hour_hint')
-                    : '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>落子後可發動【惡之牽引 (2 Mana)】處決身邊獵物，加速達成「驅逐 3 位時魔各一次」的特殊大勝！</span>';
+                    : '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>';
             }
 
             shownSteps.add('step3_select_hour');
@@ -9951,7 +9959,7 @@ if (typeof window !== 'undefined') {
                     const ejectedCount = gameState.players ? gameState.players.filter(p => p.type === '時魔' && p.hasEverBeenEjected).length : 0;
                     roleProgressHint = '<br><span style="color:#ff6b6b;">' + (window.i18n
                         ? window.i18n.t('tutorial.role_progress_sin', { count: ejectedCount })
-                        : `特殊大勝進度：已逐出時魔 ${ejectedCount}/3 位`) + '</span>';
+                        : `特殊大勝進度：已吞噬時魔 ${ejectedCount}/3 位`) + '</span>';
                 } else if (roleKey === 'young') {
                     const bagCount = (humanPlayer && Array.isArray(humanPlayer.hourCards)) ? humanPlayer.hourCards.length : 0;
                     roleProgressHint = '<br><span style="color:#a8f0c6;">' + (window.i18n
@@ -11325,7 +11333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- 處理數值變動漂浮文字 (Mana / 齒輪 / 護盾) ---
+// --- 處理數值變動漂浮文字 (MP / 齒輪 / 護盾) ---
 const lastSpawnOffsets = new Map(); // 記錄各目標最近一次浮字時間與垂直/水平偏移，防止短時間內同一目標的文字重疊
 
 function processFloatingText(gameState) {
@@ -11360,7 +11368,7 @@ function processFloatingText(gameState) {
                 let color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
                 if (gearDiff < 0) {
                     if (player.isEjected) {
-                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 逐出出局!';
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 被吞噬出局!';
                     } else if (gameState.gameMode === '3P' || gameState.sinTargetingMode === 'default') {
                         text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_max') : null) || '-1 ⚙ (最高刻度處決)';
                     } else if (gameState.sinTargetingMode === 'sin') {
@@ -11376,7 +11384,7 @@ function processFloatingText(gameState) {
                 });
             }
 
-            // 3. Mana 變動
+            // 3. MP 變動
             const manaDiff = player.mana - last.mana;
             if (manaDiff !== 0) {
                 // 若幼體時魔使用護盾抵免傷害 (mana 耗盡且開啟 shieldUsed)
@@ -11391,7 +11399,7 @@ function processFloatingText(gameState) {
                     });
                 } else if (player.type === '時之惡' && manaDiff > 0 && gearDiff === 0) {
                     const tpl = window.i18n ? window.i18n.t('ui.combat_float.sin_recharge') : null;
-                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} Mana (惡念充能)`;
+                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} MP (惡念充能)`;
                     pendingEvents.push({
                         playerId: player.id,
                         text,
@@ -11400,7 +11408,7 @@ function processFloatingText(gameState) {
                         diff: manaDiff
                     });
                 } else {
-                    const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
+                    const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' MP';
                     const color = manaDiff > 0 ? '#4cd137' : '#e17055';
                     pendingEvents.push({
                         playerId: player.id,
@@ -11603,7 +11611,7 @@ function renderSpecialVictoryProgress(gameState, container) {
         const pointerBadges = gameState.players.map(p => {
             const roleName = p.roleCard || p.name;
             if (p.isEjected) {
-                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭逐出';
+                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭吞噬';
                 return `<span class="sv-tag sv-tag-danger">${roleName}: ${defTag} (${p.score ?? 0}分)</span>`;
             } else {
                 const survTag = t('ui.special_victory.survived_tag', { gears: p.gearCards ?? 0 }) || `🛡️ 生還 (${p.gearCards ?? 0} ⚙)`;
@@ -11635,13 +11643,13 @@ function renderSpecialVictoryProgress(gameState, container) {
         const huntPercent = Math.min(100, Math.round((ejectedCount / totalDemons) * 100));
 
         const huntTitle = t('ui.special_victory.demon_hunt_title') || '😈 時之惡：完全狩獵';
-        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各驅逐出局至少一次';
+        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各吞噬出局至少一次';
         const huntStatusText = isHuntComplete
             ? (t('ui.special_victory.demon_hunt_status_achieved') || '🎉 達成 (狩獵完成)')
             : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/3)`);
 
-        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已逐出';
-        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾逐出';
+        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已吞噬';
+        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾被吞噬';
 
         const demonBadges = timeDemons.map(p => {
             const roleName = p.roleCard || p.name;
@@ -11681,13 +11689,13 @@ function renderSpecialVictoryProgress(gameState, container) {
             ? lockedPreciousList.map(item => `<span class="sv-tag sv-tag-lock">🔒 ${item.spot}點 (${item.number}★)</span>`).join(' ')
             : `<span style="color:#777; font-size:0.75rem;">${lockedNoneText}</span>`;
 
-        // 3. 時魔陣營：驅逐時之惡
+        // 3. 時魔陣營：吞噬時之惡
         const sinPlayer = gameState.players.find(p => p.type === '時之惡');
         const isSinEjected = sinPlayer ? (sinPlayer.isEjected || sinPlayer.hasEverBeenEjected) : false;
-        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：驅逐時之惡';
-        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其驅逐出局';
+        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：吞噬時之惡';
+        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其吞噬出局';
         const demonVicStatusText = isSinEjected
-            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被逐出)')
+            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被吞噬)')
             : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} ⚙)`);
 
         cardsHtml = `
@@ -11726,7 +11734,7 @@ function renderSpecialVictoryProgress(gameState, container) {
                 </div>
             </div>
 
-            <!-- 時魔陣營：驅逐時之惡 -->
+            <!-- 時魔陣營：吞噬時之惡 -->
             <div class="special-victory-card time-demon ${isSinEjected ? 'achieved' : ''}">
                 <div class="sv-card-head">
                     <div class="sv-card-title" style="color: #ff6b6b;">
@@ -11767,7 +11775,7 @@ function renderGameOverPanel(gameState) {
     const sczPlayer = gameState.players.find(p => p.type === '受詛者');
     const timeDemons = gameState.players.filter(p => p.type === '時魔');
     const aliveDemons = timeDemons.filter(p => !p.isEjected);
-    // 檢查是否所有時魔都曾被逐出 (累積全滅)
+    // 檢查是否所有時魔都曾被吞噬 (累積全滅)
     const allDemonsEverEjected = timeDemons.every(p => p.hasEverBeenEjected);
 
     // 檢查受詛者鎖定 12 張珍貴卡
@@ -11787,11 +11795,11 @@ function renderGameOverPanel(gameState) {
 
     if (sinPlayer && sinPlayer.isEjected) {
         winnerText = "🎉 時魔陣營 獲勝！";
-        subText = "時之惡已被逐出";
+        subText = "時之惡已被吞噬";
         titleColor = "#ff6b6b"; // 時魔紅
     } else if (aliveDemons.length === 0 || allDemonsEverEjected) {
         winnerText = "😈 時之惡陣營 獲勝！";
-        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被逐出)" : "時魔全數陣亡";
+        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被吞噬)" : "時魔全數陣亡";
         titleColor = "#feca57"; // 時之惡黃
     } else if (sczMissionSuccess) {
         winnerText = "✨ 受詛者 記憶解放！";
@@ -12154,7 +12162,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
                 const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
                 const roleColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
                 const localizedRole = window.i18n ? window.i18n.getRoleName(rawRole) : rawRole;
-                const ejectedText = window.i18n ? window.i18n.t('ui.round_ready.ejected') : '(逐出)';
+                const ejectedText = window.i18n ? window.i18n.t('ui.round_ready.ejected') : '(被吞噬)';
                 const roleDisplay = p.isEjected ? `<s style="opacity:0.6;">${localizedRole}</s> ${ejectedText}` : localizedRole;
                 const humanBadgeText = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '我';
                 const humanBadge = isHuman ? `<span class="score-badge-human">${humanBadgeText}</span>` : '';
@@ -13130,9 +13138,19 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
             if (tex) {
                 sprite = new PIXI.Sprite(tex);
                 sprite.anchor.set(0.5);
-                // 大幅放大至 44px（無外框遮蔽，純粹呈現精緻立繪圖案）
+                // 角色專屬縮放比例：幼體時魔 80%，時針、分針、秒針 120%
+                let roleScaleMultiplier = 1.0;
+                if (p.type === '時魔') {
+                    const isEvolved = (p.roleCard === '時針' || p.roleCard === '分針' || p.roleCard === '秒針');
+                    if (isEvolved) {
+                        roleScaleMultiplier = 1.2; // 時針、分針、秒針放大至 120%
+                    } else {
+                        roleScaleMultiplier = 0.8; // 幼體時魔縮小至 80%
+                    }
+                }
+                const targetPixelSize = 44 * roleScaleMultiplier;
                 const origW = (tex.orig && tex.orig.width) || tex.width || 90;
-                baseScale = 44 / Math.max(1, origW);
+                baseScale = targetPixelSize / Math.max(1, origW);
                 sprite.scale.set(baseScale);
                 c.addChild(sprite);
             } else {
@@ -15079,9 +15097,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 								<span class="replay-text" data-i18n="ui.buttons.tutorial_hint">教學提示</span>
 							</button>
 
-							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力乙太發條管 (Mana)">
-								<div class="mech-mana-gauge is-depleted" title="法力乙太發條管 (Mana): 0/1">
-									<span class="mech-gauge-label">Mana 乙太</span>
+							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力發條管 (MP)">
+								<div class="mech-mana-gauge is-depleted" title="法力發條管 (MP): 0/1">
+									<span class="mech-gauge-label">MP</span>
 									<div class="aether-vial">
 										<div class="vial-cap vial-cap--left"><span class="vial-cap-knob"></span></div>
 										<div class="vial-glass">
@@ -15189,10 +15207,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
-								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
-									(下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
-							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
+							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>
+								角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
 						</ul>
 					</div>
 
@@ -15201,12 +15218,12 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 						style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
-							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」（時之惡可於蓋牌前發動「惡之牽引」）。</li>
 							<li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1
 								張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
 							<li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
 							<li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
+							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發手牌進入下一局。</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
@@ -15214,7 +15231,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損！面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將「被吞噬」。時魔全滅或時之惡陣亡（被吞噬）將直接結束遊戲。</em>
 						</div>
 					</div>
 
@@ -15250,10 +15267,10 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong
 											style="color:#ff9ff3;">齒輪（分數）積分</strong>最高者勝</td>
 									<td style="padding: 10px; border: 1px solid #555;"><u><strong
-												style="color:#ff9ff3;">齒輪（分數）積分</strong>＋ 特殊條件<br></u>
-										<strong>受詛者：</strong>必須在遊戲結束前於鐘面上保留 12 張`珍貴小時卡<br>
-										<strong>時魔 特殊勝利：</strong>驅逐時之惡<br>
-										<strong>時之惡 特殊勝利：</strong>遊戲結束前驅逐所有時魔各一次
+												style="color:#ff9ff3;">齒輪（分數）積分</strong> ＋ 特殊勝利條件<br></u>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分！第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong>！<br>
+										• <strong>時魔 特殊勝利：</strong>合力將時之惡齒輪耗盡達成「吞噬時之惡」！<br>
+										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵！
 									</td>
 								</tr>
 							</tbody>
@@ -15261,7 +15278,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 					</div>
 
 					<h4>🧬 進化機制 (時魔專屬)</h4>
-					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
+					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營額外加分！</p>
 					<ul>
 						<li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
 						<li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
@@ -15279,8 +15296,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(254, 202, 87, 0.08); padding: 15px; border-left: 4px solid #feca57; border-radius: 0 8px 8px 0;">
 							<strong style="color: #feca57; font-size: 1.1em;">😈 時之惡 (Time Evil) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的角色。<br>
-								<strong>封鎖 (3 Mana)：</strong> 封印本回合所有特殊能力。
+								<strong>惡之牽引 (2 MP)：</strong> 出牌前發動，改變懲罰規則，處決距離自己最近的角色。<br>
+								<strong>封鎖 (3 MP)：</strong> 封印本回合所有特殊能力。<br>
+								<strong>飢餓懲罰：</strong> 若該局無時魔被吞噬，局末從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，直接出局）。
 							</p>
 						</div>
 
@@ -15288,8 +15306,8 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;">👻 受詛者 (Cursed One) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其鎖定。<br>
-								<strong>勝利：</strong> 場上累積 12 張鎖定的珍貴卡。
+								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其永久鎖定在鐘面。<br>
+								<strong>任務與獎勵：</strong> 第 2/3/4 局達成 12 張分別獎勵 +9/+5/+2 分；第 5 局未滿 12 張重扣 -999 分！
 							</p>
 						</div>
 
@@ -15300,7 +15318,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<strong style="color: #ff9ff3; font-size: 1.1em;">👁️ 時針 (Time Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
 								<strong>被動：</strong> 每回合預知小時牌庫頂牌。<br>
-								<strong>主動 (1 Mana)：</strong> 將牌庫頂的牌移至底部，每回合促可以 2 mana再執行一次。
+								<strong>主動 (1 MP)：</strong> 將牌庫頂的牌移至底部，每回合可再以 2 MP 執行一次。
 							</p>
 						</div>
 
@@ -15308,7 +15326,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(243, 104, 224, 0.08); padding: 15px; border-left: 4px solid #f368e0; border-radius: 0 8px 8px 0;">
 							<strong style="color: #f368e0; font-size: 1.1em;">👟 分針 (Minute Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (2 Mana)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
+								<strong>主動 (2 MP)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
 							</p>
 						</div>
 
@@ -15316,7 +15334,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(0, 210, 211, 0.08); padding: 15px; border-left: 4px solid #00d2d3; border-radius: 0 8px 8px 0;">
 							<strong style="color: #00d2d3; font-size: 1.1em;">🃏 秒針 (Second Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (3 Mana)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
+								<strong>主動 (3 MP)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
 							</p>
 						</div>
 
@@ -15324,7 +15342,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;"> 時魔幼體 (YOUNG) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>被動 (3 Mana >)：整場遊戲一次，如果Mana >= 3 ，可以消耗所有Mana抵擋一次懲罰。</strong>
+								<strong>被動 (MP ≥ 3)：整場遊戲一次，如果 MP ≥ 3 ，可以消耗所有 MP 抵免一次懲罰。</strong>
 							</p>
 						</div>
 					</div>
@@ -15906,9 +15924,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 								位置： <span id="h-pos">--</span>
 							</div>
 							
-							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力乙太發條管 (Mana)">
-								<div class="mech-mana-gauge is-depleted" title="法力乙太發條管 (Mana): 0/1">
-									<span class="mech-gauge-label">Mana 乙太</span>
+							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力發條管 (MP)">
+								<div class="mech-mana-gauge is-depleted" title="法力發條管 (MP): 0/1">
+									<span class="mech-gauge-label">MP</span>
 									<div class="aether-vial">
 										<div class="vial-cap vial-cap--left"><span class="vial-cap-knob"></span></div>
 										<div class="vial-glass">
@@ -16017,10 +16035,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
-								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
-									(下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
-							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
+							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>
+								角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
 						</ul>
 					</div>
 
@@ -16029,12 +16046,12 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 						style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
-							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」（時之惡可於蓋牌前發動「惡之牽引」）。</li>
 							<li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1
 								張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
 							<li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
 							<li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
+							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發手牌進入下一局。</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
@@ -16042,7 +16059,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損！面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將「被吞噬」。時魔全滅或時之惡陣亡（被吞噬）將直接結束遊戲。</em>
 						</div>
 					</div>
 
@@ -16078,10 +16095,10 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong
 											style="color:#ff9ff3;">齒輪（分數）積分</strong>最高者勝</td>
 									<td style="padding: 10px; border: 1px solid #555;"><u><strong
-												style="color:#ff9ff3;">齒輪（分數）積分</strong>＋ 特殊條件<br></u>
-										<strong>受詛者：</strong>必須在遊戲結束前於鐘面上保留 12 張`珍貴小時卡<br>
-										<strong>時魔 特殊勝利：</strong>驅逐時之惡<br>
-										<strong>時之惡 特殊勝利：</strong>遊戲結束前驅逐所有時魔各一次
+												style="color:#ff9ff3;">齒輪（分數）積分</strong> ＋ 特殊勝利條件<br></u>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分！第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong>！<br>
+										• <strong>時魔 特殊勝利：</strong>合力將時之惡齒輪耗盡達成「吞噬時之惡」！<br>
+										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵！
 									</td>
 								</tr>
 							</tbody>
@@ -16089,7 +16106,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 					</div>
 
 					<h4>🧬 進化機制 (時魔專屬)</h4>
-					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
+					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營額外加分！</p>
 					<ul>
 						<li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
 						<li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
@@ -16107,8 +16124,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(254, 202, 87, 0.08); padding: 15px; border-left: 4px solid #feca57; border-radius: 0 8px 8px 0;">
 							<strong style="color: #feca57; font-size: 1.1em;">😈 時之惡 (Time Evil) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的角色。<br>
-								<strong>封鎖 (3 Mana)：</strong> 封印本回合所有特殊能力。
+								<strong>惡之牽引 (2 MP)：</strong> 出牌前發動，改變懲罰規則，處決距離自己最近的角色。<br>
+								<strong>封鎖 (3 MP)：</strong> 封印本回合所有特殊能力。<br>
+								<strong>飢餓懲罰：</strong> 若該局無時魔被吞噬，局末從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，直接出局）。
 							</p>
 						</div>
 
@@ -16116,8 +16134,8 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;">👻 受詛者 (Cursed One) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其鎖定。<br>
-								<strong>勝利：</strong> 場上累積 12 張鎖定的珍貴卡。
+								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其永久鎖定在鐘面。<br>
+								<strong>任務與獎勵：</strong> 第 2/3/4 局達成 12 張分別獎勵 +9/+5/+2 分；第 5 局未滿 12 張重扣 -999 分！
 							</p>
 						</div>
 
@@ -16128,7 +16146,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							<strong style="color: #ff9ff3; font-size: 1.1em;">👁️ 時針 (Time Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
 								<strong>被動：</strong> 每回合預知小時牌庫頂牌。<br>
-								<strong>主動 (1 Mana)：</strong> 將牌庫頂的牌移至底部，每回合促可以 2 mana再執行一次。
+								<strong>主動 (1 MP)：</strong> 將牌庫頂的牌移至底部，每回合可再以 2 MP 執行一次。
 							</p>
 						</div>
 
@@ -16136,7 +16154,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(243, 104, 224, 0.08); padding: 15px; border-left: 4px solid #f368e0; border-radius: 0 8px 8px 0;">
 							<strong style="color: #f368e0; font-size: 1.1em;">👟 分針 (Minute Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (2 Mana)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
+								<strong>主動 (2 MP)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
 							</p>
 						</div>
 
@@ -16144,7 +16162,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(0, 210, 211, 0.08); padding: 15px; border-left: 4px solid #00d2d3; border-radius: 0 8px 8px 0;">
 							<strong style="color: #00d2d3; font-size: 1.1em;">🃏 秒針 (Second Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (3 Mana)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
+								<strong>主動 (3 MP)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
 							</p>
 						</div>
 
@@ -16152,7 +16170,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;"> 時魔幼體 (YOUNG) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>被動 (3 Mana >)：整場遊戲一次，如果Mana >= 3 ，可以消耗所有Mana抵擋一次懲罰。</strong>
+								<strong>被動 (MP ≥ 3)：整場遊戲一次，如果 MP ≥ 3 ，可以消耗所有 MP 抵免一次懲罰。</strong>
 							</p>
 						</div>
 					</div>
@@ -19931,7 +19949,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 }
 
 
-/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & 乙太能量管 (Modern PixiJS 改良) --- */
+/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & MP 能量管 (Modern PixiJS 改良) --- */
 .resource-chip.has-mech-gauge {
     display: inline-flex !important;
     align-items: center !important;
@@ -20142,7 +20160,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     font-size: 0.78rem !important;
 }
 
-/* 2. 乙太能量管 */
+/* 2. MP 能量管 */
 .mech-mana-gauge,
 .mech-mana-gauge *,
 .mech-gear-gauge,
@@ -21125,20 +21143,20 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 /* --- 針對不同角色設定專屬的靈魂 GIF / PNG --- */
-.token-demon { background-image: url('assets/soul_demon.png'); } /* 幼體時魔 (NPC) */
+.token-demon { background-image: url('assets/soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (NPC) 80% */
 .token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 (NPC) */
 .token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 (NPC) */
-.token-hour  { background-image: url('assets/soul_hour.png'); }  /* 時針 (NPC) */
-.token-min   { background-image: url('assets/soul_min.png'); }   /* 分針 (NPC) */
-.token-sec   { background-image: url('assets/soul_sec.png'); }   /* 秒針 (NPC) */
+.token-hour  { background-image: url('assets/soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (NPC) 120% */
+.token-min   { background-image: url('assets/soul_min.png'); width: 48px; height: 48px; }   /* 分針 (NPC) 120% */
+.token-sec   { background-image: url('assets/soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (NPC) 120% */
 
 /* --- 玩家專屬的靈魂棋子 (p_ 前綴) --- */
-.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); } /* 幼體時魔 (玩家) */
+.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (玩家) 80% */
 .token-player-sin   { background-image: url('assets/player/P_soul_sin.png'); }   /* 時之惡 (玩家) */
 .token-player-scz   { background-image: url('assets/player/p_soul_scz.png'); }   /* 受詛者 (玩家) */
-.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); }  /* 時針 (玩家) */
-.token-player-min   { background-image: url('assets/player/p_soul_min.png'); }   /* 分針 (玩家) */
-.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); }   /* 秒針 (玩家) */
+.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (玩家) 120% */
+.token-player-min   { background-image: url('assets/player/p_soul_min.png'); width: 48px; height: 48px; }   /* 分針 (玩家) 120% */
+.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (玩家) 120% */
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card,
@@ -22801,7 +22819,7 @@ body {
     margin-right: 4px;
 }
 
-/* Mana (Energy) 替代圖示 */
+/* MP (Energy) 替代圖示 */
 .icon-mana-css {
     display: inline-block;
     width: 14px; height: 14px;
@@ -22974,7 +22992,7 @@ body {
     color: #cd7f32;
 }
 
-/* 被逐出者 */
+/* 被吞噬者 */
 .rank-row.dead {
     opacity: 0.5;
     text-decoration: line-through;
@@ -24053,7 +24071,7 @@ body {
 
 
 /* ==========================================================================
-   ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & 乙太發條能量管 (Aether Gauge)
+   ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & MP 發條能量管 (MP Gauge)
    ========================================================================== */
 
 .resource-chip.has-mech-gauge {
@@ -24279,7 +24297,7 @@ body {
 }
 
 
-/* --- 2. 乙太真空發條能量管 (Aether Mana Gauge) --- */
+/* --- 2. MP 真空發條能量管 (MP Gauge) --- */
 .mech-mana-gauge,
 .mech-mana-gauge *,
 .mech-gear-gauge,

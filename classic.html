@@ -168,9 +168,9 @@
 								位置： <span id="h-pos">--</span>
 							</div>
 							
-							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力乙太發條管 (Mana)">
-								<div class="mech-mana-gauge is-depleted" title="法力乙太發條管 (Mana): 0/1">
-									<span class="mech-gauge-label">Mana 乙太</span>
+							<div class="resource-chip resource-chip--mana has-mech-gauge" title="法力發條管 (MP)">
+								<div class="mech-mana-gauge is-depleted" title="法力發條管 (MP): 0/1">
+									<span class="mech-gauge-label">MP</span>
 									<div class="aether-vial">
 										<div class="vial-cap vial-cap--left"><span class="vial-cap-knob"></span></div>
 										<div class="vial-glass">
@@ -279,10 +279,9 @@
 							<li><strong>鐘面小時：</strong>小時位置最接近<strong>12</strong>的角色，在每回合結束時扣取一點<strong>齒輪</strong>。</li>
 							<li><strong>小時卡 (場上)：</strong>分為幼年（5張）、少年（10張）、青年（10張）、中年（10張）與死亡（1張）五個時代。每局依照特定組合在各時代中分配<strong>珍貴(★)</strong>小時卡（共12張，死亡不含珍貴卡）。</li>
 							<li><strong>分鐘卡 (手牌)：</strong>數值 1 - 60 不重覆的卡牌，用於競標小時卡，分鐘卡數字最大者先選擇小時卡，次者取得餘下的小時卡。</li>
-							<li><strong>齒輪（分數） (生命/分數/Mana)：</strong>
-								角色的生命值和Mana量。回合結束時，位置最差（數值最大）的玩家會扣除齒輪（分數），齒輪（分數）歸零則<strong>被驅逐
-									(下個遊戲局返回)。每回合剩餘的齒輪（分數）成為玩家的分數。</strong>。</li>
-							<li><strong>時之惡庇護與回能：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 Mana</strong>（上限為當前齒輪數）。</li>
+							<li><strong>齒輪（分數） (生命/分數/MP)：</strong>
+								角色的生命值和MP量。回合結束時，位置最差（數值最大）的玩家扣除 1 點齒輪（分數）；若齒輪歸零且再次受傷，靈魂將<strong>被吞噬出局 (下個遊戲局返回)</strong>。每局（12 回合）結束時剩餘的齒輪 1:1 轉換為該局得分。</li>
+							<li><strong>時之惡庇護與飢餓：</strong>若處決規則判定至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）。但若該局無時魔被吞噬，時之惡將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，時魔陣營大勝）。</li>
 						</ul>
 					</div>
 
@@ -291,12 +290,12 @@
 						style="background: rgba(76, 209, 55, 0.08); padding: 15px; border-left: 4px solid #4cd137; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
 						<ol style="padding-left: 20px; margin: 0; line-height: 1.8; color: #eee;">
 							<li><strong>回合開始：</strong>系統抽出 2 張「小時卡」作為本回合競標目標。</li>
-							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」。</li>
+							<li><strong>暗拍競標：</strong>每位玩家從手牌中暗蓋 1 張「分鐘卡」（時之惡可於蓋牌前發動「惡之牽引」）。</li>
 							<li><strong>翻牌移動：</strong>翻開分鐘卡，數字<strong>最大者</strong>優先挑選 1
 								張小時卡，並將靈魂移至該鐘面位置，第二大的角色取得餘下的小時卡並移動位置。</li>
 							<li><strong>處決結算：</strong>位置數值<strong>最大 (最接近 12)</strong> 的玩家受罰，扣除護盾或齒輪（分數）。</li>
 							<li><strong>收集進化：</strong>幼體時魔將卡片收入背包，滿足特定組合即可於回合末進化。</li>
-							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發 12 張手牌進入下一局。</li>
+							<li><strong>局次結算：</strong>12 回合結束後，將剩餘齒輪（分數）轉為分數。重新派發手牌進入下一局。</li>
 						</ol>
 						<div style="margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(76, 209, 55, 0.35); border-radius: 6px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.6;">
 							<strong style="color: #4cd137;">💡 獲得小時卡的分別（已進入鐘面 vs 未進入鐘面）：</strong><br>
@@ -304,7 +303,7 @@
 							• <strong>🛡️ 未進入鐘面（第 3 名及以後）：</strong>完全無法取得本回合的小時卡（無法充實進化背包），但享有<strong>絕對免傷特權</strong>，完全不參與回合末處決，齒輪毫髮無損！面對高危毒牌（11、12）時，故意打小牌不進鐘面是最有效的保命避險戰術。
 						</div>
 						<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將被「驅逐」。時魔全滅或時之惡陣亡將直接結束遊戲。</em>
+							<em>*註：若齒輪（分數）歸零且再次受傷，靈魂將「被吞噬」。時魔全滅或時之惡陣亡（被吞噬）將直接結束遊戲。</em>
 						</div>
 					</div>
 
@@ -340,10 +339,10 @@
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時<br><strong
 											style="color:#ff9ff3;">齒輪（分數）積分</strong>最高者勝</td>
 									<td style="padding: 10px; border: 1px solid #555;"><u><strong
-												style="color:#ff9ff3;">齒輪（分數）積分</strong>＋ 特殊條件<br></u>
-										<strong>受詛者：</strong>必須在遊戲結束前於鐘面上保留 12 張`珍貴小時卡<br>
-										<strong>時魔 特殊勝利：</strong>驅逐時之惡<br>
-										<strong>時之惡 特殊勝利：</strong>遊戲結束前驅逐所有時魔各一次
+												style="color:#ff9ff3;">齒輪（分數）積分</strong> ＋ 特殊勝利條件<br></u>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分！第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong>！<br>
+										• <strong>時魔 特殊勝利：</strong>合力將時之惡齒輪耗盡達成「吞噬時之惡」！<br>
+										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵！
 									</td>
 								</tr>
 							</tbody>
@@ -351,7 +350,7 @@
 					</div>
 
 					<h4>🧬 進化機制 (時魔專屬)</h4>
-					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。</p>
+					<p>幼體時魔收集到指定條件的小時卡後可成長為時、分、秒三種形態。第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營額外加分！</p>
 					<ul>
 						<li><strong>久遠一生：</strong>3 張不同時代 + 當中至少 1 張珍貴。</li>
 						<li><strong>命途節錄：</strong>4 張不同數字 + 當中至少 1 張珍貴。</li>
@@ -369,8 +368,9 @@
 							style="background: rgba(254, 202, 87, 0.08); padding: 15px; border-left: 4px solid #feca57; border-radius: 0 8px 8px 0;">
 							<strong style="color: #feca57; font-size: 1.1em;">😈 時之惡 (Time Evil) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>惡之牽引 (2 Mana)：</strong> 改變懲罰規則，處決距離自己最近的角色。<br>
-								<strong>封鎖 (3 Mana)：</strong> 封印本回合所有特殊能力。
+								<strong>惡之牽引 (2 MP)：</strong> 出牌前發動，改變懲罰規則，處決距離自己最近的角色。<br>
+								<strong>封鎖 (3 MP)：</strong> 封印本回合所有特殊能力。<br>
+								<strong>飢餓懲罰：</strong> 若該局無時魔被吞噬，局末從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡，直接出局）。
 							</p>
 						</div>
 
@@ -378,8 +378,8 @@
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;">👻 受詛者 (Cursed One) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其鎖定。<br>
-								<strong>勝利：</strong> 場上累積 12 張鎖定的珍貴卡。
+								<strong>接觸鎖定：</strong> 踩上格子時，若有「珍貴小時卡」，將其永久鎖定在鐘面。<br>
+								<strong>任務與獎勵：</strong> 第 2/3/4 局達成 12 張分別獎勵 +9/+5/+2 分；第 5 局未滿 12 張重扣 -999 分！
 							</p>
 						</div>
 
@@ -390,7 +390,7 @@
 							<strong style="color: #ff9ff3; font-size: 1.1em;">👁️ 時針 (Time Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
 								<strong>被動：</strong> 每回合預知小時牌庫頂牌。<br>
-								<strong>主動 (1 Mana)：</strong> 將牌庫頂的牌移至底部，每回合促可以 2 mana再執行一次。
+								<strong>主動 (1 MP)：</strong> 將牌庫頂的牌移至底部，每回合可再以 2 MP 執行一次。
 							</p>
 						</div>
 
@@ -398,7 +398,7 @@
 							style="background: rgba(243, 104, 224, 0.08); padding: 15px; border-left: 4px solid #f368e0; border-radius: 0 8px 8px 0;">
 							<strong style="color: #f368e0; font-size: 1.1em;">👟 分針 (Minute Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (2 Mana)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
+								<strong>主動 (2 MP)：</strong> 取得小時卡後，可選擇順/逆時針跳躍至<strong>下一個有牌的格子</strong>。
 							</p>
 						</div>
 
@@ -406,7 +406,7 @@
 							style="background: rgba(0, 210, 211, 0.08); padding: 15px; border-left: 4px solid #00d2d3; border-radius: 0 8px 8px 0;">
 							<strong style="color: #00d2d3; font-size: 1.1em;">🃏 秒針 (Second Hand)</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>主動 (3 Mana)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
+								<strong>主動 (3 MP)：</strong> 出牌階段可蓋 2 張牌，待其他人翻牌後，再二選一打出。
 							</p>
 						</div>
 
@@ -414,7 +414,7 @@
 							style="background: rgba(84, 160, 255, 0.08); padding: 15px; border-left: 4px solid #54a0ff; border-radius: 0 8px 8px 0;">
 							<strong style="color: #54a0ff; font-size: 1.1em;"> 時魔幼體 (YOUNG) - 僅 5P</strong>
 							<p style="margin: 8px 0 0 0; font-size: 0.95rem;">
-								<strong>被動 (3 Mana >)：整場遊戲一次，如果Mana >= 3 ，可以消耗所有Mana抵擋一次懲罰。</strong>
+								<strong>被動 (MP ≥ 3)：整場遊戲一次，如果 MP ≥ 3 ，可以消耗所有 MP 抵免一次懲罰。</strong>
 							</p>
 						</div>
 					</div>

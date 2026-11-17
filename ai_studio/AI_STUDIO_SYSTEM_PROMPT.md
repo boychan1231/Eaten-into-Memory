@@ -30,9 +30,9 @@
 2. **進階角色 (Time Demon) 全場唯一性**：
    - 任何時刻檢查角色是否已被選走（如 `triggerRoleEvolution`、`checkAndApplyEvolution`、AI 進化選擇或技能複製）時，**絕對不可過濾掉 `p.isEjected === true`（本局暫時出局）的玩家**！
    - 必須檢查 `gameState.players.map(p => p.timeDemon ? p.timeDemon.id : null)`，確保已出局玩家的進階角色不會被其他玩家重複選取。
-3. **回合結算快照 (`lastRoundSummary`) 與出局計分防呆**：
+3. **局末結算快照 (`lastRoundSummary`) 與出局計分防呆**：
    - 在 `endGameRound()` 中，必須在重置 `p.gearCards = 2` 與 `p.isEjected = false` **之前**建立 `gameState.lastRoundSummary` 快照。
-   - 本回合被逐出 (`wasEjected === true`) 的玩家，該回合結算的珍貴記憶與食譜得分**必須強制為 `0`**，且不寫入 `p.score`。
+   - 本局被吞噬 (`wasEjected === true`) 的玩家，該局結算的珍貴記憶與食譜得分**必須強制為 `0`**，且不寫入 `p.score`。
 4. **受詛咒者 (`cursed_one`) 即時分數同步**：
    - 受詛咒者被動技能每失去 1 張齒輪卡獲得 2 分，必須同時累加 `player.bonusPoints += 2` 與 `player.score += 2`，確保即時排行與回合結算一致。
 5. **雙語字典 100% 鍵值同步**：

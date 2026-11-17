@@ -1159,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- 處理數值變動漂浮文字 (Mana / 齒輪 / 護盾) ---
+// --- 處理數值變動漂浮文字 (MP / 齒輪 / 護盾) ---
 const lastSpawnOffsets = new Map(); // 記錄各目標最近一次浮字時間與垂直/水平偏移，防止短時間內同一目標的文字重疊
 
 function processFloatingText(gameState) {
@@ -1194,7 +1194,7 @@ function processFloatingText(gameState) {
                 let color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
                 if (gearDiff < 0) {
                     if (player.isEjected) {
-                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 逐出出局!';
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 被吞噬出局!';
                     } else if (gameState.gameMode === '3P' || gameState.sinTargetingMode === 'default') {
                         text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_max') : null) || '-1 ⚙ (最高刻度處決)';
                     } else if (gameState.sinTargetingMode === 'sin') {
@@ -1210,7 +1210,7 @@ function processFloatingText(gameState) {
                 });
             }
 
-            // 3. Mana 變動
+            // 3. MP 變動
             const manaDiff = player.mana - last.mana;
             if (manaDiff !== 0) {
                 // 若幼體時魔使用護盾抵免傷害 (mana 耗盡且開啟 shieldUsed)
@@ -1225,7 +1225,7 @@ function processFloatingText(gameState) {
                     });
                 } else if (player.type === '時之惡' && manaDiff > 0 && gearDiff === 0) {
                     const tpl = window.i18n ? window.i18n.t('ui.combat_float.sin_recharge') : null;
-                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} Mana (惡念充能)`;
+                    const text = tpl ? tpl.replace('{diff}', manaDiff) : `+${manaDiff} MP (惡念充能)`;
                     pendingEvents.push({
                         playerId: player.id,
                         text,
@@ -1234,7 +1234,7 @@ function processFloatingText(gameState) {
                         diff: manaDiff
                     });
                 } else {
-                    const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' Mana';
+                    const text = (manaDiff > 0 ? '+' : '') + manaDiff + ' MP';
                     const color = manaDiff > 0 ? '#4cd137' : '#e17055';
                     pendingEvents.push({
                         playerId: player.id,
@@ -1437,7 +1437,7 @@ function renderSpecialVictoryProgress(gameState, container) {
         const pointerBadges = gameState.players.map(p => {
             const roleName = p.roleCard || p.name;
             if (p.isEjected) {
-                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭逐出';
+                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭吞噬';
                 return `<span class="sv-tag sv-tag-danger">${roleName}: ${defTag} (${p.score ?? 0}分)</span>`;
             } else {
                 const survTag = t('ui.special_victory.survived_tag', { gears: p.gearCards ?? 0 }) || `🛡️ 生還 (${p.gearCards ?? 0} ⚙)`;
@@ -1469,13 +1469,13 @@ function renderSpecialVictoryProgress(gameState, container) {
         const huntPercent = Math.min(100, Math.round((ejectedCount / totalDemons) * 100));
 
         const huntTitle = t('ui.special_victory.demon_hunt_title') || '😈 時之惡：完全狩獵';
-        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各驅逐出局至少一次';
+        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各吞噬出局至少一次';
         const huntStatusText = isHuntComplete
             ? (t('ui.special_victory.demon_hunt_status_achieved') || '🎉 達成 (狩獵完成)')
             : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/3)`);
 
-        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已逐出';
-        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾逐出';
+        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已吞噬';
+        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾被吞噬';
 
         const demonBadges = timeDemons.map(p => {
             const roleName = p.roleCard || p.name;
@@ -1515,13 +1515,13 @@ function renderSpecialVictoryProgress(gameState, container) {
             ? lockedPreciousList.map(item => `<span class="sv-tag sv-tag-lock">🔒 ${item.spot}點 (${item.number}★)</span>`).join(' ')
             : `<span style="color:#777; font-size:0.75rem;">${lockedNoneText}</span>`;
 
-        // 3. 時魔陣營：驅逐時之惡
+        // 3. 時魔陣營：吞噬時之惡
         const sinPlayer = gameState.players.find(p => p.type === '時之惡');
         const isSinEjected = sinPlayer ? (sinPlayer.isEjected || sinPlayer.hasEverBeenEjected) : false;
-        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：驅逐時之惡';
-        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其驅逐出局';
+        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：吞噬時之惡';
+        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其吞噬出局';
         const demonVicStatusText = isSinEjected
-            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被逐出)')
+            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被吞噬)')
             : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} ⚙)`);
 
         cardsHtml = `
@@ -1560,7 +1560,7 @@ function renderSpecialVictoryProgress(gameState, container) {
                 </div>
             </div>
 
-            <!-- 時魔陣營：驅逐時之惡 -->
+            <!-- 時魔陣營：吞噬時之惡 -->
             <div class="special-victory-card time-demon ${isSinEjected ? 'achieved' : ''}">
                 <div class="sv-card-head">
                     <div class="sv-card-title" style="color: #ff6b6b;">
@@ -1601,7 +1601,7 @@ function renderGameOverPanel(gameState) {
     const sczPlayer = gameState.players.find(p => p.type === '受詛者');
     const timeDemons = gameState.players.filter(p => p.type === '時魔');
     const aliveDemons = timeDemons.filter(p => !p.isEjected);
-    // 檢查是否所有時魔都曾被逐出 (累積全滅)
+    // 檢查是否所有時魔都曾被吞噬 (累積全滅)
     const allDemonsEverEjected = timeDemons.every(p => p.hasEverBeenEjected);
 
     // 檢查受詛者鎖定 12 張珍貴卡
@@ -1621,11 +1621,11 @@ function renderGameOverPanel(gameState) {
 
     if (sinPlayer && sinPlayer.isEjected) {
         winnerText = "🎉 時魔陣營 獲勝！";
-        subText = "時之惡已被逐出";
+        subText = "時之惡已被吞噬";
         titleColor = "#ff6b6b"; // 時魔紅
     } else if (aliveDemons.length === 0 || allDemonsEverEjected) {
         winnerText = "😈 時之惡陣營 獲勝！";
-        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被逐出)" : "時魔全數陣亡";
+        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被吞噬)" : "時魔全數陣亡";
         titleColor = "#feca57"; // 時之惡黃
     } else if (sczMissionSuccess) {
         winnerText = "✨ 受詛者 記憶解放！";
@@ -1988,7 +1988,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
                 const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
                 const roleColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
                 const localizedRole = window.i18n ? window.i18n.getRoleName(rawRole) : rawRole;
-                const ejectedText = window.i18n ? window.i18n.t('ui.round_ready.ejected') : '(逐出)';
+                const ejectedText = window.i18n ? window.i18n.t('ui.round_ready.ejected') : '(被吞噬)';
                 const roleDisplay = p.isEjected ? `<s style="opacity:0.6;">${localizedRole}</s> ${ejectedText}` : localizedRole;
                 const humanBadgeText = window.i18n ? window.i18n.t('ui.labels.you_tag').replace('★', '') : '我';
                 const humanBadge = isHuman ? `<span class="score-badge-human">${humanBadgeText}</span>` : '';

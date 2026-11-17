@@ -518,20 +518,20 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 /* --- 針對不同角色設定專屬的靈魂 GIF / PNG --- */
-.token-demon { background-image: url('assets/soul_demon.png'); } /* 幼體時魔 (NPC) */
+.token-demon { background-image: url('assets/soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (NPC) 80% */
 .token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 (NPC) */
 .token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 (NPC) */
-.token-hour  { background-image: url('assets/soul_hour.png'); }  /* 時針 (NPC) */
-.token-min   { background-image: url('assets/soul_min.png'); }   /* 分針 (NPC) */
-.token-sec   { background-image: url('assets/soul_sec.png'); }   /* 秒針 (NPC) */
+.token-hour  { background-image: url('assets/soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (NPC) 120% */
+.token-min   { background-image: url('assets/soul_min.png'); width: 48px; height: 48px; }   /* 分針 (NPC) 120% */
+.token-sec   { background-image: url('assets/soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (NPC) 120% */
 
 /* --- 玩家專屬的靈魂棋子 (p_ 前綴) --- */
-.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); } /* 幼體時魔 (玩家) */
+.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (玩家) 80% */
 .token-player-sin   { background-image: url('assets/player/P_soul_sin.png'); }   /* 時之惡 (玩家) */
 .token-player-scz   { background-image: url('assets/player/p_soul_scz.png'); }   /* 受詛者 (玩家) */
-.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); }  /* 時針 (玩家) */
-.token-player-min   { background-image: url('assets/player/p_soul_min.png'); }   /* 分針 (玩家) */
-.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); }   /* 秒針 (玩家) */
+.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (玩家) 120% */
+.token-player-min   { background-image: url('assets/player/p_soul_min.png'); width: 48px; height: 48px; }   /* 分針 (玩家) 120% */
+.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (玩家) 120% */
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card,
@@ -2194,7 +2194,7 @@ body {
     margin-right: 4px;
 }
 
-/* Mana (Energy) 替代圖示 */
+/* MP (Energy) 替代圖示 */
 .icon-mana-css {
     display: inline-block;
     width: 14px; height: 14px;
@@ -2367,7 +2367,7 @@ body {
     color: #cd7f32;
 }
 
-/* 被逐出者 */
+/* 被吞噬者 */
 .rank-row.dead {
     opacity: 0.5;
     text-decoration: line-through;
@@ -3446,7 +3446,7 @@ body {
 
 
 /* ==========================================================================
-   ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & 乙太發條能量管 (Aether Gauge)
+   ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 (Gear Chain) & MP 發條能量管 (MP Gauge)
    ========================================================================== */
 
 .resource-chip.has-mech-gauge {
@@ -3672,7 +3672,7 @@ body {
 }
 
 
-/* --- 2. 乙太真空發條能量管 (Aether Mana Gauge) --- */
+/* --- 2. MP 真空發條能量管 (MP Gauge) --- */
 .mech-mana-gauge,
 .mech-mana-gauge *,
 .mech-gear-gauge,

@@ -251,7 +251,7 @@ class GameState {
 			// 加入 ID 判斷，確保受詛者一定有護盾
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
-            hasEverBeenEjected: false,// 永久記錄是否曾被驅逐 (用於時之惡勝利判定)
+            hasEverBeenEjected: false,// 永久記錄是否曾被吞噬 (用於時之惡勝利判定)
 			shieldUsed: false,
             specialAbilityUsed: false,
             giftCards: [],
@@ -293,10 +293,10 @@ class GameState {
 
         // 時之惡（sin）目標模式：default = 接近12；sin = 距離時之惡最近
         this.sinTargetingMode = 'default';
-		// 記錄上一局是否「安全」(沒有時魔被逐出)
+		// 記錄上一局是否「安全」(沒有時魔被吞噬)
         // 初始設為 false，確保第一局就算安全也不會觸發「連續兩局」的條件
         this.previousRoundSafe = false;
-		// 記錄本局是否有「時魔被逐出」事件（用於連續兩局懲罰判定）
+		// 記錄本局是否有「時魔被吞噬」事件（用於飢餓懲罰判定）
         this.roundHadTimeDemonEjection = false;
     }
 }

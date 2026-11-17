@@ -3393,7 +3393,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 }
 
 
-/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & 乙太能量管 (Modern PixiJS 改良) --- */
+/* --- ⚙️ 蒸氣龐克擬物化機構：機芯齒輪鏈 & MP 能量管 (Modern PixiJS 改良) --- */
 .resource-chip.has-mech-gauge {
     display: inline-flex !important;
     align-items: center !important;
@@ -3604,7 +3604,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     font-size: 0.78rem !important;
 }
 
-/* 2. 乙太能量管 */
+/* 2. MP 能量管 */
 .mech-mana-gauge,
 .mech-mana-gauge *,
 .mech-gear-gauge,

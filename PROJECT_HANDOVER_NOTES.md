@@ -23,11 +23,11 @@
 | `index.html` | **預設入口：PixiJS 現代動態星芒鐘面版**<br>整合開場動態、PixiJS 全視野鐘面、動態浮動 HUD 抽屜。 | 預設開啟版本，支援版本切換至 `classic.html`。 |
 | `classic.html` | **傳統 DOM 經典備援版**<br>原始靜態 HTML/CSS DOM 鐘面結構與標準版面。 | 供相容性備援測試。 |
 | `modern.html` | **現代版向前相容跳轉頁**<br>自動無縫導向至預設 `index.html`。 | 保證舊書籤與歷史連結有效性。 |
-| `game.js` | **遊戲核心狀態機與規則引擎**<br>處理抽卡、出牌、比大小、小時卡分配、齒輪扣除、逐出判定、局/局數推進與算分結算。 | 全域管理 `gameState`，維護 `lastRoundSummary` 快照。 |
+| `game.js` | **遊戲核心狀態機與規則引擎**<br>處理抽卡、出牌、比大小、小時卡分配、齒輪扣除、吞噬判定、局/局數推進與算分結算。 | 全域管理 `gameState`，維護 `lastRoundSummary` 快照。 |
 | `game_setup.js` | **對局初始化與手牌分配**<br>建構初始玩家資料、洗牌、角色初始手牌與齒輪配置、3P/5P 模式角色初始化。 | 依賴 `config.js`。 |
 | `abilities.js` | **角色技能與時魔進化系統**<br>時針（牌頂移底）、分針（跳躍移動）、秒針（二選一）、時之惡（牽引/封鎖）、幼體時魔進化判定。 | 管理 `AVAILABLE_ROLES`，執行身份全域唯一性檢查。 |
 | `modern_board.js` | **PixiJS 現代鐘面渲染器**<br>繪製動態齒輪背景、鐘面刻度、角色立繪 Token、發光小時格交互、拖曳與縮放（Pan/Zoom）。 | 暴露 `ModernBoard` 模組，支援響應式視窗縮放。 |
-| `ui_components.js` | **操作介面交互與組件邏輯**<br>手牌拖曳（Drag & Drop）狀態機、擬物化齒輪生命值、Mana 乙太管、日誌與懸浮資訊抽屜、Minute Clash 動畫控制器。 | 管理 `bindMinuteCardDragToPlay` 與拖放判定。 |
+| `ui_components.js` | **操作介面交互與組件邏輯**<br>手牌拖曳（Drag & Drop）狀態機、擬物化齒輪生命值、MP 發條管、日誌與懸浮資訊抽屜、Minute Clash 動畫控制器。 | 管理 `bindMinuteCardDragToPlay` 與拖放判定。 |
 | `tutorial_mode.js` | **新手教學指針引導系統**<br>根據當前對局階段自動計算聚光燈（Spotlight）目標與氣泡說明、追蹤步驟、自動關閉條件判定。 | 管理 `TutorialModeManager`。 |
 | `ui.js` | **介面事件綁定與彈窗管理器**<br>局結算彈窗 (`showRoundReadyModal`)、設定頁面、音效開關、手動關閉教學切換。 | 局結算讀取 `lastRoundSummary` 快照。 |
 | `locales/` | **雙語系字典檔** (`zh-TW.js`, `en-US.js`)<br>UI 介面字串、教學提示、日誌字串、規則說明手冊。 | 結構需保持 100% 鍵值同步。 |
@@ -60,7 +60,7 @@
   * **指針異能專精**：
     * **時針**：在 `hourHandPreMinuteAI` 中針對 3P 安全性調度頂牌，主動將致命大牌（11、12）移至底部。
     * **秒針**：在 `makeAIChoice3P` 與翻牌二選一決策中，依據場上小時卡是否為毒牌或逃生機會智能決定打出大牌或小牌。
-    * **分針**：挑選小時卡時預先考量 Mana 跳躍逃生空間。
+    * **分針**：挑選小時卡時預先考量 MP 跳躍逃生空間。
 
 ### 5. 操作回饋與視覺細節深化
 * **手牌牌力區間視覺輔助（Tier Badges）**：
@@ -68,7 +68,7 @@
 * **鐘面小時格即時戰術風險預警（`assessHourCardTactics`）**：
   * 挑選小時卡時，即時在鐘面可選刻度與中央卡牌標註「⚠️ 高危 (受罰預警)」、「🛡️ 安全 (避險)」、「⭐ 契合配方」、「💎 珍貴回憶」，省去繁複心算。
 * **戰鬥處決浮動文字與棋子受擊震動（Combat Float & Token Shake）**：
-  * 扣除齒輪時直接以棋子在螢幕上的即時像素座標彈出文字（如 `-1 ⚙ (最高刻度處決)`、`🛡️ 護盾抵免!`、`⚠️ 逐出出局!`），棋子同步觸發受擊抖動。
+  * 扣除齒輪時直接以棋子在螢幕上的即時像素座標彈出文字（如 `-1 ⚙ (最高刻度處決)`、`🛡️ 護盾抵免!`、`⚠️ 被吞噬出局!`），棋子同步觸發受擊抖動。
 * **對局結算戰術榮譽標籤（Match Highlights）**：
   * 局末排行榜為各玩家計算個性化標籤（`👑 榮耀之冠`、`💎 記憶收藏家`、`🛡️ 堅毅生還`、`✨ 命運探索者` 等）。
 
@@ -85,7 +85,7 @@
 * **鐵律防禦代碼**（`abilities.js`）：
   ```javascript
   // 絕對不可加入 !p.isEjected！
-  // 時針、分針、秒針為全域唯一高階身份，即使暫時被逐出，身份依舊屬於被佔用狀態！
+  // 時針、分針、秒針為全域唯一高階身份，即使暫時被吞噬，身份依舊屬於被佔用狀態！
   const takenRoles = gameState.players
       .filter(p => p !== player && p.type === '時魔')
       .map(p => p.roleCard);
@@ -98,7 +98,7 @@
   1. 在 `endGameRound` 一開始、尚未重新發牌前，立即生成上一局快照 `gameState.lastRoundSummary`。
   2. 出局者當局得分強制計算為 0：
      `const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);`
-  3. 結算彈窗 `showRoundReadyModal` 必須**優先讀取 `gameState.lastRoundSummary` 快照**渲染排名與得分，若出局則明確顯示 `+0 齒` 與 `<s>角色</s> (逐出)`。
+  3. 結算彈窗 `showRoundReadyModal` 必須**優先讀取 `gameState.lastRoundSummary` 快照**渲染排名與得分，若出局則明確顯示 `+0 齒` 與 `<s>角色</s> (被吞噬)`。
   4. 遊戲結束 `endGame` 的時魔陣營額外加分（+3分）**必須包含 `!p.isEjected`**，已出局陣亡者不得享有加分。
 
 ### 3. 受詛者任務總分同步機制
@@ -148,7 +148,7 @@
 
 ### 1. 測試標準
 * **非核心微調（文案、單一參數校準）**：執行輕量語法檢查（`node -c`）與邏輯審查即可。
-* **核心機制/狀態機改動（算分、進化、逐出、發牌、動畫控制器）**：必須執行針對性模擬腳本（單元測試）或深度驗證。
+* **核心機制/狀態機改動（算分、進化、吞噬、發牌、動畫控制器）**：必須執行針對性模擬腳本（單元測試）或深度驗證。
 
 ### 2. Windows / PowerShell 環境指令注意
 * 系統預設 PATH 中未包含 `git.exe` 時，可調用 GitHub Desktop 內建引擎：

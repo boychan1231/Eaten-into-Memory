@@ -14,7 +14,7 @@ const AudioConfig = {
     SFX_ABILITY_PATH: 'SFX/sfx_confirm.wav',  	 // 特殊能力發動音效（暫以確認音提供反饋）
     SFX_CHIME_PATH: 'SFX/sfx_chime.wav',    	 // 遊戲輪開始/鐘聲
     SFX_WIN_PATH: 'SFX/sfx_chime.wav',        	 // 勝利音效（暫以鐘聲提供反饋）
-    SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被逐出音效
+    SFX_LOSE_PATH: 'SFX/sfx_Lose.mp3'       	 // 失敗/被吞噬音效
 };
 
 // --- 新增 (Add)：精確到每張卡的 BGM 設定表 ---
