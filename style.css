@@ -1358,6 +1358,9 @@ input:checked + .slider:before { transform: translateX(16px); }
     text-align: center;
     border: 2px solid #ffd27f;
     box-shadow: 0 0 30px rgba(255, 210, 127, 0.2);
+    width: min(540px, calc(100vw - 20px));
+    max-height: 88vh;
+    overflow-y: auto;
 }
 
 .game-over-title {
@@ -1368,8 +1371,175 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 .game-over-subtitle {
     color: #ccc;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
+    margin-bottom: 15px;
+    font-size: 1.05rem;
+}
+
+/* --- 特殊勝利達成進度 (Special Victory Progress) --- */
+.special-victory-section {
+    background: rgba(18, 20, 28, 0.85);
+    border: 1px solid rgba(255, 210, 127, 0.35);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 10px 0 16px 0;
+    text-align: left;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.special-victory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #ffd27f;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.special-victory-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.special-victory-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: all 0.2s ease;
+}
+
+.special-victory-card.achieved {
+    border-color: rgba(76, 209, 55, 0.55);
+    background: rgba(76, 209, 55, 0.09);
+    box-shadow: 0 0 10px rgba(76, 209, 55, 0.15);
+}
+
+.special-victory-card.demon-hunt {
+    border-left: 3px solid #feca57;
+}
+
+.special-victory-card.curse-lock {
+    border-left: 3px solid #00d2d3;
+}
+
+.special-victory-card.time-demon {
+    border-left: 3px solid #ff6b6b;
+}
+
+.special-victory-card.mode-3p {
+    border-left: 3px solid #a29bfe;
+}
+
+.sv-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.88rem;
+}
+
+.sv-card-title {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sv-card-status {
+    font-size: 0.78rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.sv-status-achieved {
+    background: rgba(76, 209, 55, 0.25);
+    color: #4cd137;
+    border: 1px solid #4cd137;
+}
+
+.sv-status-progress {
+    background: rgba(254, 202, 87, 0.18);
+    color: #feca57;
+    border: 1px solid rgba(254, 202, 87, 0.4);
+}
+
+.sv-status-failed {
+    background: rgba(255, 107, 107, 0.18);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.4);
+}
+
+.sv-progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    margin: 4px 0 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sv-progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.sv-fill-gold {
+    background: linear-gradient(90deg, #ff9f43, #feca57);
+    box-shadow: 0 0 6px rgba(254, 202, 87, 0.5);
+}
+
+.sv-fill-cyan {
+    background: linear-gradient(90deg, #00d2d3, #1dd1a1);
+    box-shadow: 0 0 6px rgba(0, 210, 211, 0.5);
+}
+
+.sv-fill-red {
+    background: linear-gradient(90deg, #ee5253, #ff6b6b);
+    box-shadow: 0 0 6px rgba(255, 107, 107, 0.5);
+}
+
+.sv-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #bbb;
+    margin-top: 4px;
+}
+
+.sv-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.sv-tag-danger {
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.35);
+}
+
+.sv-tag-safe {
+    color: #4cd137;
+    border: 1px solid rgba(76, 209, 55, 0.35);
+}
+
+.sv-tag-lock {
+    color: #00d2d3;
+    background: rgba(0, 210, 211, 0.12);
+    border: 1px solid rgba(0, 210, 211, 0.3);
 }
 
 .game-over-actions {

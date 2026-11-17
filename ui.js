@@ -1411,11 +1411,181 @@ if (typeof window !== 'undefined') {
     window.triggerFloat = triggerFloat;
     window.spawnFloatingText = spawnFloatingText;
     window.drawSinTargetLines = drawSinTargetLines;
+    window.renderSpecialVictoryProgress = renderSpecialVictoryProgress;
 }
 
 function getUIDistance(pos1, pos2) {
     const diff = Math.abs(pos1 - pos2);
     return Math.min(diff, 12 - diff);
+}
+
+function renderSpecialVictoryProgress(gameState, container) {
+    if (!container || !gameState || !Array.isArray(gameState.players)) return;
+
+    const t = (key, params) => (window.i18n ? window.i18n.t(key, params) : null);
+    const currentMode = gameState.gameMode || (typeof getGameMode === 'function' ? getGameMode() : (gameState.players.length === 3 ? '3P' : '5P'));
+
+    const sectionTitle = t('ui.special_victory.title') || '🏆 特殊勝利達成進度';
+
+    let cardsHtml = '';
+
+    if (currentMode === '3P') {
+        // --- 3P 指針生還競速模式 ---
+        const title3p = t('ui.special_victory.mode_3p_title') || '⚙️ 3P 指針競速對決';
+        const desc3p = t('ui.special_victory.mode_3p_desc') || '純指針齒輪積分爭奪賽 (以最高積分獲勝)';
+
+        const pointerBadges = gameState.players.map(p => {
+            const roleName = p.roleCard || p.name;
+            if (p.isEjected) {
+                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭逐出';
+                return `<span class="sv-tag sv-tag-danger">${roleName}: ${defTag} (${p.score ?? 0}分)</span>`;
+            } else {
+                const survTag = t('ui.special_victory.survived_tag', { gears: p.gearCards ?? 0 }) || `🛡️ 生還 (${p.gearCards ?? 0} ⚙)`;
+                return `<span class="sv-tag sv-tag-safe">${roleName}: ${survTag} (${p.score ?? 0}分)</span>`;
+            }
+        }).join(' ');
+
+        cardsHtml = `
+            <div class="special-victory-card mode-3p">
+                <div class="sv-card-head">
+                    <div class="sv-card-title" style="color: #a29bfe;">
+                        <span>${title3p}</span>
+                    </div>
+                    <span class="sv-card-status sv-status-progress">3P 競速</span>
+                </div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:6px;">${desc3p}</div>
+                <div class="sv-card-details">
+                    ${pointerBadges}
+                </div>
+            </div>
+        `;
+    } else {
+        // --- 5P 陣營扮演模式 (三大特殊勝利) ---
+        // 1. 時之惡陣營：完全狩獵
+        const timeDemons = gameState.players.filter(p => p.type === '時魔');
+        const totalDemons = timeDemons.length || 3;
+        const ejectedCount = timeDemons.filter(p => p.hasEverBeenEjected).length;
+        const isHuntComplete = (totalDemons > 0 && ejectedCount >= totalDemons);
+        const huntPercent = Math.min(100, Math.round((ejectedCount / totalDemons) * 100));
+
+        const huntTitle = t('ui.special_victory.demon_hunt_title') || '😈 時之惡：完全狩獵';
+        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各驅逐出局至少一次';
+        const huntStatusText = isHuntComplete
+            ? (t('ui.special_victory.demon_hunt_status_achieved') || '🎉 達成 (狩獵完成)')
+            : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/3)`);
+
+        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已逐出';
+        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾逐出';
+
+        const demonBadges = timeDemons.map(p => {
+            const roleName = p.roleCard || p.name;
+            if (p.hasEverBeenEjected) {
+                return `<span class="sv-tag sv-tag-danger">${roleName}: ${tagEjected}</span>`;
+            } else {
+                return `<span class="sv-tag sv-tag-safe">${roleName}: ${tagNotEjected}</span>`;
+            }
+        }).join(' ');
+
+        // 2. 受詛者陣營：記憶之鎖 (在鐘面鎖定 12 張珍貴卡)
+        const lockedPreciousList = [];
+        if (Array.isArray(gameState.clockFace)) {
+            gameState.clockFace.forEach(spot => {
+                if (Array.isArray(spot.cards)) {
+                    spot.cards.forEach(card => {
+                        if (card.isPrecious && card.isLocked) {
+                            lockedPreciousList.push({ spot: spot.position, number: card.number });
+                        }
+                    });
+                }
+            });
+        }
+        const lockedCount = lockedPreciousList.length;
+        const isLockComplete = (lockedCount >= 12);
+        const lockPercent = Math.min(100, Math.round((lockedCount / 12) * 100));
+
+        const lockTitle = t('ui.special_victory.curse_lock_title') || '🔒 受詛者：記憶之鎖';
+        const lockDesc = t('ui.special_victory.curse_lock_desc') || '在鐘面上鎖定 12 張珍貴卡';
+        const lockStatusText = isLockComplete
+            ? (t('ui.special_victory.curse_lock_status_achieved') || '🎉 達成 (記憶解放)')
+            : (t('ui.special_victory.curse_lock_status_in_progress', { current: lockedCount }) || `進行中 (${lockedCount}/12)`);
+
+        const lockedMarksPrefix = t('ui.special_victory.locked_marks') || '已鎖定刻度：';
+        const lockedNoneText = t('ui.special_victory.locked_none') || '無';
+        const lockedBadges = lockedPreciousList.length > 0
+            ? lockedPreciousList.map(item => `<span class="sv-tag sv-tag-lock">🔒 ${item.spot}點 (${item.number}★)</span>`).join(' ')
+            : `<span style="color:#777; font-size:0.75rem;">${lockedNoneText}</span>`;
+
+        // 3. 時魔陣營：驅逐時之惡
+        const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+        const isSinEjected = sinPlayer ? (sinPlayer.isEjected || sinPlayer.hasEverBeenEjected) : false;
+        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：驅逐時之惡';
+        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其驅逐出局';
+        const demonVicStatusText = isSinEjected
+            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被逐出)')
+            : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} ⚙)`);
+
+        cardsHtml = `
+            <!-- 時之惡：完全狩獵 -->
+            <div class="special-victory-card demon-hunt ${isHuntComplete ? 'achieved' : ''}">
+                <div class="sv-card-head">
+                    <div class="sv-card-title" style="color: #feca57;">
+                        <span>${huntTitle}</span>
+                    </div>
+                    <span class="sv-card-status ${isHuntComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${huntStatusText}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${huntDesc}</div>
+                <div class="sv-progress-bar-bg">
+                    <div class="sv-progress-bar-fill sv-fill-gold" style="width: ${huntPercent}%;"></div>
+                </div>
+                <div class="sv-card-details">
+                    ${demonBadges}
+                </div>
+            </div>
+
+            <!-- 受詛者：記憶之鎖 -->
+            <div class="special-victory-card curse-lock ${isLockComplete ? 'achieved' : ''}">
+                <div class="sv-card-head">
+                    <div class="sv-card-title" style="color: #00d2d3;">
+                        <span>${lockTitle}</span>
+                    </div>
+                    <span class="sv-card-status ${isLockComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${lockStatusText}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${lockDesc}</div>
+                <div class="sv-progress-bar-bg">
+                    <div class="sv-progress-bar-fill sv-fill-cyan" style="width: ${lockPercent}%;"></div>
+                </div>
+                <div class="sv-card-details">
+                    <span style="font-size:0.75rem; color:#888;">${lockedMarksPrefix}</span>
+                    ${lockedBadges}
+                </div>
+            </div>
+
+            <!-- 時魔陣營：驅逐時之惡 -->
+            <div class="special-victory-card time-demon ${isSinEjected ? 'achieved' : ''}">
+                <div class="sv-card-head">
+                    <div class="sv-card-title" style="color: #ff6b6b;">
+                        <span>${demonVicTitle}</span>
+                    </div>
+                    <span class="sv-card-status ${isSinEjected ? 'sv-status-achieved' : 'sv-status-failed'}">${demonVicStatusText}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${demonVicDesc}</div>
+                <div class="sv-progress-bar-bg">
+                    <div class="sv-progress-bar-fill sv-fill-red" style="width: ${isSinEjected ? 100 : 0}%;"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="special-victory-header">
+            <span>${sectionTitle}</span>
+            <span style="font-size:0.75rem; color:#888; font-weight:normal;">${currentMode} 模式</span>
+        </div>
+        <div class="special-victory-grid">
+            ${cardsHtml}
+        </div>
+    `;
+    container.style.display = 'block';
 }
 
 function renderGameOverPanel(gameState) {
@@ -1428,10 +1598,22 @@ function renderGameOverPanel(gameState) {
 
     // 1. 判斷陣營勝負 (邏輯與 game.js checkEjectionAndWinCondition 一致)
     const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+    const sczPlayer = gameState.players.find(p => p.type === '受詛者');
     const timeDemons = gameState.players.filter(p => p.type === '時魔');
     const aliveDemons = timeDemons.filter(p => !p.isEjected);
     // 檢查是否所有時魔都曾被逐出 (累積全滅)
     const allDemonsEverEjected = timeDemons.every(p => p.hasEverBeenEjected);
+
+    // 檢查受詛者鎖定 12 張珍貴卡
+    let lockedPreciousCount = 0;
+    if (Array.isArray(gameState.clockFace)) {
+        gameState.clockFace.forEach(spot => {
+            if (Array.isArray(spot.cards)) {
+                lockedPreciousCount += spot.cards.filter(c => c.isPrecious && c.isLocked).length;
+            }
+        });
+    }
+    const sczMissionSuccess = (lockedPreciousCount >= 12);
 
     let winnerText = "遊戲結束";
     let subText = "";
@@ -1445,6 +1627,10 @@ function renderGameOverPanel(gameState) {
         winnerText = "😈 時之惡陣營 獲勝！";
         subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被逐出)" : "時魔全數陣亡";
         titleColor = "#feca57"; // 時之惡黃
+    } else if (sczMissionSuccess) {
+        winnerText = "✨ 受詛者 記憶解放！";
+        subText = "成功鎖定 12 張珍貴卡，達成命運解脫";
+        titleColor = "#00d2d3"; // 受詛者青綠
     } else {
         // 時間到 (回合數滿)
         winnerText = "⏳ 遊戲結束";
@@ -1457,6 +1643,18 @@ function renderGameOverPanel(gameState) {
         titleEl.style.textShadow = `0 0 15px ${titleColor}`;
     }
     if (subEl) subEl.textContent = subText;
+
+    // 特殊勝利達成進度渲染
+    let svContainer = document.getElementById('special-victory-progress-container');
+    if (!svContainer && subEl && subEl.parentNode) {
+        svContainer = document.createElement('div');
+        svContainer.id = 'special-victory-progress-container';
+        svContainer.className = 'special-victory-section';
+        subEl.parentNode.insertBefore(svContainer, subEl.nextSibling);
+    }
+    if (svContainer) {
+        renderSpecialVictoryProgress(gameState, svContainer);
+    }
 
     // 2. 積分排序
     const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);

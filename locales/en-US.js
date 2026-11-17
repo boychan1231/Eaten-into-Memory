@@ -185,6 +185,29 @@
                 pts_gear: '+{gear} Gears',
                 pts_total: '{pts} pts',
                 ejected: '(Ejected)'
+            },
+            special_victory: {
+                title: '🏆 Special Victory Progress',
+                demon_hunt_title: '😈 Time Sin: Total Hunt',
+                demon_hunt_desc: 'Eject all 3 Time Demons at least once',
+                demon_hunt_status_achieved: '🎉 Achieved (Total Hunt Complete)',
+                demon_hunt_status_in_progress: 'In Progress ({current}/3)',
+                ejected_tag: '💀 Ejected',
+                not_ejected_tag: '🛡️ Never Ejected',
+                curse_lock_title: '🔒 The Cursed: Lock of Memory',
+                curse_lock_desc: 'Lock 12 Precious Cards on the clock face',
+                curse_lock_status_achieved: '🎉 Achieved (Memories Locked)',
+                curse_lock_status_in_progress: 'In Progress ({current}/12)',
+                locked_marks: 'Locked Positions:',
+                locked_none: 'None',
+                time_demon_victory_title: '⚔️ Time Demons: Banish Time Sin',
+                time_demon_victory_desc: 'Exhaust Time Sin gears and eject it',
+                time_demon_status_achieved: '🎉 Achieved (Time Sin Ejected)',
+                time_demon_status_in_progress: 'Incomplete (Time Sin Alive, {gears} ⚙ remaining)',
+                mode_3p_title: '⚙️ 3P Pointer Speed Clash',
+                mode_3p_desc: 'Pure gear score speed clash (highest score wins)',
+                survived_tag: '🛡️ Survived ({gears} ⚙)',
+                defeated_tag: '💀 Ejected'
             }
         },
         abilities: {

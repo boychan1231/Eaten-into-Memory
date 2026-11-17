@@ -185,6 +185,29 @@
                 pts_gear: '+{gear} 齒',
                 pts_total: '{pts} 分',
                 ejected: '(逐出)'
+            },
+            special_victory: {
+                title: '🏆 特殊勝利達成進度',
+                demon_hunt_title: '😈 時之惡：完全狩獵',
+                demon_hunt_desc: '將全場 3 位時魔各驅逐出局至少一次',
+                demon_hunt_status_achieved: '🎉 達成 (狩獵完成)',
+                demon_hunt_status_in_progress: '進行中 ({current}/3)',
+                ejected_tag: '💀 已逐出',
+                not_ejected_tag: '🛡️ 未曾逐出',
+                curse_lock_title: '🔒 受詛者：記憶之鎖',
+                curse_lock_desc: '在鐘面上鎖定 12 張珍貴卡',
+                curse_lock_status_achieved: '🎉 達成 (記憶解放)',
+                curse_lock_status_in_progress: '進行中 ({current}/12)',
+                locked_marks: '已鎖定刻度：',
+                locked_none: '無',
+                time_demon_victory_title: '⚔️ 時魔陣營：驅逐時之惡',
+                time_demon_victory_desc: '耗盡時之惡齒輪並將其驅逐出局',
+                time_demon_status_achieved: '🎉 達成 (時之惡已被逐出)',
+                time_demon_status_in_progress: '未達成 (時之惡存活，剩餘 {gears} ⚙)',
+                mode_3p_title: '⚙️ 3P 指針競速對決',
+                mode_3p_desc: '純指針齒輪積分爭奪賽 (以最高積分獲勝)',
+                survived_tag: '🛡️ 生還 ({gears} ⚙)',
+                defeated_tag: '💀 遭逐出'
             }
         },
         abilities: {
