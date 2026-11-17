@@ -106,10 +106,17 @@
             },
             scores: {
                 tab_standings: '🏆 Standings',
+                tab_special_victory: '🎯 Victory',
                 tab_history: '📜 Score History',
                 round_summary: 'Round {round} Summary',
                 empty_title: 'Round 1 in Progress',
-                empty_desc: 'After each round ends, round scores, ejection status, and cumulative totals will appear here.'
+                empty_desc: 'After each round ends, round scores, ejection status, and cumulative totals will appear here.',
+                mini_hunt: 'Hunt',
+                mini_lock: 'Lock',
+                mini_sin: 'Time Sin',
+                mini_sin_ejected: 'Ejected',
+                mini_3p_survivors: 'Survived',
+                view_details: 'Click to view details'
             },
             settings: {
                 title: '⚙️ Game Settings',

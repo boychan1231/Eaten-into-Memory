@@ -581,7 +581,7 @@ function renderPlayedCardsPanel(gameState) {
     }
 }
 
-// 綁定積分面板頁籤 (即時總分 / 得分歷程)
+// 綁定積分面板頁籤 (即時總分 / 勝利進度 / 得分歷程)
 function bindScoreTabs() {
     const tabButtons = document.querySelectorAll('.score-tab-btn');
     tabButtons.forEach(btn => {
@@ -596,17 +596,60 @@ function bindScoreTabs() {
             parentPanel.querySelectorAll('.score-tab-btn').forEach(b => {
                 b.classList.toggle('active', b === btn);
             });
-            const standingsPane = parentPanel.querySelector('#score-tab-content-standings');
-            const historyPane = parentPanel.querySelector('#score-tab-content-history');
-            if (standingsPane) standingsPane.style.display = (targetTab === 'standings') ? 'block' : 'none';
-            if (historyPane) historyPane.style.display = (targetTab === 'history') ? 'block' : 'none';
+            const panes = parentPanel.querySelectorAll('.score-tab-content');
+            panes.forEach(pane => {
+                const isTarget = pane.id === `score-tab-content-${targetTab}`;
+                pane.style.display = isTarget ? 'block' : 'none';
+                if (isTarget) pane.classList.add('active');
+                else pane.classList.remove('active');
+            });
         });
     });
 }
 
-// ✅ 渲染積分面板 (支援即時總分與得分歷程分頁)
+// ✅ 渲染積分面板 (支援即時總分、勝利進度與得分歷程分頁)
 function renderScorePanel(gameState) {
     if (!gameState) return;
+
+    // 動態確保 DOM 中具備特殊勝利進度分頁元素 (防禦性回退機制)
+    const scorePanels = document.querySelectorAll('.score-panel');
+    scorePanels.forEach(panel => {
+        const tabBar = panel.querySelector('.score-tab-bar');
+        if (tabBar && !tabBar.querySelector('[data-score-tab="special"]')) {
+            const histBtn = tabBar.querySelector('[data-score-tab="history"]');
+            const specialBtn = document.createElement('button');
+            specialBtn.type = 'button';
+            specialBtn.className = 'score-tab-btn';
+            specialBtn.setAttribute('data-score-tab', 'special');
+            specialBtn.setAttribute('data-i18n', 'ui.scores.tab_special_victory');
+            specialBtn.textContent = (window.i18n ? window.i18n.t('ui.scores.tab_special_victory') : null) || '🎯 勝利進度';
+            if (histBtn) tabBar.insertBefore(specialBtn, histBtn);
+            else tabBar.appendChild(specialBtn);
+        }
+
+        if (!panel.querySelector('#score-tab-content-special')) {
+            const histPane = panel.querySelector('#score-tab-content-history');
+            const specialPane = document.createElement('div');
+            specialPane.id = 'score-tab-content-special';
+            specialPane.className = 'score-tab-content';
+            specialPane.style.display = 'none';
+            const meterEl = document.createElement('div');
+            meterEl.id = 'score-special-victory-meter';
+            meterEl.className = 'score-special-meter-panel';
+            specialPane.appendChild(meterEl);
+            if (histPane) panel.insertBefore(specialPane, histPane);
+            else panel.appendChild(specialPane);
+        }
+
+        const standingsPane = panel.querySelector('#score-tab-content-standings');
+        if (standingsPane && !standingsPane.querySelector('#score-special-victory-mini')) {
+            const miniBar = document.createElement('div');
+            miniBar.id = 'score-special-victory-mini';
+            miniBar.className = 'score-special-mini-bar';
+            standingsPane.insertBefore(miniBar, standingsPane.firstChild);
+        }
+    });
+
     bindScoreTabs();
 
     // 1. 渲染即時總分榜 (score-list)
@@ -732,6 +775,100 @@ function renderScorePanel(gameState) {
         });
         container.appendChild(roundsWrapper);
     });
+
+    // 3. 渲染特殊勝利進度計 (mini 摘要條與完整面板)
+    renderSpecialVictoryScoreMeter(gameState);
+}
+
+// ✅ 渲染積分頁中的特殊勝利進度計 (mini 摘要條與獨立詳情面板)
+function renderSpecialVictoryScoreMeter(gameState) {
+    if (!gameState || !Array.isArray(gameState.players)) return;
+    const t = (key, params) => (window.i18n ? window.i18n.t(key, params) : null);
+    const currentMode = gameState.gameMode || (typeof getGameMode === 'function' ? getGameMode() : (gameState.players.length === 3 ? '3P' : '5P'));
+
+    // 1. 渲染即時總分頁的 mini pill 摘要條 (#score-special-victory-mini)
+    const miniBars = document.querySelectorAll('#score-special-victory-mini');
+    miniBars.forEach(bar => {
+        if (currentMode === '3P') {
+            const aliveCount = gameState.players.filter(p => !p.isEjected).length;
+            const total = gameState.players.length;
+            const label3p = t('ui.scores.mini_3p_survivors') || '生還';
+            bar.innerHTML = `
+                <div class="score-mini-pill mode-3p" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
+                    <span class="mini-pill-icon">⚙️</span>
+                    <span class="mini-pill-label">3P ${label3p}</span>
+                    <span class="mini-pill-val ${aliveCount === total ? 'achieved' : ''}">${aliveCount}/${total}</span>
+                </div>
+            `;
+        } else {
+            // 5P: 狩獵 X/3, 記憶 X/12, 時之惡 X⚙/已逐出
+            const timeDemons = gameState.players.filter(p => p.type === '時魔');
+            const totalDemons = timeDemons.length || 3;
+            const ejectedCount = timeDemons.filter(p => p.hasEverBeenEjected).length;
+            const isHuntComplete = (totalDemons > 0 && ejectedCount >= totalDemons);
+
+            let lockedCount = 0;
+            if (Array.isArray(gameState.clockFace)) {
+                gameState.clockFace.forEach(spot => {
+                    if (Array.isArray(spot.cards)) {
+                        lockedCount += spot.cards.filter(c => c.isPrecious && c.isLocked).length;
+                    }
+                });
+            }
+            const isLockComplete = (lockedCount >= 12);
+
+            const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+            const isSinEjected = sinPlayer ? (sinPlayer.isEjected || sinPlayer.hasEverBeenEjected) : false;
+
+            const labelHunt = t('ui.scores.mini_hunt') || '狩獵';
+            const labelLock = t('ui.scores.mini_lock') || '記憶';
+            const labelSin = t('ui.scores.mini_sin') || '時之惡';
+            const tagSinEjected = t('ui.scores.mini_sin_ejected') || '已逐出';
+
+            bar.innerHTML = `
+                <div class="score-mini-pill demon-hunt" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
+                    <span class="mini-pill-icon">😈</span>
+                    <span class="mini-pill-label">${labelHunt}</span>
+                    <span class="mini-pill-val ${isHuntComplete ? 'achieved' : ''}">${ejectedCount}/${totalDemons}</span>
+                </div>
+                <div class="score-mini-pill curse-lock" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
+                    <span class="mini-pill-icon">🔒</span>
+                    <span class="mini-pill-label">${labelLock}</span>
+                    <span class="mini-pill-val ${isLockComplete ? 'achieved' : ''}">${lockedCount}/12</span>
+                </div>
+                <div class="score-mini-pill time-demon" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
+                    <span class="mini-pill-icon">⚔️</span>
+                    <span class="mini-pill-label">${labelSin}</span>
+                    <span class="mini-pill-val ${isSinEjected ? 'achieved' : ''}">${isSinEjected ? tagSinEjected : `${sinPlayer ? sinPlayer.gearCards : 0}⚙`}</span>
+                </div>
+            `;
+        }
+
+        // 綁定點擊切換至 special tab
+        if (!bar._bound) {
+            bar._bound = true;
+            bar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const parentPanel = bar.closest('.score-panel');
+                if (parentPanel) {
+                    const btn = parentPanel.querySelector('[data-score-tab="special"]');
+                    if (btn) btn.click();
+                }
+            });
+        }
+    });
+
+    // 2. 渲染獨立的特殊勝利進度分頁 (#score-special-victory-meter)
+    const fullMeters = document.querySelectorAll('#score-special-victory-meter');
+    const renderFn = (typeof renderSpecialVictoryProgress === 'function')
+        ? renderSpecialVictoryProgress
+        : (typeof window !== 'undefined' && typeof window.renderSpecialVictoryProgress === 'function' ? window.renderSpecialVictoryProgress : null);
+
+    if (renderFn) {
+        fullMeters.forEach(meterContainer => {
+            renderFn(gameState, meterContainer);
+        });
+    }
 }
 
 
@@ -3577,5 +3714,8 @@ if (typeof window !== 'undefined') {
     window.renderDiscardPileModal = renderDiscardPileModal;
     window.getTopDiscardCard = getTopDiscardCard;
     window.getAllPlayedCardsInCurrentGameRound = getAllPlayedCardsInCurrentGameRound;
+    window.renderScorePanel = renderScorePanel;
+    window.renderSpecialVictoryScoreMeter = renderSpecialVictoryScoreMeter;
+    window.bindScoreTabs = bindScoreTabs;
 }
 

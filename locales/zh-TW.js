@@ -106,10 +106,17 @@
             },
             scores: {
                 tab_standings: '🏆 即時總分',
+                tab_special_victory: '🎯 勝利進度',
                 tab_history: '📜 得分歷程',
                 round_summary: '第 {round} 局結算',
                 empty_title: '第 1 局進行中',
-                empty_desc: '每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。'
+                empty_desc: '每局結算後，此處將記錄各角色的當局得分、逐出狀態與累計分數變化。',
+                mini_hunt: '狩獵',
+                mini_lock: '記憶',
+                mini_sin: '時之惡',
+                mini_sin_ejected: '已逐出',
+                mini_3p_survivors: '生還',
+                view_details: '點擊查看特殊勝利詳情'
             },
             settings: {
                 title: '⚙️ 遊戲設定',

@@ -223,10 +223,15 @@
 								<div id="score-panel" class="log-side-info score-panel">
 									<div class="score-tab-bar">
 										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
+										<button type="button" id="tab-score-special" class="score-tab-btn" data-score-tab="special" data-i18n="ui.scores.tab_special_victory">🎯 勝利進度</button>
 										<button type="button" id="tab-score-history" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
 									</div>
 									<div id="score-tab-content-standings" class="score-tab-content active">
+										<div id="score-special-victory-mini" class="score-special-mini-bar"></div>
 										<div id="score-list"></div>
+									</div>
+									<div id="score-tab-content-special" class="score-tab-content" style="display: none;">
+										<div id="score-special-victory-meter" class="score-special-meter-panel"></div>
 									</div>
 									<div id="score-tab-content-history" class="score-tab-content" style="display: none;">
 										<div id="score-history-list"></div>
