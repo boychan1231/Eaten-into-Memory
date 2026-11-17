@@ -128,7 +128,14 @@
                 ai_difficulty_easy: '簡單 (原始基礎行為)',
                 ai_difficulty_desc: '「一般」具備進化目標渴求與長線資源規劃；「簡單」維持原版基礎避險出牌。',
                 sequential_effects: '特效依序播放（逐一發生）',
-                sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。'
+                sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。',
+                custom_font_title: '🔤 自訂字型 (即時套用)',
+                custom_font_upload_btn: '📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: '🔄 還原預設字型',
+                custom_font_status_default: '使用預設字型',
+                custom_font_status_applied: '已即時套用字型：{name}',
+                custom_font_status_error: '❌ 字型載入失敗，請確認檔案格式',
+                custom_font_preview_text: '蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針'
             },
             hints: {
                 drag_to_play: '⚡ 放開以出牌',
@@ -283,7 +290,8 @@
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者提示：</strong>請優先挑選【★ 珍貴卡】，永久鎖定 12 張珍貴小時卡以避免受到 -999 分懲罰</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊加分</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
-            role_progress_sin: '特殊加分：已吞噬時魔 {count}/3 位',
+            role_progress_sin: '特殊加分：未吞噬【{targets}】（已吞噬 {count}/3 位）',
+            role_progress_sin_complete: '特殊加分：全場時魔已全數吞噬！🎉',
             role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化'
         },
         logs: {

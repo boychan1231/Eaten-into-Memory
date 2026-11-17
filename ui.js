@@ -2024,4 +2024,140 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 };
 
 // ----------------------------------------
+// 自訂字型上傳與即時反映模組
+// ----------------------------------------
+
+function initCustomFontUploader() {
+    const uploadBtn = document.getElementById('font-upload-btn');
+    const uploadInput = document.getElementById('font-upload-input');
+    const resetBtn = document.getElementById('font-reset-btn');
+    const statusEl = document.getElementById('font-upload-status');
+
+    if (!uploadInput) return;
+
+    const FONT_NAME = 'CustomGameFont';
+    const STYLE_ID = 'custom-font-style-sheet';
+    const STORAGE_KEY = 'eaten_custom_font';
+
+    const injectCustomFontStyle = () => {
+        let styleEl = document.getElementById(STYLE_ID);
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = STYLE_ID;
+            document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `
+            body, button, input, select, textarea, .tab-btn, .modal-content, .drawer, .card-name, .game-header, .hud-title, .status-bar, .score-container, .role-badge, .log-item, .player-name, .story-text, .tutorial-pointer-bubble, #font-preview-box {
+                font-family: '${FONT_NAME}', 'Noto Sans TC', Inter, -apple-system, sans-serif !important;
+            }
+        `;
+        document.documentElement.style.setProperty('--font-main', `'${FONT_NAME}', sans-serif`);
+    };
+
+    const removeCustomFontStyle = () => {
+        const styleEl = document.getElementById(STYLE_ID);
+        if (styleEl) styleEl.remove();
+        document.documentElement.style.removeProperty('--font-main');
+    };
+
+    const applyFontBuffer = async (buffer, fontFileName, saveToStorage = false) => {
+        try {
+            const fontFace = new FontFace(FONT_NAME, buffer);
+            const loadedFace = await fontFace.load();
+            document.fonts.add(loadedFace);
+            injectCustomFontStyle();
+
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_applied', { name: fontFileName })
+                    : `已即時套用字型：${fontFileName}`;
+                statusEl.style.color = '#4cd137';
+            }
+            if (resetBtn) resetBtn.style.display = 'inline-block';
+
+            if (saveToStorage) {
+                try {
+                    // 若小於 3MB 則快取至 localStorage
+                    if (buffer.byteLength < 3 * 1024 * 1024) {
+                        let binary = '';
+                        const bytes = new Uint8Array(buffer);
+                        const len = bytes.byteLength;
+                        for (let i = 0; i < len; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        const base64 = btoa(binary);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ name: fontFileName, data: base64 }));
+                    }
+                } catch (_) {
+                    // 若超過配額則略過快取，僅在當前頁面即時套用
+                }
+            }
+        } catch (err) {
+            console.error('[Font] 套用自訂字型失敗：', err);
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_error')
+                    : '❌ 字型載入失敗，請確認檔案格式';
+                statusEl.style.color = '#ff6b6b';
+            }
+        }
+    };
+
+    // 嘗試從 localStorage 恢復自訂字型
+    try {
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.data && parsed.name) {
+                const binaryStr = atob(parsed.data);
+                const len = binaryStr.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                applyFontBuffer(bytes.buffer, parsed.name, false);
+            }
+        }
+    } catch (_) {}
+
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', () => {
+            uploadInput.click();
+        });
+    }
+
+    uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const buffer = event.target.result;
+            applyFontBuffer(buffer, file.name, true);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            removeCustomFontStyle();
+            try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+            uploadInput.value = '';
+            resetBtn.style.display = 'none';
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_default')
+                    : '使用預設字型';
+                statusEl.style.color = '#888';
+            }
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCustomFontUploader);
+} else {
+    initCustomFontUploader();
+}
+
 

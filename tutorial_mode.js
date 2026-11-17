@@ -651,10 +651,23 @@
                         ? window.i18n.t('tutorial.role_progress_scz', { count: lockedCount, round: gameState.gameRound })
                         : `當前鐘面鎖定珍貴卡：${lockedCount}/12 張（第 ${gameState.gameRound} 局）`) + '</span>';
                 } else if (roleKey === 'sin') {
-                    const ejectedCount = gameState.players ? gameState.players.filter(p => p.type === '時魔' && p.hasEverBeenEjected).length : 0;
-                    roleProgressHint = '<br><span style="color:#ff6b6b;">' + (window.i18n
-                        ? window.i18n.t('tutorial.role_progress_sin', { count: ejectedCount })
-                        : `特殊大勝進度：已吞噬時魔 ${ejectedCount}/3 位`) + '</span>';
+                    const timeDemons = gameState.players ? gameState.players.filter(p => p.type === '時魔') : [];
+                    const unejectedDemons = timeDemons.filter(p => !p.hasEverBeenEjected);
+                    const ejectedCount = timeDemons.length - unejectedDemons.length;
+                    const isAllEjected = timeDemons.length > 0 && unejectedDemons.length === 0;
+
+                    let sinProgressText = '';
+                    if (isAllEjected) {
+                        sinProgressText = window.i18n
+                            ? window.i18n.t('tutorial.role_progress_sin_complete')
+                            : '特殊大勝進度：全場時魔已全數吞噬！🎉 (達成特殊大勝)';
+                    } else {
+                        const targetNames = unejectedDemons.map(p => p.roleCard || p.name).join('、');
+                        sinProgressText = window.i18n
+                            ? window.i18n.t('tutorial.role_progress_sin', { count: ejectedCount, targets: targetNames })
+                            : `特殊大勝進度：未吞噬【${targetNames}】（已吞噬 ${ejectedCount}/3 位）`;
+                    }
+                    roleProgressHint = '<br><span style="color:#ff6b6b;">' + sinProgressText + '</span>';
                 } else if (roleKey === 'young') {
                     const bagCount = (humanPlayer && Array.isArray(humanPlayer.hourCards)) ? humanPlayer.hourCards.length : 0;
                     roleProgressHint = '<br><span style="color:#a8f0c6;">' + (window.i18n

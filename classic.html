@@ -558,6 +558,23 @@
 						<hr class="settings-divider">
 
 						<div class="setting-item">
+							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+							</div>
+							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
+								使用預設字型
+							</div>
+							<div id="font-preview-box" style="margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px dashed #555; border-radius: 6px; font-size: 0.95rem; color: #eee;" data-i18n="ui.settings.custom_font_preview_text">
+								蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針
+							</div>
+						</div>
+
+						<hr class="settings-divider">
+
+						<div class="setting-item">
 							<h4>資訊</h4>
 							<p class="setting-muted">
 								Build Ver: 2026.03.27<br>

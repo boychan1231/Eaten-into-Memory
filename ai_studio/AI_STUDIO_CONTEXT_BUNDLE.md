@@ -15,19 +15,19 @@
 7. `logger.js` (1.5 KB)
 8. `audio.js` (14.3 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (29.0 KB)
-11. `locales/en-US.js` (26.7 KB)
+10. `locales/zh-TW.js` (29.7 KB)
+11. `locales/en-US.js` (27.4 KB)
 12. `abilities.js` (12.0 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (100.1 KB)
 15. `ui_modals.js` (4.6 KB)
 16. `ui_components.js` (165.1 KB)
-17. `tutorial_mode.js` (46.9 KB)
-18. `ui.js` (87.3 KB)
+17. `tutorial_mode.js` (47.7 KB)
+18. `ui.js` (92.4 KB)
 19. `modern_board.js` (68.8 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (50.4 KB)
-22. `classic.html` (38.3 KB)
+21. `index.html` (51.6 KB)
+22. `classic.html` (39.5 KB)
 23. `modern.css` (120.7 KB)
 24. `style.css` (102.7 KB)
 25. `locales/stories_data.js` (15.2 KB)
@@ -1580,7 +1580,14 @@ window.gameVoice = gameVoice;
                 ai_difficulty_easy: '簡單 (原始基礎行為)',
                 ai_difficulty_desc: '「一般」具備進化目標渴求與長線資源規劃；「簡單」維持原版基礎避險出牌。',
                 sequential_effects: '特效依序播放（逐一發生）',
-                sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。'
+                sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。',
+                custom_font_title: '🔤 自訂字型 (即時套用)',
+                custom_font_upload_btn: '📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: '🔄 還原預設字型',
+                custom_font_status_default: '使用預設字型',
+                custom_font_status_applied: '已即時套用字型：{name}',
+                custom_font_status_error: '❌ 字型載入失敗，請確認檔案格式',
+                custom_font_preview_text: '蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針'
             },
             hints: {
                 drag_to_play: '⚡ 放開以出牌',
@@ -1735,7 +1742,8 @@ window.gameVoice = gameVoice;
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
-            role_progress_sin: '特殊大勝進度：已吞噬時魔 {count}/3 位',
+            role_progress_sin: '特殊大勝進度：未吞噬【{targets}】（已吞噬 {count}/3 位）',
+            role_progress_sin_complete: '特殊大勝進度：全場時魔已全數吞噬！🎉 (達成特殊大勝)',
             role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化！'
         },
         logs: {
@@ -1975,7 +1983,14 @@ window.gameVoice = gameVoice;
                 ai_difficulty_easy: 'Easy (Legacy Baseline)',
                 ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
-                sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.'
+                sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
+                custom_font_title: '🔤 Custom Font (Live Preview)',
+                custom_font_upload_btn: '📁 Upload Font File (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: '🔄 Reset to Default Font',
+                custom_font_status_default: 'Using default system font',
+                custom_font_status_applied: 'Live custom font applied: {name}',
+                custom_font_status_error: '❌ Failed to load font. Please check the file format.',
+                custom_font_preview_text: 'Eaten into Memory 0123456789 ── Gears & Clocks'
             },
             hints: {
                 drag_to_play: '⚡ Release to play',
@@ -2130,7 +2145,8 @@ window.gameVoice = gameVoice;
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> Before playing cards, activate 【Sin\'s Pull (2 MP)】to penalize adjacent demons and work towards your 3-demon devouring Special Victory!</span>',
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
-            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Devoured',
+            role_progress_sin: 'Special Victory Progress: Not yet devoured: [{targets}] ({count}/3 devoured)',
+            role_progress_sin_complete: 'Special Victory Progress: All 3 Time Demons have been devoured! 🎉',
             role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!'
         },
         logs: {
@@ -9956,10 +9972,23 @@ if (typeof window !== 'undefined') {
                         ? window.i18n.t('tutorial.role_progress_scz', { count: lockedCount, round: gameState.gameRound })
                         : `當前鐘面鎖定珍貴卡：${lockedCount}/12 張（第 ${gameState.gameRound} 局）`) + '</span>';
                 } else if (roleKey === 'sin') {
-                    const ejectedCount = gameState.players ? gameState.players.filter(p => p.type === '時魔' && p.hasEverBeenEjected).length : 0;
-                    roleProgressHint = '<br><span style="color:#ff6b6b;">' + (window.i18n
-                        ? window.i18n.t('tutorial.role_progress_sin', { count: ejectedCount })
-                        : `特殊大勝進度：已吞噬時魔 ${ejectedCount}/3 位`) + '</span>';
+                    const timeDemons = gameState.players ? gameState.players.filter(p => p.type === '時魔') : [];
+                    const unejectedDemons = timeDemons.filter(p => !p.hasEverBeenEjected);
+                    const ejectedCount = timeDemons.length - unejectedDemons.length;
+                    const isAllEjected = timeDemons.length > 0 && unejectedDemons.length === 0;
+
+                    let sinProgressText = '';
+                    if (isAllEjected) {
+                        sinProgressText = window.i18n
+                            ? window.i18n.t('tutorial.role_progress_sin_complete')
+                            : '特殊大勝進度：全場時魔已全數吞噬！🎉 (達成特殊大勝)';
+                    } else {
+                        const targetNames = unejectedDemons.map(p => p.roleCard || p.name).join('、');
+                        sinProgressText = window.i18n
+                            ? window.i18n.t('tutorial.role_progress_sin', { count: ejectedCount, targets: targetNames })
+                            : `特殊大勝進度：未吞噬【${targetNames}】（已吞噬 ${ejectedCount}/3 位）`;
+                    }
+                    roleProgressHint = '<br><span style="color:#ff6b6b;">' + sinProgressText + '</span>';
                 } else if (roleKey === 'young') {
                     const bagCount = (humanPlayer && Array.isArray(humanPlayer.hourCards)) ? humanPlayer.hourCards.length : 0;
                     roleProgressHint = '<br><span style="color:#a8f0c6;">' + (window.i18n
@@ -12198,6 +12227,142 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 };
 
 // ----------------------------------------
+// 自訂字型上傳與即時反映模組
+// ----------------------------------------
+
+function initCustomFontUploader() {
+    const uploadBtn = document.getElementById('font-upload-btn');
+    const uploadInput = document.getElementById('font-upload-input');
+    const resetBtn = document.getElementById('font-reset-btn');
+    const statusEl = document.getElementById('font-upload-status');
+
+    if (!uploadInput) return;
+
+    const FONT_NAME = 'CustomGameFont';
+    const STYLE_ID = 'custom-font-style-sheet';
+    const STORAGE_KEY = 'eaten_custom_font';
+
+    const injectCustomFontStyle = () => {
+        let styleEl = document.getElementById(STYLE_ID);
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = STYLE_ID;
+            document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `
+            body, button, input, select, textarea, .tab-btn, .modal-content, .drawer, .card-name, .game-header, .hud-title, .status-bar, .score-container, .role-badge, .log-item, .player-name, .story-text, .tutorial-pointer-bubble, #font-preview-box {
+                font-family: '${FONT_NAME}', 'Noto Sans TC', Inter, -apple-system, sans-serif !important;
+            }
+        `;
+        document.documentElement.style.setProperty('--font-main', `'${FONT_NAME}', sans-serif`);
+    };
+
+    const removeCustomFontStyle = () => {
+        const styleEl = document.getElementById(STYLE_ID);
+        if (styleEl) styleEl.remove();
+        document.documentElement.style.removeProperty('--font-main');
+    };
+
+    const applyFontBuffer = async (buffer, fontFileName, saveToStorage = false) => {
+        try {
+            const fontFace = new FontFace(FONT_NAME, buffer);
+            const loadedFace = await fontFace.load();
+            document.fonts.add(loadedFace);
+            injectCustomFontStyle();
+
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_applied', { name: fontFileName })
+                    : `已即時套用字型：${fontFileName}`;
+                statusEl.style.color = '#4cd137';
+            }
+            if (resetBtn) resetBtn.style.display = 'inline-block';
+
+            if (saveToStorage) {
+                try {
+                    // 若小於 3MB 則快取至 localStorage
+                    if (buffer.byteLength < 3 * 1024 * 1024) {
+                        let binary = '';
+                        const bytes = new Uint8Array(buffer);
+                        const len = bytes.byteLength;
+                        for (let i = 0; i < len; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        const base64 = btoa(binary);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ name: fontFileName, data: base64 }));
+                    }
+                } catch (_) {
+                    // 若超過配額則略過快取，僅在當前頁面即時套用
+                }
+            }
+        } catch (err) {
+            console.error('[Font] 套用自訂字型失敗：', err);
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_error')
+                    : '❌ 字型載入失敗，請確認檔案格式';
+                statusEl.style.color = '#ff6b6b';
+            }
+        }
+    };
+
+    // 嘗試從 localStorage 恢復自訂字型
+    try {
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.data && parsed.name) {
+                const binaryStr = atob(parsed.data);
+                const len = binaryStr.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                applyFontBuffer(bytes.buffer, parsed.name, false);
+            }
+        }
+    } catch (_) {}
+
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', () => {
+            uploadInput.click();
+        });
+    }
+
+    uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const buffer = event.target.result;
+            applyFontBuffer(buffer, file.name, true);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            removeCustomFontStyle();
+            try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+            uploadInput.value = '';
+            resetBtn.style.display = 'none';
+            if (statusEl) {
+                statusEl.textContent = window.i18n
+                    ? window.i18n.t('ui.settings.custom_font_status_default')
+                    : '使用預設字型';
+                statusEl.style.color = '#888';
+            }
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCustomFontUploader);
+} else {
+    initCustomFontUploader();
+}
+
 
 
 `````
@@ -15505,6 +15670,23 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 						<hr class="settings-divider">
 
 						<div class="setting-item">
+							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+							</div>
+							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
+								使用預設字型
+							</div>
+							<div id="font-preview-box" style="margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px dashed #555; border-radius: 6px; font-size: 0.95rem; color: #eee;" data-i18n="ui.settings.custom_font_preview_text">
+								蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針
+							</div>
+						</div>
+
+						<hr class="settings-divider">
+
+						<div class="setting-item">
 							<h4>資訊</h4>
 							<p class="setting-muted">
 								Build Ver: 2026.03.27<br>
@@ -16308,6 +16490,23 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 							</label>
 							<div class="setting-hint" style="margin-top: 5px; font-size: 0.85rem; color: #888;">
 								開啟後人類玩家第 1 局起始手牌固定為 1,2,3,4,5,12,36,56,57,58,59,60。其他角色照常隨機分配。
+							</div>
+						</div>
+
+						<hr class="settings-divider">
+
+						<div class="setting-item">
+							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+							</div>
+							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
+								使用預設字型
+							</div>
+							<div id="font-preview-box" style="margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px dashed #555; border-radius: 6px; font-size: 0.95rem; color: #eee;" data-i18n="ui.settings.custom_font_preview_text">
+								蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針
 							</div>
 						</div>
 

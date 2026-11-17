@@ -128,7 +128,14 @@
                 ai_difficulty_easy: 'Easy (Legacy Baseline)',
                 ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
-                sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.'
+                sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
+                custom_font_title: '🔤 Custom Font (Live Preview)',
+                custom_font_upload_btn: '📁 Upload Font File (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: '🔄 Reset to Default Font',
+                custom_font_status_default: 'Using default system font',
+                custom_font_status_applied: 'Live custom font applied: {name}',
+                custom_font_status_error: '❌ Failed to load font. Please check the file format.',
+                custom_font_preview_text: 'Eaten into Memory 0123456789 ── Gears & Clocks'
             },
             hints: {
                 drag_to_play: '⚡ Release to play',
@@ -283,7 +290,8 @@
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>Time Evil Tip:</strong> Before playing cards, activate 【Sin\'s Pull (2 MP)】to penalize adjacent demons and work towards your 3-demon devouring Special Victory!</span>',
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
-            role_progress_sin: 'Special Victory Progress: {count}/3 Demons Devoured',
+            role_progress_sin: 'Special Victory Progress: Not yet devoured: [{targets}] ({count}/3 devoured)',
+            role_progress_sin_complete: 'Special Victory Progress: All 3 Time Demons have been devoured! 🎉',
             role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!'
         },
         logs: {
