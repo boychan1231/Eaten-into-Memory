@@ -1669,10 +1669,10 @@ function createGearChainHtml(count, isCompact = false, idVal = '') {
 
     const compactModifier = isCompact ? 'mech-gear-gauge--compact' : '';
     const dangerClass = (gearCount <= 1) ? 'is-danger' : '';
-    const labelText = isCompact ? '齒輪' : '生命齒輪';
+    const labelText = 'GP';
 
     return `
-        <div class="mech-gear-gauge ${compactModifier} ${dangerClass}" title="機芯生命齒輪：${gearCount}">
+        <div class="mech-gear-gauge ${compactModifier} ${dangerClass}" title="機芯 GP：${gearCount}">
             <span class="mech-gauge-label">${labelText}</span>
             <div class="mech-gear-track">
                 ${cogsHtml}
@@ -2207,7 +2207,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-score', String(humanPlayer.score));
 
-    // 渲染立體機械生命齒輪鏈與發條 MP 管
+    // 渲染立體機械 GP 鏈與發條 MP 管
     const gearChip = document.querySelector('.human-top-bar .resource-chip--gear');
     if (gearChip) {
         gearChip.classList.add('has-mech-gauge');

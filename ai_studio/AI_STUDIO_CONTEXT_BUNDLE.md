@@ -7244,10 +7244,10 @@ function createGearChainHtml(count, isCompact = false, idVal = '') {
 
     const compactModifier = isCompact ? 'mech-gear-gauge--compact' : '';
     const dangerClass = (gearCount <= 1) ? 'is-danger' : '';
-    const labelText = isCompact ? '齒輪' : '生命齒輪';
+    const labelText = 'GP';
 
     return `
-        <div class="mech-gear-gauge ${compactModifier} ${dangerClass}" title="機芯生命齒輪：${gearCount}">
+        <div class="mech-gear-gauge ${compactModifier} ${dangerClass}" title="機芯 GP：${gearCount}">
             <span class="mech-gauge-label">${labelText}</span>
             <div class="mech-gear-track">
                 ${cogsHtml}
@@ -7782,7 +7782,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-score', String(humanPlayer.score));
 
-    // 渲染立體機械生命齒輪鏈與發條 MP 管
+    // 渲染立體機械 GP 鏈與發條 MP 管
     const gearChip = document.querySelector('.human-top-bar .resource-chip--gear');
     if (gearChip) {
         gearChip.classList.add('has-mech-gauge');
@@ -15115,9 +15115,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 								</div>
 							</div>
 							
-							<div class="resource-chip resource-chip--gear has-mech-gauge" title="機芯生命齒輪鏈">
-								<div class="mech-gear-gauge is-danger" title="機芯生命齒輪：0">
-									<span class="mech-gauge-label">生命齒輪</span>
+							<div class="resource-chip resource-chip--gear has-mech-gauge" title="機芯 GP 鏈">
+								<div class="mech-gear-gauge is-danger" title="機芯 GP：0">
+									<span class="mech-gauge-label">GP</span>
 									<div class="mech-gear-track">
 										<span class="gear-cog gear-cog--shattered" title="機芯停擺 / 齒輪崩毀">
 											<svg viewBox="0 0 24 24" class="gear-cog-svg shattered" aria-hidden="true">
@@ -15942,9 +15942,9 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
 								</div>
 							</div>
 							
-							<div class="resource-chip resource-chip--gear has-mech-gauge" title="機芯生命齒輪鏈">
-								<div class="mech-gear-gauge is-danger" title="機芯生命齒輪：0">
-									<span class="mech-gauge-label">生命齒輪</span>
+							<div class="resource-chip resource-chip--gear has-mech-gauge" title="機芯 GP 鏈">
+								<div class="mech-gear-gauge is-danger" title="機芯 GP：0">
+									<span class="mech-gauge-label">GP</span>
 									<div class="mech-gear-track">
 										<span class="gear-cog gear-cog--shattered" title="機芯停擺 / 齒輪崩毀">
 											<svg viewBox="0 0 24 24" class="gear-cog-svg shattered" aria-hidden="true">
