@@ -2253,17 +2253,6 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
         humanRoleEl.innerHTML = `${youAreLabel}${roleName} ${shieldHtml}`;
     }
 
-    const replayBtn = document.getElementById('btn-replay-tutorial');
-    if (replayBtn && !replayBtn._bound) {
-        replayBtn._bound = true;
-        replayBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (window.TutorialModeManager && typeof window.TutorialModeManager.replayCurrentTutorial === 'function') {
-                window.TutorialModeManager.replayCurrentTutorial(gameState);
-            }
-        });
-    }
-
     setText('h-hand-count', String(humanPlayer.hand.length));
     setText('h-score', String(humanPlayer.score));
 

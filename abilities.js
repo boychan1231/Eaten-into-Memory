@@ -156,6 +156,7 @@ function attemptRoleUpgrade(player, gameState) {
     // 4. 執行進化
     const oldRole = player.roleCard;
     player.roleCard = targetRole;
+    player.hasEvolvedThisGame = true;
 
     // 解析編號 (維持原邏輯)
     const name = String(player.name || '').trim();
