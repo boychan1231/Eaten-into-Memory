@@ -42,6 +42,7 @@ function stage1SyntaxCheck() {
         'audio.js',
         'abilities.js',
         'game_setup.js',
+        'ai_engine.js',
         'game.js',
         'ui_modals.js',
         'ui_components.js',
@@ -56,7 +57,6 @@ function stage1SyntaxCheck() {
     ];
 
     const optionalSplitFiles = [
-        'ai_engine.js',
         'game_resolution.js',
         'ui_animations.js',
         'ui_panels.js',
@@ -129,6 +129,8 @@ function stage2LocaleAndFormatCheck() {
     const bannedWordRe = new RegExp('\\u512a\\u5316');
     const checkList = [
         'abilities.js',
+        'ai_engine.js',
+        'game.js',
         'tutorial_mode.js',
         'ui_components.js',
         'ui.js',
@@ -568,7 +570,7 @@ function stage4HeadlessStressTest() {
             renderGameOverPanel: () => {}
         };
         vm.createContext(ctx);
-        for (const rel of ['config.js', 'logger.js', 'abilities.js', 'game_setup.js', 'game.js']) {
+        for (const rel of ['config.js', 'logger.js', 'abilities.js', 'game_setup.js', 'ai_engine.js', 'game.js']) {
             vm.runInContext(readProjectFile(rel), ctx);
         }
 
@@ -642,6 +644,7 @@ function stage5HtmlLoadOrderCheck() {
         'config.js',
         'abilities.js',
         'game_setup.js',
+        'ai_engine.js',
         'game.js',
         'ui_components.js',
         'tutorial_mode.js',

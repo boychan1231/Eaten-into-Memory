@@ -30,6 +30,7 @@
 | 模組類別 | 核心檔案路徑 | 代理檢索職責範圍 |
 | :--- | :--- | :--- |
 | **狀態機與規則** | [`game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game.js), [`game_setup.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game_setup.js) | 局次回合推進、比牌暗拍、齒輪扣除、吞噬判定、飢餓機制、局末結算快照。 |
+| **AI 決策引擎** | [`ai_engine.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ai_engine.js) | 3P/5P AI 出牌前異能、分鐘卡出牌、小時卡挑選與放牌後異能決策。 |
 | **異能與進化** | [`abilities.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js) | 角色專屬主動/被動異能、幼體時魔 4 大進化配方、指針身份唯一性維護。 |
 | **UI 與互動** | [`ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui.js), [`ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_components.js), [`ui_modals.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_modals.js) | 手牌拖放、戰鬥浮動跳字、抽屜面板、彈窗焦點管理、自動倒數計時器。 |
 | **鐘面繪製** | [`modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_board.js) | PixiJS 鐘面刻度、角色棋子 Token、高危光圈、視窗縮放適配。 |
