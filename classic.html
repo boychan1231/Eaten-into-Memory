@@ -5,10 +5,11 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Eaten into Memory</title>
-		<!-- 引入 Google Fonts: Noto Sans TC -->
+		<!-- 引入 Google Fonts: Noto Sans TC, Cinzel, Playfair Display & Material Symbols -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 	<link rel="stylesheet" href="style.css">
 </head>
 
@@ -18,7 +19,7 @@
 		<header>
 			<div class="tab-nav">
 				<button class="tab-btn active" data-target="game-content">遊戲 (經典 DOM)</button>
-				<a href="index.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; color:#7c8cff; border-color:rgba(124,140,255,0.4);">🔮 現代 PixiJS 版</a>
+				<a href="index.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; color:#7c8cff; border-color:rgba(124,140,255,0.4);"><span class="material-symbols-outlined icon-inline">auto_awesome</span> 現代 PixiJS 版</a>
 				<button class="tab-btn" data-target="rules-content">規則</button>
 				<button class="tab-btn" data-target="settings-content">設定</button>
 			</div>
@@ -26,7 +27,7 @@
 			<div class="game-status">
 				<div class="header-audio-controls">
 					<button id="header-mute-btn" class="header-audio-btn" type="button" title="聲音：開啟中（點擊靜音）" aria-label="聲音開關">
-						<span class="audio-icon">🔊</span>
+						<span class="audio-icon material-symbols-outlined">volume_up</span>
 						<span class="audio-state">開</span>
 					</button>
 				</div>
@@ -39,7 +40,7 @@
 				<div class="main-area">
 					<div class="log-section game-panel">
 						<details id="log-panel-details" class="classic-log-details">
-							<summary class="log-section-title classic-log-summary" data-i18n="ui.drawers.log">📜 遊戲日誌</summary>
+							<summary class="log-section-title classic-log-summary"><span class="material-symbols-outlined icon-inline">edit_note</span><span data-i18n="ui.drawers.log">遊戲日誌</span></summary>
 							<div id="game-log-container">
 								<ul id="log-list">
 									<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
@@ -70,26 +71,26 @@
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
 									<span class="step-num">1</span>
-									<span class="step-icon">🎴</span>
+									<span class="step-icon material-symbols-outlined">style</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="reveal">
 									<span class="step-num">2</span>
-									<span class="step-icon">⚔️</span>
+									<span class="step-icon material-symbols-outlined">swords</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="pick">
 									<span class="step-num">3</span>
-									<span class="step-icon">⌛</span>
+									<span class="step-icon material-symbols-outlined">hourglass_bottom</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
 									<span class="step-sub" id="phase-step-pick-sub"></span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="resolve">
 									<span class="step-num">4</span>
-									<span class="step-icon">⚖️</span>
+									<span class="step-icon material-symbols-outlined">balance</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
 								</div>
 							</div>
@@ -132,9 +133,9 @@
 
 						<div id="score-panel" class="log-side-info score-panel">
 							<div class="score-tab-bar">
-								<button type="button" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
-								<button type="button" class="score-tab-btn" data-score-tab="special" data-i18n="ui.scores.tab_special_victory">🎯 勝利進度</button>
-								<button type="button" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
+								<button type="button" class="score-tab-btn active" data-score-tab="standings"><span class="material-symbols-outlined icon-inline">trophy</span><span data-i18n="ui.scores.tab_standings">即時總分</span></button>
+								<button type="button" class="score-tab-btn" data-score-tab="special"><span class="material-symbols-outlined icon-inline">target</span><span data-i18n="ui.scores.tab_special_victory">勝利進度</span></button>
+								<button type="button" class="score-tab-btn" data-score-tab="history"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.scores.tab_history">得分歷程</span></button>
 							</div>
 							<div id="score-tab-content-standings" class="score-tab-content active">
 								<div id="score-special-victory-mini" class="score-special-mini-bar"></div>
@@ -162,7 +163,7 @@
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
 							<button id="btn-replay-tutorial" class="tutorial-replay-btn icon-btn" type="button" title="重新查看當前步驟教學提示" aria-label="教學提示" data-i18n-title="ui.buttons.tutorial_hint_tip">
-								<span class="replay-icon">💡</span>
+								<span class="replay-icon material-symbols-outlined">lightbulb</span>
 								<span class="replay-text" data-i18n="ui.buttons.tutorial_hint">教學提示</span>
 							</button>
 							
@@ -215,7 +216,7 @@
 							<div>收集小時卡：
 								<span id="h-hour">0</span>
 								 
-								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片"><span class="material-symbols-outlined">zoom_in</span></button>
 							</div>
 								<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 1rem; padding: 2px 6px;">⇅ 手牌排序</button>
 						</div>
@@ -229,7 +230,7 @@
 									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看出牌記錄" aria-label="出牌記錄">
 										<div class="discard-pile-stack" id="discard-pile-stack">
 											<div class="discard-card-empty">
-												<span class="discard-empty-icon">📜</span>
+												<span class="discard-empty-icon material-symbols-outlined">history_edu</span>
 												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">出牌記錄</span>
 											</div>
 										</div>
@@ -428,7 +429,7 @@
 
 
 			<div id="settings-content" class="tab-content">
-				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;">⚙️ 遊戲設定</h3>
+				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;"><span class="material-symbols-outlined icon-inline">settings</span><span data-i18n="ui.settings.title">遊戲設定</span></h3>
 
 				<div class="settings-two-column">
 					<div class="settings-column">
@@ -476,7 +477,7 @@
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.ai_difficulty_title">🤖 AI 對戰難度</h4>
+							<h4><span class="material-symbols-outlined icon-inline">smart_toy</span><span data-i18n="ui.settings.ai_difficulty_title">AI 對戰難度</span></h4>
 							<div class="settings-radio-group">
 								<label class="radio-label">
 									<input type="radio" name="ai-difficulty" value="normal" checked>
@@ -495,7 +496,7 @@
 
 					<div class="settings-column">
 						<div class="setting-item">
-							<h4>🔊 音樂/音效設定</h4>
+							<h4><span class="material-symbols-outlined icon-inline">volume_up</span> 音樂/音效設定</h4>
 							<div style="margin-bottom: 20px;">
 								<label class="toggle-switch" style="margin-bottom: 8px; display: flex;">
 									<input type="checkbox" id="bgm-toggle" checked>
@@ -561,11 +562,11 @@
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<h4><span class="material-symbols-outlined icon-inline">font_download</span><span data-i18n="ui.settings.custom_font_title">自訂字型 (即時套用)</span></h4>
 							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
 							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
-								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+								<button type="button" class="btn btn-secondary" id="font-upload-btn"><span class="material-symbols-outlined icon-inline">upload_file</span><span data-i18n="ui.settings.custom_font_upload_btn">上傳字型檔案 (.ttf, .otf, .woff, .woff2)</span></button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;"><span class="material-symbols-outlined icon-inline">restart_alt</span><span data-i18n="ui.settings.custom_font_reset_btn">還原預設字型</span></button>
 							</div>
 							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
 								使用預設字型
@@ -671,7 +672,7 @@
 
 			<div id="seconds-choice-overlay" class="modal-overlay hidden">
 				<div class="modal">
-					<h2 class="modal-title modal-title-seconds">⏱️ 秒針能力：</h2>
+					<h2 class="modal-title modal-title-seconds"><span class="material-symbols-outlined icon-inline">timer</span> 秒針能力：</h2>
 					<p class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
 					<div class="modal-actions">
 						<button id="seconds-choice-a" class="primary seconds-choice-btn">A</button>
@@ -693,7 +694,7 @@
 			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
 				<div class="modal discard-pile-modal">
 					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">📜 出牌記錄</h2>
+					<h2 class="modal-title modal-title-discard"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.discard_pile.modal_title">出牌記錄</span></h2>
 					<div class="discard-pile-meta-bar">
 						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
 						<span id="discard-count-badge" class="discard-meta-chip">已出 0 張</span>
@@ -705,11 +706,11 @@
 					</div>
 					<div id="discard-tab-history" class="discard-tab-content active">
 						<div class="discard-history-section">
-							<div class="discard-section-title">⚔️ 本回合出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">swords</span> 本回合出牌</div>
 							<div id="discard-current-trick-list" class="discard-current-trick-list"></div>
 						</div>
 						<div class="discard-history-section" style="margin-top: 12px;">
-							<div class="discard-section-title">📜 各角色歷史出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">history_edu</span> 各角色歷史出牌</div>
 							<div id="discard-player-history-list" class="discard-player-history-table"></div>
 						</div>
 					</div>
@@ -768,8 +769,8 @@
 					</div>
 
 					<div class="modal-actions game-over-actions">
-						<button id="btn-restart-game" class="primary btn-restart-game">🔄 再玩一局</button>
-						<button id="btn-close-gameover" class="btn-close-gameover">👀 查看盤面</button>
+						<button id="btn-restart-game" class="primary btn-restart-game"><span class="material-symbols-outlined icon-inline">restart_alt</span> 再玩一局</button>
+						<button id="btn-close-gameover" class="btn-close-gameover"><span class="material-symbols-outlined icon-inline">visibility</span> 查看盤面</button>
 					</div>
 				</div>
 			</div>
@@ -779,7 +780,7 @@
 	<!-- 新手教學動態引導氣泡框 -->
 	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
 		<div class="tutorial-tooltip-header">
-			<span class="tutorial-badge">💡 教學指南</span>
+			<span class="tutorial-badge"><span class="material-symbols-outlined icon-inline">lightbulb</span> 教學指南</span>
 			<div class="tutorial-header-actions">
 				<button id="tutorial-mute-btn" class="tutorial-mute-action" type="button" title="關閉教學模式">不再提示</button>
 				<button id="tutorial-close-btn" class="tutorial-close-x" type="button" title="關閉此提示" aria-label="關閉此提示">&times;</button>

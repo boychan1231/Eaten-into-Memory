@@ -939,7 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? '聲音：已關閉（點擊開啟）'
                 : '聲音：開啟中（點擊靜音）';
             const icon = headerMuteBtn.querySelector('.audio-icon');
-            if (icon) icon.textContent = allMuted ? '🔇' : '🔊';
+            if (icon) icon.textContent = allMuted ? 'volume_off' : 'volume_up';
             const state = headerMuteBtn.querySelector('.audio-state');
             if (state) state.textContent = allMuted ? '關' : '開';
         }
@@ -1783,7 +1783,7 @@ function showCardStory(card) {
     const preciousTag = window.i18n ? window.i18n.t('ui.labels.precious', '★ 珍貴') : '★ 珍貴';
     const isPrecious = card.isPrecious ? `<span style="color:#ffd27f;">${preciousTag}</span>` : '';
 
-    titleEl.innerHTML = `📖 ${localizedAge} ${num} ${isPrecious}`;
+    titleEl.innerHTML = `<span class="material-symbols-outlined icon-inline">menu_book</span> ${localizedAge} ${num} ${isPrecious}`;
 
     // 從資料庫取得故事 (支援多語系獨立故事模組)
     const storyText = (typeof window.getHourCardStory === 'function')

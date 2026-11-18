@@ -694,13 +694,13 @@
             const sinMode = gs.sinTargetingMode === 'sin' && !is3P;
             if (is3P) {
                 el.dataset.penaltyMode = 'none';
-                el.innerHTML = `<span class="hud-penalty-icon">🛡️</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">shield</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
             } else if (sinMode) {
                 el.dataset.penaltyMode = 'sin';
-                el.innerHTML = `<span class="hud-penalty-icon">🔥</span><span class="hud-penalty-text">受罰：距離時之惡最近</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">local_fire_department</span><span class="hud-penalty-text">受罰：距離時之惡最近</span>`;
             } else {
                 el.dataset.penaltyMode = 'time';
-                el.innerHTML = `<span class="hud-penalty-icon">⚠️</span><span class="hud-penalty-text">受罰：最高小時值</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">warning</span><span class="hud-penalty-text">受罰：最高小時值</span>`;
             }
         },
 

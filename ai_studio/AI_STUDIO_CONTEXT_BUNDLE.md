@@ -15,21 +15,21 @@
 7. `logger.js` (1.5 KB)
 8. `audio.js` (14.3 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (29.3 KB)
-11. `locales/en-US.js` (27.4 KB)
+10. `locales/zh-TW.js` (29.2 KB)
+11. `locales/en-US.js` (27.3 KB)
 12. `abilities.js` (12.0 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (100.1 KB)
 15. `ui_modals.js` (4.6 KB)
-16. `ui_components.js` (167.3 KB)
+16. `ui_components.js` (168.5 KB)
 17. `tutorial_mode.js` (47.7 KB)
-18. `ui.js` (92.4 KB)
-19. `modern_board.js` (69.0 KB)
+18. `ui.js` (92.5 KB)
+19. `modern_board.js` (69.1 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (51.9 KB)
-22. `classic.html` (39.8 KB)
+21. `index.html` (55.2 KB)
+22. `classic.html` (41.5 KB)
 23. `modern.css` (124.2 KB)
-24. `style.css` (106.8 KB)
+24. `style.css` (108.4 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -1473,14 +1473,14 @@ window.gameVoice = gameVoice;
         },
         ui: {
             drawers: {
-                evolution: '⚡能力與進化',
-                log: '📝日誌',
-                players: '👥角色',
-                scores: '🏆積分',
+                evolution: '能力與進化',
+                log: '遊戲日誌',
+                players: '角色',
+                scores: '積分',
                 players_scores: '角色與積分',
-                played_cards: '⚔️本回合出牌',
-                history: '📜出牌記錄',
-                played_scores: '📊出牌與積分',
+                played_cards: '本回合出牌',
+                history: '出牌記錄',
+                played_scores: '出牌與積分',
                 size_reset: '重置尺寸',
                 resize_grip: '拖曳調整大小'
             },
@@ -1521,7 +1521,7 @@ window.gameVoice = gameVoice;
                 empty: '尚無出牌',
                 empty_sub: '點擊查看出牌記錄',
                 last_played: '上一張出牌',
-                modal_title: '📜出牌記錄',
+                modal_title: '出牌記錄',
                 modal_subtitle: '第 {round} 局 · 共出 {count} 張分鐘卡',
                 tab_history: '各角色歷程',
                 tab_timeline: '依回合記錄',
@@ -1538,7 +1538,7 @@ window.gameVoice = gameVoice;
                 mana: 'MP',
                 gear_hp: '生命',
                 shield: '護盾',
-                collected: '🃏 收集',
+                collected: '收集',
                 hand_count: '手牌：',
                 position: '位置：',
                 not_on_board: '未上場',
@@ -1557,9 +1557,9 @@ window.gameVoice = gameVoice;
                 scores: '積分'
             },
             scores: {
-                tab_standings: '🏆 即時總分',
-                tab_special_victory: '🎯 勝利進度',
-                tab_history: '📜 得分歷程',
+                tab_standings: '即時總分',
+                tab_special_victory: '勝利進度',
+                tab_history: '得分歷程',
                 round_summary: '第 {round} 局結算',
                 empty_title: '第 1 局進行中',
                 empty_desc: '每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。',
@@ -1571,22 +1571,22 @@ window.gameVoice = gameVoice;
                 view_details: '點擊查看特殊勝利詳情'
             },
             settings: {
-                title: '⚙️ 遊戲設定',
-                language: '🌐 語言 / Language',
+                title: '遊戲設定',
+                language: '語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
                 lang_en: 'English (英文)',
-                ai_difficulty_title: '🤖 AI 對戰難度',
+                ai_difficulty_title: 'AI 對戰難度',
                 ai_difficulty_normal: '一般 (新改良演算法)',
                 ai_difficulty_easy: '簡單 (原始基礎行為)',
                 ai_difficulty_desc: '「一般」具備進化目標渴求與長線資源規劃；「簡單」維持原版基礎避險出牌。',
                 sequential_effects: '特效依序播放（逐一發生）',
                 sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。',
-                custom_font_title: '🔤 自訂字型 (即時套用)',
-                custom_font_upload_btn: '📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
-                custom_font_reset_btn: '🔄 還原預設字型',
+                custom_font_title: '自訂字型 (即時套用)',
+                custom_font_upload_btn: '上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: '還原預設字型',
                 custom_font_status_default: '使用預設字型',
                 custom_font_status_applied: '已即時套用字型：{name}',
-                custom_font_status_error: '❌ 字型載入失敗，請確認檔案格式',
+                custom_font_status_error: '字型載入失敗，請確認檔案格式',
                 custom_font_preview_text: '蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針'
             },
             hints: {
@@ -1876,14 +1876,14 @@ window.gameVoice = gameVoice;
         },
         ui: {
             drawers: {
-                evolution: '⚡ Abilities & Evolution',
-                log: '📝 Game Log',
-                players: '👥 Characters',
-                scores: '🏆 Scores',
-                players_scores: '👥 Players & Standings',
-                played_cards: '⚔️ Current Round',
-                history: '📜 Minute History',
-                played_scores: '📊 Played & Scores',
+                evolution: 'Abilities & Evolution',
+                log: 'Game Log',
+                players: 'Characters',
+                scores: 'Scores',
+                players_scores: 'Players & Standings',
+                played_cards: 'Current Round',
+                history: 'Minute History',
+                played_scores: 'Played & Scores',
                 size_reset: 'Reset to default size',
                 resize_grip: 'Drag to resize (Double click to reset)'
             },
@@ -1899,8 +1899,8 @@ window.gameVoice = gameVoice;
                 recenter: 'Recenter Clock',
                 zoom_in: 'Zoom In',
                 zoom_out: 'Zoom Out',
-                restart: '🔄 Play Again',
-                view_board: '👀 View Board',
+                restart: 'Play Again',
+                view_board: 'View Board',
                 tutorial_hint: 'Hint',
                 tutorial_hint_tip: 'Replay tutorial guidance for the current step'
             },
@@ -1924,7 +1924,7 @@ window.gameVoice = gameVoice;
                 empty: 'No Cards Played',
                 empty_sub: 'Click to view played cards record',
                 last_played: 'Last Played Card',
-                modal_title: '📜 Played Cards Record',
+                modal_title: 'Played Cards Record',
                 modal_subtitle: 'Round {round} · {count} cards played',
                 tab_history: 'Player History',
                 tab_timeline: 'By Trick / Round',
@@ -1941,7 +1941,7 @@ window.gameVoice = gameVoice;
                 mana: 'MP',
                 gear_hp: 'Life',
                 shield: 'Shield',
-                collected: '🃏 Cards',
+                collected: 'Cards',
                 hand_count: 'Hand: ',
                 position: 'Pos: ',
                 not_on_board: 'Not Placed',
@@ -1960,9 +1960,9 @@ window.gameVoice = gameVoice;
                 scores: 'Scores'
             },
             scores: {
-                tab_standings: '🏆 Standings',
-                tab_special_victory: '🎯 Victory',
-                tab_history: '📜 Score History',
+                tab_standings: 'Standings',
+                tab_special_victory: 'Victory',
+                tab_history: 'Score History',
                 round_summary: 'Round {round} Summary',
                 empty_title: 'Round 1 in Progress',
                 empty_desc: 'After each round ends, round scores, devouring status, and cumulative totals will appear here.',
@@ -1974,22 +1974,22 @@ window.gameVoice = gameVoice;
                 view_details: 'Click to view details'
             },
             settings: {
-                title: '⚙️ Game Settings',
-                language: '🌐 語言 / Language',
+                title: 'Game Settings',
+                language: '語言 / Language',
                 lang_zh: '繁體中文 (Traditional Chinese)',
                 lang_en: 'English (英文)',
-                ai_difficulty_title: '🤖 AI Difficulty',
+                ai_difficulty_title: 'AI Difficulty',
                 ai_difficulty_normal: 'Normal (Enhanced Algorithm)',
                 ai_difficulty_easy: 'Easy (Legacy Baseline)',
                 ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
                 sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
-                custom_font_title: '🔤 Custom Font (Live Preview)',
-                custom_font_upload_btn: '📁 Upload Font File (.ttf, .otf, .woff, .woff2)',
-                custom_font_reset_btn: '🔄 Reset to Default Font',
+                custom_font_title: 'Custom Font (Live Preview)',
+                custom_font_upload_btn: 'Upload Font File (.ttf, .otf, .woff, .woff2)',
+                custom_font_reset_btn: 'Reset to Default Font',
                 custom_font_status_default: 'Using default system font',
                 custom_font_status_applied: 'Live custom font applied: {name}',
-                custom_font_status_error: '❌ Failed to load font. Please check the file format.',
+                custom_font_status_error: 'Failed to load font. Please check the file format.',
                 custom_font_preview_text: 'Eaten into Memory 0123456789 ── Gears & Clocks'
             },
             hints: {
@@ -6343,7 +6343,7 @@ function renderScorePanel(gameState) {
         if (!Array.isArray(gameState.scoreHistory) || gameState.scoreHistory.length === 0) {
             container.innerHTML = `
                 <div class="score-history-empty">
-                    <div class="score-history-empty-icon">⏳</div>
+                    <div class="score-history-empty-icon material-symbols-outlined">hourglass_empty</div>
                     <div class="score-history-empty-title">第 1 局進行中</div>
                     <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。</div>
                 </div>
@@ -6354,7 +6354,7 @@ function renderScorePanel(gameState) {
         // A. 全體角色歷程總覽 (每位角色的各局得分軌跡)
         const summaryWrapper = document.createElement('div');
         summaryWrapper.className = 'score-history-players-overview';
-        summaryWrapper.innerHTML = `<div class="score-history-section-title">📊 角色得分軌跡</div>`;
+        summaryWrapper.innerHTML = `<div class="score-history-section-title"><span class="material-symbols-outlined icon-inline">bar_chart</span> 角色得分軌跡</div>`;
 
         const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
         sortedPlayers.forEach(p => {
@@ -6387,7 +6387,7 @@ function renderScorePanel(gameState) {
         // B. 各局結算明細清單 (由新到舊倒序呈現)
         const roundsWrapper = document.createElement('div');
         roundsWrapper.className = 'score-history-rounds-list';
-        roundsWrapper.innerHTML = `<div class="score-history-section-title" style="margin-top: 10px;">📜 各局結算明細</div>`;
+        roundsWrapper.innerHTML = `<div class="score-history-section-title" style="margin-top: 10px;"><span class="material-symbols-outlined icon-inline">history_edu</span> 各局結算明細</div>`;
 
         const reversedHistory = [...gameState.scoreHistory].reverse();
         reversedHistory.forEach(entry => {
@@ -6418,7 +6418,7 @@ function renderScorePanel(gameState) {
 
             roundCard.innerHTML = `
                 <div class="score-history-round-header">
-                    <span>🏆 第 ${entry.round} 局結算快照</span>
+                    <span><span class="material-symbols-outlined icon-inline">trophy</span> 第 ${entry.round} 局結算快照</span>
                 </div>
                 <div class="score-history-rows">${rowsHtml}</div>
             `;
@@ -6446,7 +6446,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
             const label3p = t('ui.scores.mini_3p_survivors') || '生還';
             bar.innerHTML = `
                 <div class="score-mini-pill mode-3p" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">⚙️</span>
+                    <span class="mini-pill-icon material-symbols-outlined">settings</span>
                     <span class="mini-pill-label">3P ${label3p}</span>
                     <span class="mini-pill-val ${aliveCount === total ? 'achieved' : ''}">${aliveCount}/${total}</span>
                 </div>
@@ -6483,12 +6483,12 @@ function renderSpecialVictoryScoreMeter(gameState) {
                     <span class="mini-pill-val ${isHuntComplete ? 'achieved' : ''}">${ejectedCount}/${totalDemons}</span>
                 </div>
                 <div class="score-mini-pill curse-lock" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">🔒</span>
+                    <span class="mini-pill-icon material-symbols-outlined">lock</span>
                     <span class="mini-pill-label">${labelLock}</span>
                     <span class="mini-pill-val ${isLockComplete ? 'achieved' : ''}">${lockedCount}/12</span>
                 </div>
                 <div class="score-mini-pill time-demon" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">⚔️</span>
+                    <span class="mini-pill-icon material-symbols-outlined">swords</span>
                     <span class="mini-pill-label">${labelSin}</span>
                     <span class="mini-pill-val ${isSinEjected ? 'achieved' : ''}">${isSinEjected ? tagSinEjected : `${sinPlayer ? sinPlayer.gearCards : 0}⚙`}</span>
                 </div>
@@ -7157,7 +7157,7 @@ function renderClockFace(gameState, flags) {
             cardDiv.className = 'card-preview';
 
             // 若頂牌被鎖定，顯示鎖頭
-            const lockDisplay = topCard.isLocked ? '<div style="font-size:0.6rem;">🔒</div>' : '';
+            const lockDisplay = topCard.isLocked ? '<div class="material-symbols-outlined" style="font-size:0.75rem;">lock</div>' : '';
 
             cardDiv.innerHTML = `
                 <div class="cp-num">${topCard.number}</div>
@@ -7184,7 +7184,7 @@ function renderClockFace(gameState, flags) {
                 if (card.isPrecious) item.classList.add('precious');
                 const isTop = (i === 0);
                 const star = card.isPrecious ? '★' : '';
-                const lockIcon = card.isLocked ? '🔒' : '';// 鎖定圖示
+                const lockIcon = card.isLocked ? '<span class="material-symbols-outlined icon-inline" style="font-size:0.85em;">lock</span>' : '';// 鎖定圖示
                 const age = card.ageGroup ? `<span class="age-tag">(${card.ageGroup})</span>` : '';
                 item.innerHTML = `${lockIcon}${card.number}${star}${age}`;
                 inspector.appendChild(item);
@@ -7395,7 +7395,7 @@ function renderAIPlayers(gameState, humanId) {
         if (isYoung && player.mana >= shieldCost && !player.shieldUsed && !player.isEjected) {
             const shieldEl = document.createElement('div');
             shieldEl.className = 'shield-indicator';
-            shieldEl.textContent = '🛡️';
+            shieldEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1em; vertical-align:-0.15em;">shield</span>';
             shieldEl.title = `護盾就緒！(MP ≥ ${shieldCost}，可抵擋傷害)`;
             pCard.appendChild(shieldEl);
         }
@@ -7444,11 +7444,11 @@ function renderAIPlayers(gameState, humanId) {
                 </div>
                 ${diceChip}
                 <div class="stat-pill stat-pill--hours" title="已收集的小時卡張數">
-                    <span class="stat-icon">⌛</span>
+                    <span class="stat-icon material-symbols-outlined">hourglass_bottom</span>
                     小時卡: <strong>${player.hourCards.length}</strong>
                 </div>
                 <div class="stat-pill stat-pill--score" title="當前總得分">
-                    <span class="stat-icon">🏆</span>
+                    <span class="stat-icon material-symbols-outlined">trophy</span>
                     分數: <strong>${player.score}</strong>
                 </div>
             </div>
@@ -7617,7 +7617,7 @@ function renderDiscardPile(gameState, humanPlayer) {
             const emptyTitle = t('ui.discard_pile.title') || '出牌記錄';
             stackEl.innerHTML = `
                 <div class="discard-card-empty">
-                    <span class="discard-empty-icon">📜</span>
+                    <span class="discard-empty-icon material-symbols-outlined">history_edu</span>
                     <span class="discard-empty-text">${emptyTitle}</span>
                 </div>
             `;
@@ -7836,7 +7836,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
         // 使用 innerHTML 插入圖示
         const shieldHtml = hasShield
-            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋">🛡️</span>`
+            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋"><span class="material-symbols-outlined" style="font-size:1.1em; vertical-align:-0.15em;">shield</span></span>`
             : '';
 
         const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
@@ -8962,7 +8962,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         let contentHtml = '';
         if (isAbilityLocked) {
-            contentHtml = `<div style="color:#ff6b6b; font-weight:bold;">${window.i18n ? window.i18n.t('abilities.hour_predict_disabled') : '🚫 預知能力失效'}</div>`;
+            contentHtml = `<div style="color:#ff6b6b; font-weight:bold;"><span class="material-symbols-outlined icon-inline">block</span> ${window.i18n ? window.i18n.t('abilities.hour_predict_disabled') : '預知能力失效'}</div>`;
         } else if (!topCard) {
             contentHtml = `<div style="color:#aaa;">${window.i18n ? window.i18n.t('abilities.hour_deck_empty') : '(牌庫已空)'}</div>`;
         } else {
@@ -8995,7 +8995,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         if (isAbilityLocked) {
             // ✅ 封鎖狀態樣式
-            btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
+            btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
             btn.style.backgroundColor = '#555';
             btn.style.color = '#999';
             btn.disabled = true;
@@ -9009,7 +9009,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             } else {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_again_btn', { cost: currentCost })
-                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;"><span class="material-symbols-outlined icon-inline">restart_alt</span> 再移動一次 (剩1次)</span>`;
             }
             btn.disabled = !canUse;
             btn.onclick = () => {
@@ -9096,7 +9096,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
             if (isAbilityLocked) {
                 // ✅ 封鎖狀態樣式
-                btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
+                btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
                 btn.style.backgroundColor = '#555';
                 btn.style.color = '#999';
                 btn.disabled = true;
@@ -9234,7 +9234,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
 function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
-    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">📊 珍貴卡分佈監控</div>`;
+    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff"><span class="material-symbols-outlined icon-inline">bar_chart</span> 珍貴卡分佈監控</div>`;
 
     // --- 區塊 1: 受詛者已固定 (Locked) ---
     const lockedCards = [];
@@ -9253,7 +9253,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const lockedSection = document.createElement('div');
     lockedSection.style.cssText = 'background:rgba(84, 160, 255, 0.1); border:1px solid #54a0ff; border-radius:6px; padding:8px; margin-bottom:8px;';
 
-    let lockedHtml = `<div style="color:#54a0ff; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🔒 已固定 (${lockedCards.length}/12)</div>`;
+    let lockedHtml = `<div style="color:#54a0ff; font-weight:bold; font-size:0.9rem; margin-bottom:5px;"><span class="material-symbols-outlined icon-inline">lock</span> 已固定 (${lockedCards.length}/12)</div>`;
     if (lockedCards.length === 0) {
         lockedHtml += `<div style="color:#888; font-size:0.85rem;">尚未固定任何卡片</div>`;
     } else {
@@ -9297,7 +9297,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const enemySection = document.createElement('div');
     enemySection.style.cssText = 'background:rgba(255, 107, 107, 0.1); border:1px solid #ff6b6b; border-radius:6px; padding:8px;';
 
-    let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🎒 幼體時魔持有</div>`;
+    let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;"><span class="material-symbols-outlined icon-inline">backpack</span> 幼體時魔持有</div>`;
 
     if (enemyHoldings.length === 0) {
         enemyHtml += `<div style="color:#888; font-size:0.85rem;">目前無威脅 (或是持有卡皆非珍貴)</div>`;
@@ -9318,7 +9318,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     if (lockedCards.length >= 12) {
         const winMsg = document.createElement('div');
         winMsg.style.cssText = 'margin-top:8px; text-align:center; color:#ffd27f; font-weight:bold; animation: tipPulse 1s infinite;';
-        winMsg.innerHTML = '🎉 條件達成！請繼續努力保護手中齒輪！';
+        winMsg.innerHTML = '<span class="material-symbols-outlined icon-inline">celebration</span> 條件達成！請繼續努力保護手中齒輪！';
         container.appendChild(winMsg);
     }
 
@@ -11202,7 +11202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? '聲音：已關閉（點擊開啟）'
                 : '聲音：開啟中（點擊靜音）';
             const icon = headerMuteBtn.querySelector('.audio-icon');
-            if (icon) icon.textContent = allMuted ? '🔇' : '🔊';
+            if (icon) icon.textContent = allMuted ? 'volume_off' : 'volume_up';
             const state = headerMuteBtn.querySelector('.audio-state');
             if (state) state.textContent = allMuted ? '關' : '開';
         }
@@ -12046,7 +12046,7 @@ function showCardStory(card) {
     const preciousTag = window.i18n ? window.i18n.t('ui.labels.precious', '★ 珍貴') : '★ 珍貴';
     const isPrecious = card.isPrecious ? `<span style="color:#ffd27f;">${preciousTag}</span>` : '';
 
-    titleEl.innerHTML = `📖 ${localizedAge} ${num} ${isPrecious}`;
+    titleEl.innerHTML = `<span class="material-symbols-outlined icon-inline">menu_book</span> ${localizedAge} ${num} ${isPrecious}`;
 
     // 從資料庫取得故事 (支援多語系獨立故事模組)
     const storyText = (typeof window.getHourCardStory === 'function')
@@ -13129,13 +13129,13 @@ if (document.readyState === 'loading') {
             const sinMode = gs.sinTargetingMode === 'sin' && !is3P;
             if (is3P) {
                 el.dataset.penaltyMode = 'none';
-                el.innerHTML = `<span class="hud-penalty-icon">🛡️</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">shield</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
             } else if (sinMode) {
                 el.dataset.penaltyMode = 'sin';
-                el.innerHTML = `<span class="hud-penalty-icon">🔥</span><span class="hud-penalty-text">受罰：距離時之惡最近</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">local_fire_department</span><span class="hud-penalty-text">受罰：距離時之惡最近</span>`;
             } else {
                 el.dataset.penaltyMode = 'time';
-                el.innerHTML = `<span class="hud-penalty-icon">⚠️</span><span class="hud-penalty-text">受罰：最高小時值</span>`;
+                el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">warning</span><span class="hud-penalty-text">受罰：最高小時值</span>`;
             }
         },
 
@@ -14952,10 +14952,11 @@ if (document.readyState === 'loading') {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Eaten into Memory (現代 PixiJS 版)</title>
-		<!-- 引入 Google Fonts: Noto Sans TC -->
+		<!-- 引入 Google Fonts: Noto Sans TC, Cinzel, Playfair Display & Material Symbols -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="modern.css">
 </head>
@@ -14966,7 +14967,7 @@ if (document.readyState === 'loading') {
 	<div id="modern-intro-overlay" class="modern-intro-overlay">
 		<div id="intro-canvas-host" class="intro-canvas-host"></div>
 
-		<button id="intro-skip-btn" class="intro-skip-btn intro-custom-btn" type="button">跳過開場 ⏭</button>
+		<button id="intro-skip-btn" class="intro-skip-btn intro-custom-btn" type="button">跳過開場 <span class="material-symbols-outlined icon-inline" style="margin-left:4px; margin-right:0;">skip_next</span></button>
 
 		<div id="intro-ui-container" class="intro-ui-container is-hidden">
 			<div class="intro-title-block">
@@ -14980,12 +14981,12 @@ if (document.readyState === 'loading') {
 						開始遊戲 (5P)
 					</button>
 					<button type="button" id="intro-view-rules-btn" class="intro-secondary-btn intro-custom-btn">
-						📖 規則
+						<span class="material-symbols-outlined icon-inline">menu_book</span> 規則
 					</button>
 				</div>
 
 				<details class="intro-settings-drawer">
-					<summary id="intro-drawer-summary" class="intro-drawer-summary">⚙ 變更模式、角色與輔助選項（預設：5P · 時魔）</summary>
+					<summary id="intro-drawer-summary" class="intro-drawer-summary"><span class="material-symbols-outlined icon-inline">settings</span> 變更模式、角色與輔助選項（預設：5P · 時魔）</summary>
 					<div class="intro-drawer-body">
 						<div class="intro-section">
 							<div class="intro-section-label">選擇規模</div>
@@ -15058,11 +15059,11 @@ if (document.readyState === 'loading') {
 						<div class="intro-options-row">
 							<label class="intro-chk-label">
 								<input type="checkbox" id="intro-ability-chk" checked>
-								<span>⚡ 啟用特殊能力</span>
+								<span><span class="material-symbols-outlined icon-inline">bolt</span> 啟用特殊能力</span>
 							</label>
 							<label class="intro-chk-label">
 								<input type="checkbox" id="intro-tutorial-chk" checked>
-								<span>💡 教學引導</span>
+								<span><span class="material-symbols-outlined icon-inline">lightbulb</span> 教學引導</span>
 							</label>
 						</div>
 					</div>
@@ -15078,32 +15079,32 @@ if (document.readyState === 'loading') {
 				<button class="tab-btn" data-target="rules-content" data-i18n="ui.tabs.rules">規則</button>
 				<button class="tab-btn" data-target="settings-content" data-i18n="ui.tabs.settings">設定</button>
 				<details class="version-switch-details">
-					<summary class="version-switch-summary">🗂 版本切換</summary>
+					<summary class="version-switch-summary"><span class="material-symbols-outlined icon-inline">folder_copy</span> 版本切換</summary>
 					<div class="version-switch-menu">
-						<span class="version-item is-current">🔮 現代 PixiJS 版（目前）</span>
-						<a href="classic.html" class="version-item">🔄 經典 DOM 版</a>
+						<span class="version-item is-current"><span class="material-symbols-outlined icon-inline">auto_awesome</span> 現代 PixiJS 版（目前）</span>
+						<a href="classic.html" class="version-item"><span class="material-symbols-outlined icon-inline">restart_alt</span> 經典 DOM 版</a>
 					</div>
 				</details>
 			</div>
 
 			<div id="deck-info" class="hud-top-status-pill no-click">
 				<div class="hud-stat-item">
-					<span class="hud-stat-label">⏳ 局次</span>
+					<span class="hud-stat-label"><span class="material-symbols-outlined icon-inline">hourglass_empty</span> 局次</span>
 					<span class="deck-count" id="game-round-num">--</span>
 				</div>
 				<span class="hud-stat-sep">｜</span>
 				<div class="hud-stat-item">
-					<span class="hud-stat-label">🔔 回合</span>
+					<span class="hud-stat-label"><span class="material-symbols-outlined icon-inline">notifications</span> 回合</span>
 					<span class="deck-count" id="round-count-num">--</span>
 				</div>
 				<span class="hud-stat-sep">｜</span>
 				<div class="hud-stat-item">
-					<span class="hud-stat-label">🃏 牌庫</span>
+					<span class="hud-stat-label"><span class="material-symbols-outlined icon-inline">style</span> 牌庫</span>
 					<span class="deck-count" id="deck-count-num">--</span>
 				</div>
 				<span class="hud-stat-sep">｜</span>
 				<div id="round-penalty-display" class="hud-stat-item hud-penalty-badge" data-penalty-mode="time" title="當前生效的受罰規則">
-					<span class="hud-penalty-icon">⚠️</span>
+					<span class="hud-penalty-icon material-symbols-outlined">warning</span>
 					<span class="hud-penalty-text">受罰：最高小時值</span>
 				</div>
 			</div>
@@ -15111,7 +15112,7 @@ if (document.readyState === 'loading') {
 			<div class="game-status">
 				<div class="header-audio-controls">
 					<button id="header-mute-btn" class="header-audio-btn" type="button" title="聲音：開啟中（點擊靜音）" aria-label="聲音開關">
-						<span class="audio-icon">🔊</span>
+						<span class="audio-icon material-symbols-outlined">volume_up</span>
 						<span class="audio-state">開</span>
 					</button>
 				</div>
@@ -15130,7 +15131,7 @@ if (document.readyState === 'loading') {
 						<!-- 1. 📝 遊戲日誌（預設收合） -->
 						<details id="log-panel-details" class="log-section side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
+								<span class="summary-label"><span class="material-symbols-outlined icon-inline">edit_note</span><span data-i18n="ui.drawers.log">遊戲日誌</span></span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
@@ -15139,7 +15140,7 @@ if (document.readyState === 'loading') {
 								<div class="drawer-mobile-header">
 									<div class="drawer-mobile-handle"></div>
 									<div class="drawer-mobile-title-bar">
-										<span class="drawer-mobile-title" data-i18n="ui.drawers.log">📝 遊戲日誌</span>
+										<span class="drawer-mobile-title"><span class="material-symbols-outlined icon-inline">edit_note</span><span data-i18n="ui.drawers.log">遊戲日誌</span></span>
 										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
 									</div>
 								</div>
@@ -15154,7 +15155,7 @@ if (document.readyState === 'loading') {
 						<!-- 2. 🏆 積分 -->
 						<details id="scores-panel-details" class="side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.scores">🏆 積分</span>
+								<span class="summary-label"><span class="material-symbols-outlined icon-inline">trophy</span><span data-i18n="ui.drawers.scores">積分</span></span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
@@ -15163,15 +15164,15 @@ if (document.readyState === 'loading') {
 								<div class="drawer-mobile-header">
 									<div class="drawer-mobile-handle"></div>
 									<div class="drawer-mobile-title-bar">
-										<span class="drawer-mobile-title" data-i18n="ui.drawers.scores">🏆 即時積分</span>
+										<span class="drawer-mobile-title"><span class="material-symbols-outlined icon-inline">trophy</span><span data-i18n="ui.drawers.scores">即時積分</span></span>
 										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
 									</div>
 								</div>
 								<div id="score-panel" class="log-side-info score-panel">
 									<div class="score-tab-bar">
-										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
-										<button type="button" id="tab-score-special" class="score-tab-btn" data-score-tab="special" data-i18n="ui.scores.tab_special_victory">🎯 勝利進度</button>
-										<button type="button" id="tab-score-history" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
+										<button type="button" id="tab-score-standings" class="score-tab-btn active" data-score-tab="standings"><span class="material-symbols-outlined icon-inline">trophy</span><span data-i18n="ui.scores.tab_standings">即時總分</span></button>
+										<button type="button" id="tab-score-special" class="score-tab-btn" data-score-tab="special"><span class="material-symbols-outlined icon-inline">target</span><span data-i18n="ui.scores.tab_special_victory">勝利進度</span></button>
+										<button type="button" id="tab-score-history" class="score-tab-btn" data-score-tab="history"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.scores.tab_history">得分歷程</span></button>
 									</div>
 									<div id="score-tab-content-standings" class="score-tab-content active">
 										<div id="score-special-victory-mini" class="score-special-mini-bar"></div>
@@ -15190,7 +15191,7 @@ if (document.readyState === 'loading') {
 						<!-- 3. 👥 角色 -->
 						<details id="players-panel-details" class="players-block side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.players">👥 角色</span>
+								<span class="summary-label"><span class="material-symbols-outlined icon-inline">group</span><span data-i18n="ui.drawers.players">角色</span></span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
@@ -15199,7 +15200,7 @@ if (document.readyState === 'loading') {
 								<div class="drawer-mobile-header">
 									<div class="drawer-mobile-handle"></div>
 									<div class="drawer-mobile-title-bar">
-										<span class="drawer-mobile-title" data-i18n="ui.drawers.players">👥 場上角色</span>
+										<span class="drawer-mobile-title"><span class="material-symbols-outlined icon-inline">group</span><span data-i18n="ui.drawers.players">場上角色</span></span>
 										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
 									</div>
 								</div>
@@ -15226,7 +15227,7 @@ if (document.readyState === 'loading') {
 								<button id="clock-zoom-in-btn" class="clock-zoom-btn" type="button" aria-label="放大鐘面" title="放大鐘面 (Tap or Wheel)">+</button>
 								<button id="clock-zoom-out-btn" class="clock-zoom-btn" type="button" aria-label="縮小鐘面" title="縮小鐘面 (Tap or Wheel)">−</button>
 								<button id="clock-recenter-btn" class="clock-zoom-btn clock-recenter-btn" type="button" aria-label="置中鐘面" title="鐘面視角置中（或雙擊鐘面空白處）">
-									<span class="recenter-icon">⌖</span>
+									<span class="recenter-icon material-symbols-outlined">filter_center_focus</span>
 									<span class="recenter-text" data-i18n="ui.buttons.recenter">置中</span>
 								</button>
 							</div>
@@ -15243,26 +15244,26 @@ if (document.readyState === 'loading') {
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
 									<span class="step-num">1</span>
-									<span class="step-icon">🎴</span>
+									<span class="step-icon material-symbols-outlined">style</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="reveal">
 									<span class="step-num">2</span>
-									<span class="step-icon">⚔️</span>
+									<span class="step-icon material-symbols-outlined">swords</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="pick">
 									<span class="step-num">3</span>
-									<span class="step-icon">⌛</span>
+									<span class="step-icon material-symbols-outlined">hourglass_bottom</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
 									<span class="step-sub" id="phase-step-pick-sub"></span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="resolve">
 									<span class="step-num">4</span>
-									<span class="step-icon">⚖️</span>
+									<span class="step-icon material-symbols-outlined">balance</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
 								</div>
 							</div>
@@ -15275,7 +15276,7 @@ if (document.readyState === 'loading') {
 						<!-- 1. ⚡ 能力與進化（預設展開） -->
 						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.evolution">⚡ 能力與進化</span>
+								<span class="summary-label"><span class="material-symbols-outlined icon-inline">bolt</span><span data-i18n="ui.drawers.evolution">能力與進化</span></span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
@@ -15284,7 +15285,7 @@ if (document.readyState === 'loading') {
 								<div class="drawer-mobile-header">
 									<div class="drawer-mobile-handle"></div>
 									<div class="drawer-mobile-title-bar">
-										<span class="drawer-mobile-title" data-i18n="ui.drawers.evolution">⚡ 能力與進化</span>
+										<span class="drawer-mobile-title"><span class="material-symbols-outlined icon-inline">bolt</span><span data-i18n="ui.drawers.evolution">能力與進化</span></span>
 										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
 									</div>
 								</div>
@@ -15295,7 +15296,7 @@ if (document.readyState === 'loading') {
 						<!-- 2. ⚔️ 本回合出牌 -->
 						<details id="played-panel-details" class="side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
-								<span class="summary-label" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</span>
+								<span class="summary-label"><span class="material-symbols-outlined icon-inline">swords</span><span data-i18n="ui.drawers.played_cards">本回合出牌</span></span>
 								<span class="drawer-size-btn-group">
 									<button type="button" class="drawer-size-action-btn btn-size-reset" title="重置預設尺寸">↺</button>
 								</span>
@@ -15304,7 +15305,7 @@ if (document.readyState === 'loading') {
 								<div class="drawer-mobile-header">
 									<div class="drawer-mobile-handle"></div>
 									<div class="drawer-mobile-title-bar">
-										<span class="drawer-mobile-title" data-i18n="ui.drawers.played_cards">⚔️ 本回合出牌</span>
+										<span class="drawer-mobile-title"><span class="material-symbols-outlined icon-inline">swords</span><span data-i18n="ui.drawers.played_cards">本回合出牌</span></span>
 										<button type="button" class="drawer-mobile-close-btn" aria-label="關閉">✕</button>
 									</div>
 								</div>
@@ -15323,7 +15324,7 @@ if (document.readyState === 'loading') {
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
 							<button id="btn-replay-tutorial" class="tutorial-replay-btn icon-btn" type="button" title="重新查看當前步驟教學提示" aria-label="教學提示" data-i18n-title="ui.buttons.tutorial_hint_tip">
-								<span class="replay-icon">💡</span>
+								<span class="replay-icon material-symbols-outlined">lightbulb</span>
 								<span class="replay-text" data-i18n="ui.buttons.tutorial_hint">教學提示</span>
 							</button>
 
@@ -15369,8 +15370,8 @@ if (document.readyState === 'loading') {
 							</div>
 							
 							<div class="resource-chip resource-chip--hour" title="已收集小時卡">
-								🃏 收集 <span id="h-hour">0</span>
-								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
+								<span class="material-symbols-outlined icon-inline">style</span> 收集 <span id="h-hour">0</span>
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片"><span class="material-symbols-outlined">zoom_in</span></button>
 							</div>
 
 							<details class="human-more-stats-details">
@@ -15392,7 +15393,7 @@ if (document.readyState === 'loading') {
 									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看出牌記錄" aria-label="出牌記錄">
 										<div class="discard-pile-stack" id="discard-pile-stack">
 											<div class="discard-card-empty">
-												<span class="discard-empty-icon">📜</span>
+												<span class="discard-empty-icon material-symbols-outlined">history_edu</span>
 												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">出牌記錄</span>
 											</div>
 										</div>
@@ -15583,12 +15584,12 @@ if (document.readyState === 'loading') {
 
 
 			<div id="settings-content" class="tab-content">
-				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;" data-i18n="ui.settings.title">⚙️ 遊戲設定</h3>
+				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;"><span class="material-symbols-outlined icon-inline">settings</span><span data-i18n="ui.settings.title">遊戲設定</span></h3>
 
 				<div class="settings-two-column">
 					<div class="settings-column">
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.language">🌐 語言 / Language</h4>
+							<h4><span class="material-symbols-outlined icon-inline">language</span><span data-i18n="ui.settings.language">語言 / Language</span></h4>
 							<div class="settings-radio-group">
 								<label class="radio-label">
 									<input type="radio" name="ui-lang" value="zh-TW" checked>
@@ -15650,7 +15651,7 @@ if (document.readyState === 'loading') {
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.ai_difficulty_title">🤖 AI 對戰難度</h4>
+							<h4><span class="material-symbols-outlined icon-inline">smart_toy</span><span data-i18n="ui.settings.ai_difficulty_title">AI 對戰難度</span></h4>
 							<div class="settings-radio-group">
 								<label class="radio-label">
 									<input type="radio" name="ai-difficulty" value="normal" checked>
@@ -15669,7 +15670,7 @@ if (document.readyState === 'loading') {
 
 					<div class="settings-column">
 						<div class="setting-item">
-							<h4>🔊 音樂/音效設定</h4>
+							<h4><span class="material-symbols-outlined icon-inline">volume_up</span> 音樂/音效設定</h4>
 							<div style="margin-bottom: 20px;">
 								<label class="toggle-switch" style="margin-bottom: 8px; display: flex;">
 									<input type="checkbox" id="bgm-toggle" checked>
@@ -15735,11 +15736,11 @@ if (document.readyState === 'loading') {
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<h4><span class="material-symbols-outlined icon-inline">font_download</span><span data-i18n="ui.settings.custom_font_title">自訂字型 (即時套用)</span></h4>
 							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
 							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
-								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+								<button type="button" class="btn btn-secondary" id="font-upload-btn"><span class="material-symbols-outlined icon-inline">upload_file</span><span data-i18n="ui.settings.custom_font_upload_btn">上傳字型檔案 (.ttf, .otf, .woff, .woff2)</span></button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;"><span class="material-symbols-outlined icon-inline">restart_alt</span><span data-i18n="ui.settings.custom_font_reset_btn">還原預設字型</span></button>
 							</div>
 							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
 								使用預設字型
@@ -15845,7 +15846,7 @@ if (document.readyState === 'loading') {
 
 			<div id="seconds-choice-overlay" class="modal-overlay hidden">
 				<div class="modal">
-					<h2 class="modal-title modal-title-seconds">⏱️ 秒針能力：</h2>
+					<h2 class="modal-title modal-title-seconds"><span class="material-symbols-outlined icon-inline">timer</span> 秒針能力：</h2>
 					<p class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
 					<div class="modal-actions">
 						<button id="seconds-choice-a" class="primary seconds-choice-btn">A</button>
@@ -15867,7 +15868,7 @@ if (document.readyState === 'loading') {
 			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
 				<div class="modal discard-pile-modal">
 					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">📜 出牌記錄</h2>
+					<h2 class="modal-title modal-title-discard"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.discard_pile.modal_title">出牌記錄</span></h2>
 					<div class="discard-pile-meta-bar">
 						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
 						<span id="discard-count-badge" class="discard-meta-chip">已出 0 張</span>
@@ -15879,11 +15880,11 @@ if (document.readyState === 'loading') {
 					</div>
 					<div id="discard-tab-history" class="discard-tab-content active">
 						<div class="discard-history-section">
-							<div class="discard-section-title">⚔️ 本回合出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">swords</span> 本回合出牌</div>
 							<div id="discard-current-trick-list" class="discard-current-trick-list"></div>
 						</div>
 						<div class="discard-history-section" style="margin-top: 12px;">
-							<div class="discard-section-title">📜 各角色歷史出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">history_edu</span> 各角色歷史出牌</div>
 							<div id="discard-player-history-list" class="discard-player-history-table"></div>
 						</div>
 					</div>
@@ -15945,8 +15946,8 @@ if (document.readyState === 'loading') {
 					</div>
 
 					<div class="modal-actions game-over-actions">
-						<button id="btn-restart-game" class="primary btn-restart-game" data-i18n="ui.buttons.restart">🔄 再玩一局</button>
-						<button id="btn-close-gameover" class="btn-close-gameover" data-i18n="ui.buttons.view_board">👀 查看盤面</button>
+						<button id="btn-restart-game" class="primary btn-restart-game"><span class="material-symbols-outlined icon-inline">restart_alt</span><span data-i18n="ui.buttons.restart">再玩一局</span></button>
+						<button id="btn-close-gameover" class="btn-close-gameover"><span class="material-symbols-outlined icon-inline">visibility</span><span data-i18n="ui.buttons.view_board">查看盤面</span></button>
 					</div>
 				</div>
 			</div>
@@ -15956,7 +15957,7 @@ if (document.readyState === 'loading') {
 	<!-- 新手教學動態引導氣泡框 -->
 	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
 		<div class="tutorial-tooltip-header">
-			<span class="tutorial-badge">💡 教學指南</span>
+			<span class="tutorial-badge"><span class="material-symbols-outlined icon-inline">lightbulb</span> 教學指南</span>
 			<div class="tutorial-header-actions">
 				<button id="tutorial-mute-btn" class="tutorial-mute-action" type="button" title="關閉教學模式">不再提示</button>
 				<button id="tutorial-close-btn" class="tutorial-close-x" type="button" title="關閉此提示" aria-label="關閉此提示">&times;</button>
@@ -16008,10 +16009,11 @@ if (document.readyState === 'loading') {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Eaten into Memory</title>
-		<!-- 引入 Google Fonts: Noto Sans TC -->
+		<!-- 引入 Google Fonts: Noto Sans TC, Cinzel, Playfair Display & Material Symbols -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 	<link rel="stylesheet" href="style.css">
 </head>
 
@@ -16021,7 +16023,7 @@ if (document.readyState === 'loading') {
 		<header>
 			<div class="tab-nav">
 				<button class="tab-btn active" data-target="game-content">遊戲 (經典 DOM)</button>
-				<a href="index.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; color:#7c8cff; border-color:rgba(124,140,255,0.4);">🔮 現代 PixiJS 版</a>
+				<a href="index.html" class="tab-btn" style="text-decoration:none; display:inline-flex; align-items:center; color:#7c8cff; border-color:rgba(124,140,255,0.4);"><span class="material-symbols-outlined icon-inline">auto_awesome</span> 現代 PixiJS 版</a>
 				<button class="tab-btn" data-target="rules-content">規則</button>
 				<button class="tab-btn" data-target="settings-content">設定</button>
 			</div>
@@ -16029,7 +16031,7 @@ if (document.readyState === 'loading') {
 			<div class="game-status">
 				<div class="header-audio-controls">
 					<button id="header-mute-btn" class="header-audio-btn" type="button" title="聲音：開啟中（點擊靜音）" aria-label="聲音開關">
-						<span class="audio-icon">🔊</span>
+						<span class="audio-icon material-symbols-outlined">volume_up</span>
 						<span class="audio-state">開</span>
 					</button>
 				</div>
@@ -16042,7 +16044,7 @@ if (document.readyState === 'loading') {
 				<div class="main-area">
 					<div class="log-section game-panel">
 						<details id="log-panel-details" class="classic-log-details">
-							<summary class="log-section-title classic-log-summary" data-i18n="ui.drawers.log">📜 遊戲日誌</summary>
+							<summary class="log-section-title classic-log-summary"><span class="material-symbols-outlined icon-inline">edit_note</span><span data-i18n="ui.drawers.log">遊戲日誌</span></summary>
 							<div id="game-log-container">
 								<ul id="log-list">
 									<li>點擊「開始新遊戲」，然後點擊「下一回合」翻開小時卡</li>
@@ -16073,26 +16075,26 @@ if (document.readyState === 'loading') {
 							<div class="phase-track-steps">
 								<div class="phase-step active" data-phase="bid">
 									<span class="step-num">1</span>
-									<span class="step-icon">🎴</span>
+									<span class="step-icon material-symbols-outlined">style</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="reveal">
 									<span class="step-num">2</span>
-									<span class="step-icon">⚔️</span>
+									<span class="step-icon material-symbols-outlined">swords</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="pick">
 									<span class="step-num">3</span>
-									<span class="step-icon">⌛</span>
+									<span class="step-icon material-symbols-outlined">hourglass_bottom</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
 									<span class="step-sub" id="phase-step-pick-sub"></span>
 								</div>
 								<div class="phase-track-arrow">➔</div>
 								<div class="phase-step" data-phase="resolve">
 									<span class="step-num">4</span>
-									<span class="step-icon">⚖️</span>
+									<span class="step-icon material-symbols-outlined">balance</span>
 									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
 								</div>
 							</div>
@@ -16135,9 +16137,9 @@ if (document.readyState === 'loading') {
 
 						<div id="score-panel" class="log-side-info score-panel">
 							<div class="score-tab-bar">
-								<button type="button" class="score-tab-btn active" data-score-tab="standings" data-i18n="ui.scores.tab_standings">🏆 即時總分</button>
-								<button type="button" class="score-tab-btn" data-score-tab="special" data-i18n="ui.scores.tab_special_victory">🎯 勝利進度</button>
-								<button type="button" class="score-tab-btn" data-score-tab="history" data-i18n="ui.scores.tab_history">📜 得分歷程</button>
+								<button type="button" class="score-tab-btn active" data-score-tab="standings"><span class="material-symbols-outlined icon-inline">trophy</span><span data-i18n="ui.scores.tab_standings">即時總分</span></button>
+								<button type="button" class="score-tab-btn" data-score-tab="special"><span class="material-symbols-outlined icon-inline">target</span><span data-i18n="ui.scores.tab_special_victory">勝利進度</span></button>
+								<button type="button" class="score-tab-btn" data-score-tab="history"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.scores.tab_history">得分歷程</span></button>
 							</div>
 							<div id="score-tab-content-standings" class="score-tab-content active">
 								<div id="score-special-victory-mini" class="score-special-mini-bar"></div>
@@ -16165,7 +16167,7 @@ if (document.readyState === 'loading') {
 						<div class="human-stats-row">
 							<h4 id="human-role-display">您是：--</h4>
 							<button id="btn-replay-tutorial" class="tutorial-replay-btn icon-btn" type="button" title="重新查看當前步驟教學提示" aria-label="教學提示" data-i18n-title="ui.buttons.tutorial_hint_tip">
-								<span class="replay-icon">💡</span>
+								<span class="replay-icon material-symbols-outlined">lightbulb</span>
 								<span class="replay-text" data-i18n="ui.buttons.tutorial_hint">教學提示</span>
 							</button>
 							
@@ -16218,7 +16220,7 @@ if (document.readyState === 'loading') {
 							<div>收集小時卡：
 								<span id="h-hour">0</span>
 								 
-								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片">🔍</button>
+								<button id="btn-view-collection" class="icon-btn" title="查看已收集卡片" aria-label="查看已收集卡片"><span class="material-symbols-outlined">zoom_in</span></button>
 							</div>
 								<button id="btn-toggle-sort" class="icon-btn" title="切換手牌排序" style="font-size: 1rem; padding: 2px 6px;">⇅ 手牌排序</button>
 						</div>
@@ -16232,7 +16234,7 @@ if (document.readyState === 'loading') {
 									<div id="discard-pile-zone" class="discard-pile-zone" role="button" tabindex="0" title="點擊查看出牌記錄" aria-label="出牌記錄">
 										<div class="discard-pile-stack" id="discard-pile-stack">
 											<div class="discard-card-empty">
-												<span class="discard-empty-icon">📜</span>
+												<span class="discard-empty-icon material-symbols-outlined">history_edu</span>
 												<span class="discard-empty-text" data-i18n="ui.discard_pile.title">出牌記錄</span>
 											</div>
 										</div>
@@ -16431,7 +16433,7 @@ if (document.readyState === 'loading') {
 
 
 			<div id="settings-content" class="tab-content">
-				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;">⚙️ 遊戲設定</h3>
+				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;"><span class="material-symbols-outlined icon-inline">settings</span><span data-i18n="ui.settings.title">遊戲設定</span></h3>
 
 				<div class="settings-two-column">
 					<div class="settings-column">
@@ -16479,7 +16481,7 @@ if (document.readyState === 'loading') {
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.ai_difficulty_title">🤖 AI 對戰難度</h4>
+							<h4><span class="material-symbols-outlined icon-inline">smart_toy</span><span data-i18n="ui.settings.ai_difficulty_title">AI 對戰難度</span></h4>
 							<div class="settings-radio-group">
 								<label class="radio-label">
 									<input type="radio" name="ai-difficulty" value="normal" checked>
@@ -16498,7 +16500,7 @@ if (document.readyState === 'loading') {
 
 					<div class="settings-column">
 						<div class="setting-item">
-							<h4>🔊 音樂/音效設定</h4>
+							<h4><span class="material-symbols-outlined icon-inline">volume_up</span> 音樂/音效設定</h4>
 							<div style="margin-bottom: 20px;">
 								<label class="toggle-switch" style="margin-bottom: 8px; display: flex;">
 									<input type="checkbox" id="bgm-toggle" checked>
@@ -16564,11 +16566,11 @@ if (document.readyState === 'loading') {
 						<hr class="settings-divider">
 
 						<div class="setting-item">
-							<h4 data-i18n="ui.settings.custom_font_title">🔤 自訂字型 (即時套用)</h4>
+							<h4><span class="material-symbols-outlined icon-inline">font_download</span><span data-i18n="ui.settings.custom_font_title">自訂字型 (即時套用)</span></h4>
 							<input type="file" id="font-upload-input" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
 							<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-								<button type="button" class="btn btn-secondary" id="font-upload-btn" data-i18n="ui.settings.custom_font_upload_btn">📁 上傳字型檔案 (.ttf, .otf, .woff, .woff2)</button>
-								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;" data-i18n="ui.settings.custom_font_reset_btn">🔄 還原預設字型</button>
+								<button type="button" class="btn btn-secondary" id="font-upload-btn"><span class="material-symbols-outlined icon-inline">upload_file</span><span data-i18n="ui.settings.custom_font_upload_btn">上傳字型檔案 (.ttf, .otf, .woff, .woff2)</span></button>
+								<button type="button" class="btn btn-secondary" id="font-reset-btn" style="display: none;"><span class="material-symbols-outlined icon-inline">restart_alt</span><span data-i18n="ui.settings.custom_font_reset_btn">還原預設字型</span></button>
 							</div>
 							<div id="font-upload-status" class="setting-hint" style="margin-top: 6px; color: #888;" data-i18n="ui.settings.custom_font_status_default">
 								使用預設字型
@@ -16674,7 +16676,7 @@ if (document.readyState === 'loading') {
 
 			<div id="seconds-choice-overlay" class="modal-overlay hidden">
 				<div class="modal">
-					<h2 class="modal-title modal-title-seconds">⏱️ 秒針能力：</h2>
+					<h2 class="modal-title modal-title-seconds"><span class="material-symbols-outlined icon-inline">timer</span> 秒針能力：</h2>
 					<p class="modal-desc">請從剛才選擇的 2 張牌中選擇 1 張</p>
 					<div class="modal-actions">
 						<button id="seconds-choice-a" class="primary seconds-choice-btn">A</button>
@@ -16696,7 +16698,7 @@ if (document.readyState === 'loading') {
 			<div id="discard-pile-overlay" class="modal-overlay hidden" aria-hidden="true">
 				<div class="modal discard-pile-modal">
 					<span id="discard-pile-close-btn" class="modal-close-btn">&times;</span>
-					<h2 class="modal-title modal-title-discard" data-i18n="ui.discard_pile.modal_title">📜 出牌記錄</h2>
+					<h2 class="modal-title modal-title-discard"><span class="material-symbols-outlined icon-inline">history_edu</span><span data-i18n="ui.discard_pile.modal_title">出牌記錄</span></h2>
 					<div class="discard-pile-meta-bar">
 						<span id="discard-round-badge" class="discard-meta-chip">第 1 局</span>
 						<span id="discard-count-badge" class="discard-meta-chip">已出 0 張</span>
@@ -16708,11 +16710,11 @@ if (document.readyState === 'loading') {
 					</div>
 					<div id="discard-tab-history" class="discard-tab-content active">
 						<div class="discard-history-section">
-							<div class="discard-section-title">⚔️ 本回合出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">swords</span> 本回合出牌</div>
 							<div id="discard-current-trick-list" class="discard-current-trick-list"></div>
 						</div>
 						<div class="discard-history-section" style="margin-top: 12px;">
-							<div class="discard-section-title">📜 各角色歷史出牌</div>
+							<div class="discard-section-title"><span class="material-symbols-outlined icon-inline">history_edu</span> 各角色歷史出牌</div>
 							<div id="discard-player-history-list" class="discard-player-history-table"></div>
 						</div>
 					</div>
@@ -16771,8 +16773,8 @@ if (document.readyState === 'loading') {
 					</div>
 
 					<div class="modal-actions game-over-actions">
-						<button id="btn-restart-game" class="primary btn-restart-game">🔄 再玩一局</button>
-						<button id="btn-close-gameover" class="btn-close-gameover">👀 查看盤面</button>
+						<button id="btn-restart-game" class="primary btn-restart-game"><span class="material-symbols-outlined icon-inline">restart_alt</span> 再玩一局</button>
+						<button id="btn-close-gameover" class="btn-close-gameover"><span class="material-symbols-outlined icon-inline">visibility</span> 查看盤面</button>
 					</div>
 				</div>
 			</div>
@@ -16782,7 +16784,7 @@ if (document.readyState === 'loading') {
 	<!-- 新手教學動態引導氣泡框 -->
 	<div id="tutorial-pointer-tooltip" class="tutorial-tooltip hidden" aria-live="polite">
 		<div class="tutorial-tooltip-header">
-			<span class="tutorial-badge">💡 教學指南</span>
+			<span class="tutorial-badge"><span class="material-symbols-outlined icon-inline">lightbulb</span> 教學指南</span>
 			<div class="tutorial-header-actions">
 				<button id="tutorial-mute-btn" class="tutorial-mute-action" type="button" title="關閉教學模式">不再提示</button>
 				<button id="tutorial-close-btn" class="tutorial-close-x" type="button" title="關閉此提示" aria-label="關閉此提示">&times;</button>
@@ -25289,6 +25291,65 @@ body {
         padding: 1px 6px;
         font-size: 0.72rem;
     }
+}
+
+/* =========================================================
+   ✨ Google Material Symbols Outlined 全域支援與對齊樣式
+   ========================================================= */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.15em;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    vertical-align: -0.15em;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined.icon-inline {
+    font-size: 1.05em;
+    margin-right: 4px;
+    vertical-align: -0.16em;
+}
+
+.material-symbols-outlined.icon-btn-symbol {
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+.hud-penalty-icon.material-symbols-outlined {
+    font-size: 1.15rem;
+    vertical-align: -0.15em;
+    color: #ff6b6b;
+}
+
+.header-audio-btn .audio-icon.material-symbols-outlined {
+    font-size: 1.15rem;
+    vertical-align: -0.18em;
+}
+
+.clock-recenter-btn .recenter-icon.material-symbols-outlined {
+    font-size: 1.1rem;
+    vertical-align: -0.16em;
+}
+
+.phase-step .step-icon.material-symbols-outlined {
+    font-size: 1.05rem;
+    vertical-align: -0.18em;
+}
+
+.score-tab-btn .material-symbols-outlined.icon-inline,
+.discard-tab-btn .material-symbols-outlined.icon-inline,
+.side-panel-summary .material-symbols-outlined.icon-inline,
+.drawer-mobile-title .material-symbols-outlined.icon-inline {
+    vertical-align: -0.18em;
 }
 
 `````

@@ -752,7 +752,7 @@ function renderScorePanel(gameState) {
         if (!Array.isArray(gameState.scoreHistory) || gameState.scoreHistory.length === 0) {
             container.innerHTML = `
                 <div class="score-history-empty">
-                    <div class="score-history-empty-icon">⏳</div>
+                    <div class="score-history-empty-icon material-symbols-outlined">hourglass_empty</div>
                     <div class="score-history-empty-title">第 1 局進行中</div>
                     <div class="score-history-empty-desc">每局結算後，此處將記錄各角色的當局得分、吞噬狀態與累計分數變化。</div>
                 </div>
@@ -763,7 +763,7 @@ function renderScorePanel(gameState) {
         // A. 全體角色歷程總覽 (每位角色的各局得分軌跡)
         const summaryWrapper = document.createElement('div');
         summaryWrapper.className = 'score-history-players-overview';
-        summaryWrapper.innerHTML = `<div class="score-history-section-title">📊 角色得分軌跡</div>`;
+        summaryWrapper.innerHTML = `<div class="score-history-section-title"><span class="material-symbols-outlined icon-inline">bar_chart</span> 角色得分軌跡</div>`;
 
         const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
         sortedPlayers.forEach(p => {
@@ -796,7 +796,7 @@ function renderScorePanel(gameState) {
         // B. 各局結算明細清單 (由新到舊倒序呈現)
         const roundsWrapper = document.createElement('div');
         roundsWrapper.className = 'score-history-rounds-list';
-        roundsWrapper.innerHTML = `<div class="score-history-section-title" style="margin-top: 10px;">📜 各局結算明細</div>`;
+        roundsWrapper.innerHTML = `<div class="score-history-section-title" style="margin-top: 10px;"><span class="material-symbols-outlined icon-inline">history_edu</span> 各局結算明細</div>`;
 
         const reversedHistory = [...gameState.scoreHistory].reverse();
         reversedHistory.forEach(entry => {
@@ -827,7 +827,7 @@ function renderScorePanel(gameState) {
 
             roundCard.innerHTML = `
                 <div class="score-history-round-header">
-                    <span>🏆 第 ${entry.round} 局結算快照</span>
+                    <span><span class="material-symbols-outlined icon-inline">trophy</span> 第 ${entry.round} 局結算快照</span>
                 </div>
                 <div class="score-history-rows">${rowsHtml}</div>
             `;
@@ -855,7 +855,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
             const label3p = t('ui.scores.mini_3p_survivors') || '生還';
             bar.innerHTML = `
                 <div class="score-mini-pill mode-3p" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">⚙️</span>
+                    <span class="mini-pill-icon material-symbols-outlined">settings</span>
                     <span class="mini-pill-label">3P ${label3p}</span>
                     <span class="mini-pill-val ${aliveCount === total ? 'achieved' : ''}">${aliveCount}/${total}</span>
                 </div>
@@ -892,12 +892,12 @@ function renderSpecialVictoryScoreMeter(gameState) {
                     <span class="mini-pill-val ${isHuntComplete ? 'achieved' : ''}">${ejectedCount}/${totalDemons}</span>
                 </div>
                 <div class="score-mini-pill curse-lock" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">🔒</span>
+                    <span class="mini-pill-icon material-symbols-outlined">lock</span>
                     <span class="mini-pill-label">${labelLock}</span>
                     <span class="mini-pill-val ${isLockComplete ? 'achieved' : ''}">${lockedCount}/12</span>
                 </div>
                 <div class="score-mini-pill time-demon" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">⚔️</span>
+                    <span class="mini-pill-icon material-symbols-outlined">swords</span>
                     <span class="mini-pill-label">${labelSin}</span>
                     <span class="mini-pill-val ${isSinEjected ? 'achieved' : ''}">${isSinEjected ? tagSinEjected : `${sinPlayer ? sinPlayer.gearCards : 0}⚙`}</span>
                 </div>
@@ -1566,7 +1566,7 @@ function renderClockFace(gameState, flags) {
             cardDiv.className = 'card-preview';
 
             // 若頂牌被鎖定，顯示鎖頭
-            const lockDisplay = topCard.isLocked ? '<div style="font-size:0.6rem;">🔒</div>' : '';
+            const lockDisplay = topCard.isLocked ? '<div class="material-symbols-outlined" style="font-size:0.75rem;">lock</div>' : '';
 
             cardDiv.innerHTML = `
                 <div class="cp-num">${topCard.number}</div>
@@ -1593,7 +1593,7 @@ function renderClockFace(gameState, flags) {
                 if (card.isPrecious) item.classList.add('precious');
                 const isTop = (i === 0);
                 const star = card.isPrecious ? '★' : '';
-                const lockIcon = card.isLocked ? '🔒' : '';// 鎖定圖示
+                const lockIcon = card.isLocked ? '<span class="material-symbols-outlined icon-inline" style="font-size:0.85em;">lock</span>' : '';// 鎖定圖示
                 const age = card.ageGroup ? `<span class="age-tag">(${card.ageGroup})</span>` : '';
                 item.innerHTML = `${lockIcon}${card.number}${star}${age}`;
                 inspector.appendChild(item);
@@ -1804,7 +1804,7 @@ function renderAIPlayers(gameState, humanId) {
         if (isYoung && player.mana >= shieldCost && !player.shieldUsed && !player.isEjected) {
             const shieldEl = document.createElement('div');
             shieldEl.className = 'shield-indicator';
-            shieldEl.textContent = '🛡️';
+            shieldEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1em; vertical-align:-0.15em;">shield</span>';
             shieldEl.title = `護盾就緒！(MP ≥ ${shieldCost}，可抵擋傷害)`;
             pCard.appendChild(shieldEl);
         }
@@ -1853,11 +1853,11 @@ function renderAIPlayers(gameState, humanId) {
                 </div>
                 ${diceChip}
                 <div class="stat-pill stat-pill--hours" title="已收集的小時卡張數">
-                    <span class="stat-icon">⌛</span>
+                    <span class="stat-icon material-symbols-outlined">hourglass_bottom</span>
                     小時卡: <strong>${player.hourCards.length}</strong>
                 </div>
                 <div class="stat-pill stat-pill--score" title="當前總得分">
-                    <span class="stat-icon">🏆</span>
+                    <span class="stat-icon material-symbols-outlined">trophy</span>
                     分數: <strong>${player.score}</strong>
                 </div>
             </div>
@@ -2026,7 +2026,7 @@ function renderDiscardPile(gameState, humanPlayer) {
             const emptyTitle = t('ui.discard_pile.title') || '出牌記錄';
             stackEl.innerHTML = `
                 <div class="discard-card-empty">
-                    <span class="discard-empty-icon">📜</span>
+                    <span class="discard-empty-icon material-symbols-outlined">history_edu</span>
                     <span class="discard-empty-text">${emptyTitle}</span>
                 </div>
             `;
@@ -2245,7 +2245,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
 
         // 使用 innerHTML 插入圖示
         const shieldHtml = hasShield
-            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋">🛡️</span>`
+            ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋"><span class="material-symbols-outlined" style="font-size:1.1em; vertical-align:-0.15em;">shield</span></span>`
             : '';
 
         const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
@@ -3371,7 +3371,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         let contentHtml = '';
         if (isAbilityLocked) {
-            contentHtml = `<div style="color:#ff6b6b; font-weight:bold;">${window.i18n ? window.i18n.t('abilities.hour_predict_disabled') : '🚫 預知能力失效'}</div>`;
+            contentHtml = `<div style="color:#ff6b6b; font-weight:bold;"><span class="material-symbols-outlined icon-inline">block</span> ${window.i18n ? window.i18n.t('abilities.hour_predict_disabled') : '預知能力失效'}</div>`;
         } else if (!topCard) {
             contentHtml = `<div style="color:#aaa;">${window.i18n ? window.i18n.t('abilities.hour_deck_empty') : '(牌庫已空)'}</div>`;
         } else {
@@ -3404,7 +3404,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         if (isAbilityLocked) {
             // ✅ 封鎖狀態樣式
-            btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
+            btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
             btn.style.backgroundColor = '#555';
             btn.style.color = '#999';
             btn.disabled = true;
@@ -3418,7 +3418,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             } else {
                 btn.innerHTML = window.i18n
                     ? window.i18n.t('abilities.hour_move_again_btn', { cost: currentCost })
-                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;">🔄 再移動一次 (剩1次)</span>`;
+                    : `${currentCost} MP<br><span style="font-size:0.8rem; font-weight:bold;"><span class="material-symbols-outlined icon-inline">restart_alt</span> 再移動一次 (剩1次)</span>`;
             }
             btn.disabled = !canUse;
             btn.onclick = () => {
@@ -3505,7 +3505,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
             if (isAbilityLocked) {
                 // ✅ 封鎖狀態樣式
-                btn.innerHTML = window.i18n ? window.i18n.t('abilities.locked_btn') : `🚫 能力被封鎖`;
+                btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
                 btn.style.backgroundColor = '#555';
                 btn.style.color = '#999';
                 btn.disabled = true;
@@ -3643,7 +3643,7 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
 function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const container = document.createElement('div');
     container.className = 'evo-ability-panel';
-    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff">📊 珍貴卡分佈監控</div>`;
+    container.innerHTML = `<div class="evo-role-title" style="color:#54a0ff"><span class="material-symbols-outlined icon-inline">bar_chart</span> 珍貴卡分佈監控</div>`;
 
     // --- 區塊 1: 受詛者已固定 (Locked) ---
     const lockedCards = [];
@@ -3662,7 +3662,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const lockedSection = document.createElement('div');
     lockedSection.style.cssText = 'background:rgba(84, 160, 255, 0.1); border:1px solid #54a0ff; border-radius:6px; padding:8px; margin-bottom:8px;';
 
-    let lockedHtml = `<div style="color:#54a0ff; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🔒 已固定 (${lockedCards.length}/12)</div>`;
+    let lockedHtml = `<div style="color:#54a0ff; font-weight:bold; font-size:0.9rem; margin-bottom:5px;"><span class="material-symbols-outlined icon-inline">lock</span> 已固定 (${lockedCards.length}/12)</div>`;
     if (lockedCards.length === 0) {
         lockedHtml += `<div style="color:#888; font-size:0.85rem;">尚未固定任何卡片</div>`;
     } else {
@@ -3706,7 +3706,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     const enemySection = document.createElement('div');
     enemySection.style.cssText = 'background:rgba(255, 107, 107, 0.1); border:1px solid #ff6b6b; border-radius:6px; padding:8px;';
 
-    let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;">🎒 幼體時魔持有</div>`;
+    let enemyHtml = `<div style="color:#ff6b6b; font-weight:bold; font-size:0.9rem; margin-bottom:5px;"><span class="material-symbols-outlined icon-inline">backpack</span> 幼體時魔持有</div>`;
 
     if (enemyHoldings.length === 0) {
         enemyHtml += `<div style="color:#888; font-size:0.85rem;">目前無威脅 (或是持有卡皆非珍貴)</div>`;
@@ -3727,7 +3727,7 @@ function renderSczMissionPanel(gameState, humanPlayer, parent) {
     if (lockedCards.length >= 12) {
         const winMsg = document.createElement('div');
         winMsg.style.cssText = 'margin-top:8px; text-align:center; color:#ffd27f; font-weight:bold; animation: tipPulse 1s infinite;';
-        winMsg.innerHTML = '🎉 條件達成！請繼續努力保護手中齒輪！';
+        winMsg.innerHTML = '<span class="material-symbols-outlined icon-inline">celebration</span> 條件達成！請繼續努力保護手中齒輪！';
         container.appendChild(winMsg);
     }
 

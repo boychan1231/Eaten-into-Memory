@@ -4295,3 +4295,62 @@ body {
         font-size: 0.72rem;
     }
 }
+
+/* =========================================================
+   ✨ Google Material Symbols Outlined 全域支援與對齊樣式
+   ========================================================= */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.15em;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    vertical-align: -0.15em;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined.icon-inline {
+    font-size: 1.05em;
+    margin-right: 4px;
+    vertical-align: -0.16em;
+}
+
+.material-symbols-outlined.icon-btn-symbol {
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+.hud-penalty-icon.material-symbols-outlined {
+    font-size: 1.15rem;
+    vertical-align: -0.15em;
+    color: #ff6b6b;
+}
+
+.header-audio-btn .audio-icon.material-symbols-outlined {
+    font-size: 1.15rem;
+    vertical-align: -0.18em;
+}
+
+.clock-recenter-btn .recenter-icon.material-symbols-outlined {
+    font-size: 1.1rem;
+    vertical-align: -0.16em;
+}
+
+.phase-step .step-icon.material-symbols-outlined {
+    font-size: 1.05rem;
+    vertical-align: -0.18em;
+}
+
+.score-tab-btn .material-symbols-outlined.icon-inline,
+.discard-tab-btn .material-symbols-outlined.icon-inline,
+.side-panel-summary .material-symbols-outlined.icon-inline,
+.drawer-mobile-title .material-symbols-outlined.icon-inline {
+    vertical-align: -0.18em;
+}
