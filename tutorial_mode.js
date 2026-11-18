@@ -555,29 +555,34 @@
         // 【階段 0】：開局初始歡迎提示（第 1 局、第 1 回合、尚未展開出牌）
         const nextBtn = document.getElementById('next-step-btn');
         const isInitialOpening = (gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null && !shownSteps.has('step1_drag_minute'));
-        if (isInitialOpening && (!hasShownWelcomeInCurrentGame || force)) {
-            const roleScoringMsg = window.i18n
-                ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
-                : getDefaultRoleScoringText(roleKey);
-            let combinedMsg = '';
-            if (!hasShownWelcomeInCurrentGame) {
-                hasShownWelcomeInCurrentGame = true;
-                shownSteps.add('step0_welcome');
-                shownSteps.add('step0_role_scoring');
-                shownSteps.add('has_shown_welcome');
-                const welcomeMsg = window.i18n
-                    ? window.i18n.t('tutorial.step0_welcome')
-                    : '<strong>歡迎來到《Eaten into Memory》</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                combinedMsg = `${welcomeMsg}<br><br>${roleScoringMsg}`;
-            } else {
-                const startActionMsg = window.i18n
-                    ? window.i18n.t('tutorial.step0_start_action')
-                    : '請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                combinedMsg = `${startActionMsg}<br><br>${roleScoringMsg}`;
-            }
+        if (isInitialOpening) {
             if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
-                showTutorialPointer(nextBtn, combinedMsg, 'center-right', { showBounceArrow: true });
+                if (!hasShownWelcomeInCurrentGame) {
+                    hasShownWelcomeInCurrentGame = true;
+                    shownSteps.add('step0_welcome');
+                    shownSteps.add('step0_role_scoring');
+                    shownSteps.add('has_shown_welcome');
+                    const welcomeMsg = window.i18n
+                        ? window.i18n.t('tutorial.step0_welcome')
+                        : '<strong>歡迎來到《Eaten into Memory》</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                    const roleScoringMsg = window.i18n
+                        ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
+                        : getDefaultRoleScoringText(roleKey);
+                    showTutorialPointer(nextBtn, `${welcomeMsg}<br><br>${roleScoringMsg}`, 'center-right', { showBounceArrow: true });
+                    return;
+                }
+                if (force) {
+                    const startActionMsg = window.i18n
+                        ? window.i18n.t('tutorial.step0_start_action')
+                        : '請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                    const roleScoringMsg = window.i18n
+                        ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
+                        : getDefaultRoleScoringText(roleKey);
+                    showTutorialPointer(nextBtn, `${startActionMsg}<br><br>${roleScoringMsg}`, 'center-right', { showBounceArrow: true });
+                    return;
+                }
+                // 已顯示過歡迎詞且非手動重播：維持目前狀態，不重複彈出也不清除
                 return;
             }
         }
@@ -886,8 +891,6 @@
                         ? window.i18n.t('tutorial.step0_start_action')
                         : '請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                     showTutorialPointer(nextBtn, startActionMsg, 'center-right', { showBounceArrow: true });
-                } else {
-                    clearTutorialPointers();
                 }
                 return;
             }
