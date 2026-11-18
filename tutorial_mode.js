@@ -34,6 +34,9 @@
             el.classList.remove('tutorial-spotlight', 'tutorial-welcome-arrow');
         });
 
+        const bounceArrow = document.getElementById('tutorial-bounce-arrow');
+        if (bounceArrow) bounceArrow.classList.add('hidden');
+
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         if (tooltip) {
             tooltip.classList.add('hidden');
@@ -228,12 +231,26 @@
             displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">◈【歷史教學回顧】</div>` + displayMsg;
         }
 
-        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement);
+        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement, entry.options);
         updateTutorialNav();
     }
 
+    // 取得或建立高亮光環上方的跳動箭頭元素
+    function getOrCreateBounceArrow() {
+        let arrowEl = document.getElementById('tutorial-bounce-arrow');
+        if (!arrowEl && document.body) {
+            arrowEl = document.createElement('div');
+            arrowEl.id = 'tutorial-bounce-arrow';
+            arrowEl.className = 'hidden';
+            arrowEl.setAttribute('aria-hidden', 'true');
+            arrowEl.textContent = '▼';
+            document.body.appendChild(arrowEl);
+        }
+        return arrowEl;
+    }
+
     // 核心渲染函式：負責幾何測量、定位座標與氣泡框原地淡入顯現
-    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto') {
+    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto', options = {}) {
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const textEl = document.getElementById('tutorial-tooltip-text');
         if (!tooltip || !textEl) return;
@@ -273,6 +290,19 @@
             tutorialSpotlightEl = targetEl;
         }
 
+        // 處理高亮光環上方的跳動箭頭
+        const bounceArrow = getOrCreateBounceArrow();
+        if (bounceArrow) {
+            if (options && options.showBounceArrow && !isClockContainer && isElementVisible(targetEl) && typeof targetEl.getBoundingClientRect === 'function') {
+                const rect = targetEl.getBoundingClientRect();
+                bounceArrow.style.left = `${Math.round(rect.left + rect.width / 2)}px`;
+                bounceArrow.style.top = `${Math.round(rect.top - 10)}px`;
+                bounceArrow.classList.remove('hidden');
+            } else {
+                bounceArrow.classList.add('hidden');
+            }
+        }
+
         // 設定訊息內容
         textEl.innerHTML = messageText;
 
@@ -306,7 +336,7 @@
     }
 
     // 將動態氣泡提示框指向目標 DOM 元素（納入歷史記錄佇列供回溯閱覽）
-    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
+    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto', options = {}) {
         // 若玩家停用教學模式，不動作
         if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
             clearTutorialPointers();
@@ -319,12 +349,13 @@
             tutorialHistory.push({
                 targetSelector,
                 messageText,
-                preferredPlacement
+                preferredPlacement,
+                options
             });
         }
         currentHistoryIndex = tutorialHistory.length - 1;
 
-        renderTutorialMessage(targetSelector, messageText, preferredPlacement);
+        renderTutorialMessage(targetSelector, messageText, preferredPlacement, options);
         updateTutorialNav();
     }
 
@@ -426,7 +457,7 @@
             const combinedMsg = `${welcomeMsg}<br><br>${roleScoringMsg}`;
             if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
-                showTutorialPointer(nextBtn, combinedMsg, 'center-right');
+                showTutorialPointer(nextBtn, combinedMsg, 'center-right', { showBounceArrow: true });
                 return;
             }
         }
@@ -647,7 +678,7 @@
                     const welcomeMsg = window.i18n
                         ? window.i18n.t('tutorial.step0_welcome')
                         : '<strong>✦ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                    showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
+                    showTutorialPointer(nextBtn, welcomeMsg, 'center-right', { showBounceArrow: true });
                 }
             } else if (!shownSteps.has('step4_next_round') || force) {
                 const turnPrefix = gameState.roundMarker > 1

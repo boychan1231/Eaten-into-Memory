@@ -2826,6 +2826,33 @@ body {
     pointer-events: auto !important;
 }
 
+/* 歡迎教學提示：高亮光環上方指向按鈕的跳動箭頭 */
+#tutorial-bounce-arrow {
+    position: fixed;
+    z-index: 10015;
+    pointer-events: none;
+    color: #feca57;
+    font-size: 28px;
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(254, 202, 87, 0.95), 0 2px 6px rgba(0, 0, 0, 0.85);
+    transform: translate(-50%, -100%);
+    animation: tutorialBounceArrow 0.85s ease-in-out infinite;
+    user-select: none;
+}
+
+#tutorial-bounce-arrow.hidden {
+    display: none !important;
+}
+
+@keyframes tutorialBounceArrow {
+    0%, 100% {
+        transform: translate(-50%, -100%) translateY(0);
+    }
+    50% {
+        transform: translate(-50%, -100%) translateY(-10px);
+    }
+}
+
 @keyframes tutorialPulse {
     0% {
         box-shadow: 0 0 10px rgba(254, 202, 87, 0.55), inset 0 0 5px rgba(254, 202, 87, 0.3);

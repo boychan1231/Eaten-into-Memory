@@ -22,14 +22,14 @@
 14. `game.js` (100.0 KB)
 15. `ui_modals.js` (4.6 KB)
 16. `ui_components.js` (168.4 KB)
-17. `tutorial_mode.js` (47.7 KB)
+17. `tutorial_mode.js` (49.1 KB)
 18. `ui.js` (94.1 KB)
 19. `modern_board.js` (69.1 KB)
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (55.7 KB)
 22. `classic.html` (42.1 KB)
 23. `modern.css` (124.7 KB)
-24. `style.css` (108.9 KB)
+24. `style.css` (109.6 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -9426,6 +9426,9 @@ if (typeof window !== 'undefined') {
         }
         document.querySelectorAll('.tutorial-spotlight').forEach(el => el.classList.remove('tutorial-spotlight'));
 
+        const bounceArrow = document.getElementById('tutorial-bounce-arrow');
+        if (bounceArrow) bounceArrow.classList.add('hidden');
+
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         if (tooltip) {
             tooltip.classList.add('hidden');
@@ -9620,12 +9623,26 @@ if (typeof window !== 'undefined') {
             displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">◈【歷史教學回顧】</div>` + displayMsg;
         }
 
-        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement);
+        renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement, entry.options);
         updateTutorialNav();
     }
 
+    // 取得或建立高亮光環上方的跳動箭頭元素
+    function getOrCreateBounceArrow() {
+        let arrowEl = document.getElementById('tutorial-bounce-arrow');
+        if (!arrowEl && document.body) {
+            arrowEl = document.createElement('div');
+            arrowEl.id = 'tutorial-bounce-arrow';
+            arrowEl.className = 'hidden';
+            arrowEl.setAttribute('aria-hidden', 'true');
+            arrowEl.textContent = '▼';
+            document.body.appendChild(arrowEl);
+        }
+        return arrowEl;
+    }
+
     // 核心渲染函式：負責幾何測量、定位座標與氣泡框原地淡入顯現
-    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto') {
+    function renderTutorialMessage(targetSelector, messageText, preferredPlacement = 'auto', options = {}) {
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         const textEl = document.getElementById('tutorial-tooltip-text');
         if (!tooltip || !textEl) return;
@@ -9654,6 +9671,19 @@ if (typeof window !== 'undefined') {
         if (!isClockContainer && isElementVisible(targetEl)) {
             targetEl.classList.add('tutorial-spotlight');
             tutorialSpotlightEl = targetEl;
+        }
+
+        // 處理高亮光環上方的跳動箭頭
+        const bounceArrow = getOrCreateBounceArrow();
+        if (bounceArrow) {
+            if (options && options.showBounceArrow && !isClockContainer && isElementVisible(targetEl) && typeof targetEl.getBoundingClientRect === 'function') {
+                const rect = targetEl.getBoundingClientRect();
+                bounceArrow.style.left = `${Math.round(rect.left + rect.width / 2)}px`;
+                bounceArrow.style.top = `${Math.round(rect.top - 10)}px`;
+                bounceArrow.classList.remove('hidden');
+            } else {
+                bounceArrow.classList.add('hidden');
+            }
         }
 
         // 設定訊息內容
@@ -9689,7 +9719,7 @@ if (typeof window !== 'undefined') {
     }
 
     // 將動態氣泡提示框指向目標 DOM 元素（納入歷史記錄佇列供回溯閱覽）
-    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto') {
+    function showTutorialPointer(targetSelector, messageText, preferredPlacement = 'auto', options = {}) {
         // 若玩家停用教學模式，不動作
         if (window.GAME_CONFIG && window.GAME_CONFIG.tutorialMode === false) {
             clearTutorialPointers();
@@ -9702,12 +9732,13 @@ if (typeof window !== 'undefined') {
             tutorialHistory.push({
                 targetSelector,
                 messageText,
-                preferredPlacement
+                preferredPlacement,
+                options
             });
         }
         currentHistoryIndex = tutorialHistory.length - 1;
 
-        renderTutorialMessage(targetSelector, messageText, preferredPlacement);
+        renderTutorialMessage(targetSelector, messageText, preferredPlacement, options);
         updateTutorialNav();
     }
 
@@ -9809,7 +9840,7 @@ if (typeof window !== 'undefined') {
             const combinedMsg = `${welcomeMsg}<br><br>${roleScoringMsg}`;
             if (nextBtn && isElementVisible(nextBtn)) {
                 nextBtn.disabled = false;
-                showTutorialPointer(nextBtn, combinedMsg, 'center-right');
+                showTutorialPointer(nextBtn, combinedMsg, 'center-right', { showBounceArrow: true });
                 return;
             }
         }
@@ -10030,7 +10061,7 @@ if (typeof window !== 'undefined') {
                     const welcomeMsg = window.i18n
                         ? window.i18n.t('tutorial.step0_welcome')
                         : '<strong>✦ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
-                    showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
+                    showTutorialPointer(nextBtn, welcomeMsg, 'center-right', { showBounceArrow: true });
                 }
             } else if (!shownSteps.has('step4_next_round') || force) {
                 const turnPrefix = gameState.roundMarker > 1
@@ -15181,7 +15212,44 @@ if (document.readyState === 'loading') {
 
 					<!-- 左側懸浮抽屜群：對局情報（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-left">
-						<!-- 1. 📝 遊戲日誌（預設收合） -->
+						<!-- 0. 本回合行動序列與競標階段進度條 (常駐進度組件 - 左側欄第一項) -->
+						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
+							<button type="button" id="phase-tracker-toggle-btn" class="phase-tracker-toggle-btn" title="收合/展開流程提示" aria-label="收合/展開流程提示">
+								<span class="toggle-icon">▴</span>
+							</button>
+							<div class="phase-track-steps">
+								<div class="phase-step active" data-phase="bid">
+									<span class="step-num">1</span>
+									<span class="step-icon material-symbols-outlined">style</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="reveal">
+									<span class="step-num">2</span>
+									<span class="step-icon material-symbols-outlined">swords</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="pick">
+									<span class="step-num">3</span>
+									<span class="step-icon material-symbols-outlined">hourglass_bottom</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
+									<span class="step-sub" id="phase-step-pick-sub"></span>
+								</div>
+								<div class="phase-track-arrow">➔</div>
+								<div class="phase-step" data-phase="resolve">
+									<span class="step-num">4</span>
+									<span class="step-icon material-symbols-outlined">balance</span>
+									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
+								</div>
+							</div>
+							<div class="phase-status-badge" id="phase-status-badge">
+								<span class="status-pulse-dot"></span>
+								<span class="status-text" id="phase-status-text" data-i18n="ui.phase_tracker.status_bid">請挑選 1 張分鐘卡出牌</span>
+							</div>
+						</div>
+
+						<!-- 1. 遊戲日誌（預設收合） -->
 						<details id="log-panel-details" class="log-section side-panel-group hud-drawer">
 							<summary class="side-panel-summary">
 								<span class="summary-label"><span class="material-symbols-outlined icon-inline">edit_note</span><span data-i18n="ui.drawers.log">遊戲日誌</span></span>
@@ -15289,44 +15357,7 @@ if (document.readyState === 'loading') {
 
 					<!-- 右側懸浮抽屜群：自身決策（不擠壓中央鐘面） -->
 					<div class="hud-drawer-stack hud-drawer-right">
-						<!-- 🧭 0. 本回合行動序列與競標階段進度條 (常駐進度組件 - 右側欄第一項) -->
-						<div id="round-phase-tracker" class="round-phase-tracker" role="region" aria-label="本回合行動序列進度條">
-							<button type="button" id="phase-tracker-toggle-btn" class="phase-tracker-toggle-btn" title="收合/展開流程提示" aria-label="收合/展開流程提示">
-								<span class="toggle-icon">▴</span>
-							</button>
-							<div class="phase-track-steps">
-								<div class="phase-step active" data-phase="bid">
-									<span class="step-num">1</span>
-									<span class="step-icon material-symbols-outlined">style</span>
-									<span class="step-title" data-i18n="ui.phase_tracker.bid">出牌競標</span>
-								</div>
-								<div class="phase-track-arrow">➔</div>
-								<div class="phase-step" data-phase="reveal">
-									<span class="step-num">2</span>
-									<span class="step-icon material-symbols-outlined">swords</span>
-									<span class="step-title" data-i18n="ui.phase_tracker.reveal">比牌揭曉</span>
-								</div>
-								<div class="phase-track-arrow">➔</div>
-								<div class="phase-step" data-phase="pick">
-									<span class="step-num">3</span>
-									<span class="step-icon material-symbols-outlined">hourglass_bottom</span>
-									<span class="step-title" data-i18n="ui.phase_tracker.pick">挑選小時卡</span>
-									<span class="step-sub" id="phase-step-pick-sub"></span>
-								</div>
-								<div class="phase-track-arrow">➔</div>
-								<div class="phase-step" data-phase="resolve">
-									<span class="step-num">4</span>
-									<span class="step-icon material-symbols-outlined">balance</span>
-									<span class="step-title" data-i18n="ui.phase_tracker.resolve">處決結算</span>
-								</div>
-							</div>
-							<div class="phase-status-badge" id="phase-status-badge">
-								<span class="status-pulse-dot"></span>
-								<span class="status-text" id="phase-status-text" data-i18n="ui.phase_tracker.status_bid">請挑選 1 張分鐘卡出牌</span>
-							</div>
-						</div>
-
-						<!-- 1. ⚡ 能力與進化（預設展開） -->
+						<!-- 1. 能力與進化（預設展開） -->
 						<details id="evo-panel-details" class="side-panel-group hud-drawer" open>
 							<summary class="side-panel-summary">
 								<span class="summary-label"><span class="material-symbols-outlined icon-inline">bolt</span><span data-i18n="ui.drawers.evolution">能力與進化</span></span>
@@ -20954,8 +20985,8 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     animation: shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
 }
 
-/* 現代版右側欄第一項：常駐本回合行動序列進度組件 */
-.hud-drawer-right > .round-phase-tracker {
+/* 現代版左側欄第一項：常駐本回合行動序列進度組件 */
+.hud-drawer-left > .round-phase-tracker {
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -20973,16 +21004,16 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     box-sizing: border-box !important;
     gap: 6px !important;
 }
-.hud-drawer-right > .round-phase-tracker .phase-track-steps {
+.hud-drawer-left > .round-phase-tracker .phase-track-steps {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 5px !important;
     width: 100% !important;
 }
-.hud-drawer-right > .round-phase-tracker .phase-track-arrow {
+.hud-drawer-left > .round-phase-tracker .phase-track-arrow {
     display: none !important;
 }
-.hud-drawer-right > .round-phase-tracker .phase-step {
+.hud-drawer-left > .round-phase-tracker .phase-step {
     width: 100% !important;
     justify-content: flex-start !important;
     padding: 4px 7px !important;
@@ -20991,7 +21022,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
-.hud-drawer-right > .round-phase-tracker .phase-status-badge {
+.hud-drawer-left > .round-phase-tracker .phase-status-badge {
     width: 100% !important;
     justify-content: center !important;
     box-sizing: border-box !important;
@@ -21002,33 +21033,33 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 }
 
 /* 現代版收合狀態：只顯示現時流程 */
-.hud-drawer-right > .round-phase-tracker.is-collapsed {
+.hud-drawer-left > .round-phase-tracker.is-collapsed {
     padding: 5px 32px 5px 12px !important;
     width: auto !important;
     min-width: 140px !important;
     cursor: pointer;
 }
-.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps {
+.hud-drawer-left > .round-phase-tracker.is-collapsed .phase-track-steps {
     display: flex !important;
     grid-template-columns: none !important;
     justify-content: center !important;
     width: 100% !important;
     gap: 0 !important;
 }
-.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
+.hud-drawer-left > .round-phase-tracker.is-collapsed .phase-track-steps .phase-step:not(.active) {
     display: none !important;
 }
-.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
+.hud-drawer-left > .round-phase-tracker.is-collapsed .phase-track-steps .phase-track-arrow {
     display: none !important;
 }
-.hud-drawer-right > .round-phase-tracker.is-collapsed .phase-step.active {
+.hud-drawer-left > .round-phase-tracker.is-collapsed .phase-step.active {
     width: auto !important;
     padding: 3px 12px !important;
     transform: none !important;
 }
 
 @media (max-width: 768px) {
-    .hud-drawer-right > .round-phase-tracker {
+    .hud-drawer-left > .round-phase-tracker {
         position: fixed !important;
         top: 96px !important;
         left: 50% !important;
@@ -21038,21 +21069,21 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
         border-radius: 999px !important;
         padding: 4px 10px !important;
     }
-    .hud-drawer-right > .round-phase-tracker .phase-track-steps {
+    .hud-drawer-left > .round-phase-tracker .phase-track-steps {
         display: flex !important;
         flex-wrap: nowrap !important;
         gap: 4px !important;
         width: auto !important;
     }
-    .hud-drawer-right > .round-phase-tracker .phase-track-arrow {
+    .hud-drawer-left > .round-phase-tracker .phase-track-arrow {
         display: inline !important;
     }
-    .hud-drawer-right > .round-phase-tracker .phase-step {
+    .hud-drawer-left > .round-phase-tracker .phase-step {
         width: auto !important;
         padding: 2px 6px !important;
         font-size: 0.72rem !important;
     }
-    .hud-drawer-right > .round-phase-tracker .phase-status-badge {
+    .hud-drawer-left > .round-phase-tracker .phase-status-badge {
         width: auto !important;
         white-space: nowrap !important;
     }
@@ -23909,6 +23940,33 @@ body {
     animation: tutorialPulse 1.2s ease-in-out infinite alternate !important;
     z-index: 10010 !important; /* 保證高於 tooltip 的 10005，防止氣泡本體或箭頭邊緣誤遮擋按鈕點擊 */
     pointer-events: auto !important;
+}
+
+/* 歡迎教學提示：高亮光環上方指向按鈕的跳動箭頭 */
+#tutorial-bounce-arrow {
+    position: fixed;
+    z-index: 10015;
+    pointer-events: none;
+    color: #feca57;
+    font-size: 28px;
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(254, 202, 87, 0.95), 0 2px 6px rgba(0, 0, 0, 0.85);
+    transform: translate(-50%, -100%);
+    animation: tutorialBounceArrow 0.85s ease-in-out infinite;
+    user-select: none;
+}
+
+#tutorial-bounce-arrow.hidden {
+    display: none !important;
+}
+
+@keyframes tutorialBounceArrow {
+    0%, 100% {
+        transform: translate(-50%, -100%) translateY(0);
+    }
+    50% {
+        transform: translate(-50%, -100%) translateY(-10px);
+    }
 }
 
 @keyframes tutorialPulse {
