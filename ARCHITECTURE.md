@@ -244,6 +244,7 @@ stateDiagram-v2
    - 術語統一：**吞噬 / 被吞噬**、**MP**、**GP**。
    - 任何修改驗證完成後須主動 `git commit` 並 `git push origin main`。
 2. **標準驗證指令**：
+   - **一鍵完整驗證（推薦）**：`npm run verify`（或 `node scripts/verify.js`），涵蓋語法檢查、雙語對齊與格式檢查、教學行為測試、40 場無頭對戰壓力測試及雙入口 `<script>` 載入順序檢查。
    - **語法檢查**：`for f in *.js locales/*.js; do node -c "$f"; done`
    - **雙語鍵值對齊檢查**：以 Node.js 載入 `locales/zh-TW.js` 與 `locales/en-US.js` 比對所有遞迴鍵值是否完全一致。
    - **無頭對戰壓力測試**：於 Node.js `vm` 環境載入 `config.js`, `logger.js`, `abilities.js`, `game_setup.js`, `game.js`，自動模擬數十場 5P / 3P 完整對局，驗證 0 未捕獲例外與 0 狀態機死鎖。

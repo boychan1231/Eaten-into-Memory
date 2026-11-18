@@ -2864,35 +2864,6 @@ body {
     }
 }
 
-/* 「下一回合」高亮外框上方的跳動指向箭頭（於「歡迎來到《Eaten into Memory》」教學提示時顯示） */
-#next-step-btn.tutorial-spotlight.tutorial-welcome-arrow {
-    overflow: visible !important;
-}
-
-#next-step-btn.tutorial-spotlight.tutorial-welcome-arrow::before {
-    content: "▼";
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    color: #feca57;
-    font-size: 1.35rem;
-    line-height: 1;
-    text-shadow: 0 0 10px rgba(254, 202, 87, 0.95), 0 2px 6px rgba(0, 0, 0, 0.85);
-    pointer-events: none;
-    z-index: 10012;
-    animation: tutorialBounceArrow 0.75s ease-in-out infinite alternate;
-}
-
-@keyframes tutorialBounceArrow {
-    0% {
-        transform: translate(-50%, -8px);
-    }
-    100% {
-        transform: translate(-50%, 1px);
-    }
-}
-
 /* 浮動氣泡提示框 */
 .tutorial-tooltip {
     position: fixed;
