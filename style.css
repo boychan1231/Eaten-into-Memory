@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,100&family=Cinzel:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400&family=Cinzel:wght@600;700;800&display=swap');
 
 /* 宣告 Cinzel-VariableFont 本地與網路字型 */
 @font-face {
@@ -14,16 +14,15 @@
     font-display: swap;
 }
 
-/* 宣告 Lato Thin 100 Italic 本地與網路字型 */
+/* 宣告 Playfair Display Regular 400 Italic 本地與網路字型 */
 @font-face {
-    font-family: 'Lato Thin Italic';
-    src: local('Lato Thin Italic'),
-         local('Lato-ThinItalic'),
-         local('Lato Thin'),
-         local('Lato'),
-         url('fonts/Lato-ThinItalic.ttf') format('truetype'),
-         url('fonts/Lato-ThinItalic.woff2') format('woff2');
-    font-weight: 100;
+    font-family: 'Playfair Display';
+    src: local('Playfair Display Italic'),
+         local('PlayfairDisplay-Italic'),
+         local('Playfair Display'),
+         url('fonts/PlayfairDisplay-Italic.ttf') format('truetype'),
+         url('fonts/PlayfairDisplay-Italic.woff2') format('woff2');
+    font-weight: 400;
     font-style: italic;
     font-display: swap;
 }
@@ -49,8 +48,8 @@
     /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
     --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 
-    /* 🎴 分鐘卡牌數字專屬字型 (Lato Thin 100 Italic) */
-    --font-minute-card: 'Lato', 'Lato Thin Italic', sans-serif;
+    /* 🎴 分鐘卡牌數字專屬字型 (Playfair Display Regular 400 Italic) */
+    --font-minute-card: 'Playfair Display', serif;
 }
 
 body {
@@ -71,14 +70,14 @@ body {
     font-family: var(--font-number) !important;
 }
 
-/* 🎴 分鐘卡牌數字：使用 Lato Thin 100 Italic */
+/* 🎴 分鐘卡牌數字：使用 Playfair Display Regular 400 Italic */
 .minute-card,
 .minute-card .card-num,
 .played-card-row .p-val,
 .card-val-badge,
 .minute-card-val {
     font-family: var(--font-minute-card) !important;
-    font-weight: 100 !important;
+    font-weight: 400 !important;
     font-style: italic !important;
 }
 
