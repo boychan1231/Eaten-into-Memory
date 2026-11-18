@@ -1,3 +1,17 @@
+/* 宣告 Cinzel-VariableFont 本地與網路字型 */
+@font-face {
+    font-family: 'Cinzel-VariableFont';
+    src: local('Cinzel-VariableFont'),
+         local('Cinzel-VariableFont_wght'),
+         local('Cinzel Variable'),
+         local('Cinzel'),
+         url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
+         url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
+         url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 :root {
     --bg-color: #1a1a2e;
     --text-color: #e0e0e0;
@@ -13,8 +27,11 @@
     /* 🔤 四大多資訊維度字型變數 (途徑一) */
     --font-ui: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-number: 'Courier New', monospace;
-    --font-title: 'Cinzel', serif;
+    --font-title: 'Cinzel-VariableFont', 'Cinzel', serif;
     --font-story: 'Noto Serif TC', Georgia, serif;
+
+    /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
+    --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 }
 
 body {
@@ -43,6 +60,11 @@ body {
 .story-text, .story-modal-text, .rule-book-content, .drawer-lore-text,
 .story-desc, .story-line {
     font-family: var(--font-story);
+}
+
+/* 🕰️ 鐘面文字使用 Cinzel-VariableFont */
+#clock-face, .pixi-clock-face, .clock-spot, .clock-spot *, .card-preview, .card-preview * {
+    font-family: var(--font-clock) !important;
 }
 
 /* --- 畫面結構 --- */

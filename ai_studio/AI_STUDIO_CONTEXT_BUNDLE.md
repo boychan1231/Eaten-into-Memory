@@ -24,12 +24,12 @@
 16. `ui_components.js` (167.3 KB)
 17. `tutorial_mode.js` (47.7 KB)
 18. `ui.js` (92.4 KB)
-19. `modern_board.js` (68.8 KB)
+19. `modern_board.js` (69.0 KB)
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (51.9 KB)
 22. `classic.html` (39.8 KB)
-23. `modern.css` (122.4 KB)
-24. `style.css` (104.9 KB)
+23. `modern.css` (123.2 KB)
+24. `style.css` (105.8 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -12456,8 +12456,10 @@ if (document.readyState === 'loading') {
         cardGold: 0xffd27f
     };
 
+    const FONT_CINZEL = '"Cinzel-VariableFont", "Cinzel Variable", "Cinzel", "Cinzel Decorative", serif';
+    const FONT_CLOCK = '"Cinzel-VariableFont", "Cinzel Variable", "Cinzel", "Noto Sans TC", serif';
     const FONT_UI = '"Noto Sans TC", Inter, "Microsoft JhengHei", sans-serif';
-    const FONT_ROMAN = '"Cinzel", Inter, "Noto Sans TC", serif';
+    const FONT_ROMAN = FONT_CINZEL;
 
     const hexOf = (key, fallback = 0xffffff) => {
         const s = (window.UI_CONFIG && window.UI_CONFIG.ROLE_COLORS || {})[key];
@@ -13072,7 +13074,7 @@ if (document.readyState === 'loading') {
             const a = (pos * 30 - 90) * Math.PI / 180;
             return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
         },
-        text(str, size, fill, weight = '600', family = FONT_UI) {
+        text(str, size, fill, weight = '600', family = FONT_CLOCK) {
             const t = new PIXI.Text(String(str), { fontFamily: family, fontSize: size, fill, fontWeight: weight });
             t.anchor.set(0.5);
             return t;
@@ -16821,6 +16823,20 @@ if (document.readyState === 'loading') {
 `````css
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@500;700;800&family=Noto+Sans+TC:wght@500;700&display=swap');
 
+/* 宣告 Cinzel-VariableFont 本地與網路字型 */
+@font-face {
+    font-family: 'Cinzel-VariableFont';
+    src: local('Cinzel-VariableFont'),
+         local('Cinzel-VariableFont_wght'),
+         local('Cinzel Variable'),
+         local('Cinzel'),
+         url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
+         url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
+         url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 :root {
     --glass: rgba(8, 9, 13, 0.84);
     --line: rgba(255, 255, 255, 0.07);
@@ -16834,8 +16850,11 @@ if (document.readyState === 'loading') {
     /* 🔤 四大多資訊維度字型變數 (途徑一) */
     --font-ui: 'Noto Sans TC', Inter, system-ui, -apple-system, sans-serif;
     --font-number: 'Courier New', monospace;
-    --font-title: 'Cinzel', serif;
+    --font-title: 'Cinzel-VariableFont', 'Cinzel', serif;
     --font-story: 'Noto Serif TC', Georgia, serif;
+
+    /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
+    --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 }
 
 html, body { height: 100%; }
@@ -16864,6 +16883,11 @@ body {
 .story-text, .story-modal-text, .rule-book-content, .drawer-lore-text,
 .story-desc, .story-line {
     font-family: var(--font-story);
+}
+
+/* 🕰️ 鐘面文字使用 Cinzel-VariableFont */
+#clock-face, .pixi-clock-face, .clock-spot, .clock-spot *, .card-preview, .card-preview * {
+    font-family: var(--font-clock) !important;
 }
 
 /* ---- 全局容器與 100vh 零捲軸無邊界舞台 ---- */
@@ -20937,6 +20961,20 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 ================================================================================
 
 `````css
+/* 宣告 Cinzel-VariableFont 本地與網路字型 */
+@font-face {
+    font-family: 'Cinzel-VariableFont';
+    src: local('Cinzel-VariableFont'),
+         local('Cinzel-VariableFont_wght'),
+         local('Cinzel Variable'),
+         local('Cinzel'),
+         url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
+         url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
+         url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 :root {
     --bg-color: #1a1a2e;
     --text-color: #e0e0e0;
@@ -20952,8 +20990,11 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     /* 🔤 四大多資訊維度字型變數 (途徑一) */
     --font-ui: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-number: 'Courier New', monospace;
-    --font-title: 'Cinzel', serif;
+    --font-title: 'Cinzel-VariableFont', 'Cinzel', serif;
     --font-story: 'Noto Serif TC', Georgia, serif;
+
+    /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
+    --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 }
 
 body {
@@ -20982,6 +21023,11 @@ body {
 .story-text, .story-modal-text, .rule-book-content, .drawer-lore-text,
 .story-desc, .story-line {
     font-family: var(--font-story);
+}
+
+/* 🕰️ 鐘面文字使用 Cinzel-VariableFont */
+#clock-face, .pixi-clock-face, .clock-spot, .clock-spot *, .card-preview, .card-preview * {
+    font-family: var(--font-clock) !important;
 }
 
 /* --- 畫面結構 --- */

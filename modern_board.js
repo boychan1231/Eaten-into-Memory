@@ -21,8 +21,10 @@
         cardGold: 0xffd27f
     };
 
+    const FONT_CINZEL = '"Cinzel-VariableFont", "Cinzel Variable", "Cinzel", "Cinzel Decorative", serif';
+    const FONT_CLOCK = '"Cinzel-VariableFont", "Cinzel Variable", "Cinzel", "Noto Sans TC", serif';
     const FONT_UI = '"Noto Sans TC", Inter, "Microsoft JhengHei", sans-serif';
-    const FONT_ROMAN = '"Cinzel", Inter, "Noto Sans TC", serif';
+    const FONT_ROMAN = FONT_CINZEL;
 
     const hexOf = (key, fallback = 0xffffff) => {
         const s = (window.UI_CONFIG && window.UI_CONFIG.ROLE_COLORS || {})[key];
@@ -637,7 +639,7 @@
             const a = (pos * 30 - 90) * Math.PI / 180;
             return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
         },
-        text(str, size, fill, weight = '600', family = FONT_UI) {
+        text(str, size, fill, weight = '600', family = FONT_CLOCK) {
             const t = new PIXI.Text(String(str), { fontFamily: family, fontSize: size, fill, fontWeight: weight });
             t.anchor.set(0.5);
             return t;
