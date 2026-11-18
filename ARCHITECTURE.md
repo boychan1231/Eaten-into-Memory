@@ -18,7 +18,7 @@
 | 載入序 | 檔案路徑 | 核心職責與關鍵全域導出 |
 | :---: | :--- | :--- |
 | 1 | `pixi.min.js`, `gsap.min.js` | 第三方渲染與補間動畫引擎（**代理禁止讀取原始碼**）。 |
-| 2 | [`locales/zh-TW.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/zh-TW.js), [`locales/en-US.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/en-US.js) | 繁體中文 / 英文 UI 與規則字典（`window.LOCALES`）。 |
+| 2 | [`locales/zh-TW.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/zh-TW.js), [`locales/en-US.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/en-US.js) | 繁體中文 / 英文 UI 與規則字典（`window.I18N_LOCALES`）。 |
 | 3 | [`i18n.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/i18n.js) | 多語系核心（`window.i18n`, `window.t()`），支援即時語言切換與 DOM 刷新。 |
 | 4 | [`locales/stories_data.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/stories_data.js) | 小時卡時代回憶故事文本資料。 |
 | 5 | `role_assets_data.js` | 角色立繪與圖資 Base64 映射（**代理禁止讀取**）。 |
