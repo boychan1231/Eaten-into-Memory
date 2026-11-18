@@ -28,8 +28,8 @@
 20. `modern_intro.js` (40.2 KB)
 21. `index.html` (51.9 KB)
 22. `classic.html` (39.8 KB)
-23. `modern.css` (123.2 KB)
-24. `style.css` (105.8 KB)
+23. `modern.css` (124.2 KB)
+24. `style.css` (106.8 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -14955,7 +14955,7 @@ if (document.readyState === 'loading') {
 		<!-- 引入 Google Fonts: Noto Sans TC -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Lato:ital,wght@1,100&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="modern.css">
 </head>
@@ -16011,7 +16011,7 @@ if (document.readyState === 'loading') {
 		<!-- 引入 Google Fonts: Noto Sans TC -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Lato:ital,wght@1,100&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style.css">
 </head>
 
@@ -16821,7 +16821,7 @@ if (document.readyState === 'loading') {
 ================================================================================
 
 `````css
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@500;700;800&family=Noto+Sans+TC:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@500;700;800&family=Lato:ital,wght@1,100&family=Noto+Sans+TC:wght@500;700&display=swap');
 
 /* 宣告 Cinzel-VariableFont 本地與網路字型 */
 @font-face {
@@ -16834,6 +16834,20 @@ if (document.readyState === 'loading') {
          url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
          url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
     font-weight: 100 900;
+    font-display: swap;
+}
+
+/* 宣告 Lato Thin 100 Italic 本地與網路字型 */
+@font-face {
+    font-family: 'Lato Thin Italic';
+    src: local('Lato Thin Italic'),
+         local('Lato-ThinItalic'),
+         local('Lato Thin'),
+         local('Lato'),
+         url('fonts/Lato-ThinItalic.ttf') format('truetype'),
+         url('fonts/Lato-ThinItalic.woff2') format('woff2');
+    font-weight: 100;
+    font-style: italic;
     font-display: swap;
 }
 
@@ -16855,6 +16869,9 @@ if (document.readyState === 'loading') {
 
     /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
     --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
+
+    /* 🎴 分鐘卡牌數字專屬字型 (Lato Thin 100 Italic) */
+    --font-minute-card: 'Lato', 'Lato Thin Italic', sans-serif;
 }
 
 html, body { height: 100%; }
@@ -16869,10 +16886,26 @@ body {
 }
 
 /* 🔤 資訊類別字型對應綁定 */
-.minute-card-val, .card-cost, .mech-gear-val, .mana-counter-val,
+.card-cost, .mech-gear-val, .mana-counter-val,
 .deck-count, .score-pts-round, .score-pts-total, .timer-display,
 .time-counter, .step-num, .clock-hour-val {
     font-family: var(--font-number) !important;
+}
+
+/* 🎴 分鐘卡牌數字：使用 Lato Thin 100 Italic */
+.minute-card,
+.minute-card .card-num,
+.played-card-row .p-val,
+.card-val-badge,
+.minute-card-val {
+    font-family: var(--font-minute-card) !important;
+    font-weight: 100 !important;
+    font-style: italic !important;
+}
+
+.minute-card .card-gear {
+    font-style: normal !important;
+    font-weight: 600 !important;
 }
 
 .game-title, .modal-title, .hud-title, .role-badge, .card-name,
@@ -20961,6 +20994,8 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 ================================================================================
 
 `````css
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,100&family=Cinzel:wght@600;700;800&display=swap');
+
 /* 宣告 Cinzel-VariableFont 本地與網路字型 */
 @font-face {
     font-family: 'Cinzel-VariableFont';
@@ -20972,6 +21007,20 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
          url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
          url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
     font-weight: 100 900;
+    font-display: swap;
+}
+
+/* 宣告 Lato Thin 100 Italic 本地與網路字型 */
+@font-face {
+    font-family: 'Lato Thin Italic';
+    src: local('Lato Thin Italic'),
+         local('Lato-ThinItalic'),
+         local('Lato Thin'),
+         local('Lato'),
+         url('fonts/Lato-ThinItalic.ttf') format('truetype'),
+         url('fonts/Lato-ThinItalic.woff2') format('woff2');
+    font-weight: 100;
+    font-style: italic;
     font-display: swap;
 }
 
@@ -20995,6 +21044,9 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 
     /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
     --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
+
+    /* 🎴 分鐘卡牌數字專屬字型 (Lato Thin 100 Italic) */
+    --font-minute-card: 'Lato', 'Lato Thin Italic', sans-serif;
 }
 
 body {
@@ -21009,10 +21061,26 @@ body {
 }
 
 /* 🔤 資訊類別字型對應綁定 */
-.minute-card-val, .card-cost, .mech-gear-val, .mana-counter-val,
+.card-cost, .mech-gear-val, .mana-counter-val,
 .deck-count, .score-pts-round, .score-pts-total, .timer-display,
 .time-counter, .step-num, .clock-hour-val {
     font-family: var(--font-number) !important;
+}
+
+/* 🎴 分鐘卡牌數字：使用 Lato Thin 100 Italic */
+.minute-card,
+.minute-card .card-num,
+.played-card-row .p-val,
+.card-val-badge,
+.minute-card-val {
+    font-family: var(--font-minute-card) !important;
+    font-weight: 100 !important;
+    font-style: italic !important;
+}
+
+.minute-card .card-gear {
+    font-style: normal !important;
+    font-weight: 600 !important;
 }
 
 .game-title, .modal-title, .hud-title, .role-badge, .card-name,

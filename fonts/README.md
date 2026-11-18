@@ -32,14 +32,20 @@
     /* 1. 介面文字 (按鈕、抽屜、面板、日誌) */
     --font-ui: 'Noto Sans TC', Inter, sans-serif;
 
-    /* 2. 數值與時鐘 (卡牌數字、GP/MP計量、鐘面刻度、倒數計時) */
-    --font-number: 'CustomNumberFont', 'Courier New', monospace;
+    /* 2. 數值與一般計量 (GP/MP計量、倒數計時) */
+    --font-number: 'Courier New', monospace;
 
     /* 3. 標題與角色 (遊戲標題、角色名稱、徽章) */
-    --font-title: 'Cinzel', serif;
+    --font-title: 'Cinzel-VariableFont', 'Cinzel', serif;
 
     /* 4. 故事與手冊 (背景故事、回憶錄、規則手冊內文) */
     --font-story: 'Noto Serif TC', serif;
+
+    /* 5. 鐘面刻度與鐘面文字 */
+    --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
+
+    /* 6. 分鐘卡牌數字 (Lato Thin 100 Italic) */
+    --font-minute-card: 'Lato', 'Lato Thin Italic', sans-serif;
 }
 ```
 
