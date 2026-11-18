@@ -27,10 +27,12 @@
         clearAutoDismissTimer();
 
         if (tutorialSpotlightEl) {
-            tutorialSpotlightEl.classList.remove('tutorial-spotlight');
+            tutorialSpotlightEl.classList.remove('tutorial-spotlight', 'tutorial-welcome-arrow');
             tutorialSpotlightEl = null;
         }
-        document.querySelectorAll('.tutorial-spotlight').forEach(el => el.classList.remove('tutorial-spotlight'));
+        document.querySelectorAll('.tutorial-spotlight, .tutorial-welcome-arrow').forEach(el => {
+            el.classList.remove('tutorial-spotlight', 'tutorial-welcome-arrow');
+        });
 
         const tooltip = document.getElementById('tutorial-pointer-tooltip');
         if (tooltip) {
@@ -250,15 +252,24 @@
 
         // 清除舊高亮
         if (tutorialSpotlightEl) {
-            tutorialSpotlightEl.classList.remove('tutorial-spotlight');
+            tutorialSpotlightEl.classList.remove('tutorial-spotlight', 'tutorial-welcome-arrow');
             tutorialSpotlightEl = null;
         }
-        document.querySelectorAll('.tutorial-spotlight').forEach(el => el.classList.remove('tutorial-spotlight'));
+        document.querySelectorAll('.tutorial-spotlight, .tutorial-welcome-arrow').forEach(el => {
+            el.classList.remove('tutorial-spotlight', 'tutorial-welcome-arrow');
+        });
 
         // 目標高亮：若非全屏容器或 body，加上聚光燈樣式（純光暈無 scale 變形）
         const isClockContainer = targetEl.id === 'clock-face' || targetEl.id === 'modern-board' || targetEl.id === 'table-top' || targetEl === document.body;
         if (!isClockContainer && isElementVisible(targetEl)) {
             targetEl.classList.add('tutorial-spotlight');
+            const isWelcomePrompt = typeof messageText === 'string' && (
+                messageText.includes('歡迎來到《Eaten into Memory》') ||
+                messageText.includes('Welcome to Eaten into Memory')
+            );
+            if (targetEl.id === 'next-step-btn' && isWelcomePrompt) {
+                targetEl.classList.add('tutorial-welcome-arrow');
+            }
             tutorialSpotlightEl = targetEl;
         }
 
