@@ -168,7 +168,7 @@ function attemptRoleUpgrade(player, gameState) {
 
     if (window.gameAudio) window.gameAudio.playEvolve();
 
-    appLogger.log(`🎉【進化成功】${oldRole} 達成條件「${checkResult.type}」！變身為：${targetRole}`);
+    appLogger.log(`✦【進化成功】${oldRole} 達成條件「${checkResult.type}」！變身為：${targetRole}`);
 
     // 5. 歸還小時卡 (珍貴放上層，普通放下層)
     player.hourCards.forEach(card => {
@@ -237,7 +237,7 @@ function hourHandMoveTopToBottom(gameState, playerId) {
     }
 
     const logSuffix = (player.hourHandMoveCount === 1) ? " (可再消耗 2 MP 發動一次)" : " (次數已達上限)";
-    appLogger.log(`🕒【時針能力】${player.name} 消耗 ${currentCost} MP，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
+    appLogger.log(`⧖【時針能力】${player.name} 消耗 ${currentCost} MP，將頂牌 (${topCard.number}${topCard.isPrecious ? '★' : ''}) 移至底部。${logSuffix}`);
     
     return true;
 }
@@ -256,18 +256,18 @@ function activateSinAbility(gameState, playerId) {
 	
 	// --- 限制只能在出牌前使用 ---
     if (gameState.phase !== 'preMinute') {
-        appLogger.log("⚠️「惡之牽引」只能在選擇分鐘卡（出牌）前使用");
+        appLogger.log("※「惡之牽引」只能在選擇分鐘卡（出牌）前使用");
         return false;
     }
 
     // 檢查限制
     if (player.specialAbilityUsed) {
-        appLogger.log("⚠️本回合已經發動過能力了");
+        appLogger.log("※ 本回合已經發動過能力了");
         return false;
     }
 	const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_PULL || 2;
     if (player.mana < COST) {
-        appLogger.log("⚠️MP 不足，無法發動。");
+        appLogger.log("※ MP 不足，無法發動。");
         return false;
     }
 
@@ -275,10 +275,10 @@ function activateSinAbility(gameState, playerId) {
     player.mana -= COST;
 	if (window.gameAudio) window.gameAudio.playAbility();
     player.specialAbilityUsed = true; // 標記已使用
-    gameState.sinTargetingMode = 'sin'; // ✅ 改變全域變數：懲罰模式改為「距離最近」
+    gameState.sinTargetingMode = 'sin'; // 改變全域變數：懲罰模式改為「距離最近」
 
-    appLogger.log(`😈【時之惡】發動能力！消耗 ${COST} MP。`);
-    appLogger.log(`⚠️ 本回合懲罰規則變更為：距離「時之惡」最近者受罰。`);
+    appLogger.log(`◆【時之惡】發動能力！消耗 ${COST} MP。`);
+    appLogger.log(`※ 本回合懲罰規則變更為：距離「時之惡」最近者受罰。`);
 
     return true;
 }
@@ -299,14 +299,14 @@ function activateSinSealAbility(gameState, playerId) {
 
     // 1. 基本檢查
     if (player.specialAbilityUsed) {
-        appLogger.log("⚠️本回合已經發動過能力了");
+        appLogger.log("※ 本回合已經發動過能力了");
         return false;
     }
     
     // 2. 讀取消耗 (預設 3 MP)
     const COST = window.GAME_DATA?.ABILITY_COSTS?.SIN_SEAL || 3;
     if (player.mana < COST) {
-        appLogger.log(`⚠️MP 不足 (需 ${COST})，無法發動封印。`);
+        appLogger.log(`※ MP 不足 (需 ${COST})，無法發動封印。`);
         return false;
     }
 
@@ -324,9 +324,9 @@ function activateSinSealAbility(gameState, playerId) {
     player.mana -= COST;
 	if (window.gameAudio) window.gameAudio.playAbility();
     player.specialAbilityUsed = true;
-    gameState.abilityMarker = true; // ✅ 開啟封印標記
+    gameState.abilityMarker = true; // 開啟封印標記
 
-    appLogger.log(`😈【時之惡】耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
+    appLogger.log(`◆【時之惡】耗用 ${COST} MP 發動「封鎖」！本回合所有時魔能力已被封印。`);
     return true;
 }
 

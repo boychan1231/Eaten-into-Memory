@@ -26,7 +26,7 @@ window.addEventListener("error", (e) => {
         appLogger.logToConsole("[JS Error]", e.message);
         const li = document.createElement('li');
         li.style.color = '#ff6b6b';
-        li.textContent = `❌ 錯誤: ${e.message}`;
+        li.textContent = `[錯誤] 錯誤: ${e.message}`;
         if (logList) {
             logList.appendChild(li);
             enforceLogRetention(logList);
@@ -41,7 +41,7 @@ const uiState = {
     isSecondHandSelectingTwo: false
 };
 
-// ✅ 修改：優先使用 config.js 的設定，若無則使用預設值
+// 修改：優先使用 config.js 的設定，若無則使用預設值
 const ROLE_COLORS = window.UI_CONFIG?.ROLE_COLORS || {
     '時魔': '#ff6b6b',
     '時之惡': '#feca57',
@@ -61,7 +61,7 @@ function assessHourCardTactics(gameState, card, humanPlayer) {
     const targetSpot = Number(card.number);
 
     let riskLevel = 'safe';
-    let riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+    let riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '⛨ 安全';
 
     if (is3P || !sinMode) {
         // 最高小時值受罰判定
@@ -70,13 +70,13 @@ function assessHourCardTactics(gameState, card, humanPlayer) {
             const otherMax = Math.max(...otherPlayers.map(p => Number(p.currentClockPosition)));
             if (targetSpot > otherMax) {
                 riskLevel = 'danger';
-                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_max') : null) || '⚠️ 高危 (受罰預警)';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_max') : null) || '▲ 高危 (受罰預警)';
             } else if (targetSpot === otherMax) {
                 riskLevel = 'warning';
-                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger') : null) || '⚠️ 平手危險';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger') : null) || '▲ 平手危險';
             } else {
                 riskLevel = 'safe';
-                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '⛨ 安全';
             }
         }
     } else if (sinMode && sinPlayer && sinPlayer.currentClockPosition !== null && sinPlayer.currentClockPosition !== undefined) {
@@ -88,10 +88,10 @@ function assessHourCardTactics(gameState, card, humanPlayer) {
             const otherMinDist = Math.min(...otherTargets.map(p => getDist(Number(p.currentClockPosition), Number(sinPlayer.currentClockPosition))));
             if (myDist <= otherMinDist) {
                 riskLevel = 'danger';
-                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_sin') : null) || '⚠️ 高危 (接近時之惡)';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.danger_sin') : null) || '▲ 高危 (接近時之惡)';
             } else {
                 riskLevel = 'safe';
-                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '🛡️ 安全';
+                riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '⛨ 安全';
             }
         }
     }
@@ -110,9 +110,9 @@ function assessHourCardTactics(gameState, card, humanPlayer) {
 
     let badgeText = '';
     if (isPrecious && humanPlayer && humanPlayer.type === '受詛者') {
-        badgeText = (window.i18n ? window.i18n.t('ui.tactics.precious') : null) || '💎 珍貴回憶';
+        badgeText = (window.i18n ? window.i18n.t('ui.tactics.precious') : null) || '◆ 珍貴回憶';
     } else if (isRecipe) {
-        badgeText = (window.i18n ? window.i18n.t('ui.tactics.recipe') : null) || '⭐ 契合配方';
+        badgeText = (window.i18n ? window.i18n.t('ui.tactics.recipe') : null) || '★ 契合配方';
     } else {
         badgeText = riskText;
     }
@@ -337,7 +337,7 @@ function updateUI(gameState) {
     // 3. 呼叫各個子函式進行繪製
     updateNextStepButton(gameState, flags);        // 按鈕狀態
     renderTopInfo(gameState);                      // A. 頂部資訊
-    renderRoundPhaseTracker(gameState, flags);     // 🧭 本回合行動序列與競標階段進度條
+    renderRoundPhaseTracker(gameState, flags);     // 本回合行動序列與競標階段進度條
     renderPlayedCardsPanel(gameState);             // A-2. 出牌列表與歷史
     renderScorePanel(gameState);                   // 呼叫積分榜渲染
     renderClockFace(gameState, flags);             // B. 鐘面 (含堆疊查看器)
@@ -359,17 +359,17 @@ function updateUI(gameState) {
         window.drawSinTargetLines(gameState);
     }
 
-    // 5. 🎓 新手教學模式：自動調度動態引導與高亮指標
+    // 5. 新手教學模式：自動調度動態引導與高亮指標
     if (window.TutorialModeManager && typeof window.TutorialModeManager.updateTutorialPointers === 'function') {
         window.TutorialModeManager.updateTutorialPointers(gameState);
     }
 
-    // 6. 🎨 PixiJS 畫布渲染器同步更新 (若當前頁面有 Pixi 渲染器)
+    // 6. PixiJS 畫布渲染器同步更新 (若當前頁面有 Pixi 渲染器)
     if (window.PixiClockRenderer && typeof window.PixiClockRenderer.render === 'function') {
         window.PixiClockRenderer.render(gameState);
     }
 
-    // 7. 🗂️ 棄牌記錄彈窗實時同步（若處於打開狀態）
+    // 7. 棄牌記錄彈窗實時同步（若處於打開狀態）
     const discardOverlay = document.getElementById('discard-pile-overlay');
     if (discardOverlay && !discardOverlay.classList.contains('hidden') && discardOverlay.style.display !== 'none') {
         renderDiscardPileModal(gameState);
@@ -443,7 +443,7 @@ function renderTopInfo(gameState) {
     if (gameRoundEl) gameRoundEl.textContent = gameState.gameRound;
 }
 
-// --- 🧭 初始化本回合行動序列與流程提示收合功能 ---
+// --- 初始化本回合行動序列與流程提示收合功能 ---
 function initRoundPhaseTrackerToggle() {
     const trackerEl = document.getElementById('round-phase-tracker');
     const toggleBtn = document.getElementById('phase-tracker-toggle-btn');
@@ -501,7 +501,7 @@ if (typeof document !== 'undefined') {
     }
 }
 
-// --- 🧭 渲染本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---
+// --- 渲染本回合行動序列與競標階段進度條 (Round Phase & Bid Tracker) ---
 function renderRoundPhaseTracker(gameState, flags) {
     const trackerEl = document.getElementById('round-phase-tracker');
     if (!trackerEl) return;
@@ -535,10 +535,10 @@ function renderRoundPhaseTracker(gameState, flags) {
         currentPhase = 'pick';
         if (gameState.waitingMinuteHandChoice) {
             pickSub = '分針躍遷';
-            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_minute_jump') : '👟 分針能力：決定是否躍遷刻度';
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_minute_jump') : '◈ 分針能力：決定是否躍遷刻度';
         } else if (gameState.waitingSecondHandFinalChoice) {
             pickSub = '秒針二選一';
-            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_second_choice') : '🃏 秒針能力：二選一決定打出卡牌';
+            statusText = window.i18n ? window.i18n.t('ui.phase_tracker.status_second_choice') : '◈ 秒針能力：二選一決定打出卡牌';
         } else if (gameState.waitingHourChoice) {
             const isHuman = (gameState.waitingHourChoicePlayerId === humanId);
             const rankLabel = (gameState.nextHourPickerIndex === 0) ? '第 1 順位' : '第 2 順位';
@@ -546,13 +546,13 @@ function renderRoundPhaseTracker(gameState, flags) {
             if (isHuman) {
                 statusText = window.i18n
                     ? window.i18n.t('ui.phase_tracker.status_your_pick', { rank: rankLabel })
-                    : `👉 【${rankLabel}】輪到您挑選小時卡`;
+                    : `▶ 【${rankLabel}】輪到您挑選小時卡`;
             } else {
                 const picker = (gameState.players || []).find(p => p.id === gameState.waitingHourChoicePlayerId);
                 const pName = picker?.name || '對手';
                 statusText = window.i18n
                     ? window.i18n.t('ui.phase_tracker.status_ai_pick', { name: pName, rank: rankLabel })
-                    : `⏳ 【${rankLabel}】${pName} 正在挑選小時卡`;
+                    : `⧖ 【${rankLabel}】${pName} 正在挑選小時卡`;
             }
         } else {
             pickSub = '選卡中';
@@ -682,7 +682,7 @@ function renderScorePanel(gameState) {
             specialBtn.className = 'score-tab-btn';
             specialBtn.setAttribute('data-score-tab', 'special');
             specialBtn.setAttribute('data-i18n', 'ui.scores.tab_special_victory');
-            specialBtn.textContent = (window.i18n ? window.i18n.t('ui.scores.tab_special_victory') : null) || '🎯 勝利進度';
+            specialBtn.textContent = (window.i18n ? window.i18n.t('ui.scores.tab_special_victory') : null) || '★ 勝利進度';
             if (histBtn) tabBar.insertBefore(specialBtn, histBtn);
             else tabBar.appendChild(specialBtn);
         }
@@ -887,7 +887,7 @@ function renderSpecialVictoryScoreMeter(gameState) {
 
             bar.innerHTML = `
                 <div class="score-mini-pill demon-hunt" title="${t('ui.scores.view_details') || '點擊查看特殊勝利詳情'}">
-                    <span class="mini-pill-icon">😈</span>
+                    <span class="mini-pill-icon">◆</span>
                     <span class="mini-pill-label">${labelHunt}</span>
                     <span class="mini-pill-val ${isHuntComplete ? 'achieved' : ''}">${ejectedCount}/${totalDemons}</span>
                 </div>
@@ -1659,7 +1659,7 @@ function renderClockFace(gameState, flags) {
         clockFaceEl.appendChild(spotEl);
     });
 	
-	// 👇👇👇 回合受罰標示器邏輯 (簡化為只顯示當前受罰方式) 👇👇👇
+	// --- 回合受罰標示器邏輯 (簡化為只顯示當前受罰方式) ---
     const penaltyDisplay = document.getElementById('round-penalty-display');
     if (penaltyDisplay) {
         // 只要抽出小時卡就顯示
@@ -2522,10 +2522,10 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             } else if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
                     hintText = uiState.selectedCardValues.length < 2
-                        ? '⚡ 秒針能力：請點選 2 張分鐘卡。'
-                        : '⚡ 已選 2 張卡牌，請點擊「確認出牌」。';
+                        ? '◆ 秒針能力：請點選 2 張分鐘卡。'
+                        : '◆ 已選 2 張卡牌，請點擊「確認出牌」。';
                 } else {
-                    hintText = '👆 向上拖曳一張分鐘卡至鐘面即可出牌';
+                    hintText = '▲ 向上拖曳一張分鐘卡至鐘面即可出牌';
                 }
             } else {
                 hintText = '準備完成，點擊「下一回合」繼續遊戲。';
@@ -2936,7 +2936,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
 
     const titleEl = document.createElement('div');
     titleEl.className = 'minute-clash-title';
-    titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.gathering') : '⏳ 各玩家已蓋牌集結，準備翻牌…';
+    titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.gathering') : '⧖ 各玩家已蓋牌集結，準備翻牌…';
     banner.appendChild(titleEl);
 
     const rowEl = document.createElement('div');
@@ -2969,7 +2969,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
                 <div class="clash-card-face clash-card-back">✦</div>
                 <div class="clash-card-face clash-card-front">
                     <div class="clash-card-val">${val}</div>
-                    <div class="clash-card-gear">${gear}⚙</div>
+                    <div class="clash-card-gear">${gear} GP</div>
                 </div>
             </div>
             <div class="clash-player-tag">${item.playerName}${isHuman ? `<span class="clash-you-badge">${youTag}</span>` : ''}</div>
@@ -3021,7 +3021,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     // 階段 2 (0.75s ~ 2.25s)：全體卡牌一同 3D 翻牌揭曉數值與齒輪數（停留 1.5 秒看清點數）
     clashTl.call(() => {
         if (finished) return;
-        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.revealing') : '🃏 揭曉各玩家打出的分鐘卡…';
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.revealing') : '◈ 揭曉各玩家打出的分鐘卡…';
         initialList.forEach(item => {
             const slot = slotMap.get(item.playerId);
             if (slot) slot.classList.add('is-flipped');
@@ -3034,7 +3034,7 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     // 階段 3 (2.25s ~ 4.25s)：比較數值大小，執行 FLIP 動態交錯換位並全體浮現 1st ~ 5th 名次
     clashTl.call(() => {
         if (finished) return;
-        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.comparing') : '⚡ 比較分鐘數值大小，排列行動次序…';
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.comparing') : '◆ 比較分鐘數值大小，排列行動次序…';
 
         // Step A (First)：記錄換位前每個 slot 的水平座標
         const firstRects = new Map();
@@ -3092,11 +3092,11 @@ window.playMinuteClashAnimation = function (gameState, preSortChoices, sortedCho
     // 4.25s ~ 9.25s：預設播放 5 秒後全數結束，次序正式確立，啟動 5 秒倒數計時自動關閉
     const setCountdownLabel = (sec) => {
         if (finished) return;
-        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.resolved') : '✨ 分鐘卡大小次序已確定！';
+        titleEl.textContent = window.i18n ? window.i18n.t('ui.clash.resolved') : '✦ 分鐘卡大小次序已確定！';
         footerEl.classList.add('is-ready-prompt');
         footerEl.textContent = window.i18n
             ? window.i18n.t('ui.clash.continue_prompt', { sec })
-            : `👆 點擊畫面任意處繼續（${sec}s 後自動進入挑選小時卡）`;
+            : `▲ 點擊畫面任意處繼續（${sec}s 後自動進入挑選小時卡）`;
     };
 
     for (let s = 5; s >= 1; s--) {
@@ -3295,11 +3295,11 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         // --- 修改結束 ---
 
         const targetLabel = window.i18n ? window.i18n.t('abilities.target_role') : '目標身份：';
-        const condMetText = window.i18n ? window.i18n.t('abilities.condition_met') : '✨ 條件達成！回合結束時進化';
+        const condMetText = window.i18n ? window.i18n.t('abilities.condition_met') : '✦ 條件達成！回合結束時進化';
         const roleDescriptions = {
-            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '👁️預知牌頂 + ⚡1 MP：牌頂移底'}</div>`,
-            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '⚡2 MP：移至下一個有小時卡的格子'}</div>`,
-            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '⚡3 MP：出牌二選一'}</div>`
+            '時針': `<div style="color:#ff9ff3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.hour_desc') : '⧖ 預知牌頂 + ◆ 1 MP：牌頂移底'}</div>`,
+            '分針': `<div style="color:#f368e0; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.min_desc') : '◆ 2 MP：移至下一個有小時卡的格子'}</div>`,
+            '秒針': `<div style="color:#00d2d3; margin-top:4px;">${window.i18n ? window.i18n.t('abilities.sec_desc') : '◆ 3 MP：出牌二選一'}</div>`
         };
 
         const cond1Text = window.i18n ? window.i18n.t('abilities.cond_ages', { ages: uniqueAges, precious: preciousCount }) : `1. 時代 ${uniqueAges}/3, 珍貴 ${preciousCount}/1`;
@@ -3379,7 +3379,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             const localizedAge = window.i18n ? window.i18n.getAgeGroupName(topCard.ageGroup || '') : (topCard.ageGroup || '');
             const topCardText = window.i18n
                 ? window.i18n.t('abilities.hour_top_card', { number: topCard.number, age: localizedAge, star })
-                : `👁️ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${localizedAge}</span> ${star}`;
+                : `⧖ 牌庫頂：<strong>${topCard.number}</strong> <span style="font-size:0.8rem; color:#ccc;">${localizedAge}</span> ${star}`;
             contentHtml = `<div style="font-size:0.9rem; margin-bottom:6px; border-bottom:1px dashed #666; padding-bottom:4px; color:#fff;">${topCardText}</div>`;
         }
 
@@ -3403,7 +3403,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
         btn.className = 'evo-btn';
 
         if (isAbilityLocked) {
-            // ✅ 封鎖狀態樣式
+            // 封鎖狀態樣式
             btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
             btn.style.backgroundColor = '#555';
             btn.style.color = '#999';
@@ -3440,7 +3440,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             } else {
                 const desc = document.createElement('div');
                 desc.className = 'evo-desc';
-                desc.innerHTML = `<span style="color:#f368e0">${window.i18n ? window.i18n.t('abilities.min_prompt') : '⚡請選擇移動方向 (將跳至下一個有卡片的格子)：'}`;
+                desc.innerHTML = `<span style="color:#f368e0">${window.i18n ? window.i18n.t('abilities.min_prompt') : '◆ 請選擇移動方向 (將跳至下一個有卡片的格子)：'}`;
                 container.appendChild(desc);
 
                 const btnGroup = document.createElement('div');
@@ -3470,7 +3470,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             if (isAbilityLocked) {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_disabled', { cost: COST })
-                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} MP 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(🚫 本回合失效)</span>`;
+                    : `<span style="color:#888; text-decoration:line-through;">取得小時卡時，可消耗 ${COST} MP 移動。</span><br><span style="color:#ff6b6b; font-weight:bold;">(✕ 本回合失效)</span>`;
             } else {
                 info.innerHTML = window.i18n
                     ? window.i18n.t('abilities.min_passive_text', { cost: COST })
@@ -3504,7 +3504,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
             btn.className = 'evo-btn';
 
             if (isAbilityLocked) {
-                // ✅ 封鎖狀態樣式
+                // 封鎖狀態樣式
                 btn.innerHTML = `<span class="material-symbols-outlined icon-inline">block</span> ` + (window.i18n ? window.i18n.t('abilities.locked_btn') : `能力被封鎖`);
                 btn.style.backgroundColor = '#555';
                 btn.style.color = '#999';
@@ -3531,7 +3531,7 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                 const hint = document.createElement('div');
                 hint.className = 'evo-desc';
                 hint.style.color = '#00d2d3';
-                hint.textContent = window.i18n ? window.i18n.t('abilities.sec_pick_two_hint') : '👆 請點擊上方 2 張手牌';
+                hint.textContent = window.i18n ? window.i18n.t('abilities.sec_pick_two_hint') : '▲ 請點擊上方 2 張手牌';
                 container.appendChild(hint);
             }
         }

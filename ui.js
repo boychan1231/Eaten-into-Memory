@@ -78,7 +78,7 @@ function processLogQueue() {
     const logContainer = document.getElementById('game-log-container');
 
     if (isSkippingLogs || logQueue.length > LOG_ACCEL_THRESHOLD) {
-        // 🚀 批次效能改良：當日誌積壓或處於略過模式時，使用 DocumentFragment 一次性渲染
+        // [效能] 批次效能改良：當日誌積壓或處於略過模式時，使用 DocumentFragment 一次性渲染
         const fragment = document.createDocumentFragment();
         const batchSize = isSkippingLogs ? logQueue.length : Math.min(logQueue.length, 20);
         const batchMessages = logQueue.splice(0, batchSize);
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     try { appLogger.log('[UI] 已載入，等待開始遊戲。'); } catch (_) { }
 
-    // 📱 手機版排版改善：在螢幕寬度 <= 768px 時預設關閉所有懸浮抽屜，避免遮蔽中央鐘面
+    // [排版] 手機版排版改善：在螢幕寬度 <= 768px 時預設關閉所有懸浮抽屜，避免遮蔽中央鐘面
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
         document.querySelectorAll('details.hud-drawer').forEach(d => {
             d.open = false;
@@ -467,9 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         if (typeof window.startRound === 'function') window.startRound(currentGs);
                         else if (typeof startRound === 'function') startRound(currentGs);
-                        else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
+                        else appLogger.log("[錯誤] 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
                     } catch (e) {
-                        appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
+                        appLogger.log("[錯誤] 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
                         console.error(e);
                     }
                     updateUI(currentGs);
@@ -492,12 +492,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!currentGs.gameEnded) {
                 try {
-                    // 👇 改用 Try-Catch 捕捉真正的錯誤 👇
+                    // 改用 Try-Catch 捕捉真正的錯誤
                     if (typeof window.startRound === 'function') window.startRound(currentGs);
                     else if (typeof startRound === 'function') startRound(currentGs);
-                    else appLogger.log("❌ 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
+                    else appLogger.log("[錯誤] 致命錯誤：找不到 startRound 函式！請按 F12 檢查 game.js 是否有語法錯誤。");
                 } catch (e) {
-                    appLogger.log("❌ 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
+                    appLogger.log("[錯誤] 執行下一回合時程式崩潰，請按 F12 查看詳細錯誤！");
                     console.error(e);
                 }
                 updateUI(currentGs);
@@ -801,10 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateSpeedText = (val) => {
             val = Number(val);
             let text = `${val} ms`;
-            if (val === 0) text = "⚡ 瞬間 (0ms)";
-            else if (val <= 100) text = "⏩ 極快";
+            if (val === 0) text = "✦ 瞬間 (0ms)";
+            else if (val <= 100) text = "▶▶ 極快";
             else if (val <= 300) text = "▶ 一般";
-            else text = "🐢慢速閱讀";
+            else text = "⧖ 慢速閱讀";
             speedValDisplay.textContent = `${text} (${val}ms)`;
 
             // 如果滑桿被拖動，取消目前的略過狀態，改用新速度
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        // 🌐 語言切換監聽 (i18n)
+        // 語言切換監聽 (i18n)
         const langRadios = document.querySelectorAll('input[name="ui-lang"]');
         if (langRadios.length > 0 && window.i18n) {
             const currentLang = window.i18n.currentLang || 'zh-TW';
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // ✅ 新增：手牌排序設定監聽
+        // 新增：手牌排序設定監聽
         const handSortRadios = document.querySelectorAll('input[name="hand-sort"]');
         if (handSortRadios.length > 0) {
             // 1. 初始化選取狀態
@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 🤖 AI 對戰難度設定監聽
+        // AI 對戰難度設定監聽
         const aiDiffRadios = document.querySelectorAll('input[name="ai-difficulty"]');
         if (aiDiffRadios.length > 0) {
             let savedDiff = null;
@@ -1076,14 +1076,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 👇 新增：故事視窗的關閉控制 👇
+    // 新增：故事視窗的關閉控制
     const storyOverlay = document.getElementById('story-overlay');
     const storyCloseBtn = document.getElementById('story-close-btn');
 
     if (storyCloseBtn && storyOverlay) {
         storyCloseBtn.addEventListener('click', () => {
             closeModal(storyOverlay);
-            // ✅ 新增：點擊按鈕關閉時，切換回主遊戲 BGM
+            // 新增：點擊按鈕關閉時，切換回主遊戲 BGM
             if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
                 window.gameAudio.switchBGM('main');
             }
@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
         storyOverlay.addEventListener('click', (e) => {
             if (e.target === storyOverlay) {
                 closeModal(storyOverlay);
-                // ✅ 新增：點擊視窗外部關閉時，切換回主遊戲 BGM
+                // 新增：點擊視窗外部關閉時，切換回主遊戲 BGM
                 if (window.gameAudio && typeof window.gameAudio.switchBGM === 'function') {
                     window.gameAudio.switchBGM('main');
                 }
@@ -1103,7 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 🗂️ 出牌記錄彈窗控制
+    // 出牌記錄彈窗控制
     const discardPileZone = document.getElementById('discard-pile-zone');
     const discardOverlay = document.getElementById('discard-pile-overlay');
     const discardCloseBtn = document.getElementById('discard-pile-close-btn');
@@ -1198,7 +1198,7 @@ function processFloatingText(gameState) {
             const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
             const shieldDiff = currentShield - lastShield;
             if (shieldDiff !== 0) {
-                const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' 🛡️';
+                const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' ⛨';
                 const color = shieldDiff > 0 ? '#4cd137' : '#e17055';
                 pendingEvents.push({
                     playerId: player.id,
@@ -1212,15 +1212,15 @@ function processFloatingText(gameState) {
             // 2. 齒輪 (生命值) 變動
             const gearDiff = player.gearCards - last.gearCards;
             if (gearDiff !== 0) {
-                let text = (gearDiff > 0 ? '+' : '') + gearDiff + ' ⚙';
+                let text = (gearDiff > 0 ? '+' : '') + gearDiff + ' GP';
                 let color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
                 if (gearDiff < 0) {
                     if (player.isEjected) {
-                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '⚠️ 被吞噬出局!';
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.ejected') : null) || '☠ 遭吞噬出局!';
                     } else if (gameState.gameMode === '3P' || gameState.sinTargetingMode === 'default') {
-                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_max') : null) || '-1 ⚙ (最高刻度處決)';
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_max') : null) || '-1 GP (最高刻度處決)';
                     } else if (gameState.sinTargetingMode === 'sin') {
-                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_sin') : null) || '-1 ⚙ (時之惡侵蝕)';
+                        text = (window.i18n ? window.i18n.t('ui.combat_float.penalty_sin') : null) || '-1 GP (時之惡侵蝕)';
                     }
                 }
                 pendingEvents.push({
@@ -1237,7 +1237,7 @@ function processFloatingText(gameState) {
             if (manaDiff !== 0) {
                 // 若幼體時魔使用護盾抵免傷害 (mana 耗盡且開啟 shieldUsed)
                 if (player.type === '時魔' && player.shieldUsed && !last.shieldUsed && manaDiff < 0 && gearDiff === 0) {
-                    const text = (window.i18n ? window.i18n.t('ui.combat_float.shield_block') : null) || '🛡️ 護盾抵免!';
+                    const text = (window.i18n ? window.i18n.t('ui.combat_float.shield_block') : null) || '⛨ 護盾抵免!';
                     pendingEvents.push({
                         playerId: player.id,
                         text,
@@ -1465,22 +1465,22 @@ function renderSpecialVictoryProgress(gameState, container) {
     const t = (key, params) => (window.i18n ? window.i18n.t(key, params) : null);
     const currentMode = gameState.gameMode || (typeof getGameMode === 'function' ? getGameMode() : (gameState.players.length === 3 ? '3P' : '5P'));
 
-    const sectionTitle = t('ui.special_victory.title') || '🏆 特殊勝利達成進度';
+    const sectionTitle = t('ui.special_victory.title') || '★ 特殊勝利達成進度';
 
     let cardsHtml = '';
 
     if (currentMode === '3P') {
         // --- 3P 指針生還競速模式 ---
-        const title3p = t('ui.special_victory.mode_3p_title') || '⚙️ 3P 指針競速對決';
-        const desc3p = t('ui.special_victory.mode_3p_desc') || '純指針齒輪積分爭奪賽 (以最高積分獲勝)';
+        const title3p = t('ui.special_victory.mode_3p_title') || '◈ 3P 指針競速對決';
+        const desc3p = t('ui.special_victory.mode_3p_desc') || '純指針 GP 積分爭奪賽 (以最高積分獲勝)';
 
         const pointerBadges = gameState.players.map(p => {
             const roleName = p.roleCard || p.name;
             if (p.isEjected) {
-                const defTag = t('ui.special_victory.defeated_tag') || '💀 遭吞噬';
+                const defTag = t('ui.special_victory.defeated_tag') || '☠ 遭吞噬';
                 return `<span class="sv-tag sv-tag-danger">${roleName}: ${defTag} (${p.score ?? 0}分)</span>`;
             } else {
-                const survTag = t('ui.special_victory.survived_tag', { gears: p.gearCards ?? 0 }) || `🛡️ 生還 (${p.gearCards ?? 0} ⚙)`;
+                const survTag = t('ui.special_victory.survived_tag', { gears: p.gearCards ?? 0 }) || `⛨ 生還 (${p.gearCards ?? 0} GP)`;
                 return `<span class="sv-tag sv-tag-safe">${roleName}: ${survTag} (${p.score ?? 0}分)</span>`;
             }
         }).join(' ');
@@ -1508,14 +1508,14 @@ function renderSpecialVictoryProgress(gameState, container) {
         const isHuntComplete = (totalDemons > 0 && ejectedCount >= totalDemons);
         const huntPercent = Math.min(100, Math.round((ejectedCount / totalDemons) * 100));
 
-        const huntTitle = t('ui.special_victory.demon_hunt_title') || '😈 時之惡：完全狩獵';
+        const huntTitle = t('ui.special_victory.demon_hunt_title') || '◆ 時之惡：完全狩獵';
         const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各吞噬出局至少一次';
         const huntStatusText = isHuntComplete
-            ? (t('ui.special_victory.demon_hunt_status_achieved') || '🎉 達成 (狩獵完成)')
+            ? (t('ui.special_victory.demon_hunt_status_achieved') || '✦ 達成 (狩獵完成)')
             : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/3)`);
 
-        const tagEjected = t('ui.special_victory.ejected_tag') || '💀 已吞噬';
-        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '🛡️ 未曾被吞噬';
+        const tagEjected = t('ui.special_victory.ejected_tag') || '☠ 已吞噬';
+        const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '⛨ 未曾被吞噬';
 
         const demonBadges = timeDemons.map(p => {
             const roleName = p.roleCard || p.name;
@@ -1543,26 +1543,26 @@ function renderSpecialVictoryProgress(gameState, container) {
         const isLockComplete = (lockedCount >= 12);
         const lockPercent = Math.min(100, Math.round((lockedCount / 12) * 100));
 
-        const lockTitle = t('ui.special_victory.curse_lock_title') || '🔒 受詛者：記憶之鎖';
+        const lockTitle = t('ui.special_victory.curse_lock_title') || '◈ 受詛者：記憶之鎖';
         const lockDesc = t('ui.special_victory.curse_lock_desc') || '在鐘面上鎖定 12 張珍貴卡';
         const lockStatusText = isLockComplete
-            ? (t('ui.special_victory.curse_lock_status_achieved') || '🎉 達成 (記憶解放)')
+            ? (t('ui.special_victory.curse_lock_status_achieved') || '✦ 達成 (記憶解放)')
             : (t('ui.special_victory.curse_lock_status_in_progress', { current: lockedCount }) || `進行中 (${lockedCount}/12)`);
 
         const lockedMarksPrefix = t('ui.special_victory.locked_marks') || '已鎖定刻度：';
         const lockedNoneText = t('ui.special_victory.locked_none') || '無';
         const lockedBadges = lockedPreciousList.length > 0
-            ? lockedPreciousList.map(item => `<span class="sv-tag sv-tag-lock">🔒 ${item.spot}點 (${item.number}★)</span>`).join(' ')
+            ? lockedPreciousList.map(item => `<span class="sv-tag sv-tag-lock">◈ ${item.spot}點 (${item.number}★)</span>`).join(' ')
             : `<span style="color:#777; font-size:0.75rem;">${lockedNoneText}</span>`;
 
         // 3. 時魔陣營：吞噬時之惡
         const sinPlayer = gameState.players.find(p => p.type === '時之惡');
         const isSinEjected = sinPlayer ? (sinPlayer.isEjected || sinPlayer.hasEverBeenEjected) : false;
-        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '⚔️ 時魔陣營：吞噬時之惡';
-        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡齒輪並將其吞噬出局';
+        const demonVicTitle = t('ui.special_victory.time_demon_victory_title') || '◆ 時魔陣營：吞噬時之惡';
+        const demonVicDesc = t('ui.special_victory.time_demon_victory_desc') || '耗盡時之惡 GP 並將其吞噬出局';
         const demonVicStatusText = isSinEjected
-            ? (t('ui.special_victory.time_demon_status_achieved') || '🎉 達成 (時之惡已被吞噬)')
-            : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} ⚙)`);
+            ? (t('ui.special_victory.time_demon_status_achieved') || '✦ 達成 (時之惡已被吞噬)')
+            : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} GP)`);
 
         cardsHtml = `
             <!-- 時之惡：完全狩獵 -->
@@ -1660,20 +1660,20 @@ function renderGameOverPanel(gameState) {
     let titleColor = "#fff";
 
     if (sinPlayer && sinPlayer.isEjected) {
-        winnerText = "🎉 時魔陣營 獲勝！";
+        winnerText = "✦ 時魔陣營 獲勝！";
         subText = "時之惡已被吞噬";
         titleColor = "#ff6b6b"; // 時魔紅
     } else if (aliveDemons.length === 0 || allDemonsEverEjected) {
-        winnerText = "😈 時之惡陣營 獲勝！";
+        winnerText = "◆ 時之惡陣營 獲勝！";
         subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被吞噬)" : "時魔全數陣亡";
         titleColor = "#feca57"; // 時之惡黃
     } else if (sczMissionSuccess) {
-        winnerText = "✨ 受詛者 記憶解放！";
+        winnerText = "✦ 受詛者 記憶解放！";
         subText = "成功鎖定 12 張珍貴卡，達成命運解脫";
         titleColor = "#00d2d3"; // 受詛者青綠
     } else {
         // 時間到 (回合數滿)
-        winnerText = "⏳ 遊戲結束";
+        winnerText = "⧖ 遊戲結束";
         subText = "結算最終積分";
     }
 
@@ -1709,9 +1709,9 @@ function renderGameOverPanel(gameState) {
 
         // 獎牌圖示
         let medal = `#${rank}`;
-        if (rank === 1) medal = '🥇';
-        if (rank === 2) medal = '🥈';
-        if (rank === 3) medal = '🥉';
+        if (rank === 1) medal = '★ 1';
+        else if (rank === 2) medal = '★ 2';
+        else if (rank === 3) medal = '★ 3';
 
         // 角色顏色
         const roleKey = (p.roleCard && p.roleCard.includes('時魔')) ? '時魔' : p.roleCard;
@@ -1720,24 +1720,24 @@ function renderGameOverPanel(gameState) {
         // 戰術榮譽高光標籤 (Match Highlights)
         let highlight = '';
         if (rank === 1) {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.champion') : null) || '👑 榮耀之冠';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.champion') : null) || '★ 榮耀之冠';
         } else if (p.hourCards && p.hourCards.length >= 3) {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.collector') : null) || '💎 記憶收藏家';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.collector') : null) || '◆ 記憶收藏家';
         } else if (!p.isEjected && p.gearCards > 0) {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.survivor') : null) || '🛡️ 堅毅生還';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.survivor') : null) || '⛨ 堅毅生還';
         } else if (p.type === '時之惡') {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.hunter') : null) || '😈 終焉獵手';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.hunter') : null) || '◆ 終焉獵手';
         } else if (p.type === '受詛者' && (p.hourCards || []).some(c => c.isPrecious)) {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.destiny') : null) || '✨ 命運探索者';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.destiny') : null) || '✦ 命運探索者';
         } else if (['時針', '分針', '秒針'].includes(p.roleCard)) {
-            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.awakened') : null) || '⌛ 覺醒者';
+            highlight = (window.i18n ? window.i18n.t('ui.match_highlights.awakened') : null) || '⧖ 覺醒者';
         }
 
         const highlightHtml = highlight ? `<span class="rank-highlight-tag">${highlight}</span>` : '';
 
         row.innerHTML = `
             <div class="rank-medal">${medal}</div>
-            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(💀)' : ''} ${highlightHtml}</div>
+            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(☠)' : ''} ${highlightHtml}</div>
             <div style="font-size:0.85rem; color:#aaa;">${p.roleCard}</div>
             <div style="font-family:monospace; font-size:1.2rem; font-weight:bold;">${p.score}</div>
         `;
@@ -2023,7 +2023,7 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
             sorted.forEach((p, idx) => {
                 const isHuman = p.id === humanId;
                 const isLeader = p.score === maxScore && p.score > 0;
-                const rankIcon = idx === 0 ? '🥇 1' : (idx === 1 ? '🥈 2' : (idx === 2 ? '🥉 3' : `${idx + 1}`));
+                const rankIcon = idx === 0 ? '★ 1' : (idx === 1 ? '★ 2' : (idx === 2 ? '★ 3' : `${idx + 1}`));
                 const rawRole = p.roleCard || p.type;
                 const roleKey = (rawRole && String(rawRole).includes('時魔')) ? '時魔' : rawRole;
                 const roleColor = (window.UI_CONFIG?.ROLE_COLORS && window.UI_CONFIG.ROLE_COLORS[roleKey]) || '#ffd27f';
@@ -2137,7 +2137,7 @@ function initCustomFontUploader() {
             if (statusEl) {
                 statusEl.textContent = window.i18n
                     ? window.i18n.t('ui.settings.custom_font_status_error')
-                    : '❌ 字型載入失敗，請確認檔案格式';
+                    : '✕ 字型載入失敗，請確認檔案格式';
                 statusEl.style.color = '#ff6b6b';
             }
         }

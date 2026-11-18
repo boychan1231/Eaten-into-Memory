@@ -48,8 +48,8 @@
     /* 🕰️ 鐘面專屬字型 (Cinzel-VariableFont) */
     --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 
-    /* 🎴 分鐘卡牌數字專屬字型 (Playfair Display Regular 400 Italic) */
-    --font-minute-card: 'Playfair Display', serif;
+    /* 🎴 分鐘卡牌數字專屬字型 (Cinzel-VariableFont) */
+    --font-minute-card: 'Cinzel-VariableFont', 'Cinzel', serif;
 }
 
 body {
@@ -70,15 +70,15 @@ body {
     font-family: var(--font-number) !important;
 }
 
-/* 🎴 分鐘卡牌數字：使用 Playfair Display Regular 400 Italic */
+/* 🎴 分鐘卡牌數字：使用 Cinzel-VariableFont */
 .minute-card,
 .minute-card .card-num,
 .played-card-row .p-val,
 .card-val-badge,
 .minute-card-val {
     font-family: var(--font-minute-card) !important;
-    font-weight: 400 !important;
-    font-style: italic !important;
+    font-weight: 700 !important;
+    font-style: normal !important;
 }
 
 .minute-card .card-gear {

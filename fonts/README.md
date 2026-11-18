@@ -44,8 +44,8 @@
     /* 5. 鐘面刻度與鐘面文字 */
     --font-clock: 'Cinzel-VariableFont', 'Cinzel', serif;
 
-    /* 6. 分鐘卡牌數字 (Playfair Display Regular 400 Italic) */
-    --font-minute-card: 'Playfair Display', serif;
+    /* 6. 分鐘卡牌數字 (Cinzel-VariableFont) */
+    --font-minute-card: 'Cinzel-VariableFont', 'Cinzel', serif;
 }
 ```
 

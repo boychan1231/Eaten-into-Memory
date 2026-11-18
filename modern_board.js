@@ -744,7 +744,7 @@
                 node.addChild(g);
 
                 if (tactics && isHumanPicking) {
-                    const iconText = isDanger ? '⚠️' : (isRecipe ? '★' : '🛡️');
+                    const iconText = isDanger ? '▲' : (isRecipe ? '★' : '⛨');
                     const iconColor = isDanger ? 0xff4757 : (isRecipe ? 0xffd27f : 0x00d2d3);
                     const tacticsBadge = this.text(iconText, 12, iconColor, '900');
                     tacticsBadge.position.set(0, -26);
@@ -762,7 +762,7 @@
                     tag.y = 13;
                     node.addChild(tag);
                     if (top.isLocked) {
-                        const lock = this.text('🔒', 9, 0xffffff, '400');
+                        const lock = this.text('◈', 9, 0xffffff, '400');
                         lock.position.set(-18, -16);
                         node.addChild(lock);
                     }
@@ -852,7 +852,7 @@
                         const isDanger = tactics.riskLevel === 'danger';
                         const isRecipe = tactics.isRecipe;
                         const tagCol = isDanger ? 0xff4757 : (isRecipe ? 0xffd27f : 0x00d2d3);
-                        const tagText = isDanger ? '⚠️ 高危' : (isRecipe ? '★ 契合' : '🛡️ 安全');
+                        const tagText = isDanger ? '▲ 高危' : (isRecipe ? '★ 契合' : '⛨ 安全');
                         const tagPill = this.text(tagText, 9.5, tagCol, '800');
                         tagPill.position.set(0, 42);
                         c.addChild(tagPill);
@@ -892,7 +892,7 @@
                 hint.position.set(CX, CY + 58);
                 L.addChild(hint);
             } else if (this.dropHighlightActive) {
-                const dropHint = this.text('⚡ 放開以出牌', 12, PAL.goldBright, '800');
+                const dropHint = this.text('✦ 放開以出牌', 12, PAL.goldBright, '800');
                 dropHint.position.set(CX, CY + 54);
                 L.addChild(dropHint);
             }

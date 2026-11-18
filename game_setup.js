@@ -149,7 +149,7 @@ function getPreciousAgeGroupForNumber(config, number) {
 function buildHourDeckWithRandomPrecious() {
     const config = pickRandomPreciousConfig();
     if (!config || !config.mapping) {
-        console.warn("⚠️ 未載入小時卡珍貴配置，將以非珍貴卡建立牌庫。");
+        console.warn("※ 未載入小時卡珍貴配置，將以非珍貴卡建立牌庫。");
     }
     const deck = [];
 
@@ -166,7 +166,7 @@ function buildHourDeckWithRandomPrecious() {
     // （保險檢查）
     const preciousCount = deck.filter(c => c.isPrecious).length;
     if (preciousCount !== 12 || deck.length !== 36) {
-        console.warn(`⚠️ 小時卡牌庫異常：總數 ${deck.length}（預期 36），珍貴數量 ${preciousCount}（預期 12）`);
+        console.warn(`※ 小時卡牌庫異常：總數 ${deck.length}（預期 36），珍貴數量 ${preciousCount}（預期 12）`);
     }
 
     return { deck, config };
@@ -411,9 +411,9 @@ function initializeGame(roles = null) {
             }
             __testHandCards = __testHandCards.slice(0, numCards);
 
-            appLogger.log(`🧪【測試模式】人類玩家 ${__humanIdForTest} 第 1 局起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
+            appLogger.log(`✦【測試模式】人類玩家 ${__humanIdForTest} 第 1 局起始手牌固定為：${__testHandCards.map(c => c.value).join(',')}`);
         } else {
-            console.warn(`🧪【測試模式】找不到人類玩家 id=${__humanIdForTest}，未套用固定手牌。`);
+            console.warn(`※【測試模式】找不到人類玩家 id=${__humanIdForTest}，未套用固定手牌。`);
         }
     }
 

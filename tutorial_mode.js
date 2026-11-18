@@ -223,7 +223,7 @@
         const isLatest = (currentHistoryIndex === tutorialHistory.length - 1);
         let displayMsg = entry.messageText;
         if (!isLatest) {
-            displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">📜【歷史教學回顧】</div>` + displayMsg;
+            displayMsg = `<div style="font-size:0.78rem; color:#ff9ff3; margin-bottom:4px; font-weight:bold;">◈【歷史教學回顧】</div>` + displayMsg;
         }
 
         renderTutorialMessage(entry.targetSelector, displayMsg, entry.preferredPlacement);
@@ -343,18 +343,18 @@
     function getDefaultRoleScoringText(roleKey) {
         switch (roleKey) {
             case 'sin':
-                return '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
+                return '<strong>【◆ 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>☠ 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>▲ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 GP（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
             case 'scz':
-                return '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！';
+                return '<strong>【◈ 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>★ 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！';
             case 'hour':
-                return '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪！';
+                return '<strong>【◈ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>⧖ 預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身 GP！';
             case 'minute':
-                return '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！';
+                return '<strong>【◈ 分針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！';
             case 'second':
-                return '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分！<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！';
+                return '<strong>【◈ 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！';
             case 'young':
             default:
-                return '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分！<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>吞噬大勝：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝！<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。';
+                return '<strong>【◈ 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的 GP 將 1:1 轉換為總分！<br>• <strong>★ 成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>✦ 吞噬大勝：</strong>若合力將「時之惡」GP 扣盡吞噬，時魔全體直接獲勝！<br>• <strong>⛨ 保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。';
         }
     }
 
@@ -408,7 +408,7 @@
             shownSteps.add('has_shown_welcome');
             const welcomeMsg = window.i18n
                 ? window.i18n.t('tutorial.step0_welcome')
-                : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                : '<strong>✦ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
             const roleScoringMsg = window.i18n
                 ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
                 : getDefaultRoleScoringText(roleKey);
@@ -421,13 +421,13 @@
         }
 
         const welcomePrefix = !shownSteps.has('has_shown_welcome')
-            ? (window.i18n ? window.i18n.t('tutorial.welcome_prefix') : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>')
+            ? (window.i18n ? window.i18n.t('tutorial.welcome_prefix') : '<strong>✦ 歡迎來到《Eaten into Memory》！</strong><br>')
             : '';
 
         // 【階段 1】：等待人類出牌 (分鐘卡)
         if (gameState.currentRoundAIChoices !== null) {
             const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                 : '';
 
             // 【1-A】：5P 模式幼體時魔進化為新形態後的專屬得分導引
@@ -438,7 +438,7 @@
                 const roleName = humanPlayer.roleCard || (roleKey === 'hour' ? '時針' : (roleKey === 'minute' ? '分針' : '秒針'));
                 const evoNotice = window.i18n
                     ? window.i18n.t('tutorial.role_evolved_notice', { roleName })
-                    : `<strong>🎉【恭喜進化為 ${roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分！請善用全新的專屬異能保護齒輪，爭取最高積分！`;
+                    : `<strong>✦【恭喜進化為 ${roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分！請善用全新的專屬異能保護齒輪，爭取最高積分！`;
                 const evoScoring = window.i18n
                     ? window.i18n.t(`tutorial.role_scoring_${roleKey}`)
                     : getDefaultRoleScoringText(roleKey);
@@ -496,7 +496,7 @@
                 shownSteps.add('has_shown_welcome');
                 const step1Msg = window.i18n
                     ? window.i18n.t('tutorial.step1_drag_minute')
-                    : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
+                    : '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>◈ <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰！';
                 const handTarget = document.getElementById('human-hand') || '#human-hand';
                 showTutorialPointer(handTarget, welcomePrefix + turnPrefix + step1Msg, 'top');
                 return;
@@ -536,7 +536,7 @@
                 ? (window.i18n ? window.i18n.t('tutorial.penalty_sin') : '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡！</span>')
                 : (window.i18n ? window.i18n.t('tutorial.penalty_max') : '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾！</span>');
             const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                 : '';
 
             // 針對受詛者或時之惡加入專屬挑選提示
@@ -544,11 +544,11 @@
             if (roleKey === 'scz') {
                 roleHourHint = window.i18n
                     ? window.i18n.t('tutorial.role_scz_hour_hint')
-                    : '<br><span style="color:#00d2d3;">💡 <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>';
+                    : '<br><span style="color:#00d2d3;">◈ <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>';
             } else if (roleKey === 'sin') {
                 roleHourHint = window.i18n
                     ? window.i18n.t('tutorial.role_sin_hour_hint')
-                    : '<br><span style="color:#feca57;">💡 <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>';
+                    : '<br><span style="color:#feca57;">◈ <strong>時之惡專屬提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊大勝！</span>';
             }
 
             shownSteps.add('step3_select_hour');
@@ -575,12 +575,12 @@
             // 僅在人類明確「非挑選者」時，在鐘面顯示一次避險提醒
             if (!isHumanPicker && (!shownSteps.has('step3_no_hour_notice') || force)) {
                 const turnPrefix = gameState.roundMarker > 1
-                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                     : '';
                 shownSteps.add('step3_no_hour_notice');
                 const noHourNotice = window.i18n
                     ? window.i18n.t('tutorial.step3_no_hour_notice')
-                    : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險！<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
+                    : '<strong>【戰術提醒：無須挑選小時卡】</strong><br>⛨ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減 GP（生命值）的風險！<br>▲ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。';
                 showTutorialPointer('#clock-face', turnPrefix + noHourNotice, 'center-right');
                 return;
             }
@@ -592,7 +592,7 @@
         // 【階段 3】：分針能力選擇中
         if (gameState.waitingMinuteHandChoice && (!shownSteps.has('step_minute_ability') || force)) {
             const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                 : '';
             shownSteps.add('step_minute_ability');
             const minMsg = window.i18n
@@ -615,7 +615,7 @@
         // 【階段 4】：秒針二選一
         if (gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId && (!shownSteps.has('step_second_ability') || force)) {
             const turnPrefix = gameState.roundMarker > 1
-                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                 : '';
             shownSteps.add('step_second_ability');
             const secMsg = window.i18n
@@ -635,12 +635,12 @@
                     shownSteps.add('has_shown_welcome');
                     const welcomeMsg = window.i18n
                         ? window.i18n.t('tutorial.step0_welcome')
-                        : '<strong>✨ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
+                        : '<strong>✦ 歡迎來到《Eaten into Memory》！</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。';
                     showTutorialPointer(nextBtn, welcomeMsg, 'center-right');
                 }
             } else if (!shownSteps.has('step4_next_round') || force) {
                 const turnPrefix = gameState.roundMarker > 1
-                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>')
+                    ? (window.i18n ? window.i18n.t('tutorial.turn_prefix') : '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">◈ 可於「設定」隨時關閉教學模式</div>')
                     : '';
 
                 // 依角色加入專屬進度與得分反饋
@@ -660,7 +660,7 @@
                     if (isAllEjected) {
                         sinProgressText = window.i18n
                             ? window.i18n.t('tutorial.role_progress_sin_complete')
-                            : '特殊大勝進度：全場時魔已全數吞噬！🎉 (達成特殊大勝)';
+                            : '特殊大勝進度：全場時魔已全數吞噬！✦ (達成特殊大勝)';
                     } else {
                         const targetNames = unejectedDemons.map(p => p.roleCard || p.name).join('、');
                         sinProgressText = window.i18n
@@ -703,8 +703,8 @@
         if (window.appLogger) {
             window.appLogger.log(
                 isAutoCompleted
-                    ? '💡 所有教學指南已展示完畢，新手教學模式已自動完成。'
-                    : '💡 新手教學模式已關閉（可隨時於「設定」中重新開啟）。'
+                    ? '◈ 所有教學指南已展示完畢，新手教學模式已自動完成。'
+                    : '◈ 新手教學模式已關閉（可隨時於「設定」中重新開啟）。'
             );
         }
     }
@@ -716,7 +716,7 @@
         updateTutorialNav();
     }
 
-    // 重播當前步驟教學提示（使用者手動點擊「💡 提示」按鈕時調用）
+    // 重播當前步驟教學提示（使用者手動點擊「提示」按鈕時調用）
     function replayCurrentTutorial(gameState) {
         const gs = gameState || window.globalGameState;
         if (!gs) return;
@@ -861,7 +861,7 @@
             });
         }
 
-        // 點擊「💡 提示」常駐按鈕：隨時重播當前步驟教學提示
+        // 點擊「提示」常駐按鈕：隨時重播當前步驟教學提示
         const replayBtn = document.getElementById('btn-replay-tutorial');
         if (replayBtn) {
             replayBtn.addEventListener('click', (e) => {
