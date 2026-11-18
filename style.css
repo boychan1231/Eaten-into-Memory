@@ -4354,3 +4354,20 @@ body {
 .drawer-mobile-title .material-symbols-outlined.icon-inline {
     vertical-align: -0.18em;
 }
+
+/* 玩家1扣除 GP 時畫面震動特效 */
+@keyframes screen-shake-effect {
+    0% { transform: translate(0, 0); }
+    15% { transform: translate(-7px, 5px); }
+    30% { transform: translate(7px, -5px); }
+    45% { transform: translate(-5px, -4px); }
+    60% { transform: translate(5px, 4px); }
+    75% { transform: translate(-3px, 2px); }
+    90% { transform: translate(3px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+
+body.screen-damage-shake {
+    animation: screen-shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both;
+}
+

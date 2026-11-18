@@ -129,6 +129,8 @@
                 ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
                 sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
+                screen_shake: 'Screen Shake on GP Loss',
+                screen_shake_desc: 'Trigger a brief screen shake feedback when Player 1 loses GP from penalties or encroachment.',
                 custom_font_title: 'Custom Font (Live Preview)',
                 custom_font_upload_btn: 'Upload Font File (.ttf, .otf, .woff, .woff2)',
                 custom_font_reset_btn: 'Reset to Default Font',

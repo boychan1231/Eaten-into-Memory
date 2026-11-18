@@ -11,25 +11,25 @@
 3. `PROJECT_HANDOVER_NOTES.md` (11.9 KB)
 4. `package.json` (0.8 KB)
 5. `vite.config.ts` (2.1 KB)
-6. `config.js` (5.4 KB)
+6. `config.js` (5.5 KB)
 7. `logger.js` (1.5 KB)
 8. `audio.js` (14.3 KB)
 9. `i18n.js` (5.8 KB)
-10. `locales/zh-TW.js` (29.2 KB)
-11. `locales/en-US.js` (27.3 KB)
+10. `locales/zh-TW.js` (29.4 KB)
+11. `locales/en-US.js` (27.5 KB)
 12. `abilities.js` (12.0 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (100.1 KB)
 15. `ui_modals.js` (4.6 KB)
 16. `ui_components.js` (168.5 KB)
 17. `tutorial_mode.js` (47.7 KB)
-18. `ui.js` (92.5 KB)
+18. `ui.js` (94.1 KB)
 19. `modern_board.js` (69.1 KB)
 20. `modern_intro.js` (40.2 KB)
-21. `index.html` (55.2 KB)
-22. `classic.html` (41.5 KB)
-23. `modern.css` (124.2 KB)
-24. `style.css` (108.4 KB)
+21. `index.html` (55.7 KB)
+22. `classic.html` (42.1 KB)
+23. `modern.css` (124.7 KB)
+24. `style.css` (108.9 KB)
 25. `locales/stories_data.js` (15.2 KB)
 
 ---
@@ -684,6 +684,7 @@ window.GAME_CONFIG = {
 window.UI_CONFIG = {
     SEQUENTIAL_EFFECTS: true,  // 預設是否啟用「特效依序播放 (逐一發生)」
     EFFECT_INTERVAL_MS: 260,   // 特效逐一播放間隔時間 (毫秒，推薦 200~300ms 輕快節奏)
+    SCREEN_SHAKE: true,        // 預設是否啟用「扣除 GP 時畫面震動特效」
     LOG_SPEED: 360,          // 日誌顯示速度 (毫秒，越小越快)
     LOG_RETENTION_LIMIT: 200, // 日誌保留上限 (DOM)
     HISTORY_LIMIT: 12,       // 右側歷史記錄顯示的回合數
@@ -1581,6 +1582,8 @@ window.gameVoice = gameVoice;
                 ai_difficulty_desc: '「一般」具備進化目標渴求與長線資源規劃；「簡單」維持原版基礎避險出牌。',
                 sequential_effects: '特效依序播放（逐一發生）',
                 sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。',
+                screen_shake: '扣除 GP 時畫面震動',
+                screen_shake_desc: '當人類玩家受到處決或侵蝕扣除 GP 時，觸發短暫畫面搖晃受擊回饋。',
                 custom_font_title: '自訂字型 (即時套用)',
                 custom_font_upload_btn: '上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
                 custom_font_reset_btn: '還原預設字型',
@@ -1984,6 +1987,8 @@ window.gameVoice = gameVoice;
                 ai_difficulty_desc: 'Normal features evolution-driven bidding and long-term card pacing; Easy retains the original baseline logic.',
                 sequential_effects: 'Sequential Effects (One by One)',
                 sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
+                screen_shake: 'Screen Shake on GP Loss',
+                screen_shake_desc: 'Trigger a brief screen shake feedback when Player 1 loses GP from penalties or encroachment.',
                 custom_font_title: 'Custom Font (Live Preview)',
                 custom_font_upload_btn: 'Upload Font File (.ttf, .otf, .woff, .woff2)',
                 custom_font_reset_btn: 'Reset to Default Font',
@@ -10995,6 +11000,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 監聽設定頁中的畫面震動特效開關 (扣除 GP 時畫面震動)
+    const shakeToggleEl = document.getElementById('screen-shake-toggle');
+    if (shakeToggleEl) {
+        try {
+            const savedShake = localStorage.getItem('eaten_screen_shake');
+            if (savedShake !== null && window.UI_CONFIG) {
+                window.UI_CONFIG.SCREEN_SHAKE = (savedShake === 'true');
+            }
+        } catch (_) {}
+
+        shakeToggleEl.checked = window.UI_CONFIG?.SCREEN_SHAKE !== false;
+        shakeToggleEl.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            window.UI_CONFIG.SCREEN_SHAKE = isEnabled;
+            try {
+                localStorage.setItem('eaten_screen_shake', String(isEnabled));
+            } catch (_) {}
+            appLogger.log(`[System] 扣除 GP 畫面震動特效已${isEnabled ? '開啟' : '關閉'}`);
+        });
+    }
+
     if (gameModeCloseBtn && gameModeOverlay) {
         gameModeCloseBtn.addEventListener('click', () => closeModal(gameModeOverlay));
     }
@@ -11572,6 +11599,11 @@ function triggerFloat(playerId, text, color, type, diff) {
                 if (cardEl) cardEl.classList.remove('card-damage-shake');
             }, 450);
         }
+
+        // 當玩家1齒輪 (GP) 被扣減時，觸發畫面晃動特效
+        if (playerId === humanId && type === 'gear' && typeof diff === 'number' && diff < 0) {
+            triggerScreenShake();
+        }
     }
 
     // 優先以鐘面上實體角色棋子 (Token) 的螢幕座標作為浮動戰鬥文字起點
@@ -11581,6 +11613,19 @@ function triggerFloat(playerId, text, color, type, diff) {
     }
 
     spawnFloatingText(targetEl, text, color, playerId, tokenScreenPos);
+}
+
+// 玩家1齒輪扣除畫面震動特效
+function triggerScreenShake() {
+    if (window.UI_CONFIG && window.UI_CONFIG.SCREEN_SHAKE === false) return;
+    const body = document.body;
+    if (!body) return;
+    body.classList.remove('screen-damage-shake');
+    void body.offsetWidth; // 強制重排以重新觸發動畫
+    body.classList.add('screen-damage-shake');
+    setTimeout(() => {
+        body.classList.remove('screen-damage-shake');
+    }, 450);
 }
 
 function spawnFloatingText(targetEl, text, color, playerId, customScreenPos) {
@@ -15723,6 +15768,15 @@ if (document.readyState === 'loading') {
 								數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。
 							</div>
 
+							<label class="toggle-switch toggle-switch-spaced">
+								<input type="checkbox" id="screen-shake-toggle" checked>
+								<span class="slider"></span>
+								<span data-i18n="ui.settings.screen_shake">扣除 GP 時畫面震動</span>
+							</label>
+							<div class="setting-hint" data-i18n="ui.settings.screen_shake_desc" style="margin-top: -6px; margin-bottom: 12px; font-size: 0.85rem; color: #888;">
+								當人類玩家受到處決或侵蝕扣除 GP 時，觸發短暫畫面搖晃受擊回饋。
+							</div>
+
 							<label class="toggle-switch">
 								<input type="checkbox" id="test-toggle">
 								<span class="slider"></span>
@@ -16551,6 +16605,15 @@ if (document.readyState === 'loading') {
 							</label>
 							<div class="setting-hint" data-i18n="ui.settings.sequential_effects_desc" style="margin-top: -6px; margin-bottom: 12px; font-size: 0.85rem; color: #888;">
 								數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。
+							</div>
+
+							<label class="toggle-switch toggle-switch-spaced">
+								<input type="checkbox" id="screen-shake-toggle" checked>
+								<span class="slider"></span>
+								<span data-i18n="ui.settings.screen_shake">扣除 GP 時畫面震動</span>
+							</label>
+							<div class="setting-hint" data-i18n="ui.settings.screen_shake_desc" style="margin-top: -6px; margin-bottom: 12px; font-size: 0.85rem; color: #888;">
+								當人類玩家受到處決或侵蝕扣除 GP 時，觸發短暫畫面搖晃受擊回饋。
 							</div>
 
 							<label class="toggle-switch">
@@ -20987,6 +21050,23 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     }
 }
 
+/* 玩家1扣除 GP 時畫面震動特效 */
+@keyframes screen-shake-effect {
+    0% { transform: translate(0, 0); }
+    15% { transform: translate(-7px, 5px); }
+    30% { transform: translate(7px, -5px); }
+    45% { transform: translate(-5px, -4px); }
+    60% { transform: translate(5px, 4px); }
+    75% { transform: translate(-3px, 2px); }
+    90% { transform: translate(3px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+
+body.screen-damage-shake {
+    animation: screen-shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+
 `````
 
 
@@ -25351,6 +25431,23 @@ body {
 .drawer-mobile-title .material-symbols-outlined.icon-inline {
     vertical-align: -0.18em;
 }
+
+/* 玩家1扣除 GP 時畫面震動特效 */
+@keyframes screen-shake-effect {
+    0% { transform: translate(0, 0); }
+    15% { transform: translate(-7px, 5px); }
+    30% { transform: translate(7px, -5px); }
+    45% { transform: translate(-5px, -4px); }
+    60% { transform: translate(5px, 4px); }
+    75% { transform: translate(-3px, 2px); }
+    90% { transform: translate(3px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+
+body.screen-damage-shake {
+    animation: screen-shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both;
+}
+
 
 `````
 

@@ -732,6 +732,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 監聽設定頁中的畫面震動特效開關 (扣除 GP 時畫面震動)
+    const shakeToggleEl = document.getElementById('screen-shake-toggle');
+    if (shakeToggleEl) {
+        try {
+            const savedShake = localStorage.getItem('eaten_screen_shake');
+            if (savedShake !== null && window.UI_CONFIG) {
+                window.UI_CONFIG.SCREEN_SHAKE = (savedShake === 'true');
+            }
+        } catch (_) {}
+
+        shakeToggleEl.checked = window.UI_CONFIG?.SCREEN_SHAKE !== false;
+        shakeToggleEl.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            window.UI_CONFIG.SCREEN_SHAKE = isEnabled;
+            try {
+                localStorage.setItem('eaten_screen_shake', String(isEnabled));
+            } catch (_) {}
+            appLogger.log(`[System] 扣除 GP 畫面震動特效已${isEnabled ? '開啟' : '關閉'}`);
+        });
+    }
+
     if (gameModeCloseBtn && gameModeOverlay) {
         gameModeCloseBtn.addEventListener('click', () => closeModal(gameModeOverlay));
     }
@@ -1309,6 +1331,11 @@ function triggerFloat(playerId, text, color, type, diff) {
                 if (cardEl) cardEl.classList.remove('card-damage-shake');
             }, 450);
         }
+
+        // 當玩家1齒輪 (GP) 被扣減時，觸發畫面晃動特效
+        if (playerId === humanId && type === 'gear' && typeof diff === 'number' && diff < 0) {
+            triggerScreenShake();
+        }
     }
 
     // 優先以鐘面上實體角色棋子 (Token) 的螢幕座標作為浮動戰鬥文字起點
@@ -1318,6 +1345,19 @@ function triggerFloat(playerId, text, color, type, diff) {
     }
 
     spawnFloatingText(targetEl, text, color, playerId, tokenScreenPos);
+}
+
+// 玩家1齒輪扣除畫面震動特效
+function triggerScreenShake() {
+    if (window.UI_CONFIG && window.UI_CONFIG.SCREEN_SHAKE === false) return;
+    const body = document.body;
+    if (!body) return;
+    body.classList.remove('screen-damage-shake');
+    void body.offsetWidth; // 強制重排以重新觸發動畫
+    body.classList.add('screen-damage-shake');
+    setTimeout(() => {
+        body.classList.remove('screen-damage-shake');
+    }, 450);
 }
 
 function spawnFloatingText(targetEl, text, color, playerId, customScreenPos) {
