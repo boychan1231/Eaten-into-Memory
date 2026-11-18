@@ -9,17 +9,40 @@
     --text: #e8ebf7;
     --dim: #8a90b8;
     --radius: 16px;
+
+    /* 🔤 四大多資訊維度字型變數 (途徑一) */
+    --font-ui: 'Noto Sans TC', Inter, system-ui, -apple-system, sans-serif;
+    --font-number: 'Courier New', monospace;
+    --font-title: 'Cinzel', serif;
+    --font-story: 'Noto Serif TC', Georgia, serif;
 }
 
 html, body { height: 100%; }
 
 body {
-    font-family: 'Noto Sans TC', Inter, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-ui);
     color: var(--text);
     background-color: #020204;
     background:
         radial-gradient(900px 550px at 50% 42%, #0a0b10 0%, #030306 58%, #000000 100%);
     background-attachment: fixed;
+}
+
+/* 🔤 資訊類別字型對應綁定 */
+.minute-card-val, .card-cost, .mech-gear-val, .mana-counter-val,
+.deck-count, .score-pts-round, .score-pts-total, .timer-display,
+.time-counter, .step-num, .clock-hour-val {
+    font-family: var(--font-number) !important;
+}
+
+.game-title, .modal-title, .hud-title, .role-badge, .card-name,
+.player-name, .phase-title, .score-winner-title {
+    font-family: var(--font-title);
+}
+
+.story-text, .story-modal-text, .rule-book-content, .drawer-lore-text,
+.story-desc, .story-line {
+    font-family: var(--font-story);
 }
 
 /* ---- 全局容器與 100vh 零捲軸無邊界舞台 ---- */

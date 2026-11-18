@@ -9,10 +9,16 @@
     --mirror-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
 	/* 新增：定義響應式字體大小基礎值 */
     --base-font-size: clamp(14px, 1vw, 16px);
+
+    /* 🔤 四大多資訊維度字型變數 (途徑一) */
+    --font-ui: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-number: 'Courier New', monospace;
+    --font-title: 'Cinzel', serif;
+    --font-story: 'Noto Serif TC', Georgia, serif;
 }
 
 body {
-    font-family: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-ui);
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -20,6 +26,23 @@ body {
     height: 100vh;
     overflow: hidden;
 	font-size: var(--base-font-size); /* 使用變數控制基礎字體 */
+}
+
+/* 🔤 資訊類別字型對應綁定 */
+.minute-card-val, .card-cost, .mech-gear-val, .mana-counter-val,
+.deck-count, .score-pts-round, .score-pts-total, .timer-display,
+.time-counter, .step-num, .clock-hour-val {
+    font-family: var(--font-number) !important;
+}
+
+.game-title, .modal-title, .hud-title, .role-badge, .card-name,
+.player-name, .phase-title, .score-winner-title {
+    font-family: var(--font-title);
+}
+
+.story-text, .story-modal-text, .rule-book-content, .drawer-lore-text,
+.story-desc, .story-line {
+    font-family: var(--font-story);
 }
 
 /* --- 畫面結構 --- */
