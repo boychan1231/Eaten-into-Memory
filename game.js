@@ -318,11 +318,13 @@ function startRound(gameState) {
     }	
 	
     const drawnCards = [];
-    if (gameState.hourDeck.length >= 2) {
-        drawnCards.push(gameState.hourDeck.pop()); 
-        drawnCards.push(gameState.hourDeck.pop()); 
-    } else {
-        console.warn("小時卡牌庫不足。");
+    if (gameState.hourDeck.length === 0) {
+        appLogger.log("※ 小時卡牌庫已空，提早進入局末結算。");
+        endGameRound(gameState);
+        return;
+    }
+    while (drawnCards.length < 2 && gameState.hourDeck.length > 0) {
+        drawnCards.push(gameState.hourDeck.pop());
     }
     gameState.currentDrawnHourCards = drawnCards; 
 	
@@ -343,7 +345,7 @@ function startRound(gameState) {
         if (window.gameAudio) window.gameAudio.playChime();
     }
         
-    appLogger.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
+    appLogger.log(`抽出的小時卡：[${drawnCards.map(c => c?.number ?? 'X').join(', ')}]`);
     appLogger.log("等待玩家打出分鐘卡...");
     processMinuteCardSelection(gameState); 
 }

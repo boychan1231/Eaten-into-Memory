@@ -17,7 +17,7 @@
 9. `i18n.js` (5.8 KB)
 10. `locales/zh-TW.js` (29.1 KB)
 11. `locales/en-US.js` (27.3 KB)
-12. `abilities.js` (11.8 KB)
+12. `abilities.js` (12.0 KB)
 13. `game_setup.js` (17.7 KB)
 14. `game.js` (100.0 KB)
 15. `ui_modals.js` (4.6 KB)
@@ -2544,6 +2544,12 @@ function activateSinSealAbility(gameState, playerId) {
     const player = gameState.players.find(p => p.id === playerId);
     if (!player || player.isEjected || player.type !== '時之惡') return false;
 
+    // 限制只能在出牌前使用
+    if (gameState.phase !== 'preMinute') {
+        appLogger.log("※「封鎖」只能在選擇分鐘卡（出牌）前使用");
+        return false;
+    }
+
     // 1. 基本檢查
     if (player.specialAbilityUsed) {
         appLogger.log("※ 本回合已經發動過能力了");
@@ -3404,11 +3410,13 @@ function startRound(gameState) {
     }	
 	
     const drawnCards = [];
-    if (gameState.hourDeck.length >= 2) {
-        drawnCards.push(gameState.hourDeck.pop()); 
-        drawnCards.push(gameState.hourDeck.pop()); 
-    } else {
-        console.warn("小時卡牌庫不足。");
+    if (gameState.hourDeck.length === 0) {
+        appLogger.log("※ 小時卡牌庫已空，提早進入局末結算。");
+        endGameRound(gameState);
+        return;
+    }
+    while (drawnCards.length < 2 && gameState.hourDeck.length > 0) {
+        drawnCards.push(gameState.hourDeck.pop());
     }
     gameState.currentDrawnHourCards = drawnCards; 
 	
@@ -3429,7 +3437,7 @@ function startRound(gameState) {
         if (window.gameAudio) window.gameAudio.playChime();
     }
         
-    appLogger.log(`抽出的小時卡：[${drawnCards[0]?.number || 'X'}, ${drawnCards[1]?.number || 'X'}]`);
+    appLogger.log(`抽出的小時卡：[${drawnCards.map(c => c?.number ?? 'X').join(', ')}]`);
     appLogger.log("等待玩家打出分鐘卡...");
     processMinuteCardSelection(gameState); 
 }
