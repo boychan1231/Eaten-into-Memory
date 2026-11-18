@@ -57,7 +57,7 @@
                 status_bid: '請打出分鐘卡',
                 status_reveal: '揭開分鐘卡·比較大小排序',
                 status_pick: '依名次挑選小時卡',
-                status_your_pick: '👉【{rank}】輪到您挑選小時卡',
+                status_your_pick: '➢ 【{rank}】輪到您挑選小時卡',
                 status_ai_pick: '⏳【{rank}】{name} 正在挑選小時卡',
                 status_minute_jump: '👟分針能力：決定是否躍遷刻度',
                 status_second_choice: '🃏秒針能力：二選一決定打出卡牌',
@@ -141,13 +141,13 @@
                 drag_to_play: '⚡ 放開以出牌',
                 pick_hour: '請點選小時卡',
                 waiting_input: '請出牌...',
-                waiting_hour_choice: '請在鐘面挑選小時卡...',
+                waiting_hour_choice: '請挑選小時卡...',
                 waiting_opponents: '等待對手挑選小時卡...',
                 waiting_minute_choice: '等待分針特殊選擇...',
                 waiting_ability_choice: '請決定是否使用特殊能力...',
                 waiting_second_final: '請完成秒針二選一...',
                 comparing_minute: '比較分鐘數值中...',
-                comparing_minute_skip: '比較分鐘數值中…（點擊畫面可提前跳過）',
+                comparing_minute_skip: '比較分鐘數值中（點擊畫面可提前跳過）',
                 sec_ability_select_two: '⚡ 秒針能力：請點選 2 張分鐘卡。',
                 sec_ability_ready: '⚡ 已選 2 張卡牌，請點擊「確認出牌」。'
             },
@@ -249,7 +249,7 @@
             sec_btn_play: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">蓋 2 張，翻牌後二選一</span>',
             sec_btn_cancel: '取消選擇',
             sec_pick_one_prompt: '請選擇一張牌...',
-            sec_pick_two_hint: '👆 請點擊上方 2 張手牌',
+            sec_pick_two_hint: '⬆ 請點擊上方 2 張手牌',
             sin_mode_near: '扣滅目標：距離最近 (已變更)',
             sin_mode_max: '扣滅目標：數值最大 (預設)',
             sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>',
@@ -266,32 +266,32 @@
             history_tag: '（歷史閱覽）',
             latest_tag: '最新進度',
             turn_prefix: '<div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">💡 可於「設定」隨時關閉教學模式</div>',
-            welcome_prefix: '<strong>✨ 歡迎來到《Eaten into Memory》</strong><br>',
-            step0_welcome: '<strong>✨ 歡迎來到《Eaten into Memory》</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
+            welcome_prefix: '<strong>歡迎來到《Eaten into Memory》</strong><br>',
+            step0_welcome: '<strong>歡迎來到《Eaten into Memory》</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
             step1_drag_minute: '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• <strong>操作方式：</strong>按住卡牌往鐘面方向拉動並放開，或<strong>點擊卡牌後點擊「確認出牌」</strong>。<br>💡 <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰',
             step1_select_minute_hint: '<strong>步驟 1：點擊「確認出牌」</strong><br>已選取 <strong>[{value}]</strong> 號分鐘卡，點擊「確認出牌」蓋牌送出，或直接將卡牌向上拖曳至鐘面',
             step1_sec_ability_select: '<strong>秒針能力（{count}/2）：請點選 2 張分鐘卡</strong><br>選滿 2 張後再點擊右側「確認出牌」。',
             step1_sec_ability_confirm: '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出',
             step3_select_hour: '<strong>步驟 3：點擊鐘面上發光的小時格</strong><br>將您的角色移動至該位置並獲得小時卡',
             step3_no_hour_notice: '<strong>【戰術提醒：無須挑選小時卡】</strong><br>🛡️ <strong>優勢（避險保命）：</strong>本回合不進入鐘面，<strong>完全免疫</strong>「受罰」扣減齒輪（生命值）的風險<br>⚠️ <strong>劣勢（無收穫）：</strong>無法獲得小時卡，將延緩達成角色進化（變身）的進度。',
-            penalty_sin: '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」，請遠離時之惡</span>',
-            penalty_max: '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」，接近 12 者將扣生命/護盾</span>',
+            penalty_sin: '<br><span style="color:#feca57;">⚠️ 當前為「受罰：距離最近」</span>',
+            penalty_max: '<br><span style="color:#ff6b6b;">⚠️ 當前為「受罰：最高小時值」</span>',
             step_minute_ability: '<strong>分針能力：選擇移動方向</strong><br>可消耗 MP 順時針或逆時針跳躍至下一個有小時卡的格子（若想保留 MP 可點擊略過）。',
             step_second_ability: '<strong>秒針能力：</strong>請在兩張蓋放的分鐘卡中選擇最終打出的一張',
             step4_round_done: '<strong>回合結算完畢，</strong>點擊「下一回合」展開新回合競標。',
             step_next_round: '<strong>點擊「下一回合」</strong><br>結算當前移動並進入下一回合',
-            role_scoring_young: '<strong>【🐣 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成<br>• <strong>吞噬勝利：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
-            role_scoring_hour: '<strong>【👁️ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪',
-            role_scoring_minute: '<strong>【👟 分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手',
+            role_scoring_young: '<strong>【時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的齒輪將 1:1 轉換為總分<br>• <strong>成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成<br>• <strong>吞噬勝利：</strong>若合力將「時之惡」齒輪扣盡吞噬，時魔全體直接獲勝<br>• <strong>保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。',
+            role_scoring_hour: '<strong>【時針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身齒輪',
+            role_scoring_minute: '<strong>【分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手',
             role_scoring_second: '<strong>【🃏 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>局末存活保留的齒輪轉換為最高總分<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出精準搶下低刻度安全格或故意落入第 3 名避險',
-            role_scoring_sin: '<strong>【😈 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊加分：</strong>在 5 局內將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊加分<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能',
-            role_scoring_scz: '<strong>【👻 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面<br>• <strong>🏆 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong><br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>務必全力搶奪珍貴卡',
+            role_scoring_sin: '<strong>【時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🩸 特殊加分：</strong>在 5 局內將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊加分<br>• <strong>⚡ 惡念充能：</strong>若處決結算適用至時之惡自身（全場無其他角色受罰），時之惡免受處罰，並<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）<br>• <strong>⚠️ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成吞噬時之惡）<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能',
+            role_scoring_scz: '<strong>【受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>🔒 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面<br>• <strong>🏆超前完成獎勵：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong><br>• <strong>☠️ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>務必全力搶奪珍貴卡',
             role_evolved_notice: '<strong>【進化為 {roleName}】',
             role_scz_hour_hint: '<br><span style="color:#00d2d3;">💡 <strong>受詛者提示：</strong>請優先挑選【★ 珍貴卡】，永久鎖定 12 張珍貴小時卡以避免受到 -999 分懲罰</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">💡 <strong>時之惡提示：</strong>出牌前可發動【惡之牽引 (2 MP)】處決身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊加分</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
             role_progress_sin: '特殊加分：未吞噬【{targets}】（已吞噬 {count}/3 位）',
-            role_progress_sin_complete: '特殊加分：全場時魔已全數吞噬！🎉',
+            role_progress_sin_complete: '特殊加分：全場時魔都曾被吞噬！🎉',
             role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化'
         },
         logs: {
@@ -301,19 +301,19 @@
             sin_pull_activated: '⚡【時之惡】發動能力，本回合距離「時之惡」最近者受罰。',
             sin_rule_default: '【時之惡】鐘面數值最大者受罰 (接近12)。',
             sin_seal_ai: '【時之惡】(AI) 耗用 {cost} MP 發動「封鎖」，本回合所有時魔能力已被封印。',
-            sec_ability_ai: '⏱【秒針】{name} (AI) 耗用 {cost} MP，蓋放 2 張分鐘卡（翻牌後二選一）。',
+            sec_ability_ai: '【秒針】{name} (AI) 耗用 {cost} MP，蓋放 2 張分鐘卡（翻牌後二選一）。',
             evolution_success: '【進化】{oldRole} 達成條件「{condition}」變身為：{newRole}',
             hour_top_to_bottom: '【時針能力】{name} 消耗 {cost} MP，將頂牌 ({num}) 移至底部。',
             minute_hand_moved: '️【分針能力】{name} 耗用 {cost} MP，{dir}移至下一個有小時卡的位置 ({pos} 點)。',
-            balance_g4: '⚖️【第4局平衡】牌庫>26，強制移除 {count} 張「非珍貴 1 號卡」。',
-            balance_g5: '⚖️【第5局平衡】牌庫過厚 ({total}張)，系統已移除 {count} 張非珍貴卡，修正為 24 張。'
+            balance_g4: '【第4局平衡】牌庫>26，強制移除 {count} 張「非珍貴 1 號卡」。',
+            balance_g5: '【第5局平衡】牌庫過厚 ({total}張)，系統已移除 {count} 張非珍貴卡，修正為 24 張。'
         },
         rules: {
             manual_html: `
 					<h2 style="color: var(--accent-color); border-bottom: 2px solid #444; padding-bottom: 10px; margin-top: 0;">遊戲規則說明</h2>
 					<div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444;">
 						<h3 style="color: #feca57; margin-top: 0; display: flex; align-items: center; gap: 8px;">
-							<span>⏳</span> 核心機制
+							<span></span> 核心機制
 						</h3>
 						<p><strong>目標：</strong> 玩家利用「分鐘卡」競標鐘面「小時卡」的選擇順序，從而得到安全的小時位置，保護擁有的齒輪（分數）。</p>
 						<ul style="padding-left: 20px; margin-bottom: 0;">
