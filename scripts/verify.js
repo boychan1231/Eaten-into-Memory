@@ -46,6 +46,9 @@ function stage1SyntaxCheck() {
         'game.js',
         'ui_modals.js',
         'ui_components.js',
+        'ui_animations.js',
+        'ui_panels.js',
+        'ui_hand_drag.js',
         'tutorial_mode.js',
         'ui.js',
         'modern_board.js',
@@ -57,10 +60,7 @@ function stage1SyntaxCheck() {
     ];
 
     const optionalSplitFiles = [
-        'game_resolution.js',
-        'ui_animations.js',
-        'ui_panels.js',
-        'ui_hand_drag.js'
+        'game_resolution.js'
     ];
 
     const targets = coreFiles.concat(optionalSplitFiles.filter(fileExists));
@@ -133,6 +133,9 @@ function stage2LocaleAndFormatCheck() {
         'game.js',
         'tutorial_mode.js',
         'ui_components.js',
+        'ui_animations.js',
+        'ui_panels.js',
+        'ui_hand_drag.js',
         'ui.js',
         'locales/zh-TW.js',
         'locales/en-US.js',
@@ -647,6 +650,9 @@ function stage5HtmlLoadOrderCheck() {
         'ai_engine.js',
         'game.js',
         'ui_components.js',
+        'ui_animations.js',
+        'ui_panels.js',
+        'ui_hand_drag.js',
         'tutorial_mode.js',
         'ui.js'
     ];
@@ -677,15 +683,119 @@ function stage5HtmlLoadOrderCheck() {
 }
 
 // =========================================================
+// 關卡 6：UI 拆分模組載入與全域符號完整性煙霧測試
+// =========================================================
+function stage6UiModulesSmokeTest() {
+    const noop = () => {};
+    const windowMock = {
+        addEventListener: noop,
+        removeEventListener: noop,
+        localStorage: { getItem: () => null, setItem: noop },
+        UI_CONFIG: undefined,
+        GAME_CONFIG: undefined
+    };
+    windowMock.window = windowMock;
+
+    const documentMock = {
+        readyState: 'loading',
+        getElementById: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => [],
+        addEventListener: noop,
+        removeEventListener: noop,
+        createElement: () => ({
+            className: '',
+            style: {},
+            classList: { add: noop, remove: noop, toggle: noop, contains: () => false },
+            setAttribute: noop,
+            appendChild: noop,
+            addEventListener: noop
+        })
+    };
+    windowMock.document = documentMock;
+
+    const ctx = {
+        window: windowMock,
+        document: documentMock,
+        localStorage: windowMock.localStorage,
+        console: { log: noop, warn: noop, error: console.error },
+        setTimeout,
+        clearTimeout,
+        setInterval,
+        clearInterval
+    };
+    vm.createContext(ctx);
+
+    const loadOrder = [
+        'locales/zh-TW.js',
+        'locales/en-US.js',
+        'i18n.js',
+        'config.js',
+        'ui_modals.js',
+        'ui_components.js',
+        'ui_animations.js',
+        'ui_panels.js',
+        'ui_hand_drag.js'
+    ];
+
+    for (const rel of loadOrder) {
+        vm.runInContext(readProjectFile(rel), ctx);
+    }
+
+    // 驗證頂層狀態/函式與 window.* 導出完整無缺（Node vm 中 const/let 位於詞法作用域，需以 runInContext 查驗）
+    assert.equal(vm.runInContext('typeof uiState', ctx), 'object', '缺少全域物件 uiState');
+    assert.equal(vm.runInContext('typeof ROLE_COLORS', ctx), 'object', '缺少全域物件 ROLE_COLORS');
+    assert.equal(vm.runInContext('typeof AnimationController', ctx), 'object', '缺少 AnimationController');
+    assert.equal(vm.runInContext('typeof EffectQueue', ctx), 'object', '缺少 EffectQueue');
+    assert(windowMock.AnimationController && typeof windowMock.AnimationController === 'object', '缺少 window.AnimationController 導出');
+    assert(windowMock.EffectQueue && typeof windowMock.EffectQueue === 'object', '缺少 window.EffectQueue 導出');
+
+    const expectedFunctions = [
+        'updateUI',
+        'createGearChainHtml',
+        'createManaGaugeHtml',
+        'renderAIPlayers',
+        'renderHumanPlayerArea',
+        'bindMinuteCardDragToPlay',
+        'renderScorePanel',
+        'renderDiscardPileModal',
+        'renderEvolutionPanel',
+        'resetMinuteHistory',
+        'resetRightPanels'
+    ];
+    for (const fnName of expectedFunctions) {
+        assert.equal(typeof ctx[fnName], 'function', `缺少全域函式 ${fnName}`);
+    }
+
+    const expectedWindowExports = [
+        'playMinuteClashAnimation',
+        'playCardDealAnimation',
+        'playHourCardDisintegrateAnimation',
+        'createGearChainHtml',
+        'createManaGaugeHtml',
+        'renderAIPlayers',
+        'renderHumanPlayerArea',
+        'renderScorePanel',
+        'renderDiscardPileModal'
+    ];
+    for (const expName of expectedWindowExports) {
+        assert.equal(typeof windowMock[expName], 'function', `缺少 window.${expName} 導出`);
+    }
+
+    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式與 ${expectedWindowExports.length} 個 window 導出符號全數就緒`;
+}
+
+// =========================================================
 // 主執行流程
 // =========================================================
 async function main() {
     const stages = [
-        ['關卡 1/5｜核心 JS 語法檢查', stage1SyntaxCheck],
-        ['關卡 2/5｜雙語字典、標籤、Emoji 與規範檢查', stage2LocaleAndFormatCheck],
-        ['關卡 3/5｜新手教學系統行為測試', stage3TutorialBehaviorTest],
-        ['關卡 4/5｜5P / 3P 無頭對戰壓力測試 (40 場)', stage4HeadlessStressTest],
-        ['關卡 5/5｜雙入口 HTML Script 載入順序檢查', stage5HtmlLoadOrderCheck]
+        ['關卡 1/6｜核心 JS 語法檢查', stage1SyntaxCheck],
+        ['關卡 2/6｜雙語字典、標籤、Emoji 與規範檢查', stage2LocaleAndFormatCheck],
+        ['關卡 3/6｜新手教學系統行為測試', stage3TutorialBehaviorTest],
+        ['關卡 4/6｜5P / 3P 無頭對戰壓力測試 (40 場)', stage4HeadlessStressTest],
+        ['關卡 5/6｜雙入口 HTML Script 載入順序檢查', stage5HtmlLoadOrderCheck],
+        ['關卡 6/6｜UI 拆分模組載入與符號完整性測試', stage6UiModulesSmokeTest]
     ];
 
     console.log('=== 《蝕入記憶》(Eaten into Memory) 自動化驗證開始 ===');
@@ -693,7 +803,7 @@ async function main() {
         const summary = await fn();
         console.log(`[PASS] ${label}: ${summary}`);
     }
-    console.log('=== 全部 5 道自動化驗證關卡通過 ===');
+    console.log('=== 全部 6 道自動化驗證關卡通過 ===');
 }
 
 main().catch((err) => {

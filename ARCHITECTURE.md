@@ -30,10 +30,13 @@
 | 11 | [`ai_engine.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ai_engine.js) | 3P/5P AI 決策引擎（出牌前異能、分鐘卡暗拍選牌、小時卡挑選、放牌後跳格判定）。 |
 | 12 | [`game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game.js) | 核心回合狀態機、比牌暗拍、處決吞噬、飢餓、受詛者結算、勝負判定。 |
 | 13 | [`ui_modals.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_modals.js) | 彈窗生命週期與離開畫面檢測（`openModal`, `closeModal`, `isPlayerAwayFromGame`）。 |
-| 14 | [`ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_components.js) | 手牌拖放（Drag & Drop）、比牌動畫 `AnimationController`、浮動跳字、畫面震動、HUD 渲染。 |
-| 15 | [`tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
-| 16 | [`ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui.js) | 主畫面事件綁定、`updateUI()`、`AutoNextRoundTimer`（7 秒倒數）、局結算與排行榜渲染。 |
-| 17 | [`modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_board.js), [`modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_intro.js) | PixiJS 鐘面、高危光圈、棋子 Token 渲染、平移縮放（Pan/Zoom）與動態開場。 |
+| 14 | [`ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_components.js) | UI 狀態 `uiState`、`ROLE_COLORS`、`updateUI()` 主排程、鐘面繪製、齒輪/MP 條與 AI 列。 |
+| 15 | [`ui_animations.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_animations.js) | `AnimationController`、`EffectQueue`、比牌演出、粒子消散與模糊浮現特效。 |
+| 16 | [`ui_panels.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_panels.js) | 出牌歷史、積分排行榜、棄牌堆與彈窗、幼體進化/異能/受詛者監控面板。 |
+| 17 | [`ui_hand_drag.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_hand_drag.js) | 人類手牌區、拖放（Drag & Drop）出牌控制器與秒針雙牌控制。 |
+| 18 | [`tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
+| 19 | [`ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui.js) | 主畫面事件綁定、`AutoNextRoundTimer`（7 秒倒數）、局結算與排行榜渲染。 |
+| 20 | [`modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_board.js), [`modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_intro.js) | PixiJS 鐘面、高危光圈、棋子 Token 渲染、平移縮放（Pan/Zoom）與動態開場。 |
 
 ---
 
