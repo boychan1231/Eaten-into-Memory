@@ -198,17 +198,6 @@ function getPurePlayerCountLocal(mode) {
     return (cfgCount === 3 || cfgCount === 5) ? cfgCount : 4;
 }
 
-function assignPureStartingPositions(gameState) {
-    if (!gameState || !Array.isArray(gameState.players)) return;
-    const spots = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    shuffle(spots);
-    gameState.players.forEach((player, idx) => {
-        if (!player.isEjected) {
-            player.currentClockPosition = spots[idx % spots.length];
-        }
-    });
-}
-
 function getGameMode() {
     const mode = GAME_CONFIG?.gameMode || (typeof window !== 'undefined' ? window.GAME_CONFIG?.gameMode : null);
     if (mode === 'PURE_3P' || mode === 'PURE_4P' || mode === 'PURE_5P') return mode;
@@ -500,11 +489,8 @@ function initializeGame(roles = null) {
         }
     });
 
-    // 初始位置
-    if (isPure) {
-        assignPureStartingPositions(gameState);
-        appLogger.log(`【初始設定】純競標模式 (${pureCount}P) 已隨機配置起始鐘面位置。`);
-    } else {
+    // 初始位置（純競標模式與 3P 一樣開局全員未上鐘面，保持 null）
+    if (!isPure) {
         const sinPlayerStart = gameState.players.find(p => p.type === '時之惡');
         if (sinPlayerStart) {
             sinPlayerStart.currentClockPosition = 12;
@@ -532,7 +518,6 @@ function initializeGame(roles = null) {
 }
 if (typeof window !== 'undefined') {
     window.initializeGame = initializeGame;
-    window.assignPureStartingPositions = assignPureStartingPositions;
     if (typeof resetGameForNextRound !== 'undefined') window.resetGameForNextRound = resetGameForNextRound;
     if (typeof createMinuteDeck !== 'undefined') window.createMinuteDeck = createMinuteDeck;
     if (typeof createHourDeck !== 'undefined') window.createHourDeck = createHourDeck;

@@ -1376,9 +1376,6 @@ function endGameRound(gameState) {
         player.isEjected = false;
         player.hourCards = []; 
     });
-    if (isPure && typeof assignPureStartingPositions === 'function') {
-        assignPureStartingPositions(gameState);
-    }
     appLogger.log("↻ 玩家已接收新一局的手牌與齒局。");
 
     // 5. 重置護盾

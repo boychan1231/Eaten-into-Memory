@@ -631,9 +631,8 @@ function stage4HeadlessStressTest() {
             const expectedPlayers = sc.mode === 'PURE_3P' ? 3 : (sc.mode === 'PURE_5P' ? 5 : 4);
             assert.equal(gs.players.length, expectedPlayers, `${sc.mode} 玩家人數應為 ${expectedPlayers}`);
             assert.equal(gs.hourDeck.length, 24, `${sc.mode} 小時牌庫應為 24 張`);
-            const startPosSet = new Set(gs.players.map(p => p.currentClockPosition));
-            assert.equal(startPosSet.size, expectedPlayers, `${sc.mode} 開局起始鐘面位置應互不重複`);
             gs.players.forEach(p => {
+                assert.equal(p.currentClockPosition, null, `${sc.mode} 開局不應隨機指派初始鐘面位置`);
                 assert.equal(p.mana, 0, `${sc.mode} 不應有 MP`);
                 assert.equal(p.d6Die, null, `${sc.mode} 不應有 d6Die 護盾`);
             });

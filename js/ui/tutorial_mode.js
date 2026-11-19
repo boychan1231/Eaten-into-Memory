@@ -558,7 +558,7 @@
                 const roundsCount = Array.isArray(gameState.players) ? gameState.players.length : 4;
                 const pureMsg = window.i18n
                     ? window.i18n.t('tutorial.pure_mode_intro', { rounds: roundsCount })
-                    : `<strong>【純競標模式 · 簡易規則說明】</strong><br>• <strong>無角色與能力：</strong>全場玩家規則完全對等，無特殊異能、無 MP 消耗、無進化與珍貴卡。<br>• <strong>開局與競標：</strong>開局隨機落位後，每回合翻開 2 張小時卡，打出最大與次大分鐘卡的前 2 名依序挑選小時卡並移動；其餘玩家維持原位。<br>• <strong>懲罰與吞噬：</strong>每回合結束時，鐘面位置數字最大（最接近 12）者扣除 1 GP；GP 扣至負數即「被吞噬」出局。<br>• <strong>勝負結算：</strong>共進行 ${roundsCount} 局手牌輪替，保留下來的 GP 即為分數，累計總分最高者獲勝！<br><br>點擊「<strong>下一回合</strong>」即可開始第 1 回合。`;
+                    : `<strong>【純競標模式 · 簡易規則說明】</strong><br>• <strong>無角色與能力：</strong>全場玩家規則完全對等，無特殊異能、無 MP 消耗、無進化與珍貴卡。<br>• <strong>開局與競標：</strong>每回合翻開 2 張小時卡，打出最大與次大分鐘卡的前 2 名依序挑選小時卡並移動至該刻度；未取得小時卡者維持原狀（未上鐘面者不參與受罰）。<br>• <strong>懲罰與吞噬：</strong>每回合結束時，鐘面位置數字最大（最接近 12）者扣除 1 GP；GP 扣至負數即「被吞噬」出局。<br>• <strong>勝負結算：</strong>共進行 ${roundsCount} 局手牌輪替，保留下來的 GP 即為分數，累計總分最高者獲勝！<br><br>點擊「<strong>下一回合</strong>」即可開始第 1 回合。`;
                 const targetEl = (nextBtn && isElementVisible(nextBtn)) ? nextBtn : '#clock-face';
                 const showArrow = (targetEl === nextBtn && gameState.gameRound === 1 && gameState.roundMarker === 1 && gameState.currentRoundAIChoices === null);
                 showTutorialPointer(targetEl, pureMsg, targetEl === nextBtn ? 'center-right' : 'top', { showBounceArrow: showArrow });
