@@ -747,6 +747,23 @@ function stage4HeadlessStressTest() {
         guardCtx.startRound(guardGs);
         assert.equal(guardGs.hourDeck.length, deckLenBefore, 'hourPickOrder 尚未結束時 startRound 不得提前抽牌開新回合');
         assert.equal(guardGs.hourPickOrder, pickOrderBefore, 'hourPickOrder 尚未結束時 startRound 應被防呆攔截');
+
+        // 受詛者護盾抵消與耗盡重置邏輯回歸檢查
+        const sczTest = { id: 'SCZ', name: '受詛者', type: '受詛者', gearCards: 4, mana: 4, d6Die: 3 };
+        assert.equal(guardCtx.handleDiceDeduction(sczTest), false, '受詛者護盾 3 -> 2 應抵消不扣 GP');
+        assert.equal(sczTest.d6Die, 2);
+        assert.equal(sczTest.gearCards, 4);
+        assert.equal(sczTest.lastShieldOutcome, 'blocked');
+        assert.equal(guardCtx.handleDiceDeduction(sczTest), false, '受詛者護盾 2 -> 1 應抵消不扣 GP');
+        assert.equal(sczTest.d6Die, 1);
+        assert.equal(guardCtx.handleDiceDeduction(sczTest), true, '受詛者最後 1 點護盾耗盡應扣 1 GP');
+        assert.equal(sczTest.gearCards, 3);
+        assert.equal(sczTest.d6Die, 3, '受詛者扣 GP 後護盾應重置為 min(gearCards, 3)');
+        assert.equal(sczTest.lastShieldOutcome, 'broken');
+
+        const zeroShieldScz = { id: 'SCZ', name: '受詛者', type: '受詛者', gearCards: 2, mana: 2, d6Die: 0 };
+        assert.equal(guardCtx.handleDiceDeduction(zeroShieldScz), true, 'd6Die 為 0 時仍應正常扣 GP');
+        assert.equal(zeroShieldScz.gearCards, 1);
     }
 
     return `40 場完整對局 (5P × 20 + 3P × 20) 壓力測試通過，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;
@@ -1147,6 +1164,7 @@ function stage6UiModulesSmokeTest() {
         let tokenShakeCount = 0;
         let damageSfxCount = 0;
         let floatTextCount = 0;
+        const floatTexts = [];
 
         const bodyClasses = new Set();
         const bodyMock = {
@@ -1159,7 +1177,10 @@ function stage6UiModulesSmokeTest() {
                 remove: (c) => bodyClasses.delete(c),
                 contains: (c) => bodyClasses.has(c)
             },
-            appendChild: () => { floatTextCount++; }
+            appendChild: (el) => {
+                floatTextCount++;
+                floatTexts.push(el && el.textContent ? el.textContent : '');
+            }
         };
 
         const nextStepBtn2 = {
@@ -1373,6 +1394,79 @@ function stage6UiModulesSmokeTest() {
         // 情境 8：重開遊戲流程必須清空首次入鐘面追蹤器（避免模糊浮現特效不再播放）
         const uiSrc = readProjectFile('js/ui/ui.js');
         assert(/uiTokenMemory = \{\};[^\n]*\r?\n\s*trackedEnteredClockPlayerIds\.clear\(\);/.test(uiSrc), '[情境 8] 重開遊戲流程應呼叫 trackedEnteredClockPlayerIds.clear()');
+
+        // 情境 9：玩家操控受詛者時，護盾抵消應顯示「護盾抵免」且不觸發受擊震動／音效；護盾耗盡重置不應顯示 +2 ⛨
+        uiWin.getEffectiveHumanPlayerId = () => 'SCZ';
+        uiCtx.getEffectiveHumanPlayerId = () => 'SCZ';
+        const makeSczRoundState = (gear, die, extra = {}) => ({
+            gameMode: '5P',
+            gameRound: 1,
+            roundMarker: 1,
+            phase: 'idle',
+            gameEnded: false,
+            hasShownGameOverPanel: false,
+            players: [
+                Object.assign({
+                    id: 'SCZ',
+                    name: '受詛者',
+                    type: '受詛者',
+                    roleCard: '受詛者',
+                    isHuman: true,
+                    isEjected: false,
+                    gearCards: gear,
+                    mana: gear,
+                    score: 0,
+                    d6Die: die,
+                    shieldUsed: false,
+                    currentClockPosition: null,
+                    hand: [{ value: 10, gear: true }],
+                    hourCards: [],
+                    specialAbilityUsed: false
+                }, extra)
+            ],
+            hourDeck: [{ number: 1 }, { number: 2 }],
+            clockFace: Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] })),
+            minuteDiscard: [],
+            currentRoundAIChoices: null,
+            currentDrawnHourCards: null,
+            currentMinuteChoices: null,
+            hourPickOrder: null,
+            nextHourPickerIndex: 0,
+            waitingHourChoice: false,
+            waitingHourChoicePlayerId: null,
+            waitingAbilityChoice: false,
+            waitingAbilityChoicePlayerId: null,
+            waitingSecondHandFinalChoice: false,
+            waitingSecondHandFinalChoicePlayerId: null,
+            waitingMinuteHandChoice: false,
+            isPlayingMinuteClash: false,
+            sinTargetingMode: 'default'
+        });
+        uiCtx.resetRightPanels(makeSczRoundState(4, 3));
+        uiCtx.updateUI(makeSczRoundState(4, 3));
+
+        const beforeSczBlockScreen = screenShakeCount;
+        const beforeSczBlockToken = tokenShakeCount;
+        const beforeSczBlockSfx = damageSfxCount;
+        const beforeSczBlockFloat = floatTexts.length;
+        const sczBlockedState = makeSczRoundState(4, 2, { lastShieldOutcome: 'blocked', triggerShieldAnim: true });
+        uiCtx.updateUI(sczBlockedState);
+        assert.equal(screenShakeCount, beforeSczBlockScreen, '[情境 9] 受詛者護盾抵消不應觸發畫面震動');
+        assert.equal(tokenShakeCount, beforeSczBlockToken, '[情境 9] 受詛者護盾抵消不應觸發棋子受擊震動');
+        assert.equal(damageSfxCount, beforeSczBlockSfx, '[情境 9] 受詛者護盾抵消不應播放受擊音效');
+        const blockTexts = floatTexts.slice(beforeSczBlockFloat);
+        assert.equal(blockTexts.length, 1, '[情境 9] 受詛者護盾抵消應顯示 1 筆抵免浮字');
+        assert(blockTexts[0].includes('護盾抵免'), `[情境 9] 浮字應包含「護盾抵免」，實為：${blockTexts[0]}`);
+        assert.equal(sczBlockedState.players[0].lastShieldOutcome, undefined, '[情境 9] lastShieldOutcome 應已被消費清除');
+        assert.equal(sczBlockedState.players[0].triggerShieldAnim, undefined, '[情境 9] triggerShieldAnim 應已被消費清除');
+
+        // 先降到 1 點護盾（再抵消一次），接著觸發最後 1 點護盾破裂重置 (1 -> 0 -> 3, GP 4 -> 3)
+        uiCtx.updateUI(makeSczRoundState(4, 1, { lastShieldOutcome: 'blocked', triggerShieldAnim: true }));
+        const beforeSczBreakFloat = floatTexts.length;
+        uiCtx.updateUI(makeSczRoundState(3, 3, { lastShieldOutcome: 'broken', triggerShieldAnim: true }));
+        const breakTexts = floatTexts.slice(beforeSczBreakFloat);
+        assert(breakTexts.some(t => t.includes('GP')), `[情境 9] 護盾耗盡應顯示 GP 扣減浮字：${breakTexts.join(', ')}`);
+        assert(!breakTexts.some(t => t.includes('⛨') || t.includes('+2')), `[情境 9] 護盾破裂重置不應顯示誤導的 +2 ⛨：${breakTexts.join(', ')}`);
     }
 
     return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌、${nextBtnCases.length} 種按鈕狀態與換局震動防護測試全數通過`;

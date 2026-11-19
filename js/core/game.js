@@ -848,32 +848,41 @@ function handleHumanAbilityChoice(gameState, choice) {
 
 function handleDiceDeduction(player) {
     let gearCardDeducted = false;
-    if (player.d6Die) {
+    if (typeof player.d6Die === 'number' && player.d6Die > 0) {
         player.d6Die--;
-		
-		// 設定特效標記 (UI 讀取到此標記時會播放動畫)
         player.triggerShieldAnim = true;
-		
-        if (player.d6Die < 1) { 
+
+        if (player.d6Die < 1) {
             player.gearCards--;
- 
+            player.lastShieldOutcome = 'broken';
+
             if (player.mana > player.gearCards) {
-                player.mana = player.gearCards;
+                player.mana = Math.max(0, player.gearCards);
             }
             gearCardDeducted = true;
             appLogger.log(`【${player.type}】護盾耗盡，扣除 1 齒局。`);
 
-            if (player.type === '時之惡') {
+            if (player.gearCards < 0) {
+                player.d6Die = 0;
+            } else if (player.type === '時之惡') {
                 player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5));
             } else if (player.type === '受詛者') {
-                player.d6Die = Math.max(1, Math.min(player.gearCards, 3)); 
-            } else { 
+                player.d6Die = Math.max(1, Math.min(player.gearCards, 3));
+            } else {
                 player.d6Die = Math.max(1, Math.min(player.gearCards, 6));
             }
-        }else {
-            // (選用) 可以在這裡補一個 log
+        } else {
+            player.lastShieldOutcome = 'blocked';
             appLogger.log(`⛨【${player.name}】護盾抵消懲罰 (剩餘: ${player.d6Die})`);
         }
+    } else {
+        player.gearCards--;
+        player.lastShieldOutcome = 'broken';
+        if (player.mana > player.gearCards) {
+            player.mana = Math.max(0, player.gearCards);
+        }
+        gearCardDeducted = true;
+        appLogger.log(`【${player.type}】無可用護盾，扣除 1 齒局。`);
     }
     return gearCardDeducted;
 }

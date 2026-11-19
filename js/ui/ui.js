@@ -1286,12 +1286,33 @@ function processFloatingText(gameState) {
     gameState.players.forEach(player => {
         const last = lastPlayerStats[player.id];
         const sameGameRound = !last || last.gameRound == null || currentGameRound == null || last.gameRound === currentGameRound;
+        const shieldOutcome = player.lastShieldOutcome || null;
+        const shouldAnimateShield = !!player.triggerShieldAnim;
+        if (player.lastShieldOutcome !== undefined) delete player.lastShieldOutcome;
+        if (player.triggerShieldAnim !== undefined) delete player.triggerShieldAnim;
+
         if (last && sameGameRound) {
-            // 1. 護盾變動 (防禦先消耗或增加)
+            const gearDiff = player.gearCards - last.gearCards;
+
+            // 1. 護盾變動 (防禦先消耗或重置)
             const currentShield = (typeof player.d6Die === 'number') ? player.d6Die : 0;
             const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
             const shieldDiff = currentShield - lastShield;
-            if (shieldDiff !== 0) {
+            const isShieldBrokenReset = (shieldOutcome === 'broken') || (gearDiff < 0 && shieldDiff > 0);
+            const isShieldBlocked = (shieldOutcome === 'blocked') || (shieldDiff < 0 && gearDiff === 0);
+
+            if (isShieldBlocked) {
+                const blockLabel = (window.i18n ? window.i18n.t('ui.combat_float.shield_block') : null) || '⛨ 護盾抵免!';
+                const text = shieldDiff < 0 ? `${blockLabel} (${shieldDiff} ⛨)` : blockLabel;
+                pendingEvents.push({
+                    playerId: player.id,
+                    text,
+                    color: '#4cd137',
+                    type: 'shield_block',
+                    diff: 0,
+                    animateShield: shouldAnimateShield || true
+                });
+            } else if (shieldDiff !== 0 && !isShieldBrokenReset) {
                 const text = (shieldDiff > 0 ? '+' : '') + shieldDiff + ' ⛨';
                 const color = shieldDiff > 0 ? '#4cd137' : '#e17055';
                 pendingEvents.push({
@@ -1299,12 +1320,12 @@ function processFloatingText(gameState) {
                     text,
                     color,
                     type: 'shield',
-                    diff: shieldDiff
+                    diff: shieldDiff,
+                    animateShield: shouldAnimateShield
                 });
             }
 
             // 2. 齒輪 (生命值) 變動
-            const gearDiff = player.gearCards - last.gearCards;
             if (gearDiff !== 0) {
                 let text = (gearDiff > 0 ? '+' : '') + gearDiff + ' GP';
                 let color = gearDiff > 0 ? '#00d2d3' : '#ff4757';
@@ -1397,8 +1418,8 @@ function triggerFloat(playerId, text, color, type, diff) {
     let cardEl = null;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
 
-    // 僅 GP／護盾損失視為受擊；MP 花費只顯示浮字，不觸發受擊特效
-    const isDamageHit = type !== 'mana' &&
+    // 僅 GP／護盾損失視為受擊；MP 花費與護盾抵免只顯示浮字，不觸發受擊特效
+    const isDamageHit = type !== 'mana' && type !== 'shield_block' &&
         (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055')));
 
     // 受到懲罰／扣除齒輪或護盾時觸發棋子受擊震動
@@ -1409,14 +1430,20 @@ function triggerFloat(playerId, text, color, type, diff) {
         if (window.gameAudio && typeof window.gameAudio.playDamage === 'function') {
             window.gameAudio.playDamage();
         }
-    } else if (diff > 0 && type === 'mana') {
+    } else if ((diff > 0 && type === 'mana') || type === 'shield_block') {
         if (window.gameAudio && typeof window.gameAudio.playConfirm === 'function') {
             window.gameAudio.playConfirm();
         }
     }
 
     if (playerId === humanId) {
-        targetEl = (type === 'mana') ? document.getElementById('h-mana') : document.getElementById('h-gear');
+        if (type === 'mana') {
+            targetEl = document.getElementById('h-mana');
+        } else if (type === 'shield' || type === 'shield_block') {
+            targetEl = document.getElementById('h-dice') || document.querySelector('.human-top-bar .resource-chip--shield');
+        } else {
+            targetEl = document.getElementById('h-gear');
+        }
         cardEl = document.querySelector('.human-top-bar') || document.getElementById('human-player-area');
         if (!targetEl) targetEl = cardEl;
     } else {
