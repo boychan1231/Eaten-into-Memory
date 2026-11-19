@@ -1093,7 +1093,226 @@ function stage6UiModulesSmokeTest() {
         assert.equal(nextStepBtnMock.textContent, expectedText, `[${caseName}] next-step-btn.textContent 應為「${expectedText}」`);
     }
 
-    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌與 ${nextBtnCases.length} 種按鈕狀態測試全數通過`;
+    // 6) 跨局換局數值更換與重開新局不觸發畫面震動／受擊特效回歸測試
+    {
+        let screenShakeCount = 0;
+        let tokenShakeCount = 0;
+        let damageSfxCount = 0;
+        let floatTextCount = 0;
+
+        const bodyClasses = new Set();
+        const bodyMock = {
+            offsetWidth: 0,
+            classList: {
+                add: (c) => {
+                    bodyClasses.add(c);
+                    if (c === 'screen-damage-shake') screenShakeCount++;
+                },
+                remove: (c) => bodyClasses.delete(c),
+                contains: (c) => bodyClasses.has(c)
+            },
+            appendChild: () => { floatTextCount++; }
+        };
+
+        const nextStepBtn2 = {
+            id: 'next-step-btn',
+            disabled: false,
+            textContent: '',
+            onclick: noop,
+            style: {},
+            classList: makeClassBox()
+        };
+
+        const uiWin = {
+            innerWidth: 1280,
+            innerHeight: 800,
+            addEventListener: noop,
+            removeEventListener: noop,
+            localStorage: { getItem: () => null, setItem: noop },
+            UI_CONFIG: undefined,
+            GAME_CONFIG: undefined,
+            getEffectiveHumanPlayerId: () => 'SM_1',
+            setHumanPlayerId: noop,
+            ModernBoard: {
+                shakeToken: () => { tokenShakeCount++; },
+                getTokenScreenPosition: () => ({ x: 400, y: 300 })
+            },
+            gameAudio: {
+                playDamage: () => { damageSfxCount++; },
+                playConfirm: noop,
+                playChime: noop
+            }
+        };
+        uiWin.window = uiWin;
+
+        const uiDoc = {
+            readyState: 'loading',
+            body: bodyMock,
+            documentElement: { style: makeStyleBox() },
+            getElementById: (id) => (id === 'next-step-btn' ? nextStepBtn2 : null),
+            querySelector: () => null,
+            querySelectorAll: () => [],
+            addEventListener: noop,
+            removeEventListener: noop,
+            createElement: () => ({
+                className: '',
+                textContent: '',
+                style: {},
+                classList: makeClassBox(),
+                setAttribute: noop,
+                appendChild: noop,
+                remove: noop,
+                addEventListener: noop
+            })
+        };
+        uiWin.document = uiDoc;
+
+        const uiCtx = {
+            window: uiWin,
+            document: uiDoc,
+            localStorage: uiWin.localStorage,
+            console: { log: noop, warn: noop, error: console.error },
+            setTimeout: noop,
+            clearTimeout: noop,
+            setInterval: noop,
+            clearInterval: noop,
+            getEffectiveHumanPlayerId: () => 'SM_1',
+            setHumanPlayerId: noop
+        };
+        vm.createContext(uiCtx);
+
+        const fullLoadOrder = [
+            'locales/zh-TW.js',
+            'locales/en-US.js',
+            'js/core/i18n.js',
+            'js/core/config.js',
+            'js/ui/ui_modals.js',
+            'js/ui/ui_components.js',
+            'js/ui/ui_animations.js',
+            'js/ui/ui_panels.js',
+            'js/ui/ui_hand_drag.js',
+            'js/ui/ui.js'
+        ];
+        for (const rel of fullLoadOrder) {
+            vm.runInContext(readProjectFile(rel), uiCtx);
+        }
+
+        uiWin.i18n.setLanguage('zh-TW');
+        uiWin.UI_CONFIG.SEQUENTIAL_EFFECTS = false;
+        uiWin.UI_CONFIG.SCREEN_SHAKE = true;
+
+        const makeRoundState = (gameRound, humanGear, humanMana, humanDie, aiGear = 4) => ({
+            gameMode: '5P',
+            gameRound,
+            roundMarker: 1,
+            phase: 'idle',
+            gameEnded: false,
+            hasShownGameOverPanel: false,
+            players: [
+                {
+                    id: 'SM_1',
+                    name: '時魔幼體 1',
+                    type: '時魔',
+                    roleCard: '時魔幼體 1',
+                    isHuman: true,
+                    isEjected: false,
+                    gearCards: humanGear,
+                    mana: humanMana,
+                    score: 0,
+                    d6Die: humanDie,
+                    shieldUsed: false,
+                    currentClockPosition: null,
+                    hand: [{ value: 10, gear: true }],
+                    hourCards: [],
+                    specialAbilityUsed: false
+                },
+                {
+                    id: 'AI_1',
+                    name: '對手A',
+                    type: '時之惡',
+                    roleCard: '時之惡',
+                    isHuman: false,
+                    isEjected: false,
+                    gearCards: aiGear,
+                    mana: aiGear,
+                    score: 0,
+                    d6Die: 3,
+                    shieldUsed: false,
+                    currentClockPosition: null,
+                    hand: [],
+                    hourCards: []
+                }
+            ],
+            hourDeck: [{ number: 1 }, { number: 2 }],
+            clockFace: Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] })),
+            minuteDiscard: [],
+            currentRoundAIChoices: null,
+            currentDrawnHourCards: null,
+            currentMinuteChoices: null,
+            hourPickOrder: null,
+            nextHourPickerIndex: 0,
+            waitingHourChoice: false,
+            waitingHourChoicePlayerId: null,
+            waitingAbilityChoice: false,
+            waitingAbilityChoicePlayerId: null,
+            waitingSecondHandFinalChoice: false,
+            waitingSecondHandFinalChoicePlayerId: null,
+            waitingMinuteHandChoice: false,
+            isPlayingMinuteClash: false,
+            sinTargetingMode: 'default'
+        });
+
+        // 情境 1：第 1 局初次渲染，建立基準，不觸發震動／受擊／浮字
+        uiCtx.updateUI(makeRoundState(1, 5, 5, 3));
+        assert.equal(screenShakeCount, 0, '[情境 1] 第 1 局初次渲染不應觸發畫面震動');
+        assert.equal(tokenShakeCount, 0, '[情境 1] 第 1 局初次渲染不應觸發棋子震動');
+        assert.equal(damageSfxCount, 0, '[情境 1] 第 1 局初次渲染不應播放受擊音效');
+        assert.equal(floatTextCount, 0, '[情境 1] 第 1 局初次渲染不應產生浮動文字');
+
+        // 情境 2：同局內人類玩家扣除 GP，應正常觸發一次畫面震動、棋子震動、音效與浮字
+        uiCtx.updateUI(makeRoundState(1, 4, 5, 3));
+        assert.equal(screenShakeCount, 1, '[情境 2] 同局內扣除 GP 應觸發 1 次畫面震動');
+        assert.equal(tokenShakeCount, 1, '[情境 2] 同局內扣除 GP 應觸發 1 次棋子震動');
+        assert.equal(damageSfxCount, 1, '[情境 2] 同局內扣除 GP 應播放 1 次受擊音效');
+        assert.equal(floatTextCount, 1, '[情境 2] 同局內扣除 GP 應顯示 1 筆浮動文字');
+
+        // 情境 3：直接呼叫 processFloatingText 模擬跨局切換（gameRound: 1 -> 2 且數值降低）
+        uiCtx.processFloatingText(makeRoundState(2, 2, 2, 1, 2));
+        assert.equal(screenShakeCount, 1, '[情境 3] 直接呼叫 processFloatingText 跨局更換數值不應觸發畫面震動');
+        assert.equal(tokenShakeCount, 1, '[情境 3] 直接呼叫 processFloatingText 跨局更換數值不應觸發棋子震動');
+        assert.equal(damageSfxCount, 1, '[情境 3] 直接呼叫 processFloatingText 跨局更換數值不應播放受擊音效');
+        assert.equal(floatTextCount, 1, '[情境 3] 直接呼叫 processFloatingText 跨局更換數值不應產生浮動文字');
+
+        // 情境 4：先同步第 2 局高數值，再經由完整 updateUI 跨局進入第 3 局低數值（5 -> 2）
+        uiCtx.updateUI(makeRoundState(2, 5, 5, 3, 5));
+        const beforeR3Screen = screenShakeCount;
+        const beforeR3Token = tokenShakeCount;
+        const beforeR3Sfx = damageSfxCount;
+        const beforeR3Float = floatTextCount;
+        uiCtx.updateUI(makeRoundState(3, 2, 2, 1, 2));
+        assert.equal(screenShakeCount, beforeR3Screen, '[情境 4] updateUI 進入第 3 局重新分配較低數值不應觸發畫面震動');
+        assert.equal(tokenShakeCount, beforeR3Token, '[情境 4] updateUI 進入第 3 局不應觸發棋子受擊震動');
+        assert.equal(damageSfxCount, beforeR3Sfx, '[情境 4] updateUI 進入第 3 局不應播放受擊音效');
+        assert.equal(floatTextCount, beforeR3Float, '[情境 4] updateUI 進入第 3 局不應產生數值浮動文字');
+
+        // 情境 5：第 3 局內再度扣除 GP，證明新局基準已正確建立
+        uiCtx.updateUI(makeRoundState(3, 1, 2, 1, 2));
+        assert.equal(screenShakeCount, beforeR3Screen + 1, '[情境 5] 第 3 局內實際扣血應正常觸發畫面震動');
+        assert.equal(tokenShakeCount, beforeR3Token + 1, '[情境 5] 第 3 局內實際扣血應正常觸發棋子震動');
+        assert.equal(damageSfxCount, beforeR3Sfx + 1, '[情境 5] 第 3 局內實際扣血應正常播放受擊音效');
+        assert.equal(floatTextCount, beforeR3Float + 1, '[情境 5] 第 3 局內實際扣血應正常產生浮動文字');
+
+        // 情境 6：透過 resetRightPanels() 重開新局（同為 gameRound=1 但起始 GP 較低），不應觸發震動
+        uiCtx.resetRightPanels(makeRoundState(1, 5, 5, 3));
+        uiCtx.updateUI(makeRoundState(1, 5, 5, 3));
+        const beforeRestartScreen = screenShakeCount;
+        const restartGs = makeRoundState(1, 2, 2, 1, 2);
+        uiCtx.resetRightPanels(restartGs);
+        uiCtx.updateUI(restartGs);
+        assert.equal(screenShakeCount, beforeRestartScreen, '[情境 6] resetRightPanels 重開新局不應觸發畫面震動');
+    }
+
+    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌、${nextBtnCases.length} 種按鈕狀態與換局震動防護測試全數通過`;
 }
 
 // =========================================================

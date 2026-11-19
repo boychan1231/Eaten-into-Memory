@@ -143,7 +143,11 @@ function renderMinuteHistory(gameState) {
 
 function resetRightPanels(gameState) {
     uiLastRecordedTurnKey = null;
-    lastPlayerStats = {};
+    if (typeof window !== 'undefined' && typeof window.resetPlayerStatsTracking === 'function') {
+        window.resetPlayerStatsTracking();
+    } else if (typeof lastPlayerStats !== 'undefined') {
+        lastPlayerStats = {};
+    }
     for (const k of Object.keys(uiMinuteHistory)) delete uiMinuteHistory[k];
     minuteHistoryRenderCache.order = [];
     minuteHistoryRenderCache.rows.clear();

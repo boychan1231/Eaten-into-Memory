@@ -28,8 +28,14 @@ const logList = document.getElementById('log-list');
 
 // let globalGameState = null;  <-- (已經移至 config.js)
 
-// 新增：記錄玩家上一狀態，用於比對數值變化
+// 新增：記錄玩家上一狀態與所屬局次，用於比對同局內的數值變化
 let lastPlayerStats = {};
+let lastStatsGameRound = null;
+
+function resetPlayerStatsTracking() {
+    lastPlayerStats = {};
+    lastStatsGameRound = null;
+}
 
 // 日誌佇列系統變數
 const logQueue = [];
@@ -1213,12 +1219,37 @@ const lastSpawnOffsets = new Map(); // 記錄各目標最近一次浮字時間�
 function processFloatingText(gameState) {
     if (!gameState || !gameState.players) return;
 
+    const currentGameRound = (typeof gameState.gameRound === 'number') ? gameState.gameRound : null;
+    const isRoundChanged = (
+        currentGameRound !== null &&
+        lastStatsGameRound !== null &&
+        currentGameRound !== lastStatsGameRound
+    );
+
+    // 換局開始時重新分配齒輪/MP/護盾，僅靜默同步新局基準快照，不觸發浮字、受擊與畫面震動特效
+    if (isRoundChanged) {
+        lastPlayerStats = {};
+        gameState.players.forEach(player => {
+            lastPlayerStats[player.id] = {
+                mana: player.mana,
+                gearCards: player.gearCards,
+                d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0,
+                shieldUsed: !!player.shieldUsed,
+                currentClockPosition: player.currentClockPosition,
+                gameRound: currentGameRound
+            };
+        });
+        lastStatsGameRound = currentGameRound;
+        return;
+    }
+
     // 收集所有玩家的數值變動事件
     const pendingEvents = [];
 
     gameState.players.forEach(player => {
         const last = lastPlayerStats[player.id];
-        if (last) {
+        const sameGameRound = !last || last.gameRound == null || currentGameRound == null || last.gameRound === currentGameRound;
+        if (last && sameGameRound) {
             // 1. 護盾變動 (防禦先消耗或增加)
             const currentShield = (typeof player.d6Die === 'number') ? player.d6Die : 0;
             const lastShield = (typeof last.d6Die === 'number') ? last.d6Die : 0;
@@ -1301,9 +1332,14 @@ function processFloatingText(gameState) {
             gearCards: player.gearCards,
             d6Die: (typeof player.d6Die === 'number') ? player.d6Die : 0,
             shieldUsed: !!player.shieldUsed,
-            currentClockPosition: player.currentClockPosition
+            currentClockPosition: player.currentClockPosition,
+            gameRound: currentGameRound
         };
     });
+
+    if (currentGameRound !== null) {
+        lastStatsGameRound = currentGameRound;
+    }
 
     if (pendingEvents.length === 0) return;
 
@@ -1474,6 +1510,7 @@ function drawSinTargetLines(gameState) {
 
 if (typeof window !== 'undefined') {
     window.processFloatingText = processFloatingText;
+    window.resetPlayerStatsTracking = resetPlayerStatsTracking;
     window.triggerFloat = triggerFloat;
     window.spawnFloatingText = spawnFloatingText;
     window.drawSinTargetLines = drawSinTargetLines;

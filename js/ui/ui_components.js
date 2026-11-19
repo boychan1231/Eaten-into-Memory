@@ -139,6 +139,9 @@ function updateUI(gameState) {
         resetMinuteHistory(gameState);
         uiTrackedGameRound = gameState.gameRound;
         trackedEnteredClockPlayerIds.clear();
+        if (typeof window !== 'undefined' && typeof window.resetPlayerStatsTracking === 'function') {
+            window.resetPlayerStatsTracking();
+        }
         //appLogger.log(`[UI] 檢測到新輪次 (Round ${uiTrackedGameRound})，已重置出牌歷史與進場追蹤。`);
     }
 
