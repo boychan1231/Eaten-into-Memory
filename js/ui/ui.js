@@ -480,11 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const humanId = getCurrentHumanPlayerId();
             const waitingMinute = currentGs.currentRoundAIChoices !== null;
             const waitingHour = !!currentGs.waitingHourChoice && currentGs.waitingHourChoicePlayerId === humanId;
+            const hourSelectionActive = !!currentGs.waitingHourChoice || (Array.isArray(currentGs.hourPickOrder) && currentGs.hourPickOrder.length > 0);
             const waitingAbility = !!currentGs.waitingAbilityChoice && currentGs.waitingAbilityChoicePlayerId === humanId;
             const waitingSecondFinal = !!currentGs.waitingSecondHandFinalChoice && currentGs.waitingSecondHandFinalChoicePlayerId === humanId;
             const playingClash = !!currentGs.isPlayingMinuteClash;
 
-            if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || waitingAbility || waitingSecondFinal || playingClash) {
+            if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || hourSelectionActive || waitingAbility || waitingSecondFinal || playingClash) {
                 appLogger.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
                 updateUI(currentGs);
                 return;

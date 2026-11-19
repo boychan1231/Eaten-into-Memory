@@ -634,6 +634,73 @@ function stage4HeadlessStressTest() {
         assert.equal(uniqueAdvancedRoles.size, advancedRoles.length, `場次 #${idx + 1} 時魔指針身份出現重複: ${advancedRoles.join(', ')}`);
     });
 
+    // 額外回歸檢查：handleHumanChoice 清除時序與 finishHourSelection 前空窗防呆
+    {
+        const guardTimerQueue = [];
+        let guardTimerId = 1;
+        const guardWin = {
+            appLogger: { log: () => {}, warn: () => {}, error: () => {} },
+            AutoNextRoundTimer: { start: () => {}, stop: () => {}, pause: () => {}, resume: () => {} },
+            updateUI: () => {},
+            renderGameOverPanel: () => {}
+        };
+        guardWin.window = guardWin;
+        const guardDoc = {
+            getElementById: () => ({ disabled: false, textContent: '', classList: { add: () => {}, remove: () => {} }, style: {} }),
+            querySelector: () => null,
+            querySelectorAll: () => []
+        };
+        const guardCtx = {
+            window: guardWin,
+            document: guardDoc,
+            console: { log: () => {}, warn: () => {}, error: console.error },
+            setTimeout: (fn) => { const id = guardTimerId++; guardTimerQueue.push({ id, fn }); return id; },
+            clearTimeout: (id) => { const pos = guardTimerQueue.findIndex(t => t.id === id); if (pos >= 0) guardTimerQueue.splice(pos, 1); },
+            appLogger: guardWin.appLogger,
+            updateUI: () => {},
+            renderGameOverPanel: () => {}
+        };
+        vm.createContext(guardCtx);
+        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/game.js']) {
+            vm.runInContext(readProjectFile(rel), guardCtx);
+        }
+        guardCtx.GAME_CONFIG.gameMode = '5P';
+        guardCtx.GAME_CONFIG.enableAbilities = false;
+        guardCtx.GAME_CONFIG.testMode = false;
+        guardCtx.GAME_CONFIG.tutorialMode = false;
+        guardCtx.setHumanPlayerId('SM_1');
+
+        const guardGs = guardCtx.initializeGame('5P');
+        guardCtx.startRound(guardGs);
+        const origResolve = guardCtx.resolveMinuteCardSelection;
+        let aiChoicesDuringResolve = 'UNSET';
+        guardCtx.resolveMinuteCardSelection = (g, c, o) => {
+            aiChoicesDuringResolve = g.currentRoundAIChoices;
+            return origResolve(g, c, o);
+        };
+        const humanP = guardGs.players.find(p => p.id === 'SM_1');
+        assert(humanP && humanP.hand.length > 0, '回歸檢查需要人類玩家手牌');
+        guardCtx.handleHumanChoice(guardGs, humanP.hand[0].value);
+        assert.equal(aiChoicesDuringResolve, null, '進入 resolveMinuteCardSelection 時 currentRoundAIChoices 必須已清空為 null');
+
+        // 模擬 AI 剛拿走最後一張小時卡、尚未執行 finishHourSelection() 的空窗期
+        guardGs.currentRoundAIChoices = null;
+        guardGs.waitingHourChoice = false;
+        guardGs.waitingHourChoicePlayerId = null;
+        guardGs.waitingAbilityChoice = false;
+        guardGs.waitingSecondHandFinalChoice = false;
+        guardGs.waitingMinuteHandChoice = false;
+        guardGs.isPlayingMinuteClash = false;
+        guardGs.currentDrawnHourCards = [];
+        guardGs.hourPickOrder = [{ playerId: 'SM_1' }, { playerId: 'AI_1' }];
+        guardGs.nextHourPickerIndex = 2;
+        const deckLenBefore = guardGs.hourDeck.length;
+        const pickOrderBefore = guardGs.hourPickOrder;
+        guardCtx.startRound(guardGs);
+        assert.equal(guardGs.hourDeck.length, deckLenBefore, 'hourPickOrder 尚未結束時 startRound 不得提前抽牌開新回合');
+        assert.equal(guardGs.hourPickOrder, pickOrderBefore, 'hourPickOrder 尚未結束時 startRound 應被防呆攔截');
+    }
+
     return `40 場完整對局 (5P × 20 + 3P × 20) 壓力測試通過，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;
 }
 
@@ -729,20 +796,35 @@ function stage5HtmlLoadOrderCheck() {
 // =========================================================
 function stage6UiModulesSmokeTest() {
     const noop = () => {};
+    const nextStepBtnMock = {
+        id: 'next-step-btn',
+        disabled: false,
+        textContent: '',
+        onclick: noop,
+        style: {},
+        classList: { add: noop, remove: noop, toggle: noop, contains: () => false }
+    };
     const windowMock = {
         innerWidth: 1280,
         addEventListener: noop,
         removeEventListener: noop,
         localStorage: { getItem: () => null, setItem: noop },
         UI_CONFIG: undefined,
-        GAME_CONFIG: undefined
+        GAME_CONFIG: undefined,
+        getEffectiveHumanPlayerId: () => 'SM_1',
+        setHumanPlayerId: noop,
+        renderGameOverPanel: noop
     };
     windowMock.window = windowMock;
 
     let hasModernOverlay = false;
     const documentMock = {
         readyState: 'loading',
-        getElementById: (id) => (id === 'modern-intro-overlay' && hasModernOverlay ? { id: 'modern-intro-overlay' } : null),
+        getElementById: (id) => {
+            if (id === 'modern-intro-overlay' && hasModernOverlay) return { id: 'modern-intro-overlay' };
+            if (id === 'next-step-btn') return nextStepBtnMock;
+            return null;
+        },
         querySelector: () => null,
         querySelectorAll: () => [],
         addEventListener: noop,
@@ -766,7 +848,10 @@ function stage6UiModulesSmokeTest() {
         setTimeout,
         clearTimeout,
         setInterval,
-        clearInterval
+        clearInterval,
+        getEffectiveHumanPlayerId: () => 'SM_1',
+        setHumanPlayerId: noop,
+        renderGameOverPanel: noop
     };
     vm.createContext(ctx);
 
@@ -927,7 +1012,88 @@ function stage6UiModulesSmokeTest() {
     assert.equal(windowMock.applyHandFanLayout(hand12), false, '經典版不應套用扇形');
     assert.equal(hand12.classList.contains('hand-fan-layout'), false);
 
-    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出與扇形手牌計算測試全數通過`;
+    // 5) next-step-btn 提示與禁用狀態機回歸測試 (9 種狀態)
+    assert(windowMock.i18n && typeof windowMock.i18n.setLanguage === 'function', '缺少 window.i18n.setLanguage');
+    windowMock.i18n.setLanguage('zh-TW');
+
+    const makeNextBtnGs = (overrides) => Object.assign({
+        gameMode: '5P',
+        gameRound: 1,
+        roundMarker: 1,
+        phase: 'idle',
+        gameEnded: false,
+        hasShownGameOverPanel: false,
+        players: [
+            {
+                id: 'SM_1',
+                name: '時魔幼體 1',
+                type: '時魔',
+                roleCard: '分針',
+                isHuman: true,
+                isEjected: false,
+                gearCards: 5,
+                mana: 3,
+                score: 0,
+                d6Die: null,
+                currentClockPosition: null,
+                hand: [{ value: 10, gear: true }],
+                hourCards: [],
+                specialAbilityUsed: false
+            },
+            {
+                id: 'AI_1',
+                name: '對手A',
+                type: '時魔',
+                roleCard: '時針',
+                isHuman: false,
+                isEjected: false,
+                gearCards: 5,
+                mana: 3,
+                score: 0,
+                d6Die: null,
+                currentClockPosition: null,
+                hand: [],
+                hourCards: []
+            }
+        ],
+        hourDeck: [{ number: 1 }, { number: 2 }],
+        clockFace: Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] })),
+        minuteDiscard: [],
+        currentRoundAIChoices: null,
+        currentDrawnHourCards: null,
+        currentMinuteChoices: null,
+        hourPickOrder: null,
+        nextHourPickerIndex: 0,
+        waitingHourChoice: false,
+        waitingHourChoicePlayerId: null,
+        waitingAbilityChoice: false,
+        waitingAbilityChoicePlayerId: null,
+        waitingSecondHandFinalChoice: false,
+        waitingSecondHandFinalChoicePlayerId: null,
+        waitingMinuteHandChoice: false,
+        isPlayingMinuteClash: false,
+        sinTargetingMode: 'default'
+    }, overrides);
+
+    const nextBtnCases = [
+        ['閒置／回合結束', {}, false, '下一回合'],
+        ['等待人類出分鐘卡（已有預覽小時卡）', { currentDrawnHourCards: [{ number: 5 }, { number: 8 }], currentRoundAIChoices: [{ playerId: 'AI_1', card: { value: 12 } }], hourPickOrder: null }, true, '請出牌'],
+        ['秒針 2 選 1 階段（尚有預覽小時卡）', { currentDrawnHourCards: [{ number: 5 }, { number: 8 }], currentRoundAIChoices: null, waitingSecondHandFinalChoice: true, waitingSecondHandFinalChoicePlayerId: 'SM_1', secondHandPendingCards: [{ value: 10 }, { value: 20 }] }, true, '請完成秒針 2 選 1'],
+        ['分鐘卡比牌動畫中', { currentDrawnHourCards: [{ number: 5 }, { number: 8 }], hourPickOrder: [{ playerId: 'AI_1' }, { playerId: 'SM_1' }], isPlayingMinuteClash: true }, true, '比較分鐘數值中'],
+        ['對手挑選小時卡中', { currentDrawnHourCards: [{ number: 5 }, { number: 8 }], isPlayingMinuteClash: false, hourPickOrder: [{ playerId: 'AI_1' }, { playerId: 'SM_1' }], nextHourPickerIndex: 0, waitingHourChoice: false }, true, '等待對手挑選小時卡'],
+        ['輪到人類挑選小時卡', { currentDrawnHourCards: [{ number: 5 }], isPlayingMinuteClash: false, hourPickOrder: [{ playerId: 'AI_1' }, { playerId: 'SM_1' }], nextHourPickerIndex: 1, waitingHourChoice: true, waitingHourChoicePlayerId: 'SM_1' }, true, '請挑選小時卡'],
+        ['AI 第 2 順位剛拿走最後一張卡至結算前空窗', { currentDrawnHourCards: [], isPlayingMinuteClash: false, hourPickOrder: [{ playerId: 'SM_1' }, { playerId: 'AI_1' }], nextHourPickerIndex: 2, waitingHourChoice: false }, true, '等待對手挑選小時卡'],
+        ['分針能力等待中', { currentDrawnHourCards: null, hourPickOrder: null, waitingMinuteHandChoice: true }, false, '下一回合 (略過能力)'],
+        ['遊戲結束', { gameEnded: true, hasShownGameOverPanel: true }, true, '遊戲結束']
+    ];
+
+    for (const [caseName, overrides, expectedDisabled, expectedText] of nextBtnCases) {
+        ctx.updateUI(makeNextBtnGs(overrides));
+        assert.equal(nextStepBtnMock.disabled, expectedDisabled, `[${caseName}] next-step-btn.disabled 應為 ${expectedDisabled}`);
+        assert.equal(nextStepBtnMock.textContent, expectedText, `[${caseName}] next-step-btn.textContent 應為「${expectedText}」`);
+    }
+
+    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌與 ${nextBtnCases.length} 種按鈕狀態測試全數通過`;
 }
 
 // =========================================================

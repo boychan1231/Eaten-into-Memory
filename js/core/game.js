@@ -15,16 +15,20 @@ function startRound(gameState) {
 	// 當仍在等待人類輸入或小時卡挑選尚未結束時，不允許進入下一回合（避免「未選牌也能按下一回合」）
     const waitingMinute = gameState && gameState.currentRoundAIChoices !== null;
     const isHourSelectionActive = gameState && (
-        (!!gameState.waitingHourChoice && gameState.waitingHourChoicePlayerId === humanId) ||
+        !!gameState.waitingHourChoice ||
         (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
-        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length)
+        (Array.isArray(gameState.hourPickOrder) && gameState.hourPickOrder.length > 0)
     );
-    const waitingAbility = gameState && !!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId;
+    const waitingAbility = gameState && (
+        (!!gameState.waitingAbilityChoice && gameState.waitingAbilityChoicePlayerId === humanId) ||
+        !!gameState.waitingMinuteHandChoice
+    );
     const waitingSecondFinal = gameState && !!gameState.waitingSecondHandFinalChoice && gameState.waitingSecondHandFinalChoicePlayerId === humanId;
+    const playingClash = gameState && !!gameState.isPlayingMinuteClash;
 
-    //防呆：若仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），禁止直接進入下一回合
-    if (waitingMinute || isHourSelectionActive || waitingAbility || waitingSecondFinal) {
-        appLogger.log("[Game] 仍在等待操作（出牌/小時卡挑選/能力/秒針最終選擇），不能開始下一回合。");
+    //防呆：若仍在等待操作（出牌/比牌動畫/小時卡挑選/能力/秒針最終選擇），禁止直接進入下一回合
+    if (waitingMinute || isHourSelectionActive || waitingAbility || waitingSecondFinal || playingClash) {
+        appLogger.log("[Game] 仍在等待操作（出牌/比牌動畫/小時卡挑選/能力/秒針最終選擇），不能開始下一回合。");
         return;
     }
 	
@@ -373,8 +377,8 @@ function handleHumanChoice(gameState, chosenCardValue) {
     });
     appLogger.log(`你打出了 ${chosenCard.value} 號分鐘卡。`);
 
-    resolveMinuteCardSelection(gameState, allChoices);
     gameState.currentRoundAIChoices = null;
+    resolveMinuteCardSelection(gameState, allChoices);
     return true; 
 }
 

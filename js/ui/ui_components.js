@@ -158,9 +158,8 @@ function updateUI(gameState) {
 
     // 2. 計算等待狀態 (Flags)
     const isHourSelectionActive = !!(
-        (gameState.currentDrawnHourCards && gameState.currentDrawnHourCards.length > 0) ||
-        (gameState.hourPickOrder && Array.isArray(gameState.hourPickOrder) && gameState.nextHourPickerIndex < gameState.hourPickOrder.length) ||
-        gameState.waitingHourChoice
+        gameState.waitingHourChoice ||
+        (Array.isArray(gameState.hourPickOrder) && gameState.hourPickOrder.length > 0)
     );
 
     const flags = {
@@ -252,14 +251,16 @@ function updateNextStepButton(gameState, flags) {
         nextStepBtn.disabled = true;
         if (flags.isPlayingMinuteClash) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute') : "比較分鐘數值中...";
+        } else if (flags.isWaitingSecondFinalChoice) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_second_final') : "請完成秒針二選一...";
+        } else if (flags.isWaitingMinuteInput) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_input') : "請出牌...";
+        } else if (flags.isWaitingAbilityChoice) {
+            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_ability_choice') : "請決定是否使用特殊能力...";
         } else if (flags.isWaitingHourInput) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_hour_choice') : "請選擇小時卡...";
         } else if (flags.isHourSelectionActive) {
             nextStepBtn.textContent = window.i18n ? (window.i18n.t('ui.hints.waiting_opponents') || "等待對手挑選小時卡...") : "等待對手挑選小時卡...";
-        } else if (flags.isWaitingAbilityChoice) {
-            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_ability_choice') : "請決定是否使用特殊能力...";
-        } else if (flags.isWaitingSecondFinalChoice) {
-            nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_second_final') : "請完成秒針二選一...";
         } else {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_input') : "請出牌...";
         }
