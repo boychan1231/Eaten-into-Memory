@@ -8,8 +8,8 @@
 
 《蝕入記憶》(Eaten into Memory) 為純前端（Vanilla JS + HTML5 + CSS3）實作的暗拍策略桌遊網頁應用，無需後端伺服器與打包工具即可直接於瀏覽器執行。專案採用**雙軌入口渲染架構**：
 
-- **現代動態星芒版（預設入口）**：[`index.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/index.html) + [`modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern.css) + [`modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_board.js)（PixiJS 畫布 + GSAP 動畫）+ [`modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_intro.js)。
-- **經典 DOM 備援版**：[`classic.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/classic.html) + [`style.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/style.css)（純 DOM 圓形鐘面）。
+- **現代動態星芒版（預設入口）**：[`index.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/index.html) + [`styles/modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/styles/modern.css) + [`js/modern/modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_board.js)（PixiJS 畫布 + GSAP 動畫）+ [`js/modern/modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_intro.js)。
+- **經典 DOM 備援版**：[`classic.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/classic.html) + [`styles/style.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/styles/style.css)（純 DOM 圓形鐘面）。
 
 ### 1.1 Script 載入順序與模組依賴 (Load Order & Dependencies)
 
@@ -17,32 +17,32 @@
 
 | 載入序 | 檔案路徑 | 核心職責與關鍵全域導出 |
 | :---: | :--- | :--- |
-| 1 | `pixi.min.js`, `gsap.min.js` | 第三方渲染與補間動畫引擎（**代理禁止讀取原始碼**）。 |
+| 1 | `vendor/pixi.min.js`, `vendor/gsap.min.js` | 第三方渲染與補間動畫引擎（**代理禁止讀取原始碼**）。 |
 | 2 | [`locales/zh-TW.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/zh-TW.js), [`locales/en-US.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/en-US.js) | 繁體中文 / 英文 UI 與規則字典（`window.I18N_LOCALES`）。 |
-| 3 | [`i18n.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/i18n.js) | 多語系核心（`window.i18n`, `window.t()`），支援即時語言切換與 DOM 刷新。 |
+| 3 | [`js/core/i18n.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/i18n.js) | 多語系核心（`window.i18n`, `window.t()`），支援即時語言切換與 DOM 刷新。 |
 | 4 | [`locales/stories_data.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/locales/stories_data.js) | 小時卡時代回憶故事文本資料。 |
-| 5 | `role_assets_data.js` | 角色立繪與圖資 Base64 映射（**代理禁止讀取**）。 |
-| 6 | [`config.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/config.js) | 語言無關識別碼 `GAME_IDS`、遊戲設定 `GAME_CONFIG`、UI 參數 `UI_CONFIG`、角色/技能/珍貴卡常數 `GAME_DATA`。 |
-| 7 | [`logger.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/logger.js) | 戰鬥日誌控制器 `appLogger`（上限 `UI_CONFIG.LOG_RETENTION_LIMIT = 200`）。 |
-| 8 | [`audio.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/audio.js) | 音效與 BGM 控制器 `gameAudio`、`gameVoice`（含防競態 Token 與平滑淡入淡出）。 |
-| 9 | [`abilities.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js) | 角色專屬異能函式與幼體時魔 4 大進化判定引擎。 |
-| 10 | [`game_setup.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game_setup.js) | 卡牌生成器、3P/5P 初始狀態構建器 `initializeGame()`、`setupNewGameRound()`、人類玩家 ID 管理。 |
-| 11 | [`ai_engine.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ai_engine.js) | 3P/5P AI 決策引擎（出牌前異能、分鐘卡暗拍選牌、小時卡挑選、放牌後跳格判定）。 |
-| 12 | [`game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game.js) | 核心回合狀態機、比牌暗拍、處決吞噬、飢餓、受詛者結算、勝負判定。 |
-| 13 | [`ui_modals.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_modals.js) | 彈窗生命週期與離開畫面檢測（`openModal`, `closeModal`, `isPlayerAwayFromGame`）。 |
-| 14 | [`ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_components.js) | UI 狀態 `uiState`、`ROLE_COLORS`、`updateUI()` 主排程、鐘面繪製、齒輪/MP 條與 AI 列。 |
-| 15 | [`ui_animations.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_animations.js) | `AnimationController`、`EffectQueue`、比牌演出、粒子消散與模糊浮現特效。 |
-| 16 | [`ui_panels.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_panels.js) | 出牌歷史、積分排行榜、棄牌堆與彈窗、幼體進化/異能/受詛者監控面板。 |
-| 17 | [`ui_hand_drag.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_hand_drag.js) | 人類手牌區、拖放（Drag & Drop）出牌控制器與秒針雙牌控制。 |
-| 18 | [`tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
-| 19 | [`ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui.js) | 主畫面事件綁定、`AutoNextRoundTimer`（7 秒倒數）、局結算與排行榜渲染。 |
-| 20 | [`modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_board.js), [`modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern_intro.js) | PixiJS 鐘面、高危光圈、棋子 Token 渲染、平移縮放（Pan/Zoom）與動態開場。 |
+| 5 | `vendor/role_assets_data.js` | 角色立繪與圖資 Base64 映射（**代理禁止讀取**）。 |
+| 6 | [`js/core/config.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/config.js) | 語言無關識別碼 `GAME_IDS`、遊戲設定 `GAME_CONFIG`、UI 參數 `UI_CONFIG`、角色/技能/珍貴卡常數 `GAME_DATA`。 |
+| 7 | [`js/core/logger.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/logger.js) | 戰鬥日誌控制器 `appLogger`（上限 `UI_CONFIG.LOG_RETENTION_LIMIT = 200`）。 |
+| 8 | [`js/core/audio.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/audio.js) | 音效與 BGM 控制器 `gameAudio`、`gameVoice`（含防競態 Token 與平滑淡入淡出）。 |
+| 9 | [`js/core/abilities.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js) | 角色專屬異能函式與幼體時魔 4 大進化判定引擎。 |
+| 10 | [`js/core/game_setup.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game_setup.js) | 卡牌生成器、3P/5P 初始狀態構建器 `initializeGame()`、`setupNewGameRound()`、人類玩家 ID 管理。 |
+| 11 | [`js/core/ai_engine.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/ai_engine.js) | 3P/5P AI 決策引擎（出牌前異能、分鐘卡暗拍選牌、小時卡挑選、放牌後跳格判定）。 |
+| 12 | [`js/core/game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game.js) | 核心回合狀態機、比牌暗拍、處決吞噬、飢餓、受詛者結算、勝負判定。 |
+| 13 | [`js/ui/ui_modals.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_modals.js) | 彈窗生命週期與離開畫面檢測（`openModal`, `closeModal`, `isPlayerAwayFromGame`）。 |
+| 14 | [`js/ui/ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_components.js) | UI 狀態 `uiState`、`ROLE_COLORS`、`updateUI()` 主排程、鐘面繪製、齒輪/MP 條與 AI 列。 |
+| 15 | [`js/ui/ui_animations.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_animations.js) | `AnimationController`、`EffectQueue`、比牌演出、粒子消散與模糊浮現特效。 |
+| 16 | [`js/ui/ui_panels.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_panels.js) | 出牌歷史、積分排行榜、棄牌堆與彈窗、幼體進化/異能/受詛者監控面板。 |
+| 17 | [`js/ui/ui_hand_drag.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_hand_drag.js) | 人類手牌區、拖放（Drag & Drop）出牌控制器與秒針雙牌控制。 |
+| 18 | [`js/ui/tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
+| 19 | [`js/ui/ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui.js) | 主畫面事件綁定、`AutoNextRoundTimer`（7 秒倒數）、局結算與排行榜渲染。 |
+| 20 | [`js/modern/modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_board.js), [`js/modern/modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_intro.js) | PixiJS 鐘面、高危光圈、棋子 Token 渲染、平移縮放（Pan/Zoom）與動態開場。 |
 
 ---
 
 ## 2. 核心資料模型 (Core Data Schemas)
 
-### 2.1 標準識別碼與設定 (`config.js`)
+### 2.1 標準識別碼與設定 (`js/core/config.js`)
 
 - **`window.GAME_IDS`**：語言無關的標準化常數，避免邏輯層依賴中英文字串比對。
   - `ROLES`: `{ HOUR: 'hour', MINUTE: 'min', SECOND: 'sec' }`
@@ -64,7 +64,7 @@
 
 ### 2.2 全域遊戲狀態 (`globalGameState` / `gameState`)
 
-由 [`game_setup.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game_setup.js) 初始化並由 [`game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game.js) 驅動：
+由 [`js/core/game_setup.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game_setup.js) 初始化並由 [`js/core/game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game.js) 驅動：
 
 ```ts
 interface GameState {
@@ -134,11 +134,11 @@ interface Player {
 
 ### 2.4 卡牌模型 (`MinuteCard` & `HourCard`)
 
-- **分鐘卡 (`MinuteCard`)**：點數 `1 ~ 60` 共 60 張不重複。每張附帶 GP（齒輪）價值（由 [`getGearCount()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game_setup.js#L63-L70) 計算）：
+- **分鐘卡 (`MinuteCard`)**：點數 `1 ~ 60` 共 60 張不重複。每張附帶 GP（齒輪）價值（由 [`getGearCount()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game_setup.js#L63-L70) 計算）：
   - `1 ~ 11` 與 `50 ~ 60`：`0 GP`
   - `12 ~ 25` 與 `36 ~ 49`：`0.5 GP`
   - `26 ~ 35`：`1 GP`
-- **小時卡 (`HourCard`)**：5P 模式共 **36 張**（12 刻度 × 3 張），依 [`HOUR_PER_NUMBER_SLOTS`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game_setup.js#L102-L115) 分配 5 種時代：
+- **小時卡 (`HourCard`)**：5P 模式共 **36 張**（12 刻度 × 3 張），依 [`HOUR_PER_NUMBER_SLOTS`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game_setup.js#L102-L115) 分配 5 種時代：
   - `幼年` (5 張：刻度 1~5)、`少年` (10 張)、`青年` (10 張)、`中年` (10 張)、`死亡` (1 張：固定於刻度 12)。
   - 每局隨機挑選一組 `GAME_DATA.HOUR_PRECIOUS_CONFIGS`，標記 **12 張** `isPrecious: true`（每個刻度恰 1 張；幼年 1 / 少年 4 / 青年 4 / 中年 3 / 死亡 0）。
   - 3P 模式簡化為 **24 張**（刻度 1~12 各 2 張，無時代與珍貴屬性）。
@@ -161,7 +161,7 @@ stateDiagram-v2
     gameRoundEnd --> [*]: endGame() (總局數結束或觸發特殊勝利)
 ```
 
-### 關鍵狀態流轉函式索引 ([`game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/game.js))
+### 關鍵狀態流轉函式索引 ([`js/core/game.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/game.js))
 
 1. **開局與回合啟動**：`startRound(gameState)` — 重置回合旗標、抽出 2 張小時卡（若牌庫剩 1 張則抽 1 張；剩 0 張則提早進入 `endGameRound()`）、處理時之惡處決規則選擇（`activateSinTargetingAbility`）與時針出牌前異能（`hourHandPreMinuteAI`）。
 2. **暗拍出牌**：`processMinuteCardSelection()` -> 人類觸發 `handleHumanChoice(cardValue)` 或秒針 `handleHumanSecondHandCommit(card1, card2)` -> 全員到齊後呼叫 `resolveMinuteCardSelection()`。
@@ -188,8 +188,8 @@ stateDiagram-v2
    - 收集珍貴小時卡並跨局鎖定於 `lockedPreciousCards`。
    - 集滿指定階段張數獲得額外積分獎勵；若至終局未達門檻則觸發 `-999` 懲罰。
    - 受罰時若持有護盾可將珍貴小時卡移至鐘面底部保護。
-5. **幼體時魔 (Young Demon / `SM_Y`) 4 大進化配方 ([`checkEvolutionCondition()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js#L10-L39))**：
-   - 滿足以下任一條件即可透過 [`attemptRoleUpgrade()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js#L117) 進化為場上尚未被佔用的指針身份（`時針` / `分針` / `秒針`），並**嚴格維護指針全域唯一性**：
+5. **幼體時魔 (Young Demon / `SM_Y`) 4 大進化配方 ([`checkEvolutionCondition()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js#L10-L39))**：
+   - 滿足以下任一條件即可透過 [`attemptRoleUpgrade()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js#L117) 進化為場上尚未被佔用的指針身份（`時針` / `分針` / `秒針`），並**嚴格維護指針全域唯一性**：
      1. **久遠一生**：3 種不同時代 + 至少 1 張珍貴卡。
      2. **命途節錄**：4 個不同數字 + 至少 1 張珍貴卡。
      3. **漫長生涯**：任意 5 張小時卡 + 至少 2 張珍貴卡。
@@ -197,14 +197,14 @@ stateDiagram-v2
 
 ---
 
-## 5. 角色專屬異能系統 ([`abilities.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js))
+## 5. 角色專屬異能系統 ([`js/core/abilities.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js))
 
 所有主動異能皆受 `GAME_CONFIG.enableAbilities === true`、未「被吞噬」（`!player.isEjected`）、未被封印（`!gameState.abilityMarker`）與 MP 足夠等條件約束：
 
 | 角色 / 身份 | 異能名稱 | 消耗 MP (`ABILITY_COSTS`) | 觸發階段 | 核心函式與效果 |
 | :--- | :--- | :---: | :--- | :--- |
 | **時針 (`hour`)** | 頂牌移底 | `1` (`TIME_HAND_MOVE`) | `preMinute` | 將鐘面某格頂部小時卡移至該格底部，改變公開資訊與可選順序。 |
-| **分針 (`min`)** | 鐘面跳格 | `2` (`MINUTE_HAND_MOVE`) | `postHour` | [`activateMinuteHandAbility()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/abilities.js#L44-L108)：順時針（`cw`）或逆時針（`ccw`）移動至下一個有小時卡的刻度。 |
+| **分針 (`min`)** | 鐘面跳格 | `2` (`MINUTE_HAND_MOVE`) | `postHour` | [`activateMinuteHandAbility()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js#L44-L108)：順時針（`cw`）或逆時針（`ccw`）移動至下一個有小時卡的刻度。 |
 | **秒針 (`sec`)** | 雙牌伏擊 | `3` (`SECOND_HAND_SELECT`) | `minute` | 暗拍時可蓋出 2 張分鐘卡，翻牌後二選一結算。 |
 | **時之惡 (`sin`)** | 牽引移動 | `2` (`SIN_PULL`) | `postHour` | 將鐘面上指定目標棋子牽引移動，操縱處決對象。 |
 | **時之惡 (`sin`)** | 異能封印 | `3` (`SIN_SEAL`) | `preMinute` | `activateSinSealAbility()`：設 `gameState.abilityMarker = true`，封鎖本回合所有角色異能。 |
@@ -215,16 +215,16 @@ stateDiagram-v2
 ## 6. UI、渲染、動畫與教學契約 (UI & Visual Contracts)
 
 - **字型與符號規範**：
-  - 鐘面刻度與分鐘卡牌數字統一使用 `Cinzel-VariableFont`（定義於 [`style.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/style.css) 與 [`modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern.css)）。
+  - 鐘面刻度與分鐘卡牌數字統一使用 `Cinzel-VariableFont`（定義於 [`styles/style.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/styles/style.css) 與 [`styles/modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/styles/modern.css)）。
   - 全介面、日誌、規則說明全面使用標準 Unicode 特殊符號（`✦`, `◈`, `◆`, `▲`, `▶`, `⧖`, `⛨`, `☠`, `§`, `※`, `↻`, `✕`, `★`），**不使用 Emoji**。
-- **現代版 HUD 佈局 ([`index.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/index.html) / [`modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/modern.css))**：
+- **現代版 HUD 佈局 ([`index.html`](file:///home/antigravity/boychan1231/Eaten-into-Memory/index.html) / [`styles/modern.css`](file:///home/antigravity/boychan1231/Eaten-into-Memory/styles/modern.css))**：
   - 左側懸浮抽屜群（`.hud-drawer-left`）：第 1 項為回合流程提示 `#round-phase-tracker`（左上角），其下為規則/設定等抽屜。
   - 右側懸浮抽屜群（`.hud-drawer-right`）：戰鬥日誌、出牌記錄、故事回憶等抽屜。
-- **動畫與回饋 ([`ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/ui_components.js))**：
+- **動畫與回饋 ([`js/ui/ui_components.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_components.js))**：
   - `UI_CONFIG.SEQUENTIAL_EFFECTS` 控制浮動跳字依序播放（間隔 `260ms`）。
   - 扣除 GP 時觸發畫面震動（由 `UI_CONFIG.SCREEN_SHAKE` 與 `#screen-shake-toggle` 控制）。
   - `AnimationController` 內建 Watchdog 超時保險絲，避免動畫卡死導致狀態機停擺。
-- **新手教學系統 ([`tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/tutorial_mode.js))**：
+- **新手教學系統 ([`js/ui/tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/tutorial_mode.js))**：
   - 動作導向推進，不自動倒數關閉。
   - 歡迎步驟於「下一回合」高亮光環正上方顯示跳動箭頭 `#tutorial-bounce-arrow`。
 
@@ -244,11 +244,11 @@ stateDiagram-v2
 ## 8. AI 代理開發守則與驗證流程 (Agent Protocol & Verification)
 
 1. **專案守則 ([`AGENTS.md`](file:///home/antigravity/boychan1231/Eaten-into-Memory/AGENTS.md))**：
-   - 嚴禁掃描 `SFX/`、`assets/`、`pixi.min.js`、`gsap.min.js`、`role_assets_data.js`、`ai_studio/AI_STUDIO_CONTEXT_BUNDLE.md`。
+   - 嚴禁掃描 `SFX/`、`assets/`、`vendor/pixi.min.js`、`vendor/gsap.min.js`、`vendor/role_assets_data.js`、`ai_studio/AI_STUDIO_CONTEXT_BUNDLE.md`。
    - 術語統一：**吞噬 / 被吞噬**、**MP**、**GP**。
    - 任何修改驗證完成後須主動 `git commit` 並 `git push origin main`。
 2. **標準驗證指令**：
    - **一鍵完整驗證（推薦）**：`npm run verify`（或 `node scripts/verify.js`），涵蓋語法檢查、雙語對齊與格式檢查、教學行為測試、40 場無頭對戰壓力測試及雙入口 `<script>` 載入順序檢查。
-   - **語法檢查**：`for f in *.js locales/*.js; do node -c "$f"; done`
+   - **語法檢查**：`for f in js/*/*.js locales/*.js; do node -c "$f"; done`
    - **雙語鍵值對齊檢查**：以 Node.js 載入 `locales/zh-TW.js` 與 `locales/en-US.js` 比對所有遞迴鍵值是否完全一致。
-   - **無頭對戰壓力測試**：於 Node.js `vm` 環境載入 `config.js`, `logger.js`, `abilities.js`, `game_setup.js`, `game.js`，自動模擬數十場 5P / 3P 完整對局，驗證 0 未捕獲例外與 0 狀態機死鎖。
+   - **無頭對戰壓力測試**：於 Node.js `vm` 環境載入 `js/core/config.js`, `js/core/logger.js`, `js/core/abilities.js`, `js/core/game_setup.js`, `js/core/ai_engine.js`, `js/core/game.js`，自動模擬數十場 5P / 3P 完整對局，驗證 0 未捕獲例外與 0 狀態機死鎖。

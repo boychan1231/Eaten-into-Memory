@@ -36,23 +36,23 @@ function collectLocaleKeys(obj, prefix = '') {
 // =========================================================
 function stage1SyntaxCheck() {
     const coreFiles = [
-        'i18n.js',
-        'config.js',
-        'logger.js',
-        'audio.js',
-        'abilities.js',
-        'game_setup.js',
-        'ai_engine.js',
-        'game.js',
-        'ui_modals.js',
-        'ui_components.js',
-        'ui_animations.js',
-        'ui_panels.js',
-        'ui_hand_drag.js',
-        'tutorial_mode.js',
-        'ui.js',
-        'modern_board.js',
-        'modern_intro.js',
+        'js/core/i18n.js',
+        'js/core/config.js',
+        'js/core/logger.js',
+        'js/core/audio.js',
+        'js/core/abilities.js',
+        'js/core/game_setup.js',
+        'js/core/ai_engine.js',
+        'js/core/game.js',
+        'js/ui/ui_modals.js',
+        'js/ui/ui_components.js',
+        'js/ui/ui_animations.js',
+        'js/ui/ui_panels.js',
+        'js/ui/ui_hand_drag.js',
+        'js/ui/tutorial_mode.js',
+        'js/ui/ui.js',
+        'js/modern/modern_board.js',
+        'js/modern/modern_intro.js',
         'locales/zh-TW.js',
         'locales/en-US.js',
         'locales/stories_data.js',
@@ -60,7 +60,7 @@ function stage1SyntaxCheck() {
     ];
 
     const optionalSplitFiles = [
-        'game_resolution.js'
+        'js/core/game_resolution.js'
     ];
 
     const targets = coreFiles.concat(optionalSplitFiles.filter(fileExists));
@@ -111,37 +111,37 @@ function stage2LocaleAndFormatCheck() {
 
     // 檢查 Emoji 殘留
     const emojiRe = /[\u{1F300}-\u{1FAFF}\u26A0]/gu;
-    for (const rel of ['index.html', 'classic.html', 'tutorial_mode.js', 'locales/zh-TW.js', 'locales/en-US.js']) {
+    for (const rel of ['index.html', 'classic.html', 'js/ui/tutorial_mode.js', 'locales/zh-TW.js', 'locales/en-US.js']) {
         const content = readProjectFile(rel);
         const matches = content.match(emojiRe) || [];
         assert.equal(matches.length, 0, `${rel} 仍殘留 ${matches.length} 個 Emoji (${matches.join(' ')})`);
     }
 
     // 檢查重複歡迎箭頭與重複 keyframe
-    const styleCss = readProjectFile('style.css');
-    const tutorialJs = readProjectFile('tutorial_mode.js');
+    const styleCss = readProjectFile('styles/style.css');
+    const tutorialJs = readProjectFile('js/ui/tutorial_mode.js');
     const keyframeCount = (styleCss.match(/@keyframes\s+tutorialBounceArrow\b/g) || []).length;
-    assert.equal(keyframeCount, 1, `style.css 中 @keyframes tutorialBounceArrow 出現次數應為 1，實測為 ${keyframeCount}`);
-    assert(!styleCss.includes('tutorial-welcome-arrow'), 'style.css 不應再包含 tutorial-welcome-arrow');
-    assert(!tutorialJs.includes('tutorial-welcome-arrow'), 'tutorial_mode.js 不應再包含 tutorial-welcome-arrow');
+    assert.equal(keyframeCount, 1, `styles/style.css 中 @keyframes tutorialBounceArrow 出現次數應為 1，實測為 ${keyframeCount}`);
+    assert(!styleCss.includes('tutorial-welcome-arrow'), 'styles/style.css 不應再包含 tutorial-welcome-arrow');
+    assert(!tutorialJs.includes('tutorial-welcome-arrow'), 'js/ui/tutorial_mode.js 不應再包含 tutorial-welcome-arrow');
 
     // 檢查專案禁用詞（遵守 AGENTS.md 規範）
     const bannedWordRe = new RegExp('\\u512a\\u5316');
     const checkList = [
-        'abilities.js',
-        'ai_engine.js',
-        'game.js',
-        'tutorial_mode.js',
-        'ui_components.js',
-        'ui_animations.js',
-        'ui_panels.js',
-        'ui_hand_drag.js',
-        'ui.js',
+        'js/core/abilities.js',
+        'js/core/ai_engine.js',
+        'js/core/game.js',
+        'js/ui/tutorial_mode.js',
+        'js/ui/ui_components.js',
+        'js/ui/ui_animations.js',
+        'js/ui/ui_panels.js',
+        'js/ui/ui_hand_drag.js',
+        'js/ui/ui.js',
         'locales/zh-TW.js',
         'locales/en-US.js',
         'index.html',
         'classic.html',
-        'ARCHITECTURE.md',
+        'docs/ARCHITECTURE.md',
         'scripts/verify.js'
     ];
     for (const rel of checkList) {
@@ -283,7 +283,7 @@ async function stage3TutorialBehaviorTest() {
         HTMLElement: function () {}
     };
     vm.createContext(ctx);
-    for (const rel of ['locales/zh-TW.js', 'locales/en-US.js', 'i18n.js', 'config.js', 'abilities.js', 'tutorial_mode.js']) {
+    for (const rel of ['locales/zh-TW.js', 'locales/en-US.js', 'js/core/i18n.js', 'js/core/config.js', 'js/core/abilities.js', 'js/ui/tutorial_mode.js']) {
         vm.runInContext(readProjectFile(rel), ctx);
     }
     ctx.GAME_CONFIG = windowMock.GAME_CONFIG;
@@ -573,7 +573,7 @@ function stage4HeadlessStressTest() {
             renderGameOverPanel: () => {}
         };
         vm.createContext(ctx);
-        for (const rel of ['config.js', 'logger.js', 'abilities.js', 'game_setup.js', 'ai_engine.js', 'game.js']) {
+        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/game.js']) {
             vm.runInContext(readProjectFile(rel), ctx);
         }
 
@@ -643,19 +643,21 @@ function stage5HtmlLoadOrderCheck() {
     const requiredOrder = [
         'locales/zh-TW.js',
         'locales/en-US.js',
-        'i18n.js',
-        'config.js',
-        'abilities.js',
-        'game_setup.js',
-        'ai_engine.js',
-        'game.js',
-        'ui_components.js',
-        'ui_animations.js',
-        'ui_panels.js',
-        'ui_hand_drag.js',
-        'tutorial_mode.js',
-        'ui.js'
+        'js/core/i18n.js',
+        'js/core/config.js',
+        'js/core/abilities.js',
+        'js/core/game_setup.js',
+        'js/core/ai_engine.js',
+        'js/core/game.js',
+        'js/ui/ui_components.js',
+        'js/ui/ui_animations.js',
+        'js/ui/ui_panels.js',
+        'js/ui/ui_hand_drag.js',
+        'js/ui/tutorial_mode.js',
+        'js/ui/ui.js'
     ];
+
+    let assetRefsChecked = 0;
 
     for (const htmlFile of ['index.html', 'classic.html']) {
         const html = readProjectFile(htmlFile);
@@ -677,9 +679,48 @@ function stage5HtmlLoadOrderCheck() {
             assert(idx > lastIdx, `${htmlFile} 腳本載入順序錯誤: ${req} 必須晚於 ${requiredOrder[requiredOrder.indexOf(req) - 1] || '前項'}`);
             lastIdx = idx;
         }
+
+        const linkTagRe = /<link\s+[^>]*>/gi;
+        while ((match = linkTagRe.exec(html)) !== null) {
+            const tag = match[0];
+            if (!/\brel=["']stylesheet["']/i.test(tag)) continue;
+            const hrefMatch = tag.match(/\bhref=["']([^"']+)["']/i);
+            if (!hrefMatch) continue;
+            const href = hrefMatch[1];
+            if (!/^(https?:|data:|#)/i.test(href)) {
+                assert(fileExists(href), `${htmlFile} 引用的樣式檔案不存在: ${href}`);
+                assetRefsChecked++;
+            }
+        }
+
+        const imgRe = /<img\s+[^>]*src=["']([^"']+)["']/gi;
+        while ((match = imgRe.exec(html)) !== null) {
+            const imgSrc = match[1];
+            if (!/^(https?:|data:|#)/i.test(imgSrc)) {
+                assert(fileExists(imgSrc), `${htmlFile} 引用的圖片檔案不存在: ${imgSrc}`);
+                assetRefsChecked++;
+            }
+        }
     }
 
-    return 'index.html 與 classic.html 本地腳本存在性與載入順序全數正確';
+    for (const cssRel of ['styles/style.css', 'styles/modern.css']) {
+        const cssText = readProjectFile(cssRel);
+        const cssDir = path.posix.dirname(cssRel);
+        const urlRe = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
+        let match;
+        while ((match = urlRe.exec(cssText)) !== null) {
+            const rawUrl = match[1].trim();
+            if (!rawUrl || /^(https?:|data:|#)/i.test(rawUrl)) continue;
+            assert(!rawUrl.startsWith('fonts/') && !rawUrl.startsWith('assets/'), `${cssRel} 仍使用舊根目錄相對路徑: ${rawUrl}`);
+            const resolvedRel = path.posix.normalize(path.posix.join(cssDir, rawUrl));
+            if (resolvedRel.startsWith('assets/')) {
+                assert(fileExists(resolvedRel), `${cssRel} 引用的圖片資源不存在: ${rawUrl} -> ${resolvedRel}`);
+            }
+            assetRefsChecked++;
+        }
+    }
+
+    return `index.html 與 classic.html 載入順序正確，且 ${assetRefsChecked} 筆 HTML/CSS 資源路徑無斷鏈`;
 }
 
 // =========================================================
@@ -729,13 +770,13 @@ function stage6UiModulesSmokeTest() {
     const loadOrder = [
         'locales/zh-TW.js',
         'locales/en-US.js',
-        'i18n.js',
-        'config.js',
-        'ui_modals.js',
-        'ui_components.js',
-        'ui_animations.js',
-        'ui_panels.js',
-        'ui_hand_drag.js'
+        'js/core/i18n.js',
+        'js/core/config.js',
+        'js/ui/ui_modals.js',
+        'js/ui/ui_components.js',
+        'js/ui/ui_animations.js',
+        'js/ui/ui_panels.js',
+        'js/ui/ui_hand_drag.js'
     ];
 
     for (const rel of loadOrder) {

@@ -14,27 +14,8 @@ function copyStaticGameFilesPlugin() {
       }
 
       const filesToCopy = [
-        'pixi.min.js',
-        'gsap.min.js',
-        'i18n.js',
-        'role_assets_data.js',
-        'config.js',
-        'logger.js',
-        'audio.js',
-        'abilities.js',
-        'game_setup.js',
-        'game.js',
-        'ui_modals.js',
-        'ui_components.js',
-        'tutorial_mode.js',
-        'ui.js',
-        'modern_board.js',
-        'modern_intro.js',
-        'style.css',
-        'modern.css',
         'classic.html',
-        'modern.html',
-        'clock-bg.png'
+        'modern.html'
       ];
 
       for (const file of filesToCopy) {
@@ -45,7 +26,7 @@ function copyStaticGameFilesPlugin() {
         }
       }
 
-      const dirsToCopy = ['locales', 'assets', 'SFX'];
+      const dirsToCopy = ['js', 'styles', 'vendor', 'locales', 'assets', 'SFX', 'fonts'];
       for (const dir of dirsToCopy) {
         const srcDir = path.join(rootDir, dir);
         const destDir = path.join(outDir, dir);

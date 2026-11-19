@@ -7,8 +7,8 @@
          local('Cinzel-VariableFont_wght'),
          local('Cinzel Variable'),
          local('Cinzel'),
-         url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
-         url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
+         url('../fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
+         url('../fonts/Cinzel-VariableFont.ttf') format('truetype'),
          url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
     font-weight: 100 900;
     font-display: swap;
@@ -20,8 +20,8 @@
     src: local('Playfair Display Italic'),
          local('PlayfairDisplay-Italic'),
          local('Playfair Display'),
-         url('fonts/PlayfairDisplay-Italic.ttf') format('truetype'),
-         url('fonts/PlayfairDisplay-Italic.woff2') format('woff2');
+         url('../fonts/PlayfairDisplay-Italic.ttf') format('truetype'),
+         url('../fonts/PlayfairDisplay-Italic.woff2') format('woff2');
     font-weight: 400;
     font-style: italic;
     font-display: swap;

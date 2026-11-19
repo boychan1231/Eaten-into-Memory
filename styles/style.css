@@ -7,8 +7,8 @@
          local('Cinzel-VariableFont_wght'),
          local('Cinzel Variable'),
          local('Cinzel'),
-         url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
-         url('fonts/Cinzel-VariableFont.ttf') format('truetype'),
+         url('../fonts/Cinzel-VariableFont_wght.ttf') format('truetype-variations'),
+         url('../fonts/Cinzel-VariableFont.ttf') format('truetype'),
          url('https://fonts.gstatic.com/s/cinzel/v23/8vIQ7w0mTEm-2Wfsr5NGrTeP.woff2') format('woff2');
     font-weight: 100 900;
     font-display: swap;
@@ -20,8 +20,8 @@
     src: local('Playfair Display Italic'),
          local('PlayfairDisplay-Italic'),
          local('Playfair Display'),
-         url('fonts/PlayfairDisplay-Italic.ttf') format('truetype'),
-         url('fonts/PlayfairDisplay-Italic.woff2') format('woff2');
+         url('../fonts/PlayfairDisplay-Italic.ttf') format('truetype'),
+         url('../fonts/PlayfairDisplay-Italic.woff2') format('woff2');
     font-weight: 400;
     font-style: italic;
     font-display: swap;
@@ -446,7 +446,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 	
 	/* 設定背景圖片 */
     /* 請將 'clock-bg.png' 換成你的檔名 */
-    background-image: url('clock-bg.png');
+    background-image: url('../assets/clock-bg.png');
 	/* 圖片置中 */
     background-position: center;
     /* 不重複 */
@@ -597,20 +597,20 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 /* --- 針對不同角色設定專屬的靈魂 GIF / PNG --- */
-.token-demon { background-image: url('assets/soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (NPC) 80% */
-.token-sin   { background-image: url('assets/soul_sin.png'); }   /* 時之惡 (NPC) */
-.token-scz   { background-image: url('assets/soul_scz.png'); }   /* 受詛者 (NPC) */
-.token-hour  { background-image: url('assets/soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (NPC) 120% */
-.token-min   { background-image: url('assets/soul_min.png'); width: 48px; height: 48px; }   /* 分針 (NPC) 120% */
-.token-sec   { background-image: url('assets/soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (NPC) 120% */
+.token-demon { background-image: url('../assets/soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (NPC) 80% */
+.token-sin   { background-image: url('../assets/soul_sin.png'); }   /* 時之惡 (NPC) */
+.token-scz   { background-image: url('../assets/soul_scz.png'); }   /* 受詛者 (NPC) */
+.token-hour  { background-image: url('../assets/soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (NPC) 120% */
+.token-min   { background-image: url('../assets/soul_min.png'); width: 48px; height: 48px; }   /* 分針 (NPC) 120% */
+.token-sec   { background-image: url('../assets/soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (NPC) 120% */
 
 /* --- 玩家專屬的靈魂棋子 (p_ 前綴) --- */
-.token-player-demon { background-image: url('assets/player/p_soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (玩家) 80% */
-.token-player-sin   { background-image: url('assets/player/P_soul_sin.png'); }   /* 時之惡 (玩家) */
-.token-player-scz   { background-image: url('assets/player/p_soul_scz.png'); }   /* 受詛者 (玩家) */
-.token-player-hour  { background-image: url('assets/player/p_soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (玩家) 120% */
-.token-player-min   { background-image: url('assets/player/p_soul_min.png'); width: 48px; height: 48px; }   /* 分針 (玩家) 120% */
-.token-player-sec   { background-image: url('assets/player/p_soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (玩家) 120% */
+.token-player-demon { background-image: url('../assets/player/p_soul_demon.png'); width: 32px; height: 32px; } /* 幼體時魔 (玩家) 80% */
+.token-player-sin   { background-image: url('../assets/player/P_soul_sin.png'); }   /* 時之惡 (玩家) */
+.token-player-scz   { background-image: url('../assets/player/p_soul_scz.png'); }   /* 受詛者 (玩家) */
+.token-player-hour  { background-image: url('../assets/player/p_soul_hour.png'); width: 48px; height: 48px; }  /* 時針 (玩家) 120% */
+.token-player-min   { background-image: url('../assets/player/p_soul_min.png'); width: 48px; height: 48px; }   /* 分針 (玩家) 120% */
+.token-player-sec   { background-image: url('../assets/player/p_soul_sec.png'); width: 48px; height: 48px; }   /* 秒針 (玩家) 120% */
 
 /* 鐘面中心的小時卡 */
 .clock-center .drawn-hour-card,
@@ -1223,7 +1223,7 @@ input:checked + .slider:before { transform: translateX(16px); }
     top: 0; left: 0; width: 100%; height: 100%;
     
     /* 👇 使用 var() 來接收 JS 傳來的變數，並保留預設圖 👇 */
-    background-image: var(--hand-bg-image, url('assets/soul_sin.png')); 
+    background-image: var(--hand-bg-image, url('../assets/soul_sin.png')); 
     
     background-size: 5%;     /* 若希望圖片鋪滿，用 cover；若希望完整顯示用 contain */
     background-position: left;

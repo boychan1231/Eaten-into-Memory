@@ -23,6 +23,7 @@ assets/
 clock-bg.png
 
 # 3. 大型編譯與第三方打包函式庫 (節省 Token 與遍歷時間)
+vendor/
 pixi.min.js
 gsap.min.js
 role_assets_data.js
