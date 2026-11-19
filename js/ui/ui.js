@@ -754,6 +754,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 監聽設定頁中的扇形手牌列開關（僅現代 PixiJS 版桌機適用）
+    const fanHandToggleEl = document.getElementById('fan-hand-toggle');
+    if (fanHandToggleEl) {
+        try {
+            const savedFanHand = localStorage.getItem('eaten_fan_hand_layout');
+            if (savedFanHand !== null && window.UI_CONFIG) {
+                window.UI_CONFIG.FAN_HAND_LAYOUT = (savedFanHand === 'true');
+            }
+        } catch (_) {}
+
+        fanHandToggleEl.checked = window.UI_CONFIG?.FAN_HAND_LAYOUT !== false;
+        fanHandToggleEl.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            window.UI_CONFIG = window.UI_CONFIG || {};
+            window.UI_CONFIG.FAN_HAND_LAYOUT = isEnabled;
+            try {
+                localStorage.setItem('eaten_fan_hand_layout', String(isEnabled));
+            } catch (_) {}
+            appLogger.log(`[System] 扇形手牌列已${isEnabled ? '開啟' : '關閉'}`);
+            if (typeof window.applyHandFanLayout === 'function') {
+                window.applyHandFanLayout(document.getElementById('human-hand'));
+            }
+        });
+    }
+
     if (gameModeCloseBtn && gameModeOverlay) {
         gameModeCloseBtn.addEventListener('click', () => closeModal(gameModeOverlay));
     }

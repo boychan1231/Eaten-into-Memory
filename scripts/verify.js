@@ -128,6 +128,7 @@ function stage2LocaleAndFormatCheck() {
     // 檢查專案禁用詞（遵守 AGENTS.md 規範）
     const bannedWordRe = new RegExp('\\u512a\\u5316');
     const checkList = [
+        'js/core/config.js',
         'js/core/abilities.js',
         'js/core/ai_engine.js',
         'js/core/game.js',
@@ -729,6 +730,7 @@ function stage5HtmlLoadOrderCheck() {
 function stage6UiModulesSmokeTest() {
     const noop = () => {};
     const windowMock = {
+        innerWidth: 1280,
         addEventListener: noop,
         removeEventListener: noop,
         localStorage: { getItem: () => null, setItem: noop },
@@ -737,9 +739,10 @@ function stage6UiModulesSmokeTest() {
     };
     windowMock.window = windowMock;
 
+    let hasModernOverlay = false;
     const documentMock = {
         readyState: 'loading',
-        getElementById: () => null,
+        getElementById: (id) => (id === 'modern-intro-overlay' && hasModernOverlay ? { id: 'modern-intro-overlay' } : null),
         querySelector: () => null,
         querySelectorAll: () => [],
         addEventListener: noop,
@@ -802,7 +805,9 @@ function stage6UiModulesSmokeTest() {
         'renderDiscardPileModal',
         'renderEvolutionPanel',
         'resetMinuteHistory',
-        'resetRightPanels'
+        'resetRightPanels',
+        'applyHandFanLayout',
+        'isModernFanHandEnabled'
     ];
     for (const fnName of expectedFunctions) {
         assert.equal(typeof ctx[fnName], 'function', `缺少全域函式 ${fnName}`);
@@ -817,13 +822,112 @@ function stage6UiModulesSmokeTest() {
         'renderAIPlayers',
         'renderHumanPlayerArea',
         'renderScorePanel',
-        'renderDiscardPileModal'
+        'renderDiscardPileModal',
+        'applyHandFanLayout',
+        'isModernFanHandEnabled'
     ];
     for (const expName of expectedWindowExports) {
         assert.equal(typeof windowMock[expName], 'function', `缺少 window.${expName} 導出`);
     }
 
-    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式與 ${expectedWindowExports.length} 個 window 導出符號全數就緒`;
+    // 扇形手牌列邏輯與斷點/開關測試
+    assert.equal(windowMock.UI_CONFIG.FAN_HAND_LAYOUT, true, '預設應開啟 FAN_HAND_LAYOUT');
+
+    function makeStyleBox() {
+        const map = new Map();
+        return {
+            setProperty: (k, v) => map.set(k, String(v)),
+            getPropertyValue: (k) => map.get(k) || '',
+            removeProperty: (k) => map.delete(k)
+        };
+    }
+
+    function makeClassBox() {
+        const set = new Set();
+        return {
+            add: (...cls) => cls.forEach(c => set.add(c)),
+            remove: (...cls) => cls.forEach(c => set.delete(c)),
+            contains: (c) => set.has(c)
+        };
+    }
+
+    function makeMockHand(count) {
+        const cards = Array.from({ length: count }, () => {
+            const listeners = {};
+            return {
+                style: makeStyleBox(),
+                classList: makeClassBox(),
+                dataset: {},
+                addEventListener: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); },
+                dispatchEvent: (ev) => { (listeners[ev] || []).forEach(fn => fn()); }
+            };
+        });
+        const handListeners = {};
+        return {
+            cards,
+            style: makeStyleBox(),
+            classList: makeClassBox(),
+            querySelectorAll: (sel) => (sel === '.minute-card' ? cards : []),
+            addEventListener: (ev, fn) => { (handListeners[ev] = handListeners[ev] || []).push(fn); },
+            dispatchEvent: (ev) => { (handListeners[ev] || []).forEach(fn => fn()); }
+        };
+    }
+
+    // 1) 現代桌機模式：1 張與 12 張驗證
+    hasModernOverlay = true;
+    windowMock.innerWidth = 1280;
+    windowMock.UI_CONFIG.FAN_HAND_LAYOUT = true;
+
+    const hand1 = makeMockHand(1);
+    assert.equal(windowMock.applyHandFanLayout(hand1), true, '現代桌機應啟用扇形手牌列');
+    assert.equal(hand1.classList.contains('hand-fan-layout'), true);
+    assert.equal(hand1.style.getPropertyValue('--fan-overlap'), '0px', '1 張牌不應重疊');
+    assert.equal(hand1.cards[0].style.getPropertyValue('--fan-angle'), '0deg', '1 張牌角度應為 0deg');
+    assert.equal(hand1.cards[0].style.getPropertyValue('--fan-y'), '0px', '1 張牌高度偏移應為 0px');
+
+    const hand12 = makeMockHand(12);
+    assert.equal(windowMock.applyHandFanLayout(hand12), true);
+    assert.equal(hand12.style.getPropertyValue('--fan-overlap'), '-12px', '12 張牌右側交疊負邊距應為 -12px');
+    const firstAngle = parseFloat(hand12.cards[0].style.getPropertyValue('--fan-angle'));
+    const lastAngle = parseFloat(hand12.cards[11].style.getPropertyValue('--fan-angle'));
+    const firstY = parseFloat(hand12.cards[0].style.getPropertyValue('--fan-y'));
+    const lastY = parseFloat(hand12.cards[11].style.getPropertyValue('--fan-y'));
+    const midY = parseFloat(hand12.cards[5].style.getPropertyValue('--fan-y'));
+    assert.equal(firstAngle, -lastAngle, '首尾角度必須嚴格對稱互為相反數');
+    assert(lastAngle > 0, '右側末張牌角度應為正值');
+    assert.equal(firstY, lastY, '首尾高度偏移必須相等');
+    assert(midY < firstY, '中央卡牌應高於兩端卡牌');
+    hand12.cards.forEach((c, idx) => {
+        assert.equal(c.style.getPropertyValue('--fan-index'), String(idx), '--fan-index 應遞增確保右側疊在左側之上');
+    });
+
+    // 懸停撥開鄰牌測試
+    hand12.cards[5].dispatchEvent('pointerenter');
+    assert.equal(hand12.cards[4].style.getPropertyValue('--fan-spread-x'), '-10px', '左鄰牌應向左撥開');
+    assert.equal(hand12.cards[6].style.getPropertyValue('--fan-spread-x'), '12px', '右鄰牌應向右撥開');
+    hand12.cards[5].dispatchEvent('pointerleave');
+    assert.equal(hand12.cards[4].style.getPropertyValue('--fan-spread-x'), '0px', '離開懸停應重置撥開');
+
+    // 2) 停用設定應移除扇形並清除變數
+    windowMock.UI_CONFIG.FAN_HAND_LAYOUT = false;
+    assert.equal(windowMock.applyHandFanLayout(hand12), false, '關閉開關時應停用扇形');
+    assert.equal(hand12.classList.contains('hand-fan-layout'), false);
+    assert.equal(hand12.style.getPropertyValue('--fan-overlap'), '');
+    assert.equal(hand12.cards[0].style.getPropertyValue('--fan-angle'), '');
+
+    // 3) 手機寬度 (<= 768) 應維持原本橫向滑動平列
+    windowMock.UI_CONFIG.FAN_HAND_LAYOUT = true;
+    windowMock.innerWidth = 480;
+    assert.equal(windowMock.applyHandFanLayout(hand12), false, '手機端應保持平列不啟用扇形');
+    assert.equal(hand12.classList.contains('hand-fan-layout'), false);
+
+    // 4) 經典版 (無現代版 DOM 標識) 不應套用扇形
+    hasModernOverlay = false;
+    windowMock.innerWidth = 1280;
+    assert.equal(windowMock.applyHandFanLayout(hand12), false, '經典版不應套用扇形');
+    assert.equal(hand12.classList.contains('hand-fan-layout'), false);
+
+    return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出與扇形手牌計算測試全數通過`;
 }
 
 // =========================================================

@@ -57,6 +57,7 @@ window.UI_CONFIG = {
     SEQUENTIAL_EFFECTS: true,  // 預設是否啟用「特效依序播放 (逐一發生)」
     EFFECT_INTERVAL_MS: 260,   // 特效逐一播放間隔時間 (毫秒，推薦 200~300ms 輕快節奏)
     SCREEN_SHAKE: true,        // 預設是否啟用「扣除 GP 時畫面震動特效」
+    FAN_HAND_LAYOUT: true,     // 預設是否於現代版桌機啟用「扇形手牌列」
     LOG_SPEED: 360,          // 日誌顯示速度 (毫秒，越小越快)
     LOG_RETENTION_LIMIT: 200, // 日誌保留上限 (DOM)
     HISTORY_LIMIT: 12,       // 右側歷史記錄顯示的回合數

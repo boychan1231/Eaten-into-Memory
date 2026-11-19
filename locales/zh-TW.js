@@ -131,6 +131,8 @@
                 sequential_effects_desc: '數值變動浮字、受傷扣血與落位動態依序播放，避免多個特效同時堆疊。',
                 screen_shake: '扣除 GP 時畫面震動',
                 screen_shake_desc: '當人類玩家受到處決或侵蝕扣除 GP 時，觸發短暫畫面搖晃受擊回饋。',
+                fan_hand_layout: '扇形手牌列',
+                fan_hand_layout_desc: '桌機現代版以右側交疊扇形展開分鐘手牌，懸停可直立抽出檢視（手機端維持橫向滑動平列）。',
                 custom_font_title: '自訂字型 (即時套用)',
                 custom_font_upload_btn: '上傳字型檔案 (.ttf, .otf, .woff, .woff2)',
                 custom_font_reset_btn: '還原預設字型',

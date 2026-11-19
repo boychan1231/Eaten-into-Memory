@@ -131,6 +131,8 @@
                 sequential_effects_desc: 'Play floating texts, damage effects, and board movements sequentially instead of simultaneously.',
                 screen_shake: 'Screen Shake on GP Loss',
                 screen_shake_desc: 'Trigger a brief screen shake feedback when Player 1 loses GP from penalties or encroachment.',
+                fan_hand_layout: 'Fan-Shaped Hand Layout',
+                fan_hand_layout_desc: 'Spread Minute Cards in a right-overlapping fan on Modern desktop view, lifting upright on hover (mobile stays flat horizontal scroll).',
                 custom_font_title: 'Custom Font (Live Preview)',
                 custom_font_upload_btn: 'Upload Font File (.ttf, .otf, .woff, .woff2)',
                 custom_font_reset_btn: 'Reset to Default Font',

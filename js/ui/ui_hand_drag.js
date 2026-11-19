@@ -1,5 +1,140 @@
 // ui_hand_drag.js - 人類手牌區、拖放 (Drag & Drop) 控制器與秒針雙牌控制
 
+function isModernFanHandEnabled() {
+    if (typeof document === 'undefined') return false;
+    const isModernEdition = Boolean(
+        document.getElementById('modern-intro-overlay') ||
+        (typeof document.querySelector === 'function' && document.querySelector('link[href*="modern.css"]'))
+    );
+    if (!isModernEdition) return false;
+    if (typeof window !== 'undefined' && window.UI_CONFIG && window.UI_CONFIG.FAN_HAND_LAYOUT === false) {
+        return false;
+    }
+    if (typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth <= 768) {
+        return false;
+    }
+    return true;
+}
+
+function clearHandFanSpread(handEl) {
+    if (!handEl || typeof handEl.querySelectorAll !== 'function') return;
+    handEl.querySelectorAll('.minute-card').forEach((cardEl) => {
+        if (cardEl.style && typeof cardEl.style.setProperty === 'function') {
+            cardEl.style.setProperty('--fan-spread-x', '0px');
+        }
+    });
+}
+
+function applyHandFanSpread(handEl, hoverIdx) {
+    if (!handEl || !handEl.classList || !handEl.classList.contains('hand-fan-layout')) return;
+    const cardEls = handEl.querySelectorAll('.minute-card');
+    cardEls.forEach((cardEl, idx) => {
+        const diff = idx - hoverIdx;
+        let spread = '0px';
+        if (diff === -1) spread = '-10px';
+        else if (diff === -2) spread = '-5px';
+        else if (diff === 1) spread = '12px';
+        else if (diff === 2) spread = '6px';
+        if (cardEl.style && typeof cardEl.style.setProperty === 'function') {
+            cardEl.style.setProperty('--fan-spread-x', spread);
+        }
+    });
+}
+
+function applyHandFanLayout(handEl) {
+    if (!handEl || typeof handEl.querySelectorAll !== 'function') return false;
+    const cardEls = Array.from(handEl.querySelectorAll('.minute-card'));
+    const enabled = isModernFanHandEnabled();
+
+    if (!enabled) {
+        if (handEl.classList) handEl.classList.remove('hand-fan-layout');
+        if (handEl.style && typeof handEl.style.removeProperty === 'function') {
+            handEl.style.removeProperty('--fan-overlap');
+        }
+        cardEls.forEach((cardEl) => {
+            if (cardEl.style && typeof cardEl.style.removeProperty === 'function') {
+                cardEl.style.removeProperty('--fan-index');
+                cardEl.style.removeProperty('--fan-angle');
+                cardEl.style.removeProperty('--fan-y');
+                cardEl.style.removeProperty('--fan-spread-x');
+            }
+            if (cardEl.dataset) {
+                delete cardEl.dataset.fanIndex;
+                delete cardEl.dataset.fanAngle;
+                delete cardEl.dataset.fanY;
+            }
+        });
+        return false;
+    }
+
+    if (handEl.classList) handEl.classList.add('hand-fan-layout');
+    const n = cardEls.length;
+    let overlap = '0px';
+    if (n >= 12) overlap = '-12px';
+    else if (n >= 10) overlap = '-10px';
+    else if (n >= 7) overlap = '-7px';
+    else if (n >= 5) overlap = '-4px';
+
+    if (handEl.style && typeof handEl.style.setProperty === 'function') {
+        handEl.style.setProperty('--fan-overlap', overlap);
+    }
+
+    const maxAngle = Math.min(18, Math.max(0, (n - 1) * 1.85));
+    const maxDrop = Math.min(24, Math.max(0, (n - 1) * 2.1));
+
+    cardEls.forEach((cardEl, i) => {
+        const t = (n <= 1) ? 0 : ((i - (n - 1) / 2) / ((n - 1) / 2));
+        const fanAngle = Number((t * maxAngle).toFixed(2));
+        const fanY = Number((t * t * maxDrop).toFixed(1));
+
+        if (cardEl.style && typeof cardEl.style.setProperty === 'function') {
+            cardEl.style.setProperty('--fan-index', String(i));
+            cardEl.style.setProperty('--fan-angle', `${fanAngle}deg`);
+            cardEl.style.setProperty('--fan-y', `${fanY}px`);
+            cardEl.style.setProperty('--fan-spread-x', '0px');
+        }
+        if (cardEl.dataset) {
+            cardEl.dataset.fanIndex = String(i);
+            cardEl.dataset.fanAngle = String(fanAngle);
+            cardEl.dataset.fanY = String(fanY);
+        }
+
+        if (!cardEl._fanHoverBound && typeof cardEl.addEventListener === 'function') {
+            cardEl._fanHoverBound = true;
+            cardEl.addEventListener('pointerenter', () => {
+                if ((typeof window !== 'undefined' && window.isDraggingCard) || !handEl.classList || !handEl.classList.contains('hand-fan-layout')) return;
+                const hoverIdx = Number(cardEl.dataset ? cardEl.dataset.fanIndex : i);
+                if (!Number.isNaN(hoverIdx)) {
+                    applyHandFanSpread(handEl, hoverIdx);
+                }
+            });
+            cardEl.addEventListener('pointerleave', () => {
+                if (typeof window !== 'undefined' && window.isDraggingCard) return;
+                clearHandFanSpread(handEl);
+            });
+        }
+    });
+
+    if (!handEl._fanContainerLeaveBound && typeof handEl.addEventListener === 'function') {
+        handEl._fanContainerLeaveBound = true;
+        handEl.addEventListener('pointerleave', () => {
+            if (typeof window !== 'undefined' && window.isDraggingCard) return;
+            clearHandFanSpread(handEl);
+        });
+    }
+
+    return true;
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window._fanHandResizeBound) {
+    window._fanHandResizeBound = true;
+    window.addEventListener('resize', () => {
+        if (typeof document !== 'undefined') {
+            applyHandFanLayout(document.getElementById('human-hand'));
+        }
+    });
+}
+
 // --- D. 人類操作區 ---
 function renderHumanPlayerArea(gameState, humanPlayer, flags) {
     if (!humanPlayer) return;
@@ -206,6 +341,9 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             humanHandEl.appendChild(cardEl);
         });
 
+        // 計算並套用扇形手牌列變數（僅現代 PixiJS 版桌機且設定開啟時生效）
+        const isFanActive = applyHandFanLayout(humanHandEl);
+
         // 分鐘手牌初次配置「發牌進入手牌區」動態效果（納管於 AnimationController，完成後清除行內 transform 避免干擾 CSS Hover）
         if (gameState && gameState.needsHandDealAnimation && typeof gsap !== 'undefined') {
             const introOverlay = document.getElementById('modern-intro-overlay');
@@ -236,11 +374,11 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                             transformOrigin: "50% 100%"
                         },
                         {
-                            y: 0,
+                            y: (i, el) => (isFanActive && el && el.dataset ? (parseFloat(el.dataset.fanY || '0') || 0) : 0),
                             x: 0,
                             opacity: targetOpacity,
                             scale: 1,
-                            rotation: 0,
+                            rotation: (i, el) => (isFanActive && el && el.dataset ? (parseFloat(el.dataset.fanAngle || '0') || 0) : 0),
                             duration: 0.42,
                             ease: "back.out(1.4)",
                             clearProps: "transform,transformOrigin",
@@ -459,6 +597,7 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
                 isPendingDrag = false;
                 isDragging = true;
                 window.isDraggingCard = true;
+                clearHandFanSpread(cardEl.parentElement);
                 cardEl.classList.remove('is-returning', 'is-retrieving');
                 cardEl.classList.add('is-dragging');
                 removeRetrieveBadge();
@@ -511,7 +650,10 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
         }
 
         const scale = isDropReady ? 1.22 : 1.10;
-        cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
+        const baseFanY = (cardEl.parentElement && cardEl.parentElement.classList && cardEl.parentElement.classList.contains('hand-fan-layout') && cardEl.dataset)
+            ? (parseFloat(cardEl.dataset.fanY || '0') || 0)
+            : 0;
+        cardEl.style.setProperty('transform', `translate3d(${dx}px, ${dy + baseFanY}px, 0) rotate(${vx}deg) scale(${scale})`, 'important');
     };
 
     // 3A. pointerup（正常放開）：若拖曳出牌則出牌；若僅是點擊（無位移）則切換選取狀態！
@@ -665,4 +807,6 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
 
 if (typeof window !== 'undefined') {
     window.renderHumanPlayerArea = renderHumanPlayerArea;
+    window.applyHandFanLayout = applyHandFanLayout;
+    window.isModernFanHandEnabled = isModernFanHandEnabled;
 }
