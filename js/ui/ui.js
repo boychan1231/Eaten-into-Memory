@@ -277,11 +277,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pureCountSection) pureCountSection.classList.toggle('is-hidden', !isPureSel);
         if (confirmBtn) confirmBtn.textContent = isPureSel ? '開始遊戲' : '下一步';
     };
+    const getFivePRoleMechanicsHtml = (roleValue) => {
+        if (roleValue === 'sin') {
+            return '<b>【時之惡 · GP 與護盾機制】</b>起始與護盾歸零重置為 <code>clamp(GP + 1, 1, 5)</code>（上限 5 點）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並重新補充；若全場僅自己受罰則免傷並回復 1 MP，局末若無時魔被吞噬則扣 2 GP。';
+        }
+        if (roleValue === 'SCZ') {
+            return '<b>【受詛者 · GP 與護盾機制】</b>起始與護盾歸零重置為 <code>clamp(GP, 1, 3)</code>（上限 3 點）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並依新 GP 重新補充護盾；需踏中 12 張 ★ 珍貴卡並守住 GP（扣至負數才被吞噬）。';
+        }
+        return '5P 模式中時魔玩家將扮演<b>幼體時魔</b>（無常駐護盾；MP ≥ 3 時自動消耗全部 MP 抵免 1 次傷害，每局限 1 次）。';
+    };
+    window.getFivePRoleMechanicsHtml = getFivePRoleMechanicsHtml;
+
+    const syncFivePRoleNote = () => {
+        const noteEl = document.getElementById('role-choice-5p-note');
+        if (!noteEl) return;
+        const roleVal = getSelectionValue('start-five-player-role', window.GAME_CONFIG?.defaultHumanId || 'SM_1');
+        noteEl.innerHTML = getFivePRoleMechanicsHtml(roleVal);
+    };
+
     bindSelectionButtons('start-game-mode', syncStartModeNote);
     bindSelectionButtons('start-pure-player-count');
     bindSelectionButtons('start-time-demon-role');
-    bindSelectionButtons('start-five-player-role');
+    bindSelectionButtons('start-five-player-role', syncFivePRoleNote);
     syncStartModeNote();
+    syncFivePRoleNote();
 
     // 4A. 出牌（分鐘卡）按鈕事件修正
     const confirmMoveBtn = document.getElementById('confirm-move-btn');
@@ -648,6 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (roleChoiceSection5p) roleChoiceSection5p.classList.toggle('is-hidden', isThreeP);
         if (roleChoiceSection3p) roleChoiceSection3p.classList.toggle('is-hidden', !isThreeP);
+        if (!isThreeP) syncFivePRoleNote();
     };
 
     if (startGameBtn) {

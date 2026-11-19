@@ -734,6 +734,17 @@
             if (startBtn) {
                 startBtn.textContent = `開始遊戲 (${modeLabel} · ${roleLabel})`;
             }
+            const intro5pNote = document.getElementById('intro-5p-role-note');
+            if (intro5pNote) {
+                if (this.selectedMode === '5P') {
+                    intro5pNote.classList.remove('is-hidden');
+                    if (typeof window.getFivePRoleMechanicsHtml === 'function') {
+                        intro5pNote.innerHTML = window.getFivePRoleMechanicsHtml(this.selectedRole5P);
+                    }
+                } else {
+                    intro5pNote.classList.add('is-hidden');
+                }
+            }
         },
 
         applySelectionToEngine() {
