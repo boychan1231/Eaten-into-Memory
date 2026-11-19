@@ -1689,11 +1689,26 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     width: 100% !important;
 }
 .human-play-row {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
     align-items: center !important;
-    justify-content: center !important;
-    gap: 12px !important;
+    column-gap: 14px !important;
     width: 100% !important;
+}
+
+.human-play-row > #discard-pile-zone {
+    justify-self: end !important;
+}
+
+.human-play-row > #human-hand {
+    justify-self: center !important;
+}
+
+.human-play-row > #human-controls {
+    justify-self: start !important;
+    align-items: flex-start !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
 }
 .hand-display {
     flex: 0 1 auto !important;
@@ -1874,7 +1889,8 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
     opacity: 0.88 !important;
     padding: 0 4px !important;
     margin: 0 !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
+    text-align: left !important;
 }
 
 .action-hint, #evolution-progress-area, .progress-area {
@@ -2050,7 +2066,7 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
         max-height: calc(100vh - 220px) !important;
     }
     .human-play-row {
-        flex-wrap: wrap !important;
+        column-gap: 10px !important;
     }
 }
 
@@ -2666,6 +2682,19 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
         min-width: 0 !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
+    }
+
+    .human-play-row > #discard-pile-zone {
+        justify-self: start !important;
+    }
+
+    .human-play-row > #human-hand {
+        justify-self: stretch !important;
+    }
+
+    .human-play-row > #human-controls.hand-controls {
+        justify-self: end !important;
+        align-items: flex-end !important;
     }
 
     /* 1. 手牌橫向滾動塢（min-width: 0 確保 Grid 子項目正常產生內部滾動，padding-right 38px 確保第 12 張完整檢視） */
