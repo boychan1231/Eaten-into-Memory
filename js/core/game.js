@@ -952,25 +952,8 @@ function deductGearCards(gameState) {
         }
     }
 
-    // 1.5 時之惡庇護與回能機制：
-    // 若沒有任何角色受罰（即時之惡為受罰規則的唯一適用角色），則時之惡免受處罰，並恢復 1 點 MP（上限為齒輪數）
-    if (currentMode !== '3P' && sinPlayer) {
-        const isSinAloneTarget = (playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
-        const isNoOneTargetedInSin = (targetingMode === 'sin' && playersToDeduct.length === 0);
-
-        if (isSinAloneTarget || isNoOneTargetedInSin) {
-            const maxMP = sinPlayer.gearCards;
-            const oldMP = sinPlayer.mana || 0;
-            if (oldMP < maxMP) {
-                sinPlayer.mana = oldMP + 1;
-                appLogger.log(`◆【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰並恢復 1 點 MP (目前: ${sinPlayer.mana}/${maxMP})。`);
-            } else {
-                appLogger.log(`◆【時之惡】為受罰規則適用角色（全場無其他角色受罰），免受處罰 (MP 已達上限: ${sinPlayer.mana})。`);
-            }
-            // 清空受罰名單，確保時之惡不扣除護盾或齒輪
-            playersToDeduct = [];
-        }
-    }
+    const isSinAloneTarget = (currentMode !== '3P' && sinPlayer && playersToDeduct.length === 1 && playersToDeduct[0] === sinPlayer);
+    const isNoOneTargetedInSin = (currentMode !== '3P' && sinPlayer && targetingMode === 'sin' && playersToDeduct.length === 0);
 
     // 2. 執行扣除
     playersToDeduct.forEach(player => {
@@ -999,6 +982,19 @@ function deductGearCards(gameState) {
             handleDiceDeduction(player);
         }
     });
+
+    // 2.5 時之惡單獨受罰回能機制：
+    // 若全場無其他角色受罰（時之惡單獨受罰），時之惡如常先扣盾／GP 並重置，若仍存活再恢復 1 點 MP（上限為當前 GP）
+    if ((isSinAloneTarget || isNoOneTargetedInSin) && sinPlayer && sinPlayer.gearCards >= 0) {
+        const maxMP = Math.max(0, sinPlayer.gearCards);
+        const oldMP = sinPlayer.mana || 0;
+        if (oldMP < maxMP) {
+            sinPlayer.mana = oldMP + 1;
+            appLogger.log(`◆【時之惡】單獨適用受罰規則，結算後恢復 1 點 MP (目前: ${sinPlayer.mana}/${maxMP})。`);
+        } else {
+            appLogger.log(`◆【時之惡】單獨適用受罰規則，結算後 MP 已達上限 (${sinPlayer.mana}/${maxMP})。`);
+        }
+    }
 	
     // 3. 檢查是否有人因此死亡
     checkEjectionAndWinCondition(gameState);

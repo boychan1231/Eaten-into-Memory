@@ -764,6 +764,32 @@ function stage4HeadlessStressTest() {
         const zeroShieldScz = { id: 'SCZ', name: '受詛者', type: '受詛者', gearCards: 2, mana: 2, d6Die: 0 };
         assert.equal(guardCtx.handleDiceDeduction(zeroShieldScz), true, 'd6Die 為 0 時仍應正常扣 GP');
         assert.equal(zeroShieldScz.gearCards, 1);
+
+        // 時之惡單獨受罰：如常先扣盾再扣 GP 並重置，結算後仍存活再回 1 MP
+        const sinAloneGs = {
+            gameMode: '5P',
+            gameRound: 1,
+            roundMarker: 1,
+            sinTargetingMode: 'default',
+            clockFace: Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] })),
+            players: [
+                { id: 'sin', name: '時之惡', type: '時之惡', roleCard: '時之惡', isEjected: false, gearCards: 4, mana: 1, d6Die: 3, currentClockPosition: 12, hourCards: [] },
+                { id: 'SM_1', name: '時魔 1', type: '時魔', roleCard: '時魔幼體 1', isEjected: false, gearCards: 4, mana: 4, d6Die: null, currentClockPosition: 5, hourCards: [] }
+            ]
+        };
+        guardCtx.deductGearCards(sinAloneGs);
+        const sinActor = sinAloneGs.players[0];
+        assert.equal(sinActor.d6Die, 2, '時之惡單獨受罰應先扣 1 點護盾 (3 -> 2)');
+        assert.equal(sinActor.gearCards, 4, '護盾未歸零時不扣 GP');
+        assert.equal(sinActor.mana, 2, '時之惡單獨受罰結算後應恢復 1 MP (1 -> 2)');
+
+        // 剩 1 點護盾時單獨受罰：先扣盾歸零 -> 扣 1 GP 並重置護盾為 min(GP+1, 5) -> 再回 1 MP (上限為新 GP)
+        sinActor.d6Die = 1;
+        sinActor.mana = 1;
+        guardCtx.deductGearCards(sinAloneGs);
+        assert.equal(sinActor.gearCards, 3, '時之惡最後 1 點護盾耗盡應扣 1 GP (4 -> 3)');
+        assert.equal(sinActor.d6Die, 4, '時之惡護盾應重置為 min(3+1, 5) = 4');
+        assert.equal(sinActor.mana, 2, '時之惡扣 GP 並重置後仍應恢復 1 MP (1 -> 2)');
     }
 
     return `40 場完整對局 (5P × 20 + 3P × 20) 壓力測試通過，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;

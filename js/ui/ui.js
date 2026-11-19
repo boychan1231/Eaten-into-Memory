@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const getFivePRoleMechanicsHtml = (roleValue) => {
         if (roleValue === 'sin') {
-            return '<b>【時之惡 · GP 與護盾機制】</b>起始與護盾歸零重置為 <code>clamp(GP + 1, 1, 5)</code>（上限 5 點）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並重新補充；若全場僅自己受罰則免傷並回復 1 MP，局末若無時魔被吞噬則扣 2 GP。';
+            return '<b>【時之惡 · GP 與護盾機制】</b>起始與護盾歸零重置為 <code>clamp(GP + 1, 1, 5)</code>（上限 5 點）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並重新補充；若全場僅自己受罰，結算扣盾／GP 後回復 1 MP，局末若無時魔被吞噬則扣 2 GP。';
         }
         if (roleValue === 'SCZ') {
             return '<b>【受詛者 · GP 與護盾機制】</b>起始與護盾歸零重置為 <code>clamp(GP, 1, 3)</code>（上限 3 點）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並依新 GP 重新補充護盾；需踏中 12 張 ★ 珍貴卡並守住 GP（扣至負數才被吞噬）。';
