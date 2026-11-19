@@ -1310,6 +1310,21 @@ function stage6UiModulesSmokeTest() {
         uiCtx.resetRightPanels(restartGs);
         uiCtx.updateUI(restartGs);
         assert.equal(screenShakeCount, beforeRestartScreen, '[情境 6] resetRightPanels 重開新局不應觸發畫面震動');
+
+        // 情境 7：同局內僅花費 MP（GP 不變），只顯示浮字，不得觸發棋子震動、受擊音效或畫面震動
+        const beforeMpScreen = screenShakeCount;
+        const beforeMpToken = tokenShakeCount;
+        const beforeMpSfx = damageSfxCount;
+        const beforeMpFloat = floatTextCount;
+        uiCtx.updateUI(makeRoundState(1, 2, 1, 1, 2));
+        assert.equal(screenShakeCount, beforeMpScreen, '[情境 7] 花費 MP 不應觸發畫面震動');
+        assert.equal(tokenShakeCount, beforeMpToken, '[情境 7] 花費 MP 不應觸發棋子受擊震動');
+        assert.equal(damageSfxCount, beforeMpSfx, '[情境 7] 花費 MP 不應播放受擊音效');
+        assert.equal(floatTextCount, beforeMpFloat + 1, '[情境 7] 花費 MP 仍應顯示 1 筆浮動文字');
+
+        // 情境 8：重開遊戲流程必須清空首次入鐘面追蹤器（避免模糊浮現特效不再播放）
+        const uiSrc = readProjectFile('js/ui/ui.js');
+        assert(/uiTokenMemory = \{\};[^\n]*\r?\n\s*trackedEnteredClockPlayerIds\.clear\(\);/.test(uiSrc), '[情境 8] 重開遊戲流程應呼叫 trackedEnteredClockPlayerIds.clear()');
     }
 
     return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌、${nextBtnCases.length} 種按鈕狀態與換局震動防護測試全數通過`;

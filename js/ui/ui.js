@@ -575,6 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetRightPanels(globalGameState);
         uiTrackedGameRound = 1;// 重置輪數追蹤變數
         uiTokenMemory = {}; // 重新開始遊戲時清空記憶
+        trackedEnteredClockPlayerIds.clear(); // 重新開始遊戲時清空首次入鐘面追蹤，確保模糊浮現特效重新播放
         uiState.selectedCardValue = null;
         uiState.selectedCardValues = [];
         uiState.isSecondHandSelectingTwo = false;
@@ -1360,8 +1361,12 @@ function triggerFloat(playerId, text, color, type, diff) {
     let cardEl = null;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
 
+    // 僅 GP／護盾損失視為受擊；MP 花費只顯示浮字，不觸發受擊特效
+    const isDamageHit = type !== 'mana' &&
+        (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055')));
+
     // 受到懲罰／扣除齒輪或護盾時觸發棋子受擊震動
-    if (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055'))) {
+    if (isDamageHit) {
         if (window.ModernBoard && typeof window.ModernBoard.shakeToken === 'function') {
             window.ModernBoard.shakeToken(playerId, true);
         }
@@ -1384,7 +1389,7 @@ function triggerFloat(playerId, text, color, type, diff) {
     }
 
     // 受到懲罰／扣除齒輪或護盾時觸發卡片受擊震動動態與音效
-    if (diff < 0 || (typeof diff === 'undefined' && (color === '#ff4757' || color === '#e17055'))) {
+    if (isDamageHit) {
         if (cardEl) {
             cardEl.classList.remove('card-damage-shake');
             void cardEl.offsetWidth; // 強制重排以重啟動畫
