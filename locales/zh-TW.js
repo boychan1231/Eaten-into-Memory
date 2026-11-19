@@ -274,7 +274,7 @@
             step0_welcome: '<strong>歡迎來到《Eaten into Memory》</strong><br>請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
             step0_start_action: '請點擊「<strong>下一回合</strong>」翻開鐘面上的小時卡，展開第一回合競標。',
             click_anywhere_continue: '<br><span style="color:#ffd27f; font-size:0.85em;">▸ 點擊畫面任意處繼續下一條教學</span>',
-            step1_drag_minute: '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• 按住卡牌往鐘面方向拉動並放開，或點擊卡牌後點擊「確認出牌」，或直接雙擊卡牌</strong>。<br>※ <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰',
+            step1_drag_minute: '<strong>步驟 1：挑選一張分鐘卡出牌</strong><br>• 按住卡牌往鐘面方向拉動並放開，或點擊卡牌後點擊「確認出牌」，或直接雙擊卡牌。<br>※ <strong>戰術思維：</strong>數字大者可搶佔鐘面安全位與回憶卡；數字較小未進前 2 名則無須進入鐘面，能安全避開受罰',
             step1_select_minute_hint: '<strong>步驟 1：</strong><br>已選取 <strong>[{value}]</strong> 號分鐘卡，點擊「確認出牌」，或將卡牌向上拖曳至鐘面，或直接雙擊卡牌',
             step1_sec_ability_select: '<strong>秒針能力（{count}/2）：請點選 2 張分鐘卡</strong><br>選滿 2 張後再點擊右側「確認出牌」。',
             step1_sec_ability_confirm: '<strong>秒針能力：點擊「確認出牌」</strong><br>將挑選的 2 張分鐘卡蓋牌送出',
