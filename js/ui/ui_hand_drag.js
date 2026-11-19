@@ -160,7 +160,9 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             ? `<span class="shield-indicator" title="護盾就緒！受到傷害時自動消耗 MP 抵擋"><span class="material-symbols-outlined" style="font-size:1.1em; vertical-align:-0.15em;">shield</span></span>`
             : '';
 
-        const roleName = window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard;
+        const roleName = (humanPlayer.type === 'pure')
+            ? `純競標 (${gameState.players.length}P)`
+            : (window.i18n ? window.i18n.getRoleName(humanPlayer.roleCard) : humanPlayer.roleCard);
         const youAreLabel = window.i18n ? window.i18n.t('ui.labels.you_are') : '您是：';
         humanRoleEl.innerHTML = `${youAreLabel}${roleName} ${shieldHtml}`;
     }

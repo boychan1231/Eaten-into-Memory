@@ -42,13 +42,25 @@ window.getNormalizedType = function (type) {
     return type;
 };
 
+window.isPureMode = function (mode) {
+    return typeof mode === 'string' && mode.startsWith('PURE');
+};
+
+window.getPurePlayerCount = function (mode) {
+    if (mode === 'PURE_3P') return 3;
+    if (mode === 'PURE_4P') return 4;
+    if (mode === 'PURE_5P') return 5;
+    return 4;
+};
+
 window.GAME_CONFIG = {
     enableAbilities: false, // 預設是否啟用特殊能力 (可被 UI 開關覆蓋)
     testMode: false,        // 預設是否開啟測試模式 (可被 UI 開關覆蓋)
     tutorialMode: true,     // 預設是否開啟新手教學引導模式
     defaultHumanId: 'SM_1',  // 預設人類玩家 ID
-    gameMode: '5P',          // 遊戲模式: '5P' (預設) 或 '3P'
+    gameMode: '5P',          // 遊戲模式: '5P' (預設)、'3P' 或 'PURE_3P' / 'PURE_4P' / 'PURE_5P'
     threePStartingRole: '時針', // 3P 模式下人類玩家初始身份
+    purePlayerCount: 4,      // 純競標模式預設人數 (3 / 4 / 5)
     aiDifficulty: 'normal'   // AI 對戰難度: 'normal' (一般，新改良演算法) 或 'easy' (簡單，原始基礎行為)
 };
 
@@ -80,7 +92,9 @@ window.UI_CONFIG = {
         'scz': '#54a0ff',
         'hour': '#ff9ff3',
         'min': '#f368e0',
-        'sec': '#00d2d3'
+        'sec': '#00d2d3',
+        'pure': '#a29bfe',
+        '純競標': '#a29bfe'
     }
 };
 

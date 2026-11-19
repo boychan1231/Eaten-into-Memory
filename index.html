@@ -52,6 +52,10 @@
 									<span class="mode-name">3P 競速模式</span>
 									<span class="mode-desc">3 局 · 13 張手牌 · 純時魔三針對決</span>
 								</button>
+								<button type="button" class="intro-mode-btn intro-custom-btn" data-mode="PURE">
+									<span class="mode-name">純競標模式</span>
+									<span class="mode-desc">無能力與角色 · 3P / 4P / 5P 純競標</span>
+								</button>
 							</div>
 						</div>
 
@@ -104,6 +108,28 @@
 									<div class="intro-role-info">
 										<div class="intro-role-name">秒針</div>
 										<div class="intro-role-tag">雙牌預備出擊，觀察局勢二選一</div>
+									</div>
+								</button>
+							</div>
+
+							<!-- 純競標模式人數清單 -->
+							<div id="intro-roles-pure" class="intro-role-grid is-hidden">
+								<button type="button" class="intro-pure-count-btn intro-custom-btn" data-pure-count="3">
+									<div class="intro-role-info">
+										<div class="intro-role-name">3P（3 人對戰）</div>
+										<div class="intro-role-tag">3 局輪替 · 每人 13 張手牌</div>
+									</div>
+								</button>
+								<button type="button" class="intro-pure-count-btn intro-custom-btn active" data-pure-count="4">
+									<div class="intro-role-info">
+										<div class="intro-role-name">4P（4 人對戰）</div>
+										<div class="intro-role-tag">4 局輪替 · 每人 13 張手牌</div>
+									</div>
+								</button>
+								<button type="button" class="intro-pure-count-btn intro-custom-btn" data-pure-count="5">
+									<div class="intro-role-info">
+										<div class="intro-role-name">5P（5 人對戰）</div>
+										<div class="intro-role-tag">5 局輪替 · 每人 12 張手牌</div>
 									</div>
 								</button>
 							</div>
@@ -904,9 +930,24 @@
 								aria-checked="true" aria-pressed="true">5P 模式 (原設定)</button>
 							<button class="selection-btn" type="button" data-value="3P" role="radio"
 								aria-checked="false" aria-pressed="false">3P 模式</button>
+							<button class="selection-btn" type="button" data-value="PURE" role="radio"
+								aria-checked="false" aria-pressed="false">純競標模式</button>
+						</div>
+						<div id="pure-count-section" class="modal-section is-hidden" style="margin-top: 12px;">
+							<h4>選擇純競標人數</h4>
+							<div class="settings-button-group" data-selection-group="start-pure-player-count" role="radiogroup"
+								aria-label="純競標人數">
+								<button class="selection-btn" type="button" data-value="3" role="radio"
+									aria-checked="false" aria-pressed="false">3P（3 人）</button>
+								<button class="selection-btn is-selected" type="button" data-value="4" role="radio"
+									aria-checked="true" aria-pressed="true">4P（4 人）</button>
+								<button class="selection-btn" type="button" data-value="5" role="radio"
+									aria-checked="false" aria-pressed="false">5P（5 人）</button>
+							</div>
 						</div>
 						<p id="start-mode-note-3p" class="setting-note">3P 模式： 3 局/13張手牌，24張小時卡</p>
 						<p id="start-mode-note-5p" class="setting-note">5P 模式： 5 局/12張手牌，24張小時卡 + 12張珍貴小時卡</p>
+						<p id="start-mode-note-pure" class="setting-note" style="display:none;">純競標模式：無角色與特殊能力，開局隨機落位，輪替 N 局累計保留 GP 最高者獲勝</p>
 					</div>
 					<div class="modal-actions">
 

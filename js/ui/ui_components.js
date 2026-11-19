@@ -56,14 +56,15 @@ function assessHourCardTactics(gameState, card, humanPlayer) {
     if (!gameState || !card) return { riskLevel: 'neutral', riskText: '', isRecipe: false, isPrecious: false, badgeText: '' };
     const currentMode = gameState.gameMode || '5P';
     const is3P = currentMode === '3P';
-    const sinMode = gameState.sinTargetingMode === 'sin' && !is3P;
+    const isPure = typeof currentMode === 'string' && currentMode.startsWith('PURE');
+    const sinMode = gameState.sinTargetingMode === 'sin' && !is3P && !isPure;
     const sinPlayer = (gameState.players || []).find(p => p.type === '時之惡' && !p.isEjected);
     const targetSpot = Number(card.number);
 
     let riskLevel = 'safe';
     let riskText = (window.i18n ? window.i18n.t('ui.tactics.safe') : null) || '⛨ 安全';
 
-    if (is3P || !sinMode) {
+    if (is3P || isPure || !sinMode) {
         // 最高小時值受罰判定
         const otherPlayers = (gameState.players || []).filter(p => p.id !== humanPlayer.id && !p.isEjected && p.currentClockPosition !== null && p.currentClockPosition !== undefined);
         if (otherPlayers.length > 0) {

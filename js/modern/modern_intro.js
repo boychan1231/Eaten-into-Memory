@@ -723,15 +723,16 @@
             const summaryEl = document.getElementById('intro-drawer-summary');
             const startBtn = document.getElementById('intro-enter-game-btn');
             const roleMap5P = { 'SM_1': '時魔', 'sin': '時之惡', 'SCZ': '受詛者' };
-            const roleLabel = this.selectedMode === '5P'
-                ? (roleMap5P[this.selectedRole5P] || '時魔')
-                : this.selectedRole3P;
+            const modeLabel = this.selectedMode === 'PURE' ? '純競標' : this.selectedMode;
+            const roleLabel = this.selectedMode === 'PURE'
+                ? `${this.selectedPureCount || 4}P`
+                : (this.selectedMode === '5P' ? (roleMap5P[this.selectedRole5P] || '時魔') : this.selectedRole3P);
 
             if (summaryEl) {
-                summaryEl.textContent = `⚙ 變更模式、角色與輔助選項（當前：${this.selectedMode} · ${roleLabel}）`;
+                summaryEl.textContent = `⚙ 變更模式、角色與輔助選項（當前：${modeLabel} · ${roleLabel}）`;
             }
             if (startBtn) {
-                startBtn.textContent = `開始遊戲 (${this.selectedMode} · ${roleLabel})`;
+                startBtn.textContent = `開始遊戲 (${modeLabel} · ${roleLabel})`;
             }
         },
 
@@ -742,6 +743,12 @@
             };
 
             pickHiddenOption('start-game-mode', this.selectedMode);
+            if (this.selectedMode === 'PURE') {
+                pickHiddenOption('start-pure-player-count', String(this.selectedPureCount || 4));
+                const modeConfirmBtn = document.getElementById('game-mode-confirm');
+                if (modeConfirmBtn) modeConfirmBtn.click();
+                return;
+            }
             if (this.selectedMode === '5P') {
                 pickHiddenOption('start-five-player-role', this.selectedRole5P);
             } else {
@@ -759,10 +766,11 @@
                 this.skipBtn.addEventListener('click', () => this.skipToMenu());
             }
 
-            // 模式切換按鈕 (5P / 3P)
+            // 模式切換按鈕 (5P / 3P / PURE)
             const modeBtns = document.querySelectorAll('.intro-mode-btn');
             const roleGroup5P = document.getElementById('intro-roles-5p');
             const roleGroup3P = document.getElementById('intro-roles-3p');
+            const roleGroupPure = document.getElementById('intro-roles-pure');
 
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -771,6 +779,20 @@
                     modeBtns.forEach(b => b.classList.toggle('active', b === btn));
                     if (roleGroup5P) roleGroup5P.classList.toggle('is-hidden', mode !== '5P');
                     if (roleGroup3P) roleGroup3P.classList.toggle('is-hidden', mode !== '3P');
+                    if (roleGroupPure) roleGroupPure.classList.toggle('is-hidden', mode !== 'PURE');
+                    this.updateDrawerSummary();
+                    if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                        window.gameAudio.playClick();
+                    }
+                });
+            });
+
+            // 純競標模式人數選擇 (3P / 4P / 5P)
+            const pureCountBtns = document.querySelectorAll('#intro-roles-pure .intro-pure-count-btn');
+            pureCountBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.selectedPureCount = Number(btn.getAttribute('data-pure-count') || 4);
+                    pureCountBtns.forEach(b => b.classList.toggle('active', b === btn));
                     this.updateDrawerSummary();
                     if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
                         window.gameAudio.playClick();
@@ -863,17 +885,23 @@
             };
 
             pickHiddenOption('start-game-mode', this.selectedMode);
-            if (this.selectedMode === '5P') {
-                pickHiddenOption('start-five-player-role', this.selectedRole5P);
+            if (this.selectedMode === 'PURE') {
+                pickHiddenOption('start-pure-player-count', String(this.selectedPureCount || 4));
+                const modeConfirmBtn = document.getElementById('game-mode-confirm');
+                if (modeConfirmBtn) modeConfirmBtn.click();
             } else {
-                pickHiddenOption('start-time-demon-role', this.selectedRole3P);
-            }
+                if (this.selectedMode === '5P') {
+                    pickHiddenOption('start-five-player-role', this.selectedRole5P);
+                } else {
+                    pickHiddenOption('start-time-demon-role', this.selectedRole3P);
+                }
 
-            // 觸發原有確認流程（自動完成 applyStartConfig -> startWithRole -> doInitialize -> updateUI）
-            const modeConfirmBtn = document.getElementById('game-mode-confirm');
-            const roleConfirmBtn = document.getElementById('role-choice-confirm');
-            if (modeConfirmBtn) modeConfirmBtn.click();
-            if (roleConfirmBtn) roleConfirmBtn.click();
+                // 觸發原有確認流程（自動完成 applyStartConfig -> startWithRole -> doInitialize -> updateUI）
+                const modeConfirmBtn = document.getElementById('game-mode-confirm');
+                const roleConfirmBtn = document.getElementById('role-choice-confirm');
+                if (modeConfirmBtn) modeConfirmBtn.click();
+                if (roleConfirmBtn) roleConfirmBtn.click();
+            }
 
             // 2. 播放確認音效並執行開場淡出轉場
             if (window.gameAudio) {

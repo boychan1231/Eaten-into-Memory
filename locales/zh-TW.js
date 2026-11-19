@@ -10,7 +10,8 @@
             hour: '時針',
             min: '分針',
             sec: '秒針',
-            young_demon: '時魔幼體'
+            young_demon: '時魔幼體',
+            pure: '純競標'
         },
         age_groups: {
             child: '幼年',
@@ -302,7 +303,8 @@
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
             role_progress_sin: '特殊加分：未吞噬【{targets}】（已吞噬 {count}/3 位）',
             role_progress_sin_complete: '特殊加分：全場時魔都曾被吞噬！★',
-            role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化'
+            role_progress_young: '背包已收集小時卡：{count} 張，繼續收集以達成進化',
+            pure_mode_intro: '<strong>【純競標模式 · 簡易規則說明】</strong><br>• <strong>無角色與能力：</strong>全場玩家規則完全對等，無特殊異能、無 MP 消耗、無進化與珍貴卡。<br>• <strong>開局與競標：</strong>開局隨機落位後，每回合翻開 2 張小時卡，打出最大與次大分鐘卡的前 2 名依序挑選小時卡並移動；其餘玩家維持原位。<br>• <strong>懲罰與吞噬：</strong>每回合結束時，鐘面位置數字最大（最接近 12）者扣除 1 GP；GP 扣至負數即「被吞噬」出局。<br>• <strong>勝負結算：</strong>共進行 {rounds} 局手牌輪替，保留下來的 GP 即為分數，累計總分最高者獲勝！<br><br>點擊「<strong>下一回合</strong>」即可開始第 1 回合。'
         },
         logs: {
             round_start: '--- 開始第 {round} 局 第 {turn} 回合 ---',

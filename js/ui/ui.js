@@ -266,11 +266,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncStartModeNote = () => {
         const startModeNote3P = document.getElementById('start-mode-note-3p');
         const startModeNote5P = document.getElementById('start-mode-note-5p');
+        const startModeNotePure = document.getElementById('start-mode-note-pure');
+        const pureCountSection = document.getElementById('pure-count-section');
+        const confirmBtn = document.getElementById('game-mode-confirm');
         const mode = getSelectionValue('start-game-mode', '5P');
+        const isPureSel = mode === 'PURE';
         if (startModeNote3P) startModeNote3P.style.display = (mode === '3P') ? 'block' : 'none';
         if (startModeNote5P) startModeNote5P.style.display = (mode === '5P') ? 'block' : 'none';
+        if (startModeNotePure) startModeNotePure.style.display = isPureSel ? 'block' : 'none';
+        if (pureCountSection) pureCountSection.classList.toggle('is-hidden', !isPureSel);
+        if (confirmBtn) confirmBtn.textContent = isPureSel ? '開始遊戲' : '下一步';
     };
     bindSelectionButtons('start-game-mode', syncStartModeNote);
+    bindSelectionButtons('start-pure-player-count');
     bindSelectionButtons('start-time-demon-role');
     bindSelectionButtons('start-five-player-role');
     syncStartModeNote();
@@ -530,10 +538,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingStartConfig = null;
 
     const setStartModalDefaults = () => {
-        const selectedMode = window.GAME_CONFIG?.gameMode || '5P';
+        const rawMode = window.GAME_CONFIG?.gameMode || '5P';
+        const isPureRaw = typeof rawMode === 'string' && rawMode.startsWith('PURE');
+        const selectedMode = isPureRaw ? 'PURE' : rawMode;
+        const pureCount = isPureRaw
+            ? String(typeof window.getPurePlayerCount === 'function' ? window.getPurePlayerCount(rawMode) : (window.GAME_CONFIG?.purePlayerCount || 4))
+            : String(window.GAME_CONFIG?.purePlayerCount || 4);
         const selectedRole = window.GAME_CONFIG?.threePStartingRole || '時針';
         const selectedFivePRole = window.GAME_CONFIG?.defaultHumanId || 'SM_1';
         setSelectionValue('start-game-mode', selectedMode);
+        setSelectionValue('start-pure-player-count', pureCount);
         setSelectionValue('start-time-demon-role', selectedRole);
         setSelectionValue('start-five-player-role', selectedFivePRole);
         if (typeof syncStartModeNote === 'function') syncStartModeNote();
@@ -581,7 +595,12 @@ document.addEventListener('DOMContentLoaded', () => {
         uiState.isSecondHandSelectingTwo = false;
         const humanId = getCurrentHumanPlayerId();
         const humanPlayer = globalGameState.players.find(p => p.id === humanId);
-        if (humanPlayer) appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+        const isPureGame = typeof globalGameState.gameMode === 'string' && globalGameState.gameMode.startsWith('PURE');
+        if (isPureGame) {
+            appLogger.log(`純競標模式 (${globalGameState.players.length}P) 已開始！`);
+        } else if (humanPlayer) {
+            appLogger.log(`您扮演的角色是：【${humanPlayer.roleCard}】`);
+        }
         globalGameState.needsHandDealAnimation = true;
 
         // 遊戲開始時：
@@ -660,6 +679,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cfgTestMode = !!testToggleEl?.checked;
                 const cfgTutorialMode = tutorialToggleEl ? !!tutorialToggleEl.checked : true;
                 const { selectedMode } = getStartModalSelection();
+                if (selectedMode === 'PURE') {
+                    const pureCount = Number(getSelectionValue('start-pure-player-count', '4')) || 4;
+                    const resolvedPureMode = `PURE_${pureCount}P`;
+                    window.GAME_CONFIG = window.GAME_CONFIG || {};
+                    window.GAME_CONFIG.purePlayerCount = pureCount;
+                    if (typeof GAME_CONFIG !== 'undefined') GAME_CONFIG.purePlayerCount = pureCount;
+                    applyStartConfig({
+                        selectedMode: resolvedPureMode,
+                        selectedThreePRole: '時針',
+                        cfgEnableAbilities: false,
+                        cfgTestMode,
+                        cfgTutorialMode
+                    });
+                    if (gameModeOverlay) closeModal(gameModeOverlay);
+                    startWithRole('SM_1');
+                    return;
+                }
                 pendingStartConfig = { selectedMode, cfgEnableAbilities, cfgTestMode, cfgTutorialMode };
                 if (gameModeOverlay) closeModal(gameModeOverlay);
                 syncRoleChoiceModal(selectedMode);
@@ -1723,11 +1759,24 @@ function renderGameOverPanel(gameState) {
     }
     const sczMissionSuccess = (lockedPreciousCount >= 12);
 
+    const isPureGame = typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
+
     let winnerText = "遊戲結束";
     let subText = "";
     let titleColor = "#fff";
 
-    if (sinPlayer && sinPlayer.isEjected) {
+    if (isPureGame) {
+        const sortedPure = gameState.players.slice().sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            const ejectDiff = (a.ejectionCount || 0) - (b.ejectionCount || 0);
+            if (ejectDiff !== 0) return ejectDiff;
+            return (b.bestRoundGear || 0) - (a.bestRoundGear || 0);
+        });
+        const topPlayer = sortedPure[0];
+        winnerText = topPlayer ? `✦ ${topPlayer.name} 獲勝！` : "⧖ 遊戲結束";
+        subText = `純競標模式 (${gameState.players.length}P) · 總積分最高者勝出`;
+        titleColor = "#ffd27f";
+    } else if (sinPlayer && sinPlayer.isEjected) {
         winnerText = "✦ 時魔陣營 獲勝！";
         subText = "時之惡已被吞噬";
         titleColor = "#ff6b6b"; // 時魔紅

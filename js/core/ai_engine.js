@@ -124,6 +124,7 @@ function activateSinSealAI(gameState) {
 
 // ✅ AI 時針預知與移牌決策函式
 function hourHandPreMinuteAI(gameState) {
+    if (typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) return;
     if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
 
@@ -359,8 +360,8 @@ function makeAIChoice3P(player, gameState) {
 function makeAIChoice(player, gameState) {
     if (player.hand.length === 0) return null;
 
-    // ✅ 3P 模式分流至專屬 AI 決策
-    if (gameState.gameMode === '3P') {
+    // ✅ 3P 與純競標模式分流至純位置避險 AI 決策
+    if (gameState.gameMode === '3P' || (typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE'))) {
         return makeAIChoice3P(player, gameState);
     }
     const sortedHand = [...player.hand].sort((a, b) => a.value - b.value);
@@ -686,8 +687,8 @@ function chooseHourCardForAI3P(gameState, player, drawnCards) {
 function chooseHourCardForAI(gameState, player, drawnCards) {
     if (!drawnCards || drawnCards.length === 0) return null;
 
-    // ✅ 3P 模式分流至專屬挑牌演算法
-    if (gameState.gameMode === '3P') {
+    // ✅ 3P 與純競標模式分流至專屬挑牌演算法
+    if (gameState.gameMode === '3P' || (typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE'))) {
         return chooseHourCardForAI3P(gameState, player, drawnCards);
     }
 
@@ -831,6 +832,7 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
 
 // ✅ AI 分針移動能力判定函式
 function minuteHandPostHourAI(gameState) {
+    if (typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) return;
     if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;

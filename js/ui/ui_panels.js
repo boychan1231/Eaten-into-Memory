@@ -410,7 +410,16 @@ function renderSpecialVictoryScoreMeter(gameState) {
     // 1. 渲染即時總分頁的 mini pill 摘要條 (#score-special-victory-mini)
     const miniBars = document.querySelectorAll('#score-special-victory-mini');
     miniBars.forEach(bar => {
-        if (currentMode === '3P') {
+        if (typeof currentMode === 'string' && currentMode.startsWith('PURE')) {
+            const totalRounds = gameState.players.length;
+            bar.innerHTML = `
+                <div class="score-mini-pill mode-3p">
+                    <span class="mini-pill-icon material-symbols-outlined">casino</span>
+                    <span class="mini-pill-label">純競標 ${totalRounds}P</span>
+                    <span class="mini-pill-val">第 ${gameState.gameRound}/${totalRounds} 局</span>
+                </div>
+            `;
+        } else if (currentMode === '3P') {
             const aliveCount = gameState.players.filter(p => !p.isEjected).length;
             const total = gameState.players.length;
             const label3p = t('ui.scores.mini_3p_survivors') || '生還';
@@ -856,6 +865,12 @@ function renderEvolutionPanel(gameState, humanPlayer) {
     progressArea.innerHTML = '';
 
     if (!humanPlayer || humanPlayer.isEjected) return;
+
+    // 0. 純競標模式：無角色能力與進化
+    if (humanPlayer.type === 'pure') {
+        progressArea.innerHTML = `<div class="evo-empty-note" style="font-size:0.85rem; color:#bbb; padding:6px 4px;">純競標模式（${gameState.players.length}P）：無角色能力與進化，保留 GP 即為最終分數。</div>`;
+        return;
+    }
 
     // 1. 幼體時魔：顯示進化進度
     if (humanPlayer.type === '時魔' && humanPlayer.roleCard.includes('幼')) {

@@ -32,9 +32,11 @@ function startRound(gameState) {
         return;
     }
 	
+	const isPure = typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
+
 	// ✅ 新增：第 4 局開局平衡機制 (僅在第4局且第1回合時觸發)
     // 若牌庫 > 26 張，優先移除「非珍貴的 1」
-    if (gameState.gameMode !== '3P' && gameState.gameRound === 4 && gameState.roundMarker === 1) {
+    if (gameState.gameMode === '5P' && gameState.gameRound === 4 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 26) {
             
             // 1. 找出所有「非珍貴」且數字為「1」的卡
@@ -62,7 +64,7 @@ function startRound(gameState) {
 	
 		// 第 5 局開局平衡機制 (僅在第5局且第1回合時觸發)
     // 如果牌庫大於 24 張，優先移除數字小的非珍貴卡，直到剩下 24 張
-    if (gameState.gameMode !== '3P' && gameState.gameRound === 5 && gameState.roundMarker === 1) {
+    if (gameState.gameMode === '5P' && gameState.gameRound === 5 && gameState.roundMarker === 1) {
         if (gameState.hourDeck.length > 24) {
             const targetCount = 24;
             const removeCount = gameState.hourDeck.length - targetCount;
@@ -110,18 +112,20 @@ function startRound(gameState) {
         p.hourHandMoveCount = 0;
 	});
 
-// ✅ 2. 先嘗試判定「封印全場」(消耗較高，優先判定)
-    if (typeof activateSinSealAI === 'function') {
-        activateSinSealAI(gameState);
-    }
-	
-// ✅ 3. 若沒封印(沒耗魔)，再嘗試判定「惡之牽引」
-    const sinPlayer = gameState.players.find(p => p.type === '時之惡');
-    if (sinPlayer && !sinPlayer.specialAbilityUsed) { // 確保沒有一回合放兩招
-        if (typeof activateSinTargetingAbility === 'function') {
-            activateSinTargetingAbility(gameState); 
+    if (!isPure) {
+        // ✅ 2. 先嘗試判定「封印全場」(消耗較高，優先判定)
+        if (typeof activateSinSealAI === 'function') {
+            activateSinSealAI(gameState);
         }
-    }	
+
+        // ✅ 3. 若沒封印(沒耗魔)，再嘗試判定「惡之牽引」
+        const sinPlayer = gameState.players.find(p => p.type === '時之惡');
+        if (sinPlayer && !sinPlayer.specialAbilityUsed) { // 確保沒有一回合放兩招
+            if (typeof activateSinTargetingAbility === 'function') {
+                activateSinTargetingAbility(gameState);
+            }
+        }
+    }
 	
     const drawnCards = [];
     if (gameState.hourDeck.length === 0) {
@@ -142,7 +146,7 @@ function startRound(gameState) {
 	gameState.phase = 'preMinute';
 
 	// AI 時針：回合前自動偷看/決策（人類時針由 UI 按鈕觸發）
-	if (typeof hourHandPreMinuteAI === 'function') {
+	if (!isPure && typeof hourHandPreMinuteAI === 'function') {
 		hourHandPreMinuteAI(gameState);
     }
 
@@ -772,6 +776,11 @@ function finishHourSelection(gameState) {
     const choices = gameState.currentMinuteChoices || [];
     recordMinuteDiscard(gameState, choices);
 
+    if (typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) {
+        deductGearCards(gameState);
+        return;
+    }
+
     // 1.5 AI 分針能力判定
     if (typeof minuteHandPostHourAI === 'function') {
         minuteHandPostHourAI(gameState);
@@ -874,8 +883,23 @@ function deductGearCards(gameState) {
     const targetingMode = gameState.sinTargetingMode || 'default';
     const modeText = targetingMode === 'sin' ? '距離時之惡最近' : '數值最大(接近12)';
     const currentMode = gameState.gameMode || getGameMode();
-    
-    appLogger.log(`--扣除齒局/護盾 (當前規則: ${modeText}) --`);
+    const isPure = typeof currentMode === 'string' && currentMode.startsWith('PURE');
+
+    appLogger.log(`--扣除齒局/護盾 (當前規則: ${isPure ? '數值最大(接近12)' : modeText}) --`);
+
+    if (isPure) {
+        const candidates = gameState.players.filter(p => !p.isEjected && typeof p.currentClockPosition === 'number');
+        if (candidates.length > 0) {
+            const maxPos = Math.max(...candidates.map(p => p.currentClockPosition));
+            const targets = candidates.filter(p => p.currentClockPosition === maxPos);
+            targets.forEach(player => {
+                player.gearCards--;
+                appLogger.log(`【純競標】${player.name} 位於最高刻度 ${maxPos}，扣除 1 GP (剩餘: ${player.gearCards})。`);
+            });
+        }
+        checkEjectionAndWinCondition(gameState);
+        return;
+    }
     
     const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
     // 若時之惡不在場且非 3P 模式，無人受罰 (直接檢查勝利條件)
@@ -980,6 +1004,7 @@ function checkEjectionAndWinCondition(gameState) {
         if (!player.isEjected && player.gearCards < 0) {
             player.isEjected = true;
             player.hasEverBeenEjected = true;
+            player.ejectionCount = (player.ejectionCount || 0) + 1;
             player.gearCards = 0; // 歸零僅為了 UI 顯示好看
             player.mana = 0;
             player.currentClockPosition = null;
@@ -995,9 +1020,20 @@ function checkEjectionAndWinCondition(gameState) {
     });
 
 	// 2. 勝利判定
+	const currentMode = gameState.gameMode || getGameMode();
+	if (typeof currentMode === 'string' && currentMode.startsWith('PURE')) {
+	    const alivePure = gameState.players.filter(p => !p.isEjected);
+	    if (alivePure.length <= 1) {
+	        appLogger.log('✦【純競標】場上僅剩 1 名（或以下）存活者，本局提前結束並結算積分。');
+	        endGameRound(gameState);
+	        return;
+	    }
+	    moveRoundMarker(gameState);
+	    return;
+	}
+
 	const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
-    const currentMode = gameState.gameMode || getGameMode();
 
 	// 檢查是否「所有時魔都曾被吞噬過」
     const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
@@ -1146,9 +1182,10 @@ function checkSCZMissionSuccess(gameState) {
 function endGameRound(gameState) {
     appLogger.log(`=== 第 ${gameState.gameRound} 局結束 ===`);
     const numPlayers = gameState.players.length;
+    const isPure = typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
 
     // 1. 「時之惡飢餓懲罰」判定：若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 齒輪（如扣至負數則達成 吞噬時之惡）
-    const sinPlayer = gameState.players.find(p => p.type === '時之惡' && !p.isEjected);
+    const sinPlayer = !isPure ? gameState.players.find(p => p.type === '時之惡' && !p.isEjected) : null;
     const noDemonDevouredThisRound = !gameState.roundHadTimeDemonEjection;
 
     if (sinPlayer && noDemonDevouredThisRound) {
@@ -1179,6 +1216,7 @@ function endGameRound(gameState) {
         const wasEjected = !!player.isEjected;
         const roundEarned = wasEjected ? 0 : Math.max(0, player.gearCards);
         player.score += roundEarned;
+        player.bestRoundGear = Math.max(player.bestRoundGear || 0, roundEarned);
         appLogger.log(`【${player.name}】得分: ${roundEarned}. 總分: ${player.score}`);
         return {
             id: player.id,
@@ -1199,7 +1237,7 @@ function endGameRound(gameState) {
     }
 	
 	// 受詛者任務檢查
-	const sczPlayer = gameState.players.find(p => p.type === '受詛者');
+	const sczPlayer = !isPure ? gameState.players.find(p => p.type === '受詛者') : null;
     if (sczPlayer && !sczPlayer.isEjected) {
         const isMissionSuccess = checkSCZMissionSuccess(gameState);
         
@@ -1326,7 +1364,7 @@ function endGameRound(gameState) {
 
         const initialGear = gameState.originalGearSets[handSetIndex];
         player.gearCards = initialGear; 
-        player.mana = player.gearCards;
+        player.mana = isPure ? 0 : player.gearCards;
         player.hand = gameState.originalHandSets[handSetIndex].map(c => ({ ...c }));
         
         player.specialAbilityUsed = false; 
@@ -1338,6 +1376,9 @@ function endGameRound(gameState) {
         player.isEjected = false;
         player.hourCards = []; 
     });
+    if (isPure && typeof assignPureStartingPositions === 'function') {
+        assignPureStartingPositions(gameState);
+    }
     appLogger.log("↻ 玩家已接收新一局的手牌與齒局。");
 
     // 5. 重置護盾
@@ -1383,7 +1424,8 @@ function endGameRound(gameState) {
 
 function endGame(gameState) {
     appLogger.log("=== 遊戲結束 ===");
-    if (gameState.gameMode !== '3P') {
+    const isPure = typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
+    if (gameState.gameMode !== '3P' && !isPure) {
         gameState.players
             .filter(p => p.type === '時魔' && !p.isEjected && ['時針', '分針', '秒針'].includes(p.roleCard))
             .forEach(player => {
@@ -1402,7 +1444,15 @@ function endGame(gameState) {
         }
     }
 		
-    const finalScores = gameState.players.slice().sort((a, b) => b.score - a.score);
+    const finalScores = gameState.players.slice().sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (isPure) {
+            const ejectDiff = (a.ejectionCount || 0) - (b.ejectionCount || 0);
+            if (ejectDiff !== 0) return ejectDiff;
+            return (b.bestRoundGear || 0) - (a.bestRoundGear || 0);
+        }
+        return 0;
+    });
     finalScores.forEach((p, index) => {
         appLogger.log(`#${index + 1}: ${p.name} (總分: ${p.score})`);
     });
@@ -1414,9 +1464,9 @@ function endGame(gameState) {
         const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : 'SM_1';
         const human = gameState.players.find(p => p.id === humanId);
         
-        // 簡單判定：如果人類沒被吞噬，視為勝利 (或是您可以根據 score 排名判定)
-        // 這裡示範：只要沒被吞噬就算 Win 音效，被吞噬算 Lose 音效
-        const isWin = human && !human.isEjected;
+        const isWin = isPure
+            ? Boolean(human && finalScores[0] && (finalScores[0].id === human.id || finalScores[0].score === human.score))
+            : Boolean(human && !human.isEjected);
         
         window.gameAudio.playGameOver(isWin);
     }

@@ -10,7 +10,8 @@
             hour: 'Hour Hand',
             min: 'Minute Hand',
             sec: 'Second Hand',
-            young_demon: 'Young Demon'
+            young_demon: 'Young Demon',
+            pure: 'Pure Bidder'
         },
         age_groups: {
             child: 'Child',
@@ -302,7 +303,8 @@
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
             role_progress_sin: 'Special Victory Progress: Not yet devoured: [{targets}] ({count}/3 devoured)',
             role_progress_sin_complete: 'Special Victory Progress: All 3 Time Demons have been devoured! ✦',
-            role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!'
+            role_progress_young: 'Backpack Hour Cards: {count} collected. Continue collecting to evolve!',
+            pure_mode_intro: '<strong>【Pure Bidding Mode · Quick Rules】</strong><br>• <strong>No Roles or Abilities:</strong> All players are equal—no special abilities, no MP, no evolution, and no Precious Cards.<br>• <strong>Bidding & Movement:</strong> Players start at random clock positions. Each round reveals 2 Hour Cards; the top 2 Minute Card bidders pick an Hour Card and move there, while others stay in place.<br>• <strong>Penalty & Devour:</strong> At round end, the player(s) at the highest clock position (nearest 12) lose 1 GP; dropping below 0 GP devours you out of the current game.<br>• <strong>Victory:</strong> Play {rounds} rotating games—surviving GP converts 1:1 to score, and the highest total score wins!<br><br>Click "<strong>Next Round</strong>" to begin.'
         },
         logs: {
             round_start: '--- Game {round} Round {turn} Started ---',

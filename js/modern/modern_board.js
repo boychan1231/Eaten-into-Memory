@@ -39,6 +39,7 @@
     // 棋子標籤顯示名稱：玩家顯示「我」，其他角色顯示完整身分（時魔、時之惡、受詛者、時針、分針、秒針）
     const roleDisplayNameOf = (p, isHuman) => {
         if (isHuman) return '我';
+        if (p.type === 'pure') return p.name || '對手';
         if (p.type === '時之惡') return '時之惡';
         if (p.type === '受詛者') return '受詛者';
         if (p.roleCard === '時針') return '時針';
@@ -691,7 +692,8 @@
             if (!el || !gs) return;
             el.classList.remove('hidden');
             const is3P = gs.gameMode === '3P';
-            const sinMode = gs.sinTargetingMode === 'sin' && !is3P;
+            const isPure = typeof gs.gameMode === 'string' && gs.gameMode.startsWith('PURE');
+            const sinMode = gs.sinTargetingMode === 'sin' && !is3P && !isPure;
             if (is3P) {
                 el.dataset.penaltyMode = 'none';
                 el.innerHTML = `<span class="hud-penalty-icon material-symbols-outlined">shield</span><span class="hud-penalty-text">3P 模式：無受罰</span>`;
@@ -918,7 +920,10 @@
 
             // 取得角色專屬貼圖 key
             let texKey = isHuman ? 'p_demon' : 'demon';
-            if (p.type === '時之惡') texKey = isHuman ? 'p_sin' : 'sin';
+            if (p.type === 'pure') {
+                const pureTexMap = { 'SM_1': 'p_demon', 'PURE_2': 'hour', 'PURE_3': 'min', 'PURE_4': 'sec', 'PURE_5': 'scz' };
+                texKey = isHuman ? 'p_demon' : (pureTexMap[p.id] || 'demon');
+            } else if (p.type === '時之惡') texKey = isHuman ? 'p_sin' : 'sin';
             else if (p.type === '受詛者') texKey = isHuman ? 'p_scz' : 'scz';
             else if (p.roleCard === '時針') texKey = isHuman ? 'p_hour' : 'hour';
             else if (p.roleCard === '分針') texKey = isHuman ? 'p_min' : 'min';

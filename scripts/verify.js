@@ -500,7 +500,41 @@ async function stage3TutorialBehaviorTest() {
     els['human-role-display'].dispatchEvent({ type: 'click', stopPropagation: () => {} });
     assert(textEl.innerHTML.includes('時之惡 · 獵殺與得分指南'), '角色徽章點擊應遵循 getEffectiveHumanPlayerId');
 
-    return '新手教學系統行為與邊界條件全數通過 (歡迎流程 / 任意點擊鎖 / 3P-5P 進化 / 4 種能力 / 單一箭頭)';
+    // 5. 純競標模式：僅於開局顯示一次簡易規則說明，開始出牌與後續回合不再逐動作教學
+    TM.resetTutorialProgress();
+    windowMock._humanId = 'SM_1';
+    const gsPure = {
+        gameMode: 'PURE_4P',
+        gameRound: 1,
+        roundMarker: 1,
+        phase: 'idle',
+        gameEnded: false,
+        currentRoundAIChoices: null,
+        currentDrawnHourCards: [],
+        hourPickOrder: [],
+        players: [
+            { id: 'SM_1', name: '玩家 1', type: 'pure', roleCard: '純競標', isHuman: true, mana: 0, hand: [{ value: 10 }] },
+            { id: 'PURE_2', name: '對手 2', type: 'pure', roleCard: '純競標', isHuman: false, mana: 0, hand: [{ value: 20 }] }
+        ]
+    };
+    windowMock.globalGameState = gsPure;
+    TM.updateTutorialPointers(gsPure);
+    assert.equal(tooltipEl.classList.contains('hidden'), false, '純競標模式開局應顯示一次簡易規則教學');
+    assert(textEl.innerHTML.includes('純競標模式 · 簡易規則說明'), '應包含純競標模式規則說明');
+    assert(textEl.innerHTML.includes('共進行 2 局'), '應依人數帶入輪替局數');
+
+    gsPure.currentRoundAIChoices = {};
+    gsPure.currentDrawnHourCards = [{ number: 3 }, { number: 7 }];
+    TM.updateTutorialPointers(gsPure);
+    assert.equal(tooltipEl.classList.contains('hidden'), true, '純競標模式開始出牌後不應顯示逐動作教學');
+
+    gsPure.currentRoundAIChoices = null;
+    gsPure.waitingHourChoice = true;
+    gsPure.waitingHourChoicePlayerId = 'SM_1';
+    TM.updateTutorialPointers(gsPure);
+    assert.equal(tooltipEl.classList.contains('hidden'), true, '純競標模式挑選小時卡時不應顯示逐動作教學');
+
+    return '新手教學系統行為與邊界條件全數通過 (歡迎流程 / 任意點擊鎖 / 3P-5P 進化 / 4 種能力 / 單一箭頭 / 純競標單次說明)';
 }
 
 // =========================================================
@@ -521,6 +555,10 @@ function stage4HeadlessStressTest() {
     }
     for (let i = 0; i < 5; i++) {
         scenarios.push({ mode: '3P', enableAbilities: false, aiDifficulty: 'easy', humanId: 'SM_1', threePRole: '時針' });
+    }
+    for (const pureMode of ['PURE_3P', 'PURE_4P', 'PURE_5P']) {
+        scenarios.push({ mode: pureMode, enableAbilities: false, aiDifficulty: 'normal', humanId: 'SM_1', threePRole: '時針' });
+        scenarios.push({ mode: pureMode, enableAbilities: false, aiDifficulty: 'easy', humanId: 'SM_1', threePRole: '時針' });
     }
 
     let totalTurnsSimulated = 0;
@@ -589,6 +627,17 @@ function stage4HeadlessStressTest() {
         }
 
         const gs = ctx.initializeGame(sc.mode);
+        if (sc.mode.startsWith('PURE')) {
+            const expectedPlayers = sc.mode === 'PURE_3P' ? 3 : (sc.mode === 'PURE_5P' ? 5 : 4);
+            assert.equal(gs.players.length, expectedPlayers, `${sc.mode} 玩家人數應為 ${expectedPlayers}`);
+            assert.equal(gs.hourDeck.length, 24, `${sc.mode} 小時牌庫應為 24 張`);
+            const startPosSet = new Set(gs.players.map(p => p.currentClockPosition));
+            assert.equal(startPosSet.size, expectedPlayers, `${sc.mode} 開局起始鐘面位置應互不重複`);
+            gs.players.forEach(p => {
+                assert.equal(p.mana, 0, `${sc.mode} 不應有 MP`);
+                assert.equal(p.d6Die, null, `${sc.mode} 不應有 d6Die 護盾`);
+            });
+        }
         let steps = 0;
         const maxSteps = 450;
 

@@ -182,12 +182,49 @@ function buildHourDeckForThreePlayer() {
     return { deck, config: null };
 }
 
+function buildHourDeckForPureMode() {
+    return buildHourDeckForThreePlayer();
+}
+
+function isPureModeLocal(mode) {
+    return typeof mode === 'string' && mode.startsWith('PURE');
+}
+
+function getPurePlayerCountLocal(mode) {
+    if (mode === 'PURE_3P') return 3;
+    if (mode === 'PURE_4P') return 4;
+    if (mode === 'PURE_5P') return 5;
+    const cfgCount = Number(GAME_CONFIG?.purePlayerCount || (typeof window !== 'undefined' ? window.GAME_CONFIG?.purePlayerCount : 4));
+    return (cfgCount === 3 || cfgCount === 5) ? cfgCount : 4;
+}
+
+function assignPureStartingPositions(gameState) {
+    if (!gameState || !Array.isArray(gameState.players)) return;
+    const spots = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    shuffle(spots);
+    gameState.players.forEach((player, idx) => {
+        if (!player.isEjected) {
+            player.currentClockPosition = spots[idx % spots.length];
+        }
+    });
+}
+
 function getGameMode() {
     const mode = GAME_CONFIG?.gameMode || (typeof window !== 'undefined' ? window.GAME_CONFIG?.gameMode : null);
+    if (mode === 'PURE_3P' || mode === 'PURE_4P' || mode === 'PURE_5P') return mode;
+    if (mode === 'PURE') return `PURE_${getPurePlayerCountLocal(mode)}P`;
     return mode === '3P' ? '3P' : '5P';
 }
 
 function getRolesForMode(mode) {
+    if (isPureModeLocal(mode)) {
+        const count = getPurePlayerCountLocal(mode);
+        const list = [{ id: 'SM_1', name: '玩家 1', type: 'pure', roleCard: '純競標' }];
+        for (let i = 2; i <= count; i++) {
+            list.push({ id: `PURE_${i}`, name: `對手 ${i}`, type: 'pure', roleCard: '純競標' });
+        }
+        return list;
+    }
     if (mode === '3P') {
         return PLAYER_ROLES.filter(role => role.type === '時魔');
     }
@@ -252,6 +289,8 @@ class GameState {
             d6Die: (role.type === '時之惡' || role.type === '受詛者' || role.id === 'SCZ') ? 6 : null,
             isEjected: false,
             hasEverBeenEjected: false,// 永久記錄是否曾被吞噬 (用於時之惡勝利判定)
+            ejectionCount: 0,
+            bestRoundGear: 0,
 			shieldUsed: false,
             specialAbilityUsed: false,
             giftCards: [],
@@ -350,8 +389,8 @@ function initializeGame(roles = null) {
     if (Array.isArray(roles)) {
         resolvedGameMode = roles.length === 3 ? '3P' : '5P';
         resolvedRoles = roles;
-    } else if (typeof roles === 'string' && (roles === '3P' || roles === '5P')) {
-        resolvedGameMode = roles;
+    } else if (typeof roles === 'string' && (roles === '3P' || roles === '5P' || isPureModeLocal(roles))) {
+        resolvedGameMode = (roles === 'PURE') ? `PURE_${getPurePlayerCountLocal(roles)}P` : roles;
         resolvedRoles = getRolesForMode(resolvedGameMode);
     } else if (typeof roles === 'boolean') {
         resolvedGameMode = roles ? '3P' : '5P';
@@ -361,13 +400,18 @@ function initializeGame(roles = null) {
         resolvedRoles = getRolesForMode(resolvedGameMode);
     }
 
+    const isPure = isPureModeLocal(resolvedGameMode);
+    const pureCount = isPure ? getPurePlayerCountLocal(resolvedGameMode) : 0;
+
     const minuteDeckCopy = [...DECK_MINUTE_CARDS];
 	shuffle(minuteDeckCopy);
 
 	// 生成「本局」小時牌庫（含隨機珍貴配置）
-	const { deck: hourDeckCopy, config: hourConfig } = (resolvedGameMode === '3P')
-        ? buildHourDeckForThreePlayer()
-        : buildHourDeckWithRandomPrecious();
+	const { deck: hourDeckCopy, config: hourConfig } = isPure
+        ? buildHourDeckForPureMode()
+        : ((resolvedGameMode === '3P')
+            ? buildHourDeckForThreePlayer()
+            : buildHourDeckWithRandomPrecious());
 	shuffle(hourDeckCopy);
 
 	const gameState = new GameState(resolvedRoles);
@@ -379,12 +423,16 @@ function initializeGame(roles = null) {
 	gameState.hourPreciousConfig = hourConfig;
 	if (hourConfig && hourConfig.id) {
 	    appLogger.log(`【小時卡設定】本局珍貴配置：${hourConfig.id}｜${hourConfig.label}`);
+	} else if (isPure) {
+	    appLogger.log(`【純競標模式】${pureCount}P 模式：無角色能力與珍貴卡，純小時卡競標。`);
 	} else {
 	    appLogger.log("【小時卡設定】3P 模式：不使用珍貴小時卡。");
 	}
 
 
-    const numCards = (resolvedGameMode === '3P') ? 13 : 12;
+    const numCards = isPure
+        ? (pureCount === 5 ? 12 : 13)
+        : ((resolvedGameMode === '3P') ? 13 : 12);
     const numPlayers = gameState.players.length;
 	
 	// --- 測試模式：固定人類玩家第 1 局起始手牌 ---
@@ -443,7 +491,7 @@ function initializeGame(roles = null) {
         player.hand = gameState.originalHandSets[index].map(card => ({...card}));
         const initialGear = gameState.originalGearSets[index];
         player.gearCards = initialGear; 
-        player.mana = player.gearCards;
+        player.mana = isPure ? 0 : player.gearCards;
         
         if (player.type === '時之惡') {
             player.d6Die = Math.max(1, Math.min(player.gearCards + 1, 5)); 
@@ -453,16 +501,21 @@ function initializeGame(roles = null) {
     });
 
     // 初始位置
-    const sinPlayerStart = gameState.players.find(p => p.type === '時之惡');
-    if (sinPlayerStart) {
-        sinPlayerStart.currentClockPosition = 12;
-        appLogger.log("【初始設定】時之惡 位於位置 12");
-    }
+    if (isPure) {
+        assignPureStartingPositions(gameState);
+        appLogger.log(`【初始設定】純競標模式 (${pureCount}P) 已隨機配置起始鐘面位置。`);
+    } else {
+        const sinPlayerStart = gameState.players.find(p => p.type === '時之惡');
+        if (sinPlayerStart) {
+            sinPlayerStart.currentClockPosition = 12;
+            appLogger.log("【初始設定】時之惡 位於位置 12");
+        }
 
-    const sczPlayerStart = gameState.players.find(p => p.type === '受詛者');
-    if (sczPlayerStart) {
-        sczPlayerStart.currentClockPosition = 1;
-        appLogger.log("【初始設定】受詛者 位於位置 1");
+        const sczPlayerStart = gameState.players.find(p => p.type === '受詛者');
+        if (sczPlayerStart) {
+            sczPlayerStart.currentClockPosition = 1;
+            appLogger.log("【初始設定】受詛者 位於位置 1");
+        }
     }
 
     if (resolvedGameMode === '3P') {
@@ -479,6 +532,7 @@ function initializeGame(roles = null) {
 }
 if (typeof window !== 'undefined') {
     window.initializeGame = initializeGame;
+    window.assignPureStartingPositions = assignPureStartingPositions;
     if (typeof resetGameForNextRound !== 'undefined') window.resetGameForNextRound = resetGameForNextRound;
     if (typeof createMinuteDeck !== 'undefined') window.createMinuteDeck = createMinuteDeck;
     if (typeof createHourDeck !== 'undefined') window.createHourDeck = createHourDeck;
