@@ -41,6 +41,28 @@ function checkEvolutionCondition(player) {
 // --- 特殊能力函式 ---
 
 // 分針能力
+function findMinuteHandTargetPosition(gameState, startPos, direction) {
+    if (!gameState || !Array.isArray(gameState.clockFace) || typeof startPos !== 'number' || !Number.isFinite(startPos)) {
+        return null;
+    }
+    let checkPos = startPos;
+    // 搜尋迴圈：最多找 11 次 (排除自己原本的位置)
+    for (let i = 0; i < 11; i++) {
+        if (direction === 'ccw') {
+            checkPos--;
+            if (checkPos < 1) checkPos = 12;
+        } else {
+            checkPos++;
+            if (checkPos > 12) checkPos = 1;
+        }
+        const spot = gameState.clockFace.find(s => s.position === checkPos);
+        if (spot && Array.isArray(spot.cards) && spot.cards.length > 0) {
+            return checkPos;
+        }
+    }
+    return null;
+}
+
 function activateMinuteHandAbility(gameState, playerId, direction) {
     if (!GAME_CONFIG.enableAbilities) return false;
     
@@ -64,32 +86,9 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         appLogger.log("【分針】尚未在鐘面上定位，無法發動移動能力。");
         return false;
     }
-    let checkPos = oldPos;
-    let newPos = null;
-    let found = false;
+    const newPos = findMinuteHandTargetPosition(gameState, oldPos, direction);
 
-    // 搜尋迴圈：最多找 11 次 (排除自己原本的位置)
-    for (let i = 0; i < 11; i++) {
-        if (direction === 'ccw') {
-            // 逆時針 -1
-            checkPos--;
-            if (checkPos < 1) checkPos = 12;
-        } else {
-            // 順時針 +1
-            checkPos++;
-            if (checkPos > 12) checkPos = 1;
-        }
-
-        // 檢查該鐘面位置是否有卡片
-        const spot = gameState.clockFace.find(s => s.position === checkPos);
-        if (spot && spot.cards && spot.cards.length > 0) {
-            newPos = checkPos;
-            found = true;
-            break; // 找到了，跳出迴圈
-        }
-    }
-
-    if (!found) {
+    if (newPos === null) {
         appLogger.log(`【分針】發動失敗：${direction === 'ccw' ? '逆' : '順'}時針方向找不到其他有牌的格子。`);
         return false;
     }
@@ -109,6 +108,7 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
 
 // 確保掛載到 window
 if (typeof window !== 'undefined') {
+    window.findMinuteHandTargetPosition = findMinuteHandTargetPosition;
     window.activateMinuteHandAbility = activateMinuteHandAbility;
 }
 

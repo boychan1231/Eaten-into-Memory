@@ -791,6 +791,15 @@ function stage4HeadlessStressTest() {
         assert.equal(sinActor.gearCards, 3, '時之惡最後 1 點護盾耗盡應扣 1 GP (4 -> 3)');
         assert.equal(sinActor.d6Die, 4, '時之惡護盾應重置為 min(3+1, 5) = 4');
         assert.equal(sinActor.mana, 2, '時之惡扣 GP 並重置後仍應恢復 1 MP (1 -> 2)');
+
+        // 分針目標搜尋輔助函式驗證（含跨 1/12 邊界與無牌時回傳 null）
+        const minTargetClock = Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] }));
+        minTargetClock[3].cards.push({ number: 4 });
+        minTargetClock[5].cards.push({ number: 6 });
+        assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 5, 'ccw'), 4);
+        assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 5, 'cw'), 6);
+        assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 1, 'ccw'), 6);
+        assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 12, 'cw'), 4);
     }
 
     return `40 場完整對局 (5P × 20 + 3P × 20) 壓力測試通過，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;
@@ -1494,6 +1503,53 @@ function stage6UiModulesSmokeTest() {
         const breakTexts = floatTexts.slice(beforeSczBreakFloat);
         assert(breakTexts.some(t => t.includes('GP')), `[情境 9] 護盾耗盡應顯示 GP 扣減浮字：${breakTexts.join(', ')}`);
         assert(!breakTexts.some(t => t.includes('⛨') || t.includes('+2')), `[情境 9] 護盾破裂重置不應顯示誤導的 +2 ⛨：${breakTexts.join(', ')}`);
+
+        // 情境 10：分針能力選擇面板應顯示 ↺ 逆時針 ( X ) 與 ↻ 順時針 ( Y ) 預覽目標數字
+        const evoChildren = [];
+        const evoAreaMock = {
+            innerHTML: '',
+            appendChild: (node) => {
+                evoChildren.push(node);
+                return node;
+            }
+        };
+        const origGetById = uiDoc.getElementById;
+        const origCreateEl = uiDoc.createElement;
+        uiDoc.getElementById = (id) => (id === 'evolution-progress-area' ? evoAreaMock : origGetById(id));
+        uiDoc.createElement = (tag) => {
+            const el = origCreateEl(tag);
+            el.children = [];
+            el.appendChild = (child) => { el.children.push(child); return child; };
+            return el;
+        };
+        uiWin.GAME_CONFIG.enableAbilities = true;
+        const minClock = Array.from({ length: 12 }, (_, i) => ({ position: i + 1, cards: [] }));
+        minClock[3].cards.push({ number: 4 });
+        minClock[5].cards.push({ number: 6 });
+        uiCtx.renderEvolutionPanel({
+            gameMode: '5P',
+            abilityMarker: false,
+            waitingMinuteHandChoice: true,
+            clockFace: minClock,
+            players: []
+        }, {
+            id: 'SM_1',
+            type: '時魔',
+            roleCard: '分針',
+            isEjected: false,
+            mana: 3,
+            currentClockPosition: 5,
+            hourCards: []
+        });
+        uiDoc.getElementById = origGetById;
+        uiDoc.createElement = origCreateEl;
+        const panelEl = evoChildren[0];
+        const btnGroupEl = panelEl && Array.isArray(panelEl.children)
+            ? panelEl.children.find(n => Array.isArray(n.children) && n.children.length === 3)
+            : null;
+        assert(btnGroupEl, '[情境 10] 分針能力應渲染 3 個按鈕');
+        assert.equal(btnGroupEl.children[0].textContent, '↺ 逆時針 ( 4 )', '[情境 10] 逆時針按鈕應顯示前往刻度 4');
+        assert.equal(btnGroupEl.children[1].textContent, '↻ 順時針 ( 6 )', '[情境 10] 順時針按鈕應顯示前往刻度 6');
     }
 
     return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌、${nextBtnCases.length} 種按鈕狀態與換局震動防護測試全數通過`;

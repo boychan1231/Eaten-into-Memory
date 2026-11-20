@@ -1103,11 +1103,32 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                     b.onclick = () => handleHumanAbilityChoice(globalGameState, val);
                     return b;
                 }
-                const ccwTxt = window.i18n ? window.i18n.t('abilities.min_btn_ccw') : '↺ 逆時針';
-                const cwTxt = window.i18n ? window.i18n.t('abilities.min_btn_cw') : '↻ 順時針';
+                const findTargetFn = (typeof window !== 'undefined' && typeof window.findMinuteHandTargetPosition === 'function')
+                    ? window.findMinuteHandTargetPosition
+                    : (typeof findMinuteHandTargetPosition === 'function' ? findMinuteHandTargetPosition : (gs, pos, dir) => {
+                        if (!gs || !Array.isArray(gs.clockFace) || typeof pos !== 'number') return null;
+                        let p = pos;
+                        for (let i = 0; i < 11; i++) {
+                            p = (dir === 'ccw') ? (p <= 1 ? 12 : p - 1) : (p >= 12 ? 1 : p + 1);
+                            const s = gs.clockFace.find(x => x.position === p);
+                            if (s && Array.isArray(s.cards) && s.cards.length > 0) return p;
+                        }
+                        return null;
+                    });
+                const ccwTarget = findTargetFn(gameState, humanPlayer.currentClockPosition, 'ccw');
+                const cwTarget = findTargetFn(gameState, humanPlayer.currentClockPosition, 'cw');
+                const ccwBase = window.i18n ? window.i18n.t('abilities.min_btn_ccw') : '↺ 逆時針';
+                const cwBase = window.i18n ? window.i18n.t('abilities.min_btn_cw') : '↻ 順時針';
+                const ccwTxt = `${ccwBase} ( ${ccwTarget !== null ? ccwTarget : '--'} )`;
+                const cwTxt = `${cwBase} ( ${cwTarget !== null ? cwTarget : '--'} )`;
                 const skipTxt = window.i18n ? window.i18n.t('abilities.min_btn_skip') : '略過';
-                btnGroup.appendChild(makeBtn(ccwTxt, 'ccw', '#00d2d3'));
-                btnGroup.appendChild(makeBtn(cwTxt, 'cw', '#ff9ff3'));
+
+                const ccwBtn = makeBtn(ccwTxt, 'ccw', '#00d2d3');
+                const cwBtn = makeBtn(cwTxt, 'cw', '#ff9ff3');
+                if (ccwTarget === null) { ccwBtn.disabled = true; ccwBtn.style.opacity = '0.5'; }
+                if (cwTarget === null) { cwBtn.disabled = true; cwBtn.style.opacity = '0.5'; }
+                btnGroup.appendChild(ccwBtn);
+                btnGroup.appendChild(cwBtn);
                 btnGroup.appendChild(makeBtn(skipTxt, false, '#777'));
                 container.appendChild(btnGroup);
             }
