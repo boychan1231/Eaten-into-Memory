@@ -384,6 +384,7 @@ async function stage3TutorialBehaviorTest() {
     assert.equal(TM.isAwaitingClickAck(), false, '點擊任意處應立即解鎖');
     assert.equal(windowMock.AutoNextRoundTimer.isPaused, false, '解鎖後應恢復自動倒數');
     assert(textEl.innerHTML.includes('回合結算完畢'), '解鎖後應切入下一條回合結算教學');
+    assert(textEl.innerHTML.includes('時之惡') && textEl.innerHTML.includes('受詛者') && textEl.innerHTML.includes('護盾'), '5P 下一回合教學應提醒時魔與時之惡、受詛者扣分方式不同');
 
     // 第 2 回合（已看過 step4_next_round）解鎖後應乾淨關閉
     gs1.roundMarker = 2;

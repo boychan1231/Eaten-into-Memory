@@ -952,7 +952,12 @@
                 const roundDoneMsg = window.i18n
                     ? window.i18n.t('tutorial.step4_round_done')
                     : '<strong>回合結算完畢！</strong>點擊「下一回合」展開新回合競標。';
-                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + roleProgressHint, 'left');
+                const deductionDiffNote = (gameState.gameMode !== '3P')
+                    ? (window.i18n
+                        ? window.i18n.t('tutorial.step4_deduction_diff_note')
+                        : '<br><span style="color:#ffd27f; font-size:0.88em;">※ <strong>扣分機制提醒：</strong>時魔受罰會直接扣除 GP（幼體僅 MP ≥ 3 可消耗全部 MP 抵免 1 次）；而<strong>時之惡</strong>（護盾上限 5）與<strong>受詛者</strong>（護盾上限 3）皆會<strong>先扣 1 點護盾抵消</strong>，護盾歸零才會扣除 GP 並重新補充護盾。</span>')
+                    : '';
+                showTutorialPointer('#next-step-btn', turnPrefix + roundDoneMsg + deductionDiffNote + roleProgressHint, 'left');
                 return;
             }
 
