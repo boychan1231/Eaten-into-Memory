@@ -49,6 +49,7 @@ function stage1SyntaxCheck() {
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
         'js/ui/ui_hand_drag.js',
+        'js/ui/ui_settlement.js',
         'js/ui/tutorial_mode.js',
         'js/ui/ui.js',
         'js/modern/modern_board.js',
@@ -137,6 +138,7 @@ function stage2LocaleAndFormatCheck() {
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
         'js/ui/ui_hand_drag.js',
+        'js/ui/ui_settlement.js',
         'js/ui/ui.js',
         'locales/zh-TW.js',
         'locales/en-US.js',
@@ -852,6 +854,7 @@ function stage5HtmlLoadOrderCheck() {
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
         'js/ui/ui_hand_drag.js',
+        'js/ui/ui_settlement.js',
         'js/ui/tutorial_mode.js',
         'js/ui/ui.js'
     ];
@@ -995,7 +998,8 @@ function stage6UiModulesSmokeTest() {
         'js/ui/ui_components.js',
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
-        'js/ui/ui_hand_drag.js'
+        'js/ui/ui_hand_drag.js',
+        'js/ui/ui_settlement.js'
     ];
 
     for (const rel of loadOrder) {
@@ -1326,6 +1330,7 @@ function stage6UiModulesSmokeTest() {
             'js/ui/ui_animations.js',
             'js/ui/ui_panels.js',
             'js/ui/ui_hand_drag.js',
+        'js/ui/ui_settlement.js',
             'js/ui/ui.js'
         ];
         for (const rel of fullLoadOrder) {
