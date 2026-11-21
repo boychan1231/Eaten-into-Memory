@@ -542,6 +542,11 @@ async function stage3TutorialBehaviorTest() {
 // 關卡 4：無頭對戰壓力測試 (5P × 20 場 + 3P × 20 場 = 40 場)
 // =========================================================
 function stage4HeadlessStressTest() {
+    const rawSeed = process.env.VERIFY_SEED;
+    const baseSeed = (rawSeed !== undefined && rawSeed !== '' && Number.isFinite(Number(rawSeed)))
+        ? (Number(rawSeed) >>> 0)
+        : 20261121;
+
     const scenarios = [];
     const fivePRoles = ['SM_1', 'sin', 'SCZ'];
     for (let i = 0; i < 15; i++) {
@@ -565,6 +570,7 @@ function stage4HeadlessStressTest() {
     let totalTurnsSimulated = 0;
 
     scenarios.forEach((sc, idx) => {
+        const scenarioSeed = (baseSeed + idx * 1009) >>> 0;
         const timerQueue = [];
         let nextTimerId = 1;
 
@@ -581,7 +587,7 @@ function stage4HeadlessStressTest() {
             let count = 0;
             while (timerQueue.length > 0) {
                 if (count++ >= maxFlush) {
-                    throw new Error(`場次 #${idx + 1} (${sc.mode}) 發生無限計時器迴圈`);
+                    throw new Error(`場次 #${idx + 1} (${sc.mode}, seed=${scenarioSeed}) 發生無限計時器迴圈`);
                 }
                 const item = timerQueue.shift();
                 item.fn();
@@ -615,6 +621,10 @@ function stage4HeadlessStressTest() {
         vm.createContext(ctx);
         for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/game.js']) {
             vm.runInContext(readProjectFile(rel), ctx);
+        }
+
+        if (typeof ctx.setRandomSeed === 'function') {
+            ctx.setRandomSeed(scenarioSeed);
         }
 
         ctx.GAME_CONFIG.gameMode = sc.mode;
@@ -800,9 +810,29 @@ function stage4HeadlessStressTest() {
         assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 5, 'cw'), 6);
         assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 1, 'ccw'), 6);
         assert.equal(guardCtx.findMinuteHandTargetPosition({ clockFace: minTargetClock }, 12, 'cw'), 4);
+
+        // 種子亂數可重現性驗證
+        guardCtx.setRandomSeed(123456);
+        const seqA = [guardCtx.getRandom(), guardCtx.getRandom(), guardCtx.getRandomInt(60)];
+        guardCtx.setRandomSeed(123456);
+        const seqB = [guardCtx.getRandom(), guardCtx.getRandom(), guardCtx.getRandomInt(60)];
+        assert.deepEqual(seqA, seqB, '相同種子應產生完全一致的亂數序列');
+        guardCtx.clearRandomSeed();
+
+        // GameScheduler 集中排程與重開新局自動清除驗證
+        let staleFired = false;
+        const pendingBefore = guardCtx.GameScheduler.pendingCount();
+        guardCtx.GameScheduler.schedule(() => { staleFired = true; }, 50);
+        assert.equal(guardCtx.GameScheduler.pendingCount(), pendingBefore + 1, 'GameScheduler 應追蹤待執行計時器');
+        guardCtx.initializeGame('5P');
+        assert.equal(guardCtx.GameScheduler.pendingCount(), 0, 'initializeGame 應清除所有殘留計時器');
+        while (guardTimerQueue.length > 0) {
+            guardTimerQueue.shift().fn();
+        }
+        assert.equal(staleFired, false, '重開新局後舊計時器不應再被觸發');
     }
 
-    return `40 場完整對局 (5P × 20 + 3P × 20) 壓力測試通過，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;
+    return `${scenarios.length} 場完整對局壓力測試通過 (seed=${baseSeed})，0 例外 / 0 死鎖 (累計推進 ${totalTurnsSimulated} 步)`;
 }
 
 // =========================================================
@@ -1550,6 +1580,14 @@ function stage6UiModulesSmokeTest() {
         assert(btnGroupEl, '[情境 10] 分針能力應渲染 3 個按鈕');
         assert.equal(btnGroupEl.children[0].textContent, '↺ 逆時針 ( 4 )', '[情境 10] 逆時針按鈕應顯示前往刻度 4');
         assert.equal(btnGroupEl.children[1].textContent, '↻ 順時針 ( 6 )', '[情境 10] 順時針按鈕應顯示前往刻度 6');
+
+        // 情境 11：escapeHtml 特殊字元轉義驗證
+        assert.equal(typeof uiWin.escapeHtml, 'function', '[情境 11] window.escapeHtml 應已導出');
+        assert.equal(
+            uiWin.escapeHtml(`<script>"a"&'b'</script>`),
+            '&lt;script&gt;&quot;a&quot;&amp;&#39;b&#39;&lt;/script&gt;',
+            '[情境 11] escapeHtml 應完整轉義 HTML 特殊字元'
+        );
     }
 
     return `9 個 UI 依賴腳本載入 0 例外，${expectedFunctions.length} 個核心函式、${expectedWindowExports.length} 個 window 導出、扇形手牌、${nextBtnCases.length} 種按鈕狀態與換局震動防護測試全數通過`;

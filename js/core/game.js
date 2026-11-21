@@ -5,6 +5,37 @@
 
 var GAME_CONFIG = (typeof window !== 'undefined' && window.GAME_CONFIG) ? window.GAME_CONFIG : (typeof GAME_CONFIG !== 'undefined' ? GAME_CONFIG : { enableAbilities: false });
 
+// 集中管理核心流程的延遲計時器，重開新局時可一次清除，避免殘留計時器干擾新局
+var GameScheduler = (() => {
+    const activeTimers = new Set();
+    return {
+        schedule(fn, delayMs = 0) {
+            const id = setTimeout(() => {
+                activeTimers.delete(id);
+                fn();
+            }, delayMs);
+            activeTimers.add(id);
+            return id;
+        },
+        cancel(id) {
+            if (activeTimers.has(id)) {
+                clearTimeout(id);
+                activeTimers.delete(id);
+            }
+        },
+        clearAll() {
+            activeTimers.forEach(id => clearTimeout(id));
+            activeTimers.clear();
+        },
+        pendingCount() {
+            return activeTimers.size;
+        }
+    };
+})();
+if (typeof window !== 'undefined') {
+    window.GameScheduler = GameScheduler;
+}
+
 // --- 6. 遊戲流程控制 ---
 
 function startRound(gameState) {
@@ -569,7 +600,7 @@ function processNextHourPicker(gameState) {
 
     if (!player || player.isEjected) {
         gameState.nextHourPickerIndex++;
-        setTimeout(() => processNextHourPicker(gameState), 0);
+        GameScheduler.schedule(() => processNextHourPicker(gameState), 0);
         return;
     }
 
@@ -601,7 +632,7 @@ function processNextHourPicker(gameState) {
     const pickDelay = (typeof window !== 'undefined' && window.EffectQueue && window.EffectQueue.isEnabled())
         ? (window.EffectQueue.getIntervalMs() || 260)
         : 50;
-    setTimeout(() => {
+    GameScheduler.schedule(() => {
         processNextHourPicker(gameState);
     }, pickDelay); 
 }

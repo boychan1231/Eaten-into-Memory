@@ -8,6 +8,19 @@ function safeStringify(value) {
     }
 }
 
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+if (typeof window !== 'undefined') {
+    window.escapeHtml = escapeHtml;
+}
+
 if (typeof appLogger !== 'undefined' && typeof appLogger.setUiSink === 'function') {
     appLogger.setUiSink((args) => {
         const message = args.map(arg => safeStringify(arg)).join(' ');

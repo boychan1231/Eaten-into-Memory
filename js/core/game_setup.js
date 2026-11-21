@@ -332,10 +332,34 @@ class GameState {
 
 // --- 4. 輔助函式 ---
 
-// ✅ 新增：統一亂數核心
-// 目前是直接回傳 Math.random()，未來可在此替換為 Seeded Random (種子亂數)
+// ✅ 新增：統一亂數核心（支援可重現 Seeded Random / Mulberry32，未指定種子時使用 Math.random）
+let _seededRandomFn = null;
+
+function createMulberry32(seed) {
+    let a = (Number(seed) >>> 0) || 1;
+    return function () {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+function setRandomSeed(seed) {
+    if (seed === null || seed === undefined) {
+        _seededRandomFn = null;
+        return;
+    }
+    _seededRandomFn = createMulberry32(seed);
+}
+
+function clearRandomSeed() {
+    _seededRandomFn = null;
+}
+
 function getRandom() {
-    return Math.random();
+    return _seededRandomFn ? _seededRandomFn() : Math.random();
 }
 
 // ✅ 新增：機率判定 (輸入 0.0 ~ 1.0)
@@ -350,8 +374,10 @@ function getRandomInt(max) {
     return Math.floor(getRandom() * max);
 }
 
-// 掛載到 window，讓 abilities.js 也能呼叫
+// 掛載到 window，讓 abilities.js 與測試腳本也能呼叫
 if (typeof window !== 'undefined') {
+    window.setRandomSeed = setRandomSeed;
+    window.clearRandomSeed = clearRandomSeed;
     window.getRandom = getRandom;
     window.checkChance = checkChance;
     window.getRandomInt = getRandomInt;
@@ -372,6 +398,9 @@ function getCircularDistance(pos1, pos2) {
 // --- 5. 遊戲初始化邏輯 ---
 
 function initializeGame(roles = null) {
+    if (typeof window !== 'undefined' && window.GameScheduler && typeof window.GameScheduler.clearAll === 'function') {
+        window.GameScheduler.clearAll();
+    }
     let resolvedGameMode;
     let resolvedRoles;
 

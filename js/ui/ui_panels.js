@@ -186,8 +186,11 @@ function renderPlayedCardsPanel(gameState) {
                 const roleKey = (choice.roleType && choice.roleType.includes('時魔')) ? '時魔' : choice.roleType;
                 const color = ROLE_COLORS[roleKey] || '#ccc';
 
+                const safePlayerName = (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                    ? window.escapeHtml(choice.playerName)
+                    : String(choice.playerName ?? '');
                 row.innerHTML = `
-                    <span class="p-name" style="color:${color}" title="${choice.playerName}">${choice.playerName}</span>
+                    <span class="p-name" style="color:${color}" title="${safePlayerName}">${safePlayerName}</span>
                     <span class="p-val">${displayValue}</span>
                 `;
                 playedList.appendChild(row);
@@ -297,8 +300,11 @@ function renderScorePanel(gameState) {
                 ? window.UI_CONFIG.ROLE_COLORS[roleKey]
                 : '#ccc';
 
+            const safeName = (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                ? window.escapeHtml(p.name)
+                : String(p.name ?? '');
             row.innerHTML = `
-                <span class="score-name" style="color:${color}">${p.name}</span>
+                <span class="score-name" style="color:${color}">${safeName}</span>
                 <span class="score-val">${p.score}</span>
             `;
             list.appendChild(row);
@@ -341,11 +347,14 @@ function renderScorePanel(gameState) {
                 return `<span class="score-round-chip ${extraClass}">第${entry.round}局: ${scoreText}</span>`;
             }).join('');
 
+            const safePlayerName = (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                ? window.escapeHtml(p.name)
+                : String(p.name ?? '');
             const playerCard = document.createElement('div');
             playerCard.className = 'score-player-summary-card';
             playerCard.innerHTML = `
                 <div class="score-player-summary-header">
-                    <span class="score-name" style="color:${color}">${p.name}</span>
+                    <span class="score-name" style="color:${color}">${safePlayerName}</span>
                     <span class="score-val">${p.score} 分</span>
                 </div>
                 <div class="score-round-chips">${roundPills}</div>
@@ -373,10 +382,13 @@ function renderScorePanel(gameState) {
                         : '#ccc';
                     const gainClass = p.wasEjected ? 'ejected' : (p.roundScore > 0 ? '' : 'zero');
                     const gainText = p.wasEjected ? '<s>+0 齒</s> (被吞噬)' : `+${p.roundScore} 齒`;
+                    const safeHistoryName = (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                        ? window.escapeHtml(p.name)
+                        : String(p.name ?? '');
 
                     rowsHtml += `
                         <div class="score-history-row">
-                            <span class="score-history-name" style="color:${color}">${p.name}</span>
+                            <span class="score-history-name" style="color:${color}">${safeHistoryName}</span>
                             <div class="score-history-numbers">
                                 <span class="score-history-gain ${gainClass}">${gainText}</span>
                                 <span class="score-history-total">累計 ${p.totalScore}分</span>
@@ -729,13 +741,16 @@ function renderDiscardPileModal(gameState) {
                 const roleKey = (choice.roleType && choice.roleType.includes('時魔')) ? '時魔' : choice.roleType;
                 const color = ROLE_COLORS[roleKey] || '#ccc';
 
+                const esc = (v) => (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                    ? window.escapeHtml(v)
+                    : String(v ?? '');
                 const cardItem = document.createElement('div');
                 cardItem.className = `discard-current-card-item ${isHuman ? 'is-human' : ''}`;
                 cardItem.innerHTML = `
-                    <span class="player-lbl" style="color:${color}">${choice.playerName || '玩家'}</span>
+                    <span class="player-lbl" style="color:${color}">${esc(choice.playerName || '玩家')}</span>
                     ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
                     <span class="card-val-badge">${displayValue}</span>
-                    ${choice.card.gear ? '<span title="齒輪" style="color:#ffd27f; font-size:0.85rem;">⚙️</span>' : ''}
+                    ${choice.card.gear ? '<span title="齒輪" style="color:#ffd27f; font-size:0.85rem;">⚙</span>' : ''}
                 `;
                 currentTrickList.appendChild(cardItem);
             });
@@ -770,9 +785,12 @@ function renderDiscardPileModal(gameState) {
                 }
             }
 
+            const safeName = (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                ? window.escapeHtml(player.name)
+                : String(player.name ?? '');
             row.innerHTML = `
                 <div class="discard-player-history-name">
-                    <span style="color:${color}; font-weight:700;">${player.name}</span>
+                    <span style="color:${color}; font-weight:700;">${safeName}</span>
                     ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
                 </div>
                 <div class="discard-player-history-chips">${chipsHtml}</div>
@@ -804,6 +822,9 @@ function renderDiscardPileModal(gameState) {
                 .map(Number)
                 .sort((a, b) => b - a);
 
+            const escText = (v) => (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+                ? window.escapeHtml(v)
+                : String(v ?? '');
             sortedTricks.forEach(tr => {
                 const trickCards = groupsByTrick[tr];
                 const trickCardEl = document.createElement('div');
@@ -814,7 +835,7 @@ function renderDiscardPileModal(gameState) {
                 const trickHeaderEl = document.createElement('div');
                 trickHeaderEl.className = 'discard-trick-header';
                 trickHeaderEl.innerHTML = `
-                    <span>${trickTitle}</span>
+                    <span>${escText(trickTitle)}</span>
                     <span style="font-weight: normal; font-size: 0.8rem; color: #ffd27f;">共出 ${trickCards.length} 張</span>
                 `;
                 trickCardEl.appendChild(trickHeaderEl);
@@ -829,9 +850,9 @@ function renderDiscardPileModal(gameState) {
                     chip.className = `discard-entry-chip ${isHuman ? 'is-human' : ''}`;
                     const tag = isHuman ? '★我:' : `${resolveCurrentPlayerName(cardItem, gameState)}:`;
                     chip.innerHTML = `
-                        <span class="entry-player">${tag}</span>
+                        <span class="entry-player">${escText(tag)}</span>
                         <span class="entry-card-val">[ ${cardItem.value} ]</span>
-                        ${cardItem.gear ? `<span class="entry-gear" title="${cardItem.gear}">⚙️</span>` : ''}
+                        ${cardItem.gear ? `<span class="entry-gear" title="${escText(cardItem.gear)}">⚙</span>` : ''}
                     `;
                     entriesEl.appendChild(chip);
                 });
