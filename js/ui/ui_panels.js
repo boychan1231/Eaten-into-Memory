@@ -619,6 +619,8 @@ function renderDiscardPile(gameState, humanPlayer) {
 
     const stackEl = document.getElementById('discard-pile-stack') || zoneEl.querySelector('.discard-pile-stack');
     const badgeEl = document.getElementById('discard-pile-badge') || zoneEl.querySelector('.discard-pile-badge');
+    const handCountNumEl = document.getElementById('discard-hand-count-num') || zoneEl.querySelector('#discard-hand-count-num');
+    const handCountTagEl = document.getElementById('discard-hand-count-tag') || zoneEl.querySelector('.discard-hand-count-tag');
 
     const allPlayed = getAllPlayedCardsInCurrentGameRound(gameState);
     const topCard = getTopDiscardCard(gameState);
@@ -630,6 +632,19 @@ function renderDiscardPile(gameState, humanPlayer) {
             badgeEl.classList.add('is-zero');
         } else {
             badgeEl.classList.remove('is-zero');
+        }
+    }
+
+    // 更新棄牌區旁現時手牌數標記
+    if (handCountNumEl) {
+        const handCount = Array.isArray(humanPlayer?.hand) ? humanPlayer.hand.length : 0;
+        handCountNumEl.textContent = String(handCount);
+        if (handCountTagEl) {
+            if (handCount === 0) {
+                handCountTagEl.classList.add('is-zero');
+            } else {
+                handCountTagEl.classList.remove('is-zero');
+            }
         }
     }
 

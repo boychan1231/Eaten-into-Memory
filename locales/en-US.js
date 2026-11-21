@@ -79,7 +79,8 @@
                 cards_count: '{count} cards',
                 unplayed_count: '{count} remaining unplayed',
                 tooltip: 'Click to view played cards record ({count} cards)',
-                retrieve_badge: '↩ Retrieve'
+                retrieve_badge: '↩ Retrieve',
+                hand_count_tag: 'Hand'
             },
             labels: {
                 you_are: 'You are: ',

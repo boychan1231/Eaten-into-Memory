@@ -79,7 +79,8 @@
                 cards_count: '{count} 張',
                 unplayed_count: '剩餘未出 {count} 張',
                 tooltip: '查看出牌記錄 (共 {count} 張)',
-                retrieve_badge: '↩ 收回'
+                retrieve_badge: '↩ 收回',
+                hand_count_tag: '手牌'
             },
             labels: {
                 you_are: '您是：',

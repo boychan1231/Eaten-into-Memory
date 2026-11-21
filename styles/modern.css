@@ -2815,6 +2815,12 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
         padding: 1px 5px !important;
         font-size: 0.68rem !important;
     }
+    #discard-pile-zone.discard-pile-zone .discard-hand-count-tag {
+        margin-top: 0 !important;
+        padding: 1px 5px !important;
+        font-size: 0.66rem !important;
+        border-radius: 8px !important;
+    }
 
     /* 3. 確認出牌與下一回合按鈕列（右下角，大按鈕單手好按） */
     #human-controls.hand-controls {
@@ -3532,6 +3538,44 @@ details.hud-drawer.is-resizing .hud-drawer-resizer.resizer-corner {
 /* 移除出牌記錄紅色更新提示標籤 */
 .discard-pile-badge {
     display: none !important;
+}
+
+/* 棄牌區旁現時手牌數小標記 */
+.discard-hand-count-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    margin-top: 5px !important;
+    padding: 2px 7px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: var(--gold, #ffd27f) !important;
+    background: rgba(18, 22, 30, 0.94) !important;
+    border: 1px solid rgba(255, 210, 127, 0.4) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5) !important;
+    white-space: nowrap !important;
+    user-select: none !important;
+    backdrop-filter: blur(6px) !important;
+    transition: all 0.2s ease !important;
+}
+.discard-hand-count-tag .tag-icon {
+    font-size: 0.78rem !important;
+    line-height: 1 !important;
+    color: #ffd27f !important;
+}
+.discard-hand-count-tag .tag-label {
+    letter-spacing: 0.5px !important;
+    opacity: 0.88 !important;
+}
+.discard-hand-count-tag .tag-num {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+.discard-hand-count-tag.is-zero {
+    opacity: 0.45 !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
 }
 
 .discard-pile-modal {
