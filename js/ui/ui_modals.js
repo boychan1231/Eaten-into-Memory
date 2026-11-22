@@ -77,6 +77,10 @@ function openModal(overlay, focusTarget) {
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
     }
+    if (!overlay.getAttribute('role')) {
+        overlay.setAttribute('role', 'dialog');
+    }
+    overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-hidden', 'false');
 
     if (!modalOpenOrder.includes(overlay)) {
@@ -108,7 +112,17 @@ function closeModal(overlay) {
 
 function closeTopModal() {
     const overlay = modalOpenOrder[modalOpenOrder.length - 1];
-    if (overlay) closeModal(overlay);
+    if (overlay && overlay.getAttribute('data-no-esc') !== 'true') {
+        closeModal(overlay);
+    }
+}
+
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOpenOrder.length > 0) {
+            closeTopModal();
+        }
+    });
 }
 
 if (typeof window !== 'undefined') {

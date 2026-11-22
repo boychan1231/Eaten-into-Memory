@@ -10,7 +10,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "verify": "node scripts/verify.js",
-    "balance": "node scripts/balance_report.js"
+    "balance": "node scripts/balance_report.js",
+    "bundle:context": "node ai_studio/build_context_bundle.js"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

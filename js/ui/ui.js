@@ -818,6 +818,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 監聽設定頁中的「減少動態效果（無障礙）」開關
+    const reducedMotionToggleEl = document.getElementById('reduced-motion-toggle');
+    {
+        let reducedEnabled = false;
+        try {
+            const savedReduced = localStorage.getItem('eaten_reduced_motion');
+            if (savedReduced !== null) {
+                reducedEnabled = (savedReduced === 'true');
+            } else if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+                reducedEnabled = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            }
+        } catch (_) {}
+        window.UI_CONFIG = window.UI_CONFIG || {};
+        window.UI_CONFIG.REDUCED_MOTION = reducedEnabled;
+        if (document.body) {
+            document.body.classList.toggle('reduced-motion', reducedEnabled);
+        }
+        if (reducedMotionToggleEl) {
+            reducedMotionToggleEl.checked = reducedEnabled;
+            reducedMotionToggleEl.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                window.UI_CONFIG = window.UI_CONFIG || {};
+                window.UI_CONFIG.REDUCED_MOTION = isEnabled;
+                if (document.body) {
+                    document.body.classList.toggle('reduced-motion', isEnabled);
+                }
+                try {
+                    localStorage.setItem('eaten_reduced_motion', String(isEnabled));
+                } catch (_) {}
+                appLogger.log(`[System] 減少動態效果（無障礙）已${isEnabled ? '開啟' : '關閉'}`);
+            });
+        }
+    }
+
     // 監聽設定頁中的扇形手牌列開關（僅現代 PixiJS 版桌機適用）
     const fanHandToggleEl = document.getElementById('fan-hand-toggle');
     if (fanHandToggleEl) {
@@ -1499,7 +1533,7 @@ function triggerFloat(playerId, text, color, type, diff) {
 
 // 玩家1齒輪扣除畫面震動特效
 function triggerScreenShake() {
-    if (window.UI_CONFIG && window.UI_CONFIG.SCREEN_SHAKE === false) return;
+    if (window.UI_CONFIG && (window.UI_CONFIG.SCREEN_SHAKE === false || window.UI_CONFIG.REDUCED_MOTION === true)) return;
     const body = document.body;
     if (!body) return;
     body.classList.remove('screen-damage-shake');

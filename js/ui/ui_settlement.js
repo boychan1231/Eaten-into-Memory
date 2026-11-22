@@ -288,12 +288,15 @@ function renderGameOverPanel(gameState) {
             highlight = (window.i18n ? window.i18n.t('ui.match_highlights.awakened') : null) || '⧖ 覺醒者';
         }
 
-        const highlightHtml = highlight ? `<span class="rank-highlight-tag">${highlight}</span>` : '';
+        const esc = (v) => (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+            ? window.escapeHtml(v)
+            : String(v ?? '');
+        const highlightHtml = highlight ? `<span class="rank-highlight-tag">${esc(highlight)}</span>` : '';
 
         row.innerHTML = `
             <div class="rank-medal">${medal}</div>
-            <div style="text-align:left; color:${color}; font-weight:bold;">${p.name} ${p.isEjected ? '(☠)' : ''} ${highlightHtml}</div>
-            <div style="font-size:0.85rem; color:#aaa;">${p.roleCard}</div>
+            <div style="text-align:left; color:${color}; font-weight:bold;">${esc(p.name)} ${p.isEjected ? '(☠)' : ''} ${highlightHtml}</div>
+            <div style="font-size:0.85rem; color:#aaa;">${esc(p.roleCard)}</div>
             <div style="font-family:monospace; font-size:1.2rem; font-weight:bold;">${p.score}</div>
         `;
         listEl.appendChild(row);
@@ -376,17 +379,20 @@ function showCardStory(card) {
     const num = card.number;
     const localizedAge = window.i18n ? window.i18n.getAgeGroupName(age) : age;
     const preciousTag = window.i18n ? window.i18n.t('ui.labels.precious', '★ 珍貴') : '★ 珍貴';
-    const isPrecious = card.isPrecious ? `<span style="color:#ffd27f;">${preciousTag}</span>` : '';
+    const esc = (v) => (typeof window !== 'undefined' && typeof window.escapeHtml === 'function')
+        ? window.escapeHtml(v)
+        : String(v ?? '');
+    const isPrecious = card.isPrecious ? `<span style="color:#ffd27f;">${esc(preciousTag)}</span>` : '';
 
-    titleEl.innerHTML = `<span class="material-symbols-outlined icon-inline">menu_book</span> ${localizedAge} ${num} ${isPrecious}`;
+    titleEl.innerHTML = `<span class="material-symbols-outlined icon-inline">menu_book</span> ${esc(localizedAge)} ${esc(num)} ${isPrecious}`;
 
     // 從資料庫取得故事 (支援多語系獨立故事模組)
     const storyText = (typeof window.getHourCardStory === 'function')
         ? window.getHourCardStory(age, num)
         : ((window.GAME_DATA?.HOUR_STORIES?.[age]?.[num]) || `這是一張尚未被發掘記憶的卡片...`);
 
-    // 替換換行符號為 <br>
-    contentEl.innerHTML = storyText.replace(/\n/g, '<br>');
+    // 轉義後再替換換行符號為 <br>
+    contentEl.innerHTML = esc(storyText).replace(/\n/g, '<br>');
 
     openModal(overlay, document.getElementById('story-close-btn') || undefined);
 

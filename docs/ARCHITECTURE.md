@@ -34,8 +34,9 @@
 | 15 | [`js/ui/ui_animations.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_animations.js) | `AnimationController`、`EffectQueue`、比牌演出、粒子消散與模糊浮現特效。 |
 | 16 | [`js/ui/ui_panels.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_panels.js) | 出牌歷史、積分排行榜、棄牌堆與彈窗、幼體進化/異能/受詛者監控面板。 |
 | 17 | [`js/ui/ui_hand_drag.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_hand_drag.js) | 人類手牌區、拖放（Drag & Drop）出牌控制器與秒針雙牌控制。 |
-| 18 | [`js/ui/tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
-| 19 | [`js/ui/ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui.js) | 主畫面事件綁定、`AutoNextRoundTimer`（7 秒倒數）、局結算與排行榜渲染。 |
+| 18 | [`js/ui/ui_settlement.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui_settlement.js) | 局末／終局結算面板、特殊勝利進度、回憶故事彈窗、`AutoNextRoundTimer` 與開局過場。 |
+| 19 | [`js/ui/tutorial_mode.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/tutorial_mode.js) | 動作導向新手教學系統（聚光燈高亮、氣泡引導、跳動箭頭 `#tutorial-bounce-arrow`）。 |
+| 20 | [`js/ui/ui.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/ui/ui.js) | 主畫面事件綁定、HUD 浮動跳字／畫面震動、設定面板（含無障礙減少動態與自訂字型）。 |
 | 20 | [`js/modern/modern_board.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_board.js), [`js/modern/modern_intro.js`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/modern/modern_intro.js) | PixiJS 鐘面、高危光圈、棋子 Token 渲染、平移縮放（Pan/Zoom）與動態開場。 |
 
 ---

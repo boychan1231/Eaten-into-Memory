@@ -4435,3 +4435,21 @@ body.screen-damage-shake {
     animation: screen-shake-effect 0.45s cubic-bezier(.36,.07,.19,.97) both;
 }
 
+/* 無障礙：減少動態效果 */
+body.reduced-motion,
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.screen-damage-shake {
+        animation: none !important;
+    }
+}
+
+
