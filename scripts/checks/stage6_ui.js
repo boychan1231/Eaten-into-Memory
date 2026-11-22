@@ -78,8 +78,10 @@ export function stage6UiModulesSmokeTest() {
         'js/ui/ui_components.js',
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
+        'js/ui/ui_panel_abilities.js',
         'js/ui/ui_hand_drag.js',
-        'js/ui/ui_settlement.js'
+        'js/ui/ui_settlement.js',
+        'js/ui/ui_hud_fx.js'
     ];
 
     for (const rel of loadOrder) {
@@ -409,8 +411,10 @@ export function stage6UiModulesSmokeTest() {
             'js/ui/ui_components.js',
             'js/ui/ui_animations.js',
             'js/ui/ui_panels.js',
+            'js/ui/ui_panel_abilities.js',
             'js/ui/ui_hand_drag.js',
         'js/ui/ui_settlement.js',
+            'js/ui/ui_hud_fx.js',
             'js/ui/ui.js'
         ];
         for (const rel of fullLoadOrder) {

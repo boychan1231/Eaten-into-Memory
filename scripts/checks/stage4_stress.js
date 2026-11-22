@@ -86,7 +86,7 @@ export function stage4HeadlessStressTest() {
             renderGameOverPanel: () => {}
         };
         vm.createContext(ctx);
-        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/game.js']) {
+        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/penalty.js', 'js/core/game.js']) {
             vm.runInContext(readProjectFile(rel), ctx);
         }
 
@@ -187,7 +187,7 @@ export function stage4HeadlessStressTest() {
             renderGameOverPanel: () => {}
         };
         vm.createContext(guardCtx);
-        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/game.js']) {
+        for (const rel of ['js/core/config.js', 'js/core/logger.js', 'js/core/abilities.js', 'js/core/game_setup.js', 'js/core/ai_engine.js', 'js/core/penalty.js', 'js/core/game.js']) {
             vm.runInContext(readProjectFile(rel), guardCtx);
         }
         guardCtx.GAME_CONFIG.gameMode = '5P';

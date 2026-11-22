@@ -17,12 +17,15 @@ export function stage5HtmlLoadOrderCheck() {
         'js/core/abilities.js',
         'js/core/game_setup.js',
         'js/core/ai_engine.js',
+        'js/core/penalty.js',
         'js/core/game.js',
         'js/ui/ui_components.js',
         'js/ui/ui_animations.js',
         'js/ui/ui_panels.js',
+        'js/ui/ui_panel_abilities.js',
         'js/ui/ui_hand_drag.js',
         'js/ui/ui_settlement.js',
+        'js/ui/ui_hud_fx.js',
         'js/ui/tutorial_mode.js',
         'js/ui/ui.js'
     ];
