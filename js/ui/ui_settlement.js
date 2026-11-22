@@ -638,8 +638,100 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
     openModal(overlay, document.getElementById('btn-start-next-round'));
 };
 
+// 選用：人類玩家逾時自動代打防卡關保險（預設關閉，開啟後連續 45 秒未操作自動依 AI 策略代出）
+const HumanTurnTimeoutGuard = (() => {
+    let timerId = null;
+    let activeKey = null;
+    const TIMEOUT_MS = 45000;
+
+    function clear() {
+        if (timerId !== null) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+        activeKey = null;
+    }
+
+    function computePendingKey(gs) {
+        if (!gs || gs.gameEnded) return null;
+        if (window.GAME_CONFIG?.tutorialMode) return null;
+        if (typeof window.isPlayerAwayFromGame === 'function' && window.isPlayerAwayFromGame()) return null;
+        if (gs.waitingSecondHandFinalChoice) return `secFinal:${gs.gameRound}:${gs.roundMarker}`;
+        if (gs.currentRoundAIChoices !== null) return `minute:${gs.gameRound}:${gs.roundMarker}`;
+        if (gs.waitingHourChoice) return `hour:${gs.gameRound}:${gs.roundMarker}:${gs.nextHourPickerIndex}`;
+        if (gs.waitingMinuteHandChoice) return `minAbility:${gs.gameRound}:${gs.roundMarker}`;
+        return null;
+    }
+
+    function executeFallback(gs) {
+        clear();
+        if (!gs || gs.gameEnded) return;
+        if (!window.UI_CONFIG?.AUTO_PLAY_TIMEOUT) return;
+        if (typeof window.isPlayerAwayFromGame === 'function' && window.isPlayerAwayFromGame()) return;
+
+        const humanId = (typeof window.getEffectiveHumanPlayerId === 'function') ? window.getEffectiveHumanPlayerId() : 'SM_1';
+        const human = (gs.players || []).find(p => p.id === humanId);
+        if (!human || human.isEjected) return;
+
+        if (gs.waitingSecondHandFinalChoice && Array.isArray(gs.secondHandPendingCards) && gs.secondHandPendingCards.length > 0) {
+            if (typeof handleHumanSecondHandFinalChoice === 'function') {
+                appLogger.log('[System] 操作逾時，自動選擇秒針最終出牌。');
+                handleHumanSecondHandFinalChoice(gs, gs.secondHandPendingCards[0].value);
+            }
+        } else if (gs.currentRoundAIChoices !== null && Array.isArray(human.hand) && human.hand.length > 0) {
+            let chosenVal = human.hand[0].value;
+            const aiFn = (gs.gameMode === '3P') ? window.makeAIChoice3P : window.makeAIChoice;
+            if (typeof aiFn === 'function') {
+                const picked = aiFn({ ...human, hand: [...human.hand] }, gs);
+                if (picked && typeof picked.value === 'number' && human.hand.some(c => c.value === picked.value)) {
+                    chosenVal = picked.value;
+                }
+            }
+            if (typeof handleHumanChoice === 'function') {
+                appLogger.log(`[System] 操作逾時，自動代打分鐘卡 [ ${chosenVal} ]。`);
+                handleHumanChoice(gs, chosenVal);
+            }
+        } else if (gs.waitingHourChoice && Array.isArray(gs.currentDrawnHourCards) && gs.currentDrawnHourCards.length > 0) {
+            let pickIdx = 0;
+            const hourFn = (gs.gameMode === '3P') ? window.chooseHourCardForAI3P : window.chooseHourCardForAI;
+            if (typeof hourFn === 'function') {
+                const picked = hourFn(gs, human, [...gs.currentDrawnHourCards]);
+                const found = gs.currentDrawnHourCards.indexOf(picked);
+                if (found >= 0) pickIdx = found;
+            }
+            if (typeof handleHumanHourCardChoice === 'function') {
+                appLogger.log('[System] 操作逾時，自動挑選小時卡。');
+                handleHumanHourCardChoice(gs, pickIdx);
+            }
+        } else if (gs.waitingMinuteHandChoice && typeof handleHumanAbilityChoice === 'function') {
+            appLogger.log('[System] 操作逾時，自動略過分針異能。');
+            handleHumanAbilityChoice(gs, 'skip');
+        }
+    }
+
+    return {
+        sync(gs) {
+            if (!window.UI_CONFIG?.AUTO_PLAY_TIMEOUT) {
+                clear();
+                return;
+            }
+            const key = computePendingKey(gs);
+            if (!key) {
+                clear();
+                return;
+            }
+            if (key === activeKey && timerId !== null) return;
+            clear();
+            activeKey = key;
+            timerId = setTimeout(() => executeFallback(gs), TIMEOUT_MS);
+        },
+        clear
+    };
+})();
+
 if (typeof window !== 'undefined') {
     window.renderSpecialVictoryProgress = renderSpecialVictoryProgress;
     window.renderGameOverPanel = renderGameOverPanel;
     window.showCardStory = showCardStory;
+    window.HumanTurnTimeoutGuard = HumanTurnTimeoutGuard;
 }

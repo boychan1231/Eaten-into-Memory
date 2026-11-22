@@ -1,0 +1,45 @@
+/* styles/tokens.css
+ * 《蝕入記憶》(Eaten into Memory) 共用設計系統變數（色票、字型、間距、圓角、層級）
+ */
+:root {
+    /* 品牌與主題色票 */
+    --color-bg-deep: #0b0e17;
+    --color-bg-panel: rgba(15, 20, 34, 0.92);
+    --color-bg-glass: rgba(18, 24, 42, 0.78);
+    --color-gold: #ffd27f;
+    --color-gold-strong: #f5b942;
+    --color-gold-muted: rgba(255, 210, 127, 0.35);
+    --color-danger: #ff6b6b;
+    --color-safe: #4cd137;
+    --color-info: #54a0ff;
+    --color-text-primary: #f1f5f9;
+    --color-text-muted: #94a3b8;
+
+    /* 角色專屬色 */
+    --role-demon: #ff6b6b;
+    --role-sin: #feca57;
+    --role-scz: #54a0ff;
+    --role-hour: #ff9ff3;
+    --role-minute: #f368e0;
+    --role-second: #00d2d3;
+
+    /* 字型系統 */
+    --font-display: 'Cinzel-VariableFont', 'Cinzel', Georgia, serif;
+    --font-body: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+
+    /* 間距與圓角 */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 18px;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+
+    /* 陰影與層級 */
+    --shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --z-hud: 40;
+    --z-drawer: 60;
+    --z-modal: 1000;
+    --z-tutorial: 2000;
+}

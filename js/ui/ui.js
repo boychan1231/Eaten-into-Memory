@@ -844,6 +844,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 監聽設定頁中的「逾時自動代打（45 秒防卡關）」開關（預設關閉）
+    const autoPlayTimeoutEl = document.getElementById('auto-play-timeout-toggle');
+    {
+        let autoTimeoutEnabled = false;
+        try {
+            const savedAutoTimeout = localStorage.getItem('eaten_auto_play_timeout');
+            if (savedAutoTimeout !== null) {
+                autoTimeoutEnabled = (savedAutoTimeout === 'true');
+            }
+        } catch (_) {}
+        window.UI_CONFIG = window.UI_CONFIG || {};
+        window.UI_CONFIG.AUTO_PLAY_TIMEOUT = autoTimeoutEnabled;
+        if (autoPlayTimeoutEl) {
+            autoPlayTimeoutEl.checked = autoTimeoutEnabled;
+            autoPlayTimeoutEl.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                window.UI_CONFIG = window.UI_CONFIG || {};
+                window.UI_CONFIG.AUTO_PLAY_TIMEOUT = isEnabled;
+                try {
+                    localStorage.setItem('eaten_auto_play_timeout', String(isEnabled));
+                } catch (_) {}
+                if (!isEnabled && window.HumanTurnTimeoutGuard) {
+                    window.HumanTurnTimeoutGuard.clear();
+                } else if (isEnabled && window.HumanTurnTimeoutGuard && window.globalGameState) {
+                    window.HumanTurnTimeoutGuard.sync(window.globalGameState);
+                }
+                appLogger.log(`[System] 逾時自動代打（45 秒防卡關）已${isEnabled ? '開啟' : '關閉'}`);
+            });
+        }
+    }
+
     // 監聽設定頁中的扇形手牌列開關（僅現代 PixiJS 版桌機適用）
     const fanHandToggleEl = document.getElementById('fan-hand-toggle');
     if (fanHandToggleEl) {

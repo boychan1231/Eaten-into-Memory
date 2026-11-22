@@ -135,6 +135,8 @@
                 screen_shake_desc: 'Trigger a brief screen shake feedback when Player 1 loses GP from penalties or encroachment.',
                 reduced_motion: 'Reduced Motion (Accessibility)',
                 reduced_motion_desc: 'Disable screen shake and minimize non-essential transitions and bouncing animations for visual comfort.',
+                auto_play_timeout: 'Auto-Play on Inactivity (45s Failsafe)',
+                auto_play_timeout_desc: 'When enabled, if no action is taken for 45 seconds during your turn, AI automatically plays or picks a card to prevent stalls.',
                 fan_hand_layout: 'Fan-Shaped Hand Layout',
                 fan_hand_layout_desc: 'Spread Minute Cards in a right-overlapping fan on Modern desktop view, lifting upright on hover (mobile stays flat horizontal scroll).',
                 custom_font_title: 'Custom Font (Live Preview)',

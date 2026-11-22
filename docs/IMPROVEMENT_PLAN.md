@@ -1,7 +1,7 @@
 # 《蝕入記憶》(Eaten into Memory) — 後續改良未完成項目與分階段執行計劃
 
 > 建立日期：2026-11-21
-> 對應基準 Commit：`a2d186e`（已完成 CI、固定壓測種子、`GameScheduler`、`escapeHtml` 基礎加固、`ui_settlement.js` 抽離、`npm run balance` 勝率報告）
+> 最新進度：**Phase 1 ～ Phase 4 已全數執行完成並通過驗證**；**Phase 5（ES Module 化）**待使用者拍板方案 A / B / C 後啟動。
 
 ---
 

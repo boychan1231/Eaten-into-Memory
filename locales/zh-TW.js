@@ -135,6 +135,8 @@
                 screen_shake_desc: '當人類玩家受到懲罰或侵蝕扣除 GP 時，觸發短暫畫面搖晃受擊回饋。',
                 reduced_motion: '減少動態效果（無障礙）',
                 reduced_motion_desc: '停用畫面震動並縮短非必要轉場與跳動動畫，提昇視覺舒適度。',
+                auto_play_timeout: '逾時自動代打（45 秒防卡關）',
+                auto_play_timeout_desc: '開啟後，若輪到你操作且連續 45 秒未行動，系統將自動依 AI 策略代出牌或選卡。',
                 fan_hand_layout: '扇形手牌列',
                 fan_hand_layout_desc: '桌機現代版以右側交疊扇形展開分鐘手牌，懸停可直立抽出檢視（手機端維持橫向滑動平列）。',
                 custom_font_title: '自訂字型 (即時套用)',

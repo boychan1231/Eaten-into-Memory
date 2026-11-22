@@ -10,6 +10,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+	<link rel="stylesheet" href="styles/tokens.css">
 	<link rel="stylesheet" href="styles/style.css">
 	<link rel="stylesheet" href="styles/modern.css">
 </head>
@@ -825,6 +826,15 @@
 							</div>
 
 							<label class="toggle-switch toggle-switch-spaced">
+								<input type="checkbox" id="auto-play-timeout-toggle">
+								<span class="slider"></span>
+								<span data-i18n="ui.settings.auto_play_timeout">逾時自動代打（45 秒防卡關）</span>
+							</label>
+							<div class="setting-hint" data-i18n="ui.settings.auto_play_timeout_desc" style="margin-top: -6px; margin-bottom: 12px; font-size: 0.85rem; color: #888;">
+								開啟後，若輪到你操作且連續 45 秒未行動，系統將自動依 AI 策略代出牌或選卡。
+							</div>
+
+							<label class="toggle-switch toggle-switch-spaced">
 								<input type="checkbox" id="fan-hand-toggle" checked>
 								<span class="slider"></span>
 								<span data-i18n="ui.settings.fan_hand_layout">扇形手牌列</span>
@@ -1123,7 +1133,7 @@
 	<script src="js/ui/tutorial_mode.js"></script>
 	<script src="js/ui/ui.js"></script>
 	<script src="js/modern/modern_board.js"></script>
-	<script src="js/modern/modern_intro.js"></script>
+	<script src="js/modern/modern_intro.js" defer></script>
 </body>
 
 </html>

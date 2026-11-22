@@ -146,6 +146,9 @@ let trackedEnteredClockPlayerIds = new Set(); // 追蹤各角色是否首次進�
 // ==========================================
 function updateUI(gameState) {
     if (!gameState) return;
+    if (typeof window !== 'undefined' && window.HumanTurnTimeoutGuard && typeof window.HumanTurnTimeoutGuard.sync === 'function') {
+        window.HumanTurnTimeoutGuard.sync(gameState);
+    }
 
     // 檢查是否進入新的一輪 (例如從 第1輪 變 第2輪)
     // 若是，則清空右側的出牌歷史記錄
