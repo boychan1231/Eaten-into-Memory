@@ -11,6 +11,7 @@
 4. [教學系統設計與自動關閉條件](#四教學系統設計與自動關閉條件)
 5. [國際化（i18n）與多語系對齊規格](#五國際化i18n與多語系對齊規格)
 6. [協同開發規範與環境注意事項](#六協同開發規範與環境注意事項)
+7. [後續改良路線圖與待決議項目（含 ES Module 評估方案）](#七後續改良路線圖與待決議項目含-es-module-評估方案)
 
 ---
 
@@ -154,3 +155,39 @@
 * 系統預設 PATH 中未包含 `git.exe` 時，可調用 GitHub Desktop 內建引擎：
   `& "C:\Users\USER\AppData\Local\GitHubDesktop\app-3.6.10\resources\app\git\cmd\git.exe"`
 * 執行 Node.js 腳本修改多行字串時，建議寫入 scratch 暫存腳本執行，避免 PowerShell 引號轉義與換行符（CRLF）造成的破壞。
+
+---
+
+## 七、後續改良路線圖與待決議項目（含 ES Module 評估方案）
+
+### 1. 已完成之高優先改良（2026-11-21）
+* **CI 與可重現壓測**：建立 `.github/workflows/verify.yml`；`js/core/game_setup.js` 實作 Mulberry32 種子亂數（`setRandomSeed` / `clearRandomSeed`）；`scripts/verify.js` 關卡 4 支援 `VERIFY_SEED`（預設 `20261121`）。
+* **集中計時器排程**：於 `js/core/game.js` 建立 `GameScheduler`，於 `initializeGame` 開頭自動清除殘留計時器。
+* **HTML 轉義防護**：於 `js/ui/ui_components.js` 提供 `window.escapeHtml`，加固 `js/ui/ui_panels.js` 動態名稱渲染。
+* **UI 結算模組拆分**：從 `js/ui/ui.js` 抽離 630 行至 `js/ui/ui_settlement.js`（特殊勝利進度、終局排行榜、故事彈窗、下一回合自動倒數、開局過場）。
+* **平衡性勝率模擬腳本**：新增 `scripts/balance_report.js` 與 `npm run balance`，量化各角色勝率、平均總分與場均被吞噬次數。
+
+### 2. 待執行之候選改良項目（Backlog）
+* **程式碼與樣式拆分**：
+  * `js/ui/ui_panels.js`（~1440 行）依職責拆分（歷史／積分／異能／角色說明）。
+  * `js/core/game.js`（~1520 行）將處決與吞噬結算抽離為 `penalty.js`。
+  * `styles/style.css` 與 `styles/modern.css`（各 ~4300～4400 行）依元件拆分並統一 CSS 變數。
+* **穩定性與測試**：
+  * 補齊其餘 UI 檔的 `innerHTML` 轉義審查。
+  * 人類玩家逾時自動出牌防卡關機制。
+  * 將 `scripts/verify.js`（~1600 行）拆為 `scripts/checks/*.js`。
+* **平衡與文件**：
+  * 依 `npm run balance` 數據檢視 3P 模式平衡（目前分針勝率 60%、秒針 22%）。
+  * 整理近期規則變更紀錄並同步至 `docs/GAMEPLAY.md`；將 `ai_studio/AI_STUDIO_CONTEXT_BUNDLE.md` 產出納入 `npm run` 指令。
+* **體驗與無障礙**：
+  * 行動裝置小螢幕實測扇形手牌與 HUD 抽屜。
+  * 彈窗補齊 `aria-modal`、Esc 鍵關閉、減少動態（Reduced Motion）開關，以及延遲載入開場動畫提昇首屏速度。
+
+### 3. 待決議：ES Module (ESM) 化方案評估
+* **現況指標**：`index.html` 載入 24 支傳統 `<script>`，`js/` 含 130 個頂層函式與 168 處 `window.*` 寫入；`vite.config.ts` 採原樣複製靜態檔；`verify.js` / `balance_report.js` 使用 Node `vm.runInContext`。
+* **關鍵決策前提**：瀏覽器在 `file://` 協議下會阻擋 `<script type="module">`（CORS）。若仍需「雙擊 `index.html` 直接遊玩」，應保留方案 A。
+* **候選方案（暫緩執行，待日後拍板）**：
+  * **方案 A（維持現狀）**：保留 `<script>` 架構，維持 `verify.js` 關卡 5/6 自動守衛載入順序與符號完整性，支援 `file://` 離線直開、零遷移風險。
+  * **方案 B（漸進式 ESM，若全走 HTTP 推薦）**：階段 1 先將無 DOM 依賴的 `js/core/` 轉為 ESM，由 `js/core/index.js` 掛回 `window.*` 相容舊 UI；階段 2 再遷移 `js/ui/` 與 `js/modern/`，並將測試改為原生 `import()`。
+  * **方案 C（一次全轉 + Vite 打包）**：全專案改為 ESM 並由 `vite build` 產出正式包（工時與風險最高）。
+
