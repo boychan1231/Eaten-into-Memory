@@ -75,7 +75,10 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
         appLogger.log("【分針】能力被封鎖，無法發動。");
         return false;
     }
-    const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+    const is3PMode = gameState.gameMode === '3P';
+    const COST = is3PMode
+        ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+        : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
     if (player.mana < COST) {
         appLogger.log(`【分針】MP 不足 (需要 ${COST})，無法發動。`);
         return false;

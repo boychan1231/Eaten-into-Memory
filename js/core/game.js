@@ -244,7 +244,9 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
         return false;
     }
 	//讀取秒針能力消耗
-	const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
+	const COST = (gameState.gameMode === '3P')
+        ? (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2)
+        : (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3);
     if (humanPlayer.mana < COST) {
         console.warn("MP 不足，不能使用秒針能力。");
         return false;

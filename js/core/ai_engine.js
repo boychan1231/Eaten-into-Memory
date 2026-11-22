@@ -310,7 +310,7 @@ function makeAIChoice3P(player, gameState) {
     const chosenCard = player.hand.splice(originalIndex, 1)[0];
 
     // --- 3P 秒針專屬能力判定 ---
-    const SEC_COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
+    const SEC_COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2;
     if (
         GAME_CONFIG.enableAbilities &&
         player.roleCard === '秒針' &&
@@ -835,7 +835,9 @@ function minuteHandPostHourAI(gameState) {
     if (typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) return;
     if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
-    const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+    const COST = (gameState.gameMode === '3P')
+        ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+        : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
 
     const minuteHandAIs = gameState.players.filter(p =>
         p.id !== humanId &&

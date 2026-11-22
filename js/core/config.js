@@ -111,12 +111,14 @@ window.GAME_DATA = {
     
     // 能力消耗與參數設定 (集中管理平衡數值)
     ABILITY_COSTS: {
-        TIME_HAND_MOVE: 1,      // 時針：移牌到底部
-        MINUTE_HAND_MOVE: 2,    // 分針：移動一格
-        SECOND_HAND_SELECT: 3,  // 秒針：二選一
-        SIN_PULL: 2,            // 時之惡：惡之牽引
-        SIN_SEAL: 3,            // 時之惡：全場封印
-        YOUNG_SHIELD: 3         // 幼體：護盾
+        TIME_HAND_MOVE: 1,          // 時針：移牌到底部
+        MINUTE_HAND_MOVE: 2,        // 分針：移動一格 (5P)
+        MINUTE_HAND_MOVE_3P: 3,     // 分針：移動一格 (3P 平衡：降低過強逃生頻率)
+        SECOND_HAND_SELECT: 3,      // 秒針：二選一 (5P)
+        SECOND_HAND_SELECT_3P: 2,   // 秒針：二選一 (3P 平衡：提昇雙牌伏擊可用性)
+        SIN_PULL: 2,                // 時之惡：惡之牽引
+        SIN_SEAL: 3,                // 時之惡：全場封印
+        YOUNG_SHIELD: 3             // 幼體：護盾
     },
 
     // ✅ 小時卡珍貴配置 (幼年 1、少年 4、青年 4、中年 3、死亡 0；共 12 張珍貴卡，1~12 每刻度恰好 1 張)

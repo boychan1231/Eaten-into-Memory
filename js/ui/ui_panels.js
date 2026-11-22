@@ -1117,7 +1117,9 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         // --- 分針 (Minute Hand) ---
     } else if (role === '分針') {
-        const COST = window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2;
+        const COST = (gameState.gameMode === '3P')
+            ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+            : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
 
         if (gameState.waitingMinuteHandChoice) {
             if (isAbilityLocked) {
@@ -1187,7 +1189,9 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
 
         // --- 秒針 (Second Hand) ---
     } else if (role === '秒針') {
-        const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3;
+        const COST = (gameState.gameMode === '3P')
+            ? (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2)
+            : (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3);
         const isWaitingMinute = gameState.currentRoundAIChoices !== null;
         const isWaitingFinal = !!gameState.waitingSecondHandFinalChoice;
 
