@@ -1,0 +1,1012 @@
+/* styles/style_modals_fx.css — 彈窗、特殊勝利、AI 卡片、進化面板與戰鬥特效（由 style.css 拆出） */
+/* --- 彈窗 Overlay --- */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    display: none; align-items: center; justify-content: center; z-index: 9999;
+}
+.modal {
+    position: relative;/* 設定相對定位，讓內部的絕對定位按鈕參考此框 */
+    width: min(420px, calc(100vw - 24px));
+    background: rgba(25, 25, 25, 0.98);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px; padding: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+
+/* 右上角關閉按鈕樣式 */
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;      /* 靠右 */
+    font-size: 2rem; /* 大一點的 X */
+    line-height: 1;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+}
+
+.modal-close-btn:hover {
+    color: #ff6b6b; /* 懸停時變紅色 */
+}
+
+.modal-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+.modal-desc { font-size: 0.9rem; opacity: 0.9; margin-bottom: 12px; color: #ddd; }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button {
+    flex: 1; padding: 12px 0; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(0,0,0,0.35); color: #fff; font-size: 1.1rem; cursor: pointer;
+}
+.modal-actions button:hover { background: rgba(255,255,255,0.10); }
+
+.modal-section {
+    margin-top: 12px;
+}
+
+.modal-section h3 {
+    margin-bottom: 6px;
+    font-size: 1rem;
+    color: #f4f1f7;
+}
+
+.modal-section.is-hidden {
+    display: none;
+}
+
+.modal-title-seconds {
+    color: #00d2d3;
+}
+
+.modal-title-collection {
+    color: #ffd27f;
+}
+
+.seconds-choice-btn {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.collection-list-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.game-over-modal {
+    text-align: center;
+    border: 2px solid #ffd27f;
+    box-shadow: 0 0 30px rgba(255, 210, 127, 0.2);
+    width: min(540px, calc(100vw - 20px));
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+.game-over-title {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.game-over-subtitle {
+    color: #ccc;
+    margin-bottom: 15px;
+    font-size: 1.05rem;
+}
+
+/* --- 特殊勝利達成進度 (Special Victory Progress) --- */
+.special-victory-section {
+    background: rgba(18, 20, 28, 0.85);
+    border: 1px solid rgba(255, 210, 127, 0.35);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 10px 0 16px 0;
+    text-align: left;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.special-victory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #ffd27f;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.special-victory-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.special-victory-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: all 0.2s ease;
+}
+
+.special-victory-card.achieved {
+    border-color: rgba(76, 209, 55, 0.55);
+    background: rgba(76, 209, 55, 0.09);
+    box-shadow: 0 0 10px rgba(76, 209, 55, 0.15);
+}
+
+.special-victory-card.demon-hunt {
+    border-left: 3px solid #feca57;
+}
+
+.special-victory-card.curse-lock {
+    border-left: 3px solid #00d2d3;
+}
+
+.special-victory-card.time-demon {
+    border-left: 3px solid #ff6b6b;
+}
+
+.special-victory-card.mode-3p {
+    border-left: 3px solid #a29bfe;
+}
+
+.sv-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.88rem;
+}
+
+.sv-card-title {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sv-card-status {
+    font-size: 0.78rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.sv-status-achieved {
+    background: rgba(76, 209, 55, 0.25);
+    color: #4cd137;
+    border: 1px solid #4cd137;
+}
+
+.sv-status-progress {
+    background: rgba(254, 202, 87, 0.18);
+    color: #feca57;
+    border: 1px solid rgba(254, 202, 87, 0.4);
+}
+
+.sv-status-failed {
+    background: rgba(255, 107, 107, 0.18);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.4);
+}
+
+.sv-progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    margin: 4px 0 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sv-progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.sv-fill-gold {
+    background: linear-gradient(90deg, #ff9f43, #feca57);
+    box-shadow: 0 0 6px rgba(254, 202, 87, 0.5);
+}
+
+.sv-fill-cyan {
+    background: linear-gradient(90deg, #00d2d3, #1dd1a1);
+    box-shadow: 0 0 6px rgba(0, 210, 211, 0.5);
+}
+
+.sv-fill-red {
+    background: linear-gradient(90deg, #ee5253, #ff6b6b);
+    box-shadow: 0 0 6px rgba(255, 107, 107, 0.5);
+}
+
+.sv-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #bbb;
+    margin-top: 4px;
+}
+
+.sv-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.sv-tag-danger {
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.35);
+}
+
+.sv-tag-safe {
+    color: #4cd137;
+    border: 1px solid rgba(76, 209, 55, 0.35);
+}
+
+.sv-tag-lock {
+    color: #00d2d3;
+    background: rgba(0, 210, 211, 0.12);
+    border: 1px solid rgba(0, 210, 211, 0.3);
+}
+
+.game-over-actions {
+    margin-top: 20px;
+}
+
+.btn-restart-game {
+    background: #4caf50;
+}
+
+.btn-close-gameover {
+    background: #555;
+}
+
+/* --- AI 玩家卡片 --- */
+.players-grid {
+    height: 100px;
+	display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    overflow-x: auto;
+}
+.player-card {
+    flex: 1; 
+	min-width: 170px;
+	min-height: 90px;
+    background-color: var(--card-bg);
+    /*border: 1px solid #444; */
+	border-radius: 6px; 
+	padding: 5px;
+    display: flex; 
+	flex-direction: column; 
+	position: relative;
+	/* 💡 建議：因為移除了邊框，可以給它一個非常淡的背景色來輕微區隔 */
+    background: rgba(255, 255, 255, 0.03); 
+}
+.player-card.ejected { opacity: 0.5; border: 2px solid red; }
+.player-card h4 { margin: 0 0 5px 0; font-size: 1rem; color: #8ec5fc; }
+
+/*
+.player-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 10px;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    height: auto;
+}
+*/
+.player-stats {
+    display: grid;
+    /* ✅ 改為固定兩列，多出來的項目會自動往右方的新欄位排列 */
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    
+    gap: 6px 10px;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    height: auto; 
+	
+	padding: 1px;
+}
+
+.role-badge { 
+    position: absolute; top: 5px; right: 5px; 
+    font-size: 0.7rem; background: #444; padding: 2px 5px; border-radius: 4px; 
+}
+
+/* 響應式調整 */
+@media (max-width: 900px) {
+    .human-play-row { flex-direction: column; }
+    .hand-controls { width: 100%; flex: none; }
+}
+
+/* --- 已收集小時卡 (文字列表樣式) --- */
+
+/* 列表容器微調 */
+#human-hour-collection {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* 行距 */
+    padding-top: 5px;
+}
+
+/* 每一行的樣式 */
+.collection-text-row {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1); /* 淡淡的分隔線 */
+    padding-bottom: 2px;
+}
+
+/* 標籤 (少年/青年/中年) */
+.col-label {
+    color: #aaa;       /* 灰色標籤 */
+    font-weight: normal;
+    margin-right: 2px;
+}
+
+/* 數值內容 */
+.col-values {
+    color: #fff;       /* 亮白數字 */
+    font-weight: bold;
+    font-family: 'Courier New', monospace; /* 等寬字體讓數字更清楚 */
+    letter-spacing: 1px;
+}
+
+/* --- 版面調整：進化面板移至日誌區 --- */
+.evolution-tab-body {
+    display: block !important; /* 覆蓋原本的 grid */
+}
+.collection-text-row {
+    width: 100%;
+    padding: 4px 0;
+}
+
+/* --- 日誌逐條顯示動畫 --- */
+.log-entry-new {
+    animation: logFadeIn 0.5s ease-out forwards;
+    opacity: 0; /* 初始透明，由動畫變為不透明 */
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+@keyframes logFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px); /* 從下方滑入 */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- 新增：進化後能力面板樣式 --- */
+.evo-ability-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+}
+
+.evo-role-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffd27f;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.evo-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #000;
+    font-size: 0.95rem;
+    position: relative;
+}
+.evo-btn:disabled {
+    background-color: #555 !important;
+    color: #888 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.evo-btn:active {
+    transform: translateY(2px);
+}
+
+.evo-desc {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+/* --- 新增：鐘面卡牌堆疊查看器 (Stack Inspector) --- */
+.stack-inspector {
+    display: none; /* 預設隱藏 */
+    position: absolute;
+    bottom: 110%; /* 顯示在格子上方 */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 25, 40, 0.95);
+    border: 1px solid #777;
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 110px;
+    z-index: 100; /* 確保浮在最上層 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    pointer-events: none; /* 讓滑鼠點擊穿透，不會擋到操作 */
+    text-align: center;
+    backdrop-filter: blur(4px);
+}
+
+/* 當滑鼠懸停在鐘面格子時顯示 */
+.clock-spot:hover .stack-inspector {
+    display: flex;
+    flex-direction: column;
+    animation: popupFadeIn 0.2s ease-out;
+}
+
+.stack-title {
+    font-size: 0.75rem;
+    color: #aaa;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.stack-item {
+    font-size: 0.85rem;
+    padding: 3px 0;
+    color: #ddd;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+    line-height: 1.2;
+}
+.stack-item:last-child { border-bottom: none; }
+
+/* 珍貴卡特別標示 */
+.stack-item.precious { 
+    color: #ffd27f; 
+    font-weight: bold; 
+    text-shadow: 0 0 2px orange; 
+}
+.stack-item .age-tag { 
+    font-size: 0.7em; 
+    color: #888; 
+    margin-left: 2px; 
+    vertical-align: middle;
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: translate(-50%, 5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* --- 修正：讓滑鼠指到的格子層級最高，避免視窗被遮擋 --- */
+.clock-spot:hover {
+    z-index: 200 !important; /* 強制壓過其他格子(10)、中心(30)與箭頭(20) */
+}
+
+/* --- 新增：數值變動漂浮文字 (Floating Text) --- */
+@keyframes floatUpFade {
+    0% { 
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1); /* -50% 是為了水平置中 */
+    }
+    50% { 
+        opacity: 1;
+        transform: translate(-50%, -25px) scale(1.2); 
+    }
+    100% { 
+        opacity: 0;
+        transform: translate(-50%, -50px) scale(1); 
+    }
+}
+
+.floating-text {
+    position: fixed; /* ✅ 改用 fixed，無視容器邊框，直接浮在螢幕最上層 */
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999; /* 確保蓋過所有視窗 */
+    font-weight: 900;
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 0px #000, -1px -1px 0 #000; /* 加上黑邊讓文字更明顯 */
+    white-space: nowrap;
+    animation: floatUpFade 1.8s ease-out forwards;
+}
+
+/* 戰鬥浮動回饋深化 */
+.floating-text.combat-float-text {
+    font-size: 1.12rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(10, 14, 25, 0.92);
+    border: 1px solid rgba(255, 215, 127, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.02em;
+}
+
+/* 經典版鐘面格位即時戰術風險標籤 */
+.clock-spot.tactics-danger {
+    box-shadow: 0 0 14px rgba(255, 71, 87, 0.75), inset 0 0 8px rgba(255, 71, 87, 0.5) !important;
+    border-color: #ff4757 !important;
+}
+.clock-spot.tactics-safe {
+    box-shadow: 0 0 14px rgba(0, 210, 211, 0.65), inset 0 0 8px rgba(0, 210, 211, 0.4) !important;
+    border-color: #00d2d3 !important;
+}
+.clock-spot.tactics-recipe {
+    box-shadow: 0 0 16px rgba(255, 210, 127, 0.8), inset 0 0 10px rgba(255, 210, 127, 0.5) !important;
+    border-color: #ffd27f !important;
+}
+.spot-tactics-badge {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+.spot-tactics-badge.danger {
+    background: rgba(235, 77, 75, 0.92);
+    color: #ffffff;
+    border: 1px solid #ff7675;
+}
+.spot-tactics-badge.safe {
+    background: rgba(0, 180, 180, 0.88);
+    color: #ffffff;
+    border: 1px solid #00cec9;
+}
+.spot-tactics-badge.recipe {
+    background: rgba(243, 156, 18, 0.92);
+    color: #1a1003;
+    border: 1px solid #f1c40f;
+    font-weight: 900;
+}
+
+/* 中央小時卡戰術標籤 */
+.hour-tactics-tag {
+    font-size: 0.64rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+.hour-tactics-tag.danger {
+    background: rgba(235, 77, 75, 0.9);
+    color: #fff;
+}
+.hour-tactics-tag.safe {
+    background: rgba(0, 180, 180, 0.85);
+    color: #fff;
+}
+.hour-tactics-tag.recipe {
+    background: rgba(243, 156, 18, 0.92);
+    color: #1a1003;
+}
+
+/* 對局結束排行榜榮譽標籤 */
+.rank-highlight-tag {
+    display: inline-block;
+    font-size: 0.70rem;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(255, 210, 127, 0.16);
+    border: 1px solid rgba(255, 210, 127, 0.45);
+    color: #ffd27f;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* --- 新增：時之惡索命紅線 (SVG) --- */
+.connection-lines-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 讓點擊穿透 */
+    z-index: 5; /* 在背景之上，但在卡片/數字之下 */
+    overflow: visible;
+}
+
+/* 紅線樣式 */
+.sin-line {
+    stroke: #ff4757;        /* 鮮紅色 */
+    stroke-width: 4;        /* 線條粗細 */
+    stroke-dasharray: 10, 10; /* 虛線間隔 */
+    filter: drop-shadow(0 0 5px #ff4757); /* 發光效果 */
+    animation: dashMove 1s linear infinite; /* 流動動畫 */
+    opacity: 0.8;
+}
+
+@keyframes dashMove {
+    from { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 0; }
+}
+
+/* --- 防禦護盾特效 (Suggestion C) --- */
+.shield-indicator {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 5px #00d2d3); /* 青色光暈 */
+    animation: shieldFloat 2s ease-in-out infinite;
+    z-index: 25;
+    cursor: help;
+}
+
+/* 人類玩家區域的護盾 (調整為行內顯示) */
+.human-top-bar .shield-indicator {
+    position: static;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+    font-size: 1.3rem;
+    animation: none; /* 人類區不需要浮動，避免干擾閱讀 */
+    filter: drop-shadow(0 0 3px #00d2d3);
+}
+
+@keyframes shieldFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.1); }
+}
+
+/* ✅ 新增：右側積分榜樣式 */
+#score-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 5px;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 第一名高亮 */
+.score-row.leader {
+    background: rgba(255, 210, 127, 0.15);
+    border: 1px solid rgba(255, 210, 127, 0.3);
+}
+
+.score-name {
+    font-weight: bold;
+}
+
+.score-val {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #fff;
+}
+
+.score-row.leader .score-val {
+    color: #ffd27f;
+    text-shadow: 0 0 5px rgba(255, 210, 127, 0.5);
+}
+
+#deck-info {
+    /* 修改 display 為 flex 以支援左右並排 */
+    display: flex !important; 
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-around;
+    height: 100px; /*稍微調整高度*/
+    padding: 5px 0;
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.info-divider {
+    width: 1px;
+    height: 60%;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 讓標題字稍微小一點以適應並排 */
+#deck-info .deck-title {
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+}
+
+/* 讓數字大一點 */
+#deck-info .deck-count {
+    font-size: 1.3rem;
+	font-weight: bold;
+    color: white;
+    white-space: nowrap; /* 確保不換行 */
+}
+
+/* ✅ 新增：鐘面底圖樣式 */
+.clock-bg-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 保持圖片比例 */
+    z-index: 0;          /* ✅ 重點：設為 0，確保在紅線(5)和格子(10)之下 */
+    opacity: 0.8;        /* 可選：調整透明度讓上面的元件更清楚 */
+}
+
+/* --- 1. 全域背景紋理 --- */
+body {
+    /* 原本的底色 */
+    background-color: var(--bg-color);
+    
+    /* CSS 繪製的微弱網格圖 */
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    
+    /* 網格大小 */
+    background-size: 30px 30px;
+    
+    /* 讓背景稍微暗一點，突顯前景 */
+    background-blend-mode: overlay;
+}
+
+
+/* --- 3. 分鐘卡：金屬紋理 --- */
+.minute-card {
+    /* 銀灰色金屬質感 */
+    background-color: #dcdcdc;
+    
+    /* 斜向紋理 */
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.05) 0px,
+        rgba(0, 0, 0, 0.05) 2px,
+        transparent 2px,
+        transparent 5px
+    );
+    border-color: #999;
+}
+
+/* 珍貴小時卡：黃金質感 */
+.drawn-hour-card.precious, .stack-item.precious {
+    /* 金色漸層底 */
+    background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #d4af37 100%);
+    color: #4a3b00; /* 深色文字讓閱讀更清楚 */
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* --- 4. 資源圖示 CSS 繪製 --- */
+
+/* 護盾 (Shield) 替代圖示 */
+.icon-shield-css {
+    display: inline-block;
+    width: 14px; height: 16px;
+    background: linear-gradient(to bottom, #00d2d3, #008c8c);
+    border-radius: 0 0 50% 50%; /* 下半圓模擬盾牌 */
+    border-top: 2px solid #fff;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* MP (Energy) 替代圖示 */
+.icon-mana-css {
+    display: inline-block;
+    width: 14px; height: 14px;
+    background: radial-gradient(circle, #ff9ff3 30%, #f368e0 90%);
+    border-radius: 50%;
+    box-shadow: 0 0 5px #f368e0;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* --- 5. 角色頭像 Placeholder --- */
+
+	/* 基礎頭像圓框 */
+	/* .avatar-circle {
+		width: 40px; height: 40px;
+		border-radius: 50%;
+		border: 2px solid rgba(255,255,255,0.3);
+		margin-right: 10px;
+		display: inline-block;
+		vertical-align: middle;
+		background-size: cover;
+		box-shadow: 0 0 10px rgba(0,0,0,0.5);
+	} */
+
+/* 時魔 (Time Demon) - 紅黑漸層 */
+.avatar-demon {
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #550000);
+}
+
+/* 時之惡 (Sin) - 金紫漩渦 */
+.avatar-sin {
+    background: conic-gradient(#feca57, #6a0572, #feca57);
+}
+
+/* 受詛者 (Cursed) - 藍灰陰鬱 */
+.avatar-scz {
+    background: linear-gradient(180deg, #54a0ff 0%, #222 100%);
+}
+
+/* 進化後：時針/分針/秒針 - 對應霓虹色 */
+.avatar-evo-hour { background: radial-gradient(circle, #ff9ff3, #550055); }
+.avatar-evo-min  { background: radial-gradient(circle, #f368e0, #440044); }
+.avatar-evo-sec  { background: radial-gradient(circle, #00d2d3, #004444); }
+
+/* style.css */
+
+/* 小圖示按鈕 (放大鏡) */
+.icon-btn {
+    background: transparent;
+    border: 1px solid #666;
+    color: #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    margin-left: 8px;
+    transition: all 0.2s;
+}
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #999;
+}
+
+.settings-range-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.log-speed-slider {
+    flex: 1;
+}
+
+.log-speed-value {
+    font-family: monospace;
+    width: 120px;
+}
+
+.setting-note {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.settings-subgroup {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px dashed #333;
+    border-radius: 6px;
+}
+
+.settings-subgroup.hidden {
+    display: none;
+}
+
+.setting-muted {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.settings-divider {
+    border-color: #333;
+    margin: 20px 0;
+}
+
+/* 調整彈窗內的收集列表樣式 */
+#collection-overlay .hour-collection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+/* 讓列表文字大一點，比較好閱讀 */
+#collection-overlay .collection-text-row {
+    font-size: 1.1rem; 
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 0;
+}
+
+/* style.css */
+
+/* 遊戲結束面板樣式 */
+.ranking-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 60px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    color: #aaa;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 2px;
+}
+
+.ranking-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 4px 4px;
+}
+
+.rank-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 60px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 1rem;
+}
+
+/* 冠軍 (金) */
+.rank-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), transparent);
+    border-left: 4px solid gold;
+    color: #ffd700;
+    font-weight: bold;
+}
+/* 亞軍 (銀) */
+.rank-row.rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent);
+    border-left: 4px solid silver;
+    color: #e0e0e0;
+}
+/* 季軍 (銅) */
+.rank-row.rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent);
+    border-left: 4px solid #cd7f32;
+    color: #cd7f32;
+}
+
+/* 被吞噬者 */
+.rank-row.dead {
+    opacity: 0.5;
+    text-decoration: line-through;
+    filter: grayscale(1);
+}
+
+.rank-medal { font-size: 1.2rem; }
+

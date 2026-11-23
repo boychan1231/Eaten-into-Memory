@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit",
     "verify": "node scripts/verify.js",
     "balance": "node scripts/balance_report.js",
+    "audit:mobile": "node scripts/mobile_layout_audit.js",
     "bundle:context": "node ai_studio/build_context_bundle.js"
   },
   "dependencies": {

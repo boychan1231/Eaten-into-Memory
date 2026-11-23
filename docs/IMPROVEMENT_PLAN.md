@@ -1,7 +1,7 @@
 # 《蝕入記憶》(Eaten into Memory) — 後續改良未完成項目與分階段執行計劃
 
 > 建立日期：2026-11-21
-> 最新進度：**Phase 1 ～ Phase 4 已全數執行完成並通過驗證**；**Phase 5（ES Module 化）**待使用者拍板方案 A / B / C 後啟動。
+> 最新進度：**Phase 1 ～ Phase 4（含 CSS 本體拆分與無頭 Chromium 多視口行動裝置實測）已全部完成並通過驗證**；**Phase 5（ES Module 化）**保留方案 A / B / C 待日後拍板。
 
 ---
 

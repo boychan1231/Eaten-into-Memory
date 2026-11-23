@@ -49,12 +49,14 @@ export function stage2LocaleAndFormatCheck() {
         assert.equal(matches.length, 0, `${rel} 仍殘留 ${matches.length} 個 Emoji (${matches.join(' ')})`);
     }
 
-    // 檢查重複歡迎箭頭與重複 keyframe
-    const styleCss = readProjectFile('styles/style.css');
+    // 檢查重複歡迎箭頭與重複 keyframe（涵蓋拆分後的 style*.css）
+    const styleCss = ['styles/style.css', 'styles/style_modals_fx.css', 'styles/style_extras.css']
+        .map(f => readProjectFile(f))
+        .join('\n');
     const tutorialJs = readProjectFile('js/ui/tutorial_mode.js');
     const keyframeCount = (styleCss.match(/@keyframes\s+tutorialBounceArrow\b/g) || []).length;
-    assert.equal(keyframeCount, 1, `styles/style.css 中 @keyframes tutorialBounceArrow 出現次數應為 1，實測為 ${keyframeCount}`);
-    assert(!styleCss.includes('tutorial-welcome-arrow'), 'styles/style.css 不應再包含 tutorial-welcome-arrow');
+    assert.equal(keyframeCount, 1, `styles/style*.css 中 @keyframes tutorialBounceArrow 出現次數應為 1，實測為 ${keyframeCount}`);
+    assert(!styleCss.includes('tutorial-welcome-arrow'), 'styles/style*.css 不應再包含 tutorial-welcome-arrow');
     assert(!tutorialJs.includes('tutorial-welcome-arrow'), 'js/ui/tutorial_mode.js 不應再包含 tutorial-welcome-arrow');
 
     // 檢查專案禁用詞（遵守 AGENTS.md 規範）
