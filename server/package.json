@@ -1,0 +1,14 @@
+{
+  "name": "eaten-into-memory-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "《蝕入記憶》多人對戰權威 WebSocket 伺服器（支援本機測試與 Google Cloud Run）",
+  "scripts": {
+    "start": "node index.js",
+    "test:ws": "node test_client.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
