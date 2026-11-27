@@ -50,11 +50,11 @@ function renderSpecialVictoryProgress(gameState, container) {
         const isHuntComplete = (totalDemons > 0 && ejectedCount >= totalDemons);
         const huntPercent = Math.min(100, Math.round((ejectedCount / totalDemons) * 100));
 
-        const huntTitle = t('ui.special_victory.demon_hunt_title') || '◆ 時之惡：完全狩獵';
-        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '將全場 3 位時魔各吞噬出局至少一次';
+        const huntTitle = t('ui.special_victory.demon_hunt_title') || '◆ 時之惡：完全狩獵（獎勵分）';
+        const huntDesc = t('ui.special_victory.demon_hunt_desc') || '第 2 / 3 / 4 局結束前將所有時魔各吞噬一次，依序獲得 +6 / +4 / +2 獎勵分';
         const huntStatusText = isHuntComplete
             ? (t('ui.special_victory.demon_hunt_status_achieved') || '✦ 達成 (狩獵完成)')
-            : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/3)`);
+            : (t('ui.special_victory.demon_hunt_status_in_progress', { current: ejectedCount }) || `進行中 (${ejectedCount}/${totalDemons})`);
 
         const tagEjected = t('ui.special_victory.ejected_tag') || '☠ 已吞噬';
         const tagNotEjected = t('ui.special_victory.not_ejected_tag') || '⛨ 未曾被吞噬';
@@ -218,9 +218,9 @@ function renderGameOverPanel(gameState) {
         winnerText = "✦ 時魔陣營 獲勝！";
         subText = "時之惡已被吞噬";
         titleColor = "#ff6b6b"; // 時魔紅
-    } else if (aliveDemons.length === 0 || allDemonsEverEjected) {
+    } else if (aliveDemons.length === 0) {
         winnerText = "◆ 時之惡陣營 獲勝！";
-        subText = allDemonsEverEjected ? "完成「完全狩獵」(所有時魔皆曾被吞噬)" : "時魔全數陣亡";
+        subText = "時魔全數陣亡";
         titleColor = "#feca57"; // 時之惡黃
     } else if (sczMissionSuccess) {
         winnerText = "✦ 受詛者 記憶解放！";

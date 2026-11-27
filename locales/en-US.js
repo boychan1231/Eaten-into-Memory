@@ -226,8 +226,8 @@
             },
             special_victory: {
                 title: '★ Special Victory Progress',
-                demon_hunt_title: '◆ Time Sin: Total Hunt',
-                demon_hunt_desc: 'Devour all 3 Time Demons at least once',
+                demon_hunt_title: '◆ Time Sin: Total Hunt (Bonus)',
+                demon_hunt_desc: 'Devour all Time Demons once by Round 2/3/4 for +6/+4/+2 bonus points',
                 demon_hunt_status_achieved: '✦ Achieved (Total Hunt Complete)',
                 demon_hunt_status_in_progress: 'In Progress ({current}/3)',
                 ejected_tag: '☠ Devoured',
@@ -401,7 +401,7 @@
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>Victory</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">Highest Gear Score wins</td>
-									<td style="padding: 10px; border: 1px solid #555;">Gear Score + special victory conditions (Cursed One: +9/+5/+2 bonus for locking 12; Devour Time Sin; Sin devours all 3 demons)</td>
+									<td style="padding: 10px; border: 1px solid #555;">Gear Score + bonuses/special victory (Cursed One: +9/+5/+2 for locking 12; Time Sin Total Hunt: +6/+4/+2 in 5P by R2/3/4, +6/+3 in 4P by R2/3; Devour Time Sin)</td>
 								</tr>
 							</tbody>
 						</table>

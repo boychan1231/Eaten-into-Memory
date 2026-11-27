@@ -197,27 +197,26 @@ function checkEjectionAndWinCondition(gameState) {
 	const aliveTimeDemons = gameState.players.filter(p => p.type === '時魔' && !p.isEjected);
     const sinAlive = gameState.players.some(p => p.type === '時之惡' && !p.isEjected);
 
-	// 檢查是否「所有時魔都曾被吞噬過」
+    // 檢查是否「所有時魔都曾被吞噬過」（完全狩獵：改為獎勵分，不再直接結束遊戲）
     const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
     const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
-	
-	// 判斷：時之惡陣亡 OR 時魔全滅 (當下全滅) OR 時魔皆曾被吞噬 (累計全滅)
+    if (allDemonsEverEjected && sinAlive && !gameState.sinHuntLogged) {
+        gameState.sinHuntLogged = true;
+        appLogger.log('✦【時之惡】完成「完全狩獵」（所有時魔皆曾被吞噬）！將於本局結算時獲得獎勵分！');
+    }
+
+    // 判斷：時之惡陣亡 OR 時魔當下全滅
     if (currentMode === '3P') {
         if (aliveTimeDemons.length === 0) {
             gameState.gameEnded = true;
             appLogger.log('✦ 遊戲結束：所有時魔皆被吞噬。');
         }
-    } else if (!sinAlive || aliveTimeDemons.length === 0 || allDemonsEverEjected) {
+    } else if (!sinAlive || aliveTimeDemons.length === 0) {
         gameState.gameEnded = true;
         if (!sinAlive && aliveTimeDemons.length > 0) {
             appLogger.log('✦ 遊戲結束：時之惡被吞噬，時魔陣營勝利！');
-        } else if (sinAlive && (aliveTimeDemons.length === 0 || allDemonsEverEjected)) {
-            // ✅ 修改訊息：明確指出獲勝原因
-            if (allDemonsEverEjected) {
-                appLogger.log('✦ 遊戲結束：所有時魔皆曾被吞噬，時之惡完成「完全狩獵」，時之惡陣營勝利！');
-            } else {
-                appLogger.log('✦ 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
-            }
+        } else if (sinAlive && aliveTimeDemons.length === 0) {
+            appLogger.log('✦ 遊戲結束：場上時魔已全數陣亡，時之惡陣營勝利！');
         } else {
             appLogger.log('✦ 遊戲結束。');
         }

@@ -1091,7 +1091,10 @@ function endGameRound(gameState) {
         }
     }
 
-    // 同步局結算快照中的總分，確保受詛者任務額外得分或扣分正確反映於結算彈窗中
+    // 時之惡完全狩獵獎勵分檢查
+    applySinFullHuntBonus(gameState);
+
+    // 同步局結算快照中的總分，確保受詛者與時之惡獎勵得分／扣分正確反映於結算彈窗中
     if (Array.isArray(gameState.lastRoundSummary)) {
         gameState.lastRoundSummary.forEach(item => {
             const p = gameState.players.find(x => x.id === item.id);
@@ -1245,10 +1248,44 @@ function endGameRound(gameState) {
     }
 }
 
+function applySinFullHuntBonus(gameState) {
+    if (!gameState || gameState.sinHuntBonusAwarded) return 0;
+    const isPure = typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
+    if (isPure || gameState.gameMode === '3P') return 0;
+
+    const sinPlayer = Array.isArray(gameState.players) ? gameState.players.find(p => p.type === '時之惡') : null;
+    if (!sinPlayer || sinPlayer.isEjected) return 0;
+
+    const allTimeDemons = gameState.players.filter(p => p.type === '時魔');
+    const allDemonsEverEjected = allTimeDemons.length > 0 && allTimeDemons.every(p => p.hasEverBeenEjected);
+    if (!allDemonsEverEjected) return 0;
+
+    const numPlayers = gameState.players.length;
+    const round = Number(gameState.gameRound) || 1;
+    let bonus = 0;
+
+    if (numPlayers === 5) {
+        if (round <= 2) bonus = 6;
+        else if (round === 3) bonus = 4;
+        else if (round === 4) bonus = 2;
+    } else if (numPlayers === 4) {
+        if (round <= 2) bonus = 6;
+        else if (round === 3) bonus = 3;
+    }
+
+    gameState.sinHuntBonusAwarded = true;
+    if (bonus > 0) {
+        sinPlayer.score += bonus;
+        appLogger.log(`✦【時之惡】第 ${round} 局達成「完全狩獵」！獲得額外 ${bonus} 獎勵分！`);
+    }
+    return bonus;
+}
+
 function endGame(gameState) {
     appLogger.log("=== 遊戲結束 ===");
     const isPure = typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
     if (gameState.gameMode !== '3P' && !isPure) {
+        applySinFullHuntBonus(gameState);
         gameState.players
             .filter(p => p.type === '時魔' && !p.isEjected && ['時針', '分針', '秒針'].includes(p.roleCard))
             .forEach(player => {

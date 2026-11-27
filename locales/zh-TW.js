@@ -226,8 +226,8 @@
             },
             special_victory: {
                 title: '特殊勝利達成進度',
-                demon_hunt_title: '時之惡：完全狩獵',
-                demon_hunt_desc: '將全場 3 位時魔各吞噬一次',
+                demon_hunt_title: '時之惡：完全狩獵（獎勵分）',
+                demon_hunt_desc: '第 2 / 3 / 4 局結束前將所有時魔各吞噬一次，依序獲得 +6 / +4 / +2 獎勵分',
                 demon_hunt_status_achieved: '★ 達成 (狩獵完成)',
                 demon_hunt_status_in_progress: '進行中 ({current}/3)',
                 ejected_tag: '☠ 已吞噬',
@@ -407,7 +407,7 @@
 									<td style="padding: 10px; border: 1px solid #555;"><u><strong>GP 積分 ＋ 特殊勝利條件</strong></u><br>
 										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong><br>
 										• <strong>時魔 特殊勝利：</strong>合力將時之惡 GP 耗盡達成「吞噬時之惡」<br>
-										• <strong>時之惡 特殊勝利：</strong>遊戲結束前將所有時魔「各吞噬一次」達成完全狩獵
+										• <strong>時之惡 完全狩獵（獎勵分）：</strong>將所有時魔「各吞噬一次」；5 人遊戲第 2 / 3 / 4 局結束前達成獲得 <strong>+6 / +4 / +2</strong> 獎勵分，4 人遊戲第 2 / 3 局結束前達成獲得 <strong>+6 / +3</strong> 獎勵分
 									</td>
 								</tr>
 							</tbody>
