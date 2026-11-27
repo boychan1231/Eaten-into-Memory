@@ -184,6 +184,7 @@ function attemptRoleUpgrade(player, gameState) {
     const oldRole = player.roleCard;
     player.roleCard = targetRole;
     player.hasEvolvedThisGame = true;
+    player.justEvolvedFx = true;
 
     // 解析編號 (維持原邏輯)
     const name = String(player.name || '').trim();
