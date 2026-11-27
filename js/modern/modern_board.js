@@ -1113,7 +1113,7 @@
                         this.tokens.set(p.id, node);
                     }
                     if (shouldPlayEvolveFx) {
-                        this.playTokenSpark(p.id, { tint: PAL.gold, scale: 2.35, speed: 0.32 });
+                        this.playTokenSpark(p.id, { scale: 2.35, speed: 0.32 });
                     }
                     node.tx = tx;
                     node.ty = ty;

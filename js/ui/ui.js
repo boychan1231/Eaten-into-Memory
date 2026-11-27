@@ -1029,11 +1029,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 evolvePreviewTimer = null;
             }
 
-            const tintCanvas = document.createElement('canvas');
-            tintCanvas.width = 32;
-            tintCanvas.height = 32;
-            const tCtx = tintCanvas.getContext('2d');
-
             const startTime = performance.now();
             const preDelayMs = 260;
             const frameDurationMs = 55;
@@ -1049,17 +1044,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawTokenOnPreview(ctx, evolveHourImg, 62);
                     const frameIdx = Math.floor((elapsed - preDelayMs) / frameDurationMs);
                     if (frameIdx < totalFrames && evolveSparkImg && evolveSparkImg.complete && evolveSparkImg.naturalWidth >= 224) {
-                        tCtx.clearRect(0, 0, 32, 32);
-                        tCtx.globalCompositeOperation = 'source-over';
-                        tCtx.drawImage(evolveSparkImg, frameIdx * 32, 0, 32, 32, 0, 0, 32, 32);
-                        tCtx.globalCompositeOperation = 'source-in';
-                        tCtx.fillStyle = '#ffd27f';
-                        tCtx.fillRect(0, 0, 32, 32);
-
                         ctx.save();
                         ctx.globalCompositeOperation = 'lighter';
                         ctx.imageSmoothingEnabled = false;
-                        ctx.drawImage(tintCanvas, 60 - 44, 60 - 44, 88, 88);
+                        ctx.drawImage(evolveSparkImg, frameIdx * 32, 0, 32, 32, 60 - 44, 60 - 44, 88, 88);
                         ctx.restore();
                     }
                 }

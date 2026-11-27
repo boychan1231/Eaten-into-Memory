@@ -151,7 +151,7 @@
                 fx_showcase_title: 'Added Visual Effects Showcase',
                 fx_showcase_desc: 'Inspect and preview visual effects and sprite animations currently integrated into the game.',
                 fx_evolve_title: 'Time Demon Evolution Spark',
-                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 slots / 7 active) · Gold ADD blend',
+                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 slots / 7 active) · White ADD blend',
                 fx_evolve_desc: 'Plays a frame-by-frame golden spark burst on the character token when a Juvenile Time Demon evolves into Hour, Minute, or Second Hand.',
                 fx_shake_title: 'Hit Screen & Token Shake',
                 fx_shake_meta: 'GSAP Timeline · Trigger: GP Loss / Execution / Erosion',

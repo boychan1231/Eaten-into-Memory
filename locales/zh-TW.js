@@ -151,7 +151,7 @@
                 fx_showcase_title: '已加入特效展示',
                 fx_showcase_desc: '檢視並即時預覽遊戲目前已實裝的視覺特效與序列圖資源。',
                 fx_evolve_title: '幼體時魔進化火花',
-                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 格 / 前 7 格有效) · 金色疊加 (ADD)',
+                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 格 / 前 7 格有效) · 白色原色疊加 (ADD)',
                 fx_evolve_desc: '當幼體時魔達成記憶碎片條件並進化為時針、分針或秒針時，於角色棋子中心播放的序列幀火花特效。',
                 fx_shake_title: '受擊畫面與棋子震動',
                 fx_shake_meta: 'GSAP 時間軸補間 · 觸發條件：扣除 GP / 處決 / 侵蝕',
