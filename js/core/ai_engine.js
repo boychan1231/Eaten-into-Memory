@@ -662,8 +662,15 @@ function chooseHourCardForAI3P(gameState, player, drawnCards) {
         else if (c.number === otherMax) risk = 1;
         else risk = 0;
 
-        // 分針專屬加權：若身為分針且 MP >= 2，評估跳躍逃生彈性
-        if (player.roleCard === '分針' && player.mana >= 2 && risk > 0) {
+        // 分針專屬加權：若身為分針且 MP 與鐘面小時卡張數達門檻，評估跳躍逃生彈性
+        const minuteCost = (gameState.gameMode === '3P')
+            ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+            : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
+        const clockCardsAfterPlace = (typeof countHourCardsOnClockFace === 'function')
+            ? countHourCardsOnClockFace(gameState) + 1
+            : 0;
+        const requiredClockCards = Array.isArray(gameState.players) ? gameState.players.length : 0;
+        if (player.roleCard === '分針' && player.mana >= minuteCost && clockCardsAfterPlace >= requiredClockCards && risk > 0) {
             risk = 0.5; // 分針可透過技能跳走，風險折半
         }
 
@@ -834,6 +841,7 @@ function chooseHourCardForAI(gameState, player, drawnCards) {
 function minuteHandPostHourAI(gameState) {
     if (typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) return;
     if (!GAME_CONFIG.enableAbilities || gameState.abilityMarker) return;
+    if (typeof hasEnoughClockCardsForMinuteHand === 'function' && !hasEnoughClockCardsForMinuteHand(gameState)) return;
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const COST = (gameState.gameMode === '3P')
         ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
