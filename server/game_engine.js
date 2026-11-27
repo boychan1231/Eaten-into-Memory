@@ -50,6 +50,7 @@ export class HeadlessGameEngine {
     this.timerQueue = [];
     this.nextTimerId = 1;
     this.eventBuffer = [];
+    this.roundHistory = [];
 
     // 多人類狀態追蹤
     this.seatToController = new Map(); // seatId -> controllerId
@@ -386,6 +387,8 @@ export class HeadlessGameEngine {
     }
 
     if (this.gs.gameRound !== beforeGameRound) {
+      const roundScores = afterPlayers.map((p) => ({ seatId: p.id, name: p.name, score: p.score, gear: p.gear, ejected: p.ejected }));
+      this.roundHistory.push({ gameRound: beforeGameRound, scores: roundScores });
       this.eventBuffer.push({
         type: 'ROUND_ENDED',
         completedGameRound: beforeGameRound,
@@ -684,24 +687,50 @@ export class HeadlessGameEngine {
       return { ok: true };
     }
 
-    if (ability === 'HOUR_HAND_BOTTOM' && typeof this.ctx.activateHourHandMoveTopToBottom === 'function') {
+    if (ability === 'SET_TARGET_ROLE') {
+      const player = this.gs.players.find((p) => p.id === seatId);
+      const targetRole = String(msg.role || '').trim();
+      if (!player || player.isEjected || player.type !== '時魔' || !String(player.roleCard || '').includes('幼')) {
+        return { ok: false, message: '只有未進化的幼體時魔可以指定目標身份' };
+      }
+      if (!['時針', '分針', '秒針'].includes(targetRole)) {
+        return { ok: false, message: '無效的目標進化身份' };
+      }
+      const taken = this.gs.players.some(
+        (p) => p.id !== seatId && !p.isEjected && p.roleCard === targetRole
+      );
+      if (taken) {
+        return { ok: false, message: `${targetRole} 已被其他存活玩家佔用` };
+      }
+      player.targetRoleName = targetRole;
+      return { ok: true };
+    }
+
+    if (ability === 'HOUR_HAND_BOTTOM' && typeof this.ctx.hourHandMoveTopToBottom === 'function') {
+      const player = this.gs.players.find((p) => p.id === seatId);
+      if (!this.enableAbilities || !player || player.isEjected || player.roleCard !== '時針') {
+        return { ok: false, message: '目前無法發動時針能力' };
+      }
+      if (this.gs.abilityMarker) {
+        return { ok: false, message: '本回合異能已被封印' };
+      }
       let ok = false;
       this._runWithDiff(() => {
         if (typeof this.ctx.setHumanPlayerId === 'function') this.ctx.setHumanPlayerId(seatId);
-        ok = Boolean(this.ctx.activateHourHandMoveTopToBottom(this.gs));
+        ok = Boolean(this.ctx.hourHandMoveTopToBottom(this.gs, seatId));
         if (ok) {
           this.eventBuffer.push({ type: 'ABILITY_USED', seatId, ability: 'HOUR_HAND_BOTTOM' });
         }
         this._flushTimers();
       });
-      return ok ? { ok: true } : { ok: false, message: '目前無法發動時針能力' };
+      return ok ? { ok: true } : { ok: false, message: '目前無法發動時針能力（MP 不足或次數已達上限）' };
     }
 
     if (ability === 'SIN_SEAL' && typeof this.ctx.activateSinSealAbility === 'function') {
       let ok = false;
       this._runWithDiff(() => {
         if (typeof this.ctx.setHumanPlayerId === 'function') this.ctx.setHumanPlayerId(seatId);
-        ok = Boolean(this.ctx.activateSinSealAbility(this.gs));
+        ok = Boolean(this.ctx.activateSinSealAbility(this.gs, seatId));
         if (ok) {
           this.eventBuffer.push({ type: 'ABILITY_USED', seatId, ability: 'SIN_SEAL' });
         }
@@ -710,11 +739,11 @@ export class HeadlessGameEngine {
       return ok ? { ok: true } : { ok: false, message: '目前無法發動時之惡封印能力' };
     }
 
-    if (ability === 'SIN_TARGETING' && typeof this.ctx.activateSinTargetingAbility === 'function') {
+    if (ability === 'SIN_TARGETING' && typeof this.ctx.activateSinAbility === 'function') {
       let ok = false;
       this._runWithDiff(() => {
         if (typeof this.ctx.setHumanPlayerId === 'function') this.ctx.setHumanPlayerId(seatId);
-        ok = Boolean(this.ctx.activateSinTargetingAbility(this.gs));
+        ok = Boolean(this.ctx.activateSinAbility(this.gs, seatId));
         if (ok) {
           this.eventBuffer.push({ type: 'ABILITY_USED', seatId, ability: 'SIN_TARGETING' });
         }
@@ -799,6 +828,18 @@ export class HeadlessGameEngine {
         currentClockPosition: p.currentClockPosition ?? null,
         isEjected: Boolean(p.isEjected),
         hasPlayedMinute,
+        specialAbilityUsed: Boolean(p.specialAbilityUsed),
+        hourHandMoveCount: Number(p.hourHandMoveCount || 0),
+        targetRoleName: isMe ? (p.targetRoleName || '時針') : null,
+        hourCardsCount: Array.isArray(p.hourCards) ? p.hourCards.length : 0,
+        preciousCount: Array.isArray(p.hourCards) ? p.hourCards.filter((c) => c && c.isPrecious).length : 0,
+        hourCards: (isMe || this.gs.gameEnded) && Array.isArray(p.hourCards)
+          ? p.hourCards.map((c) => ({
+              number: c.number,
+              ageGroup: c.ageGroup,
+              isPrecious: Boolean(c.isPrecious),
+            }))
+          : null,
         handCount: Array.isArray(p.hand) ? p.hand.length : 0,
         // 嚴格視野過濾：只有本人可取得完整分鐘卡手牌與秒針雙牌
         hand: isMe && Array.isArray(p.hand)
@@ -832,6 +873,29 @@ export class HeadlessGameEngine {
         }))
       : [];
 
+    const myPlayer = this.gs.players.find((p) => p.id === mySeatId);
+    const canPeekTopHour =
+      this.enableAbilities &&
+      myPlayer &&
+      !myPlayer.isEjected &&
+      myPlayer.roleCard === '時針' &&
+      Array.isArray(this.gs.hourDeck) &&
+      this.gs.hourDeck.length > 0;
+    const topHourCard = canPeekTopHour
+      ? this.gs.hourDeck[this.gs.hourDeck.length - 1]
+      : null;
+
+    const minuteDiscard = Array.isArray(this.gs.minuteDiscard)
+      ? this.gs.minuteDiscard.map((d) => ({
+          value: d.value,
+          gear: d.gear ?? 0,
+          seatId: d.playerId,
+          playerName: d.playerName,
+          gameRound: d.gameRound,
+          roundMarker: d.roundMarker,
+        }))
+      : [];
+
     return {
       roomId,
       status: this.gs.gameEnded ? 'ended' : 'playing',
@@ -844,7 +908,16 @@ export class HeadlessGameEngine {
       abilityMarker: Boolean(this.gs.abilityMarker),
       sinTargetingMode: this.gs.sinTargetingMode || 'default',
       hourDeckCount: Array.isArray(this.gs.hourDeck) ? this.gs.hourDeck.length : 0,
+      hourDeckTop: topHourCard
+        ? {
+            number: topHourCard.number,
+            ageGroup: topHourCard.ageGroup,
+            isPrecious: Boolean(topHourCard.isPrecious),
+          }
+        : null,
       currentDrawnHourCards: drawnHours,
+      minuteDiscard,
+      roundHistory: this.roundHistory,
       clockFace,
       mySeatId,
       pendingAction,

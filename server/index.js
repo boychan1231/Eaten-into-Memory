@@ -147,9 +147,40 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'LEAVE_ROOM': {
+        if (currentRoom) {
+          currentRoom.members.delete(playerId);
+          if (currentRoom.members.size === 0) {
+            rooms.delete(currentRoom.id);
+          } else {
+            if (currentRoom.hostId === playerId) {
+              currentRoom.hostId = currentRoom.members.keys().next().value;
+            }
+            if (currentRoom.engine) {
+              currentRoom.engine.convertControllerToAI(playerId);
+              const evts = currentRoom.engine.consumeEvents();
+              broadcastGameState(currentRoom, evts);
+            } else {
+              broadcastLobbyState(currentRoom);
+            }
+          }
+          currentRoom = null;
+        }
+        sendJson(ws, { type: 'LEFT_ROOM' });
+        break;
+      }
+
       case 'START_GAME': {
         if (!currentRoom) {
           sendJson(ws, { type: 'ERROR', code: 'NO_ROOM', message: '尚未加入房間' });
+          return;
+        }
+        if (currentRoom.hostId !== playerId) {
+          sendJson(ws, { type: 'ERROR', code: 'NOT_HOST', message: '只有房主可以開始對局' });
+          return;
+        }
+        if (currentRoom.engine && !currentRoom.engine.gs.gameEnded) {
+          sendJson(ws, { type: 'ERROR', code: 'GAME_IN_PROGRESS', message: '對局進行中，無法重新開始' });
           return;
         }
         const mode = normalizeGameMode(msg.mode || '5P');

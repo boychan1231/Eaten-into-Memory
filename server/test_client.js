@@ -50,11 +50,22 @@ async function runFullGameTest(mode, roomId, seed) {
   const p2 = await connectPlayer('玩家B');
 
   send(p1, { type: 'JOIN_ROOM', roomId, name: '玩家A' });
+  await waitFor(() => p1.latestState?.status === 'lobby' && p1.latestState.players.length === 1);
   send(p2, { type: 'JOIN_ROOM', roomId, name: '玩家B' });
   await waitFor(() => p2.latestState?.status === 'lobby' && p2.latestState.players.length === 2);
 
+  // 非房主不得開局
+  send(p2, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
+  await waitFor(() => p2.errors.some((e) => e.code === 'NOT_HOST'));
+  p2.errors.length = 0;
+
   send(p1, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
   await waitFor(() => p1.latestState?.status === 'playing' && p2.latestState?.status === 'playing');
+
+  // 對局進行中不得重開
+  send(p1, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
+  await waitFor(() => p1.errors.some((e) => e.code === 'GAME_IN_PROGRESS'));
+  p1.errors.length = 0;
 
   // 1. 驗證視野過濾（Fog of War）：看得到自己手牌，絕對看不到對手手牌
   const p1Me = p1.latestState.players.find((p) => p.seatId === p1.latestState.mySeatId);
