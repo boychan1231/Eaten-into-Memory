@@ -187,19 +187,135 @@
 
     function processEvents(events) {
         if (!Array.isArray(events)) return;
+        const logToMain = (line) => {
+            appendLog(line);
+            if (window.appLogger && typeof window.appLogger.log === 'function') {
+                window.appLogger.log(`🌐 ${line}`);
+            }
+        };
         events.forEach((ev) => {
             if (!ev || !ev.type) return;
             if (ev.type === 'REVEAL_BIDS') {
                 const winner = ev.winner ? `${ev.winner.name} (${ev.winner.value})` : '-';
-                appendLog(`開牌結算：最高點 ${winner}`);
+                logToMain(`開牌結算：最高點 ${winner}`);
             } else if (ev.type === 'EATEN') {
-                appendLog(`吞噬警報：${ev.name} 已遭到吞噬！`);
+                logToMain(`吞噬警報：${ev.name} 已遭到吞噬！`);
             } else if (ev.type === 'ROUND_ENDED') {
-                appendLog(`第 ${ev.completedGameRound} 局結束，進入第 ${ev.nextGameRound} 局`);
+                logToMain(`第 ${ev.completedGameRound} 局結束，進入第 ${ev.nextGameRound} 局`);
             } else if (ev.type === 'GAME_OVER') {
-                appendLog(`對局結束！最終勝者：${(ev.winners || []).join(', ')}`);
+                logToMain(`對局結束！最終勝者：${(ev.winners || []).join(', ')}`);
             }
         });
+    }
+
+    function closeMatchModals() {
+        const gameModeOverlay = $('game-mode-overlay');
+        if (gameModeOverlay) {
+            gameModeOverlay.classList.add('hidden');
+            gameModeOverlay.style.display = 'none';
+            gameModeOverlay.setAttribute('aria-hidden', 'true');
+        }
+        const roleOverlay = $('role-choice-overlay');
+        if (roleOverlay) {
+            roleOverlay.classList.add('hidden');
+            roleOverlay.style.display = 'none';
+        }
+        const introOverlay = $('modern-intro-overlay');
+        if (introOverlay && introOverlay.style.display !== 'none') {
+            introOverlay.classList.add('is-leaving');
+            introOverlay.style.display = 'none';
+        }
+    }
+
+    function adaptServerStateToLocal(gs) {
+        const prevGs = window.globalGameState || null;
+        const mySeatId = gs.mySeatId || state.playerId || 'SM_1';
+
+        if (typeof window !== 'undefined') {
+            window.__HUMAN_PLAYER_ID_OVERRIDE = mySeatId;
+            if (typeof window.setHumanPlayerId === 'function') {
+                window.setHumanPlayerId(mySeatId);
+            } else {
+                window.HUMAN_PLAYER_ID = mySeatId;
+            }
+        }
+
+        const pending = gs.pendingAction || { type: '', waitingSeatIds: [] };
+        const waitingIds = Array.isArray(pending.waitingSeatIds) ? pending.waitingSeatIds : [];
+        const isMyTurn = waitingIds.includes(mySeatId);
+        const gameMode = gs.gameMode || '5P';
+        const isPureMode = gameMode === '4P' || String(gameMode).startsWith('PURE');
+
+        const players = (Array.isArray(gs.players) ? gs.players : []).map((p) => {
+            const pType = p.type || (isPureMode ? 'pure' : '時魔');
+            const pRole = p.roleCard || pType;
+            return {
+                ...p,
+                id: p.seatId || p.id,
+                seatId: p.seatId || p.id,
+                name: p.name || '玩家',
+                type: pType,
+                roleCard: pRole,
+                isEjected: !!p.isEjected,
+                gearCards: typeof p.gearCards === 'number' ? p.gearCards : 0,
+                mana: typeof p.mana === 'number' ? p.mana : 0,
+                score: typeof p.score === 'number' ? p.score : 0,
+                d6Die: p.d6Die !== undefined ? p.d6Die : null,
+                currentClockPosition: p.currentClockPosition !== undefined ? p.currentClockPosition : null,
+                hand: Array.isArray(p.hand) ? p.hand.map(c => ({ value: c.value, gear: c.gear ?? '' })) : [],
+                hourCards: Array.isArray(p.hourCards) ? p.hourCards : [],
+                playedMinuteCards: Array.isArray(p.playedMinuteCards) ? p.playedMinuteCards : [],
+                discardPile: Array.isArray(p.discardPile) ? p.discardPile : []
+            };
+        });
+
+        const clockFace = (Array.isArray(gs.clockFace) && gs.clockFace.length === 12)
+            ? gs.clockFace
+            : Array.from({ length: 12 }, (_, idx) => ({
+                position: idx + 1,
+                cards: [],
+                lockedPreciousCount: 0
+            }));
+
+        const hourDeck = Array.isArray(gs.hourDeck)
+            ? gs.hourDeck
+            : new Array(Math.max(0, Number(gs.hourDeckCount || 0))).fill({});
+
+        const gameEnded = pending.type === 'GAME_OVER' || gs.status === 'game_over';
+        const isNewRoundOrMatch = !prevGs || !prevGs.isOnlineMatch || prevGs.onlineRoomId !== gs.roomId || prevGs.gameRound !== gs.gameRound;
+
+        return {
+            isOnlineMatch: true,
+            onlineRoomId: gs.roomId || state.roomId,
+            onlineHumanId: mySeatId,
+            pendingOnlineActionType: pending.type || '',
+            gameMode: gameMode,
+            enableAbilities: Boolean(gs.enableAbilities),
+            gameRound: gs.gameRound || 1,
+            totalGameRounds: gs.totalGameRounds || (gameMode === '3P' ? 3 : 5),
+            roundMarker: gs.roundMarker || 1,
+            players,
+            clockFace,
+            hourDeck,
+            minuteDeck: Array.isArray(gs.minuteDeck) ? gs.minuteDeck : [],
+            discardPile: Array.isArray(gs.discardPile) ? gs.discardPile : [],
+            currentDrawnHourCards: Array.isArray(gs.currentDrawnHourCards) ? gs.currentDrawnHourCards : [],
+            playedMinuteCardsHistory: Array.isArray(gs.playedMinuteCardsHistory) ? gs.playedMinuteCardsHistory : [],
+            currentRoundAIChoices: (pending.type === 'PLAY_MINUTE_CARD' && isMyTurn) ? {} : null,
+            waitingHourChoice: pending.type === 'PICK_HOUR_CARD',
+            waitingHourChoicePlayerId: isMyTurn ? mySeatId : (waitingIds[0] || ''),
+            hourPickOrder: pending.type === 'PICK_HOUR_CARD' ? waitingIds : [],
+            waitingMinuteHandChoice: pending.type === 'MINUTE_HAND_MOVE' && isMyTurn,
+            waitingAbilityChoice: pending.type === 'MINUTE_HAND_MOVE' && isMyTurn,
+            waitingAbilityChoicePlayerId: (pending.type === 'MINUTE_HAND_MOVE' && isMyTurn) ? mySeatId : '',
+            waitingSecondHandFinalChoice: false,
+            waitingSecondHandFinalChoicePlayerId: '',
+            isPlayingMinuteClash: false,
+            sinTargetingMode: gs.sinTargetingMode || 'default',
+            gameEnded,
+            hasShownGameOverPanel: gameEnded && prevGs ? !!prevGs.hasShownGameOverPanel : false,
+            needsHandDealAnimation: isNewRoundOrMatch
+        };
     }
 
     function renderOnlineState(gs) {
@@ -214,9 +330,23 @@
             return;
         }
 
+        // 開局後自動關閉「開始新遊戲」彈窗，並將伺服器狀態同步渲染到主鐘面與主遊戲操作介面
+        closeMatchModals();
         if (roomPanel) roomPanel.classList.add('is-hidden');
-        if (matchPanel) matchPanel.classList.remove('is-hidden');
-        renderActiveMatch(gs);
+        if (matchPanel) matchPanel.classList.add('is-hidden');
+
+        const adapted = adaptServerStateToLocal(gs);
+        if (typeof window !== 'undefined') {
+            window.globalGameState = adapted;
+        }
+        if (typeof globalGameState !== 'undefined') {
+            globalGameState = adapted;
+        }
+        if (typeof window.updateUI === 'function') {
+            window.updateUI(adapted);
+        } else if (typeof updateUI === 'function') {
+            updateUI(adapted);
+        }
     }
 
     function renderLobbyMembers(gs) {
@@ -420,6 +550,7 @@
     window.OnlineLobbyClient = {
         connectAndJoin,
         disconnect,
+        sendAction: sendJson,
         getState: () => state.latestState,
     };
 

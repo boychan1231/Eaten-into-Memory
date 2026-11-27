@@ -284,6 +284,9 @@ function updateNextStepButton(gameState, flags) {
         } else {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.waiting_input') : "請出牌...";
         }
+    } else if (gameState.isOnlineMatch && gameState.pendingOnlineActionType !== 'NEXT_ROUND') {
+        nextStepBtn.disabled = true;
+        nextStepBtn.textContent = (window.i18n ? window.i18n.t('ui.hints.waiting_opponents') : null) || '等待其他玩家操作...';
     } else {
         nextStepBtn.disabled = false;
         if (window.AutoNextRoundTimer && window.AutoNextRoundTimer.timerId && window.AutoNextRoundTimer.remainingSeconds > 0) {

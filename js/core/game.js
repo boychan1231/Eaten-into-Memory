@@ -39,6 +39,10 @@ if (typeof window !== 'undefined') {
 // --- 6. 遊戲流程控制 ---
 
 function startRound(gameState) {
+	if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+		window.OnlineLobbyClient.sendAction({ type: 'NEXT_ROUND' });
+		return;
+	}
 	if (window.AutoNextRoundTimer && typeof window.AutoNextRoundTimer.stop === 'function') {
 		window.AutoNextRoundTimer.stop();
 	}
@@ -379,6 +383,11 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
 
 
 function handleHumanChoice(gameState, chosenCardValue) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        const ok = window.OnlineLobbyClient.sendAction({ type: 'PLAY_MINUTE_CARD', value: chosenCardValue });
+        if (ok) gameState.currentRoundAIChoices = null;
+        return ok;
+    }
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const humanPlayer = (gameState && Array.isArray(gameState.players))
         ? (gameState.players.find(p => p.id === humanId) || gameState.players[0])
@@ -715,6 +724,10 @@ function placeHourCardForPlayer(gameState, player, cardToPlace, playerNameForLog
 }
 
 function handleHumanHourCardChoice(gameState, chosenIndex) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        window.OnlineLobbyClient.sendAction({ type: 'PICK_HOUR_CARD', cardIndex: chosenIndex });
+        return;
+    }
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     if (!gameState || !gameState.waitingHourChoice || gameState.waitingHourChoicePlayerId !== humanId) {
         return;
@@ -860,6 +873,10 @@ function finishHourSelection(gameState) {
 
 // 處理人類玩家的能力選擇結果
 function handleHumanAbilityChoice(gameState, choice) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        window.OnlineLobbyClient.sendAction({ type: 'USE_ABILITY', ability: 'MINUTE_HAND_MOVE', choice });
+        return;
+    }
     // 如果不是在等待分針選擇，就忽略
     if (!gameState || !gameState.waitingMinuteHandChoice) return;
 

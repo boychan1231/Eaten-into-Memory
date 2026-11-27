@@ -516,6 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const waitingSecondFinal = !!currentGs.waitingSecondHandFinalChoice && currentGs.waitingSecondHandFinalChoicePlayerId === humanId;
             const playingClash = !!currentGs.isPlayingMinuteClash;
 
+            if (currentGs.isOnlineMatch) {
+                if (currentGs.pendingOnlineActionType === 'NEXT_ROUND' && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+                    window.OnlineLobbyClient.sendAction({ type: 'NEXT_ROUND' });
+                } else {
+                    appLogger.log('【連線】仍在等待玩家或伺服器操作。');
+                }
+                return;
+            }
+
             if (uiState.isSecondHandSelectingTwo || waitingMinute || waitingHour || hourSelectionActive || waitingAbility || waitingSecondFinal || playingClash) {
                 appLogger.log('【UI】仍在等待人類輸入，請先完成當前步驟。');
                 updateUI(currentGs);
