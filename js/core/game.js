@@ -231,6 +231,12 @@ function processMinuteCardSelection(gameState) {
 }
 
 function handleHumanSecondHandCommit(gameState, chosenCardValues) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        const values = Array.isArray(chosenCardValues) ? chosenCardValues.map(Number) : [];
+        const ok = window.OnlineLobbyClient.sendAction({ type: 'PLAY_MINUTE_CARD', useSecondHand: true, values });
+        if (ok) gameState.currentRoundAIChoices = null;
+        return ok;
+    }
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const humanPlayer = gameState.players.find(p => p.id === humanId);
     if (!humanPlayer || humanPlayer.isEjected) return false;
@@ -318,6 +324,11 @@ function handleHumanSecondHandCommit(gameState, chosenCardValues) {
 }
 
 function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        const ok = window.OnlineLobbyClient.sendAction({ type: 'USE_ABILITY', ability: 'SECOND_HAND_FINAL', value: Number(chosenValue) });
+        if (ok) gameState.waitingSecondHandFinalChoice = false;
+        return ok;
+    }
     const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
     const humanPlayer = gameState.players.find(p => p.id === humanId);
     if (!humanPlayer || humanPlayer.isEjected) return false;

@@ -221,8 +221,17 @@ if (typeof window !== 'undefined') {
     window.AVAILABLE_ROLES = AVAILABLE_ROLES;
 }
 
+// === 連線對戰：將主動異能轉交伺服器權威判定 ===
+function tryDelegateOnlineAbility(gameState, ability) {
+    if (!gameState || !gameState.isOnlineMatch) return null;
+    if (typeof window === 'undefined' || !window.OnlineLobbyClient || typeof window.OnlineLobbyClient.sendAction !== 'function') return null;
+    return Boolean(window.OnlineLobbyClient.sendAction({ type: 'USE_ABILITY', ability }));
+}
+
 // === 時針能力：頂牌放到底 (1 MP 消耗) ===
 function hourHandMoveTopToBottom(gameState, playerId) {
+    const delegated = tryDelegateOnlineAbility(gameState, 'HOUR_HAND_BOTTOM');
+    if (delegated !== null) return delegated;
     const player = gameState.players.find(p => p.id === playerId);
     if (!player) return false;
 
@@ -278,6 +287,8 @@ if (typeof window !== 'undefined') {
 
 //時之惡能力
 function activateSinAbility(gameState, playerId) {
+    const delegated = tryDelegateOnlineAbility(gameState, 'SIN_TARGETING');
+    if (delegated !== null) return delegated;
     if (!GAME_CONFIG.enableAbilities) return false;
 
     const player = gameState.players.find(p => p.id === playerId);
@@ -321,6 +332,8 @@ if (typeof window !== 'undefined') {
 
 // === 時之惡能力：封鎖 ===
 function activateSinSealAbility(gameState, playerId) {
+    const delegated = tryDelegateOnlineAbility(gameState, 'SIN_SEAL');
+    if (delegated !== null) return delegated;
     if (!GAME_CONFIG.enableAbilities) return false;
 
     const player = gameState.players.find(p => p.id === playerId);

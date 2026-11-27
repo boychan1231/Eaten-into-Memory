@@ -125,6 +125,9 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         if (selectEl && typeof selectEl.addEventListener === 'function') {
             selectEl.addEventListener('change', (e) => {
                 humanPlayer.targetRoleName = e.target.value;
+                if (globalGameState && globalGameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+                    window.OnlineLobbyClient.sendAction({ type: 'USE_ABILITY', ability: 'SET_TARGET_ROLE', role: e.target.value });
+                }
                 updateUI(globalGameState);
             });
 

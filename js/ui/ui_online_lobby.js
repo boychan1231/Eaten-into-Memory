@@ -262,8 +262,14 @@
                 score: typeof p.score === 'number' ? p.score : 0,
                 d6Die: p.d6Die !== undefined ? p.d6Die : null,
                 currentClockPosition: p.currentClockPosition !== undefined ? p.currentClockPosition : null,
-                hand: Array.isArray(p.hand) ? p.hand.map(c => ({ value: c.value, gear: c.gear ?? '' })) : [],
-                hourCards: Array.isArray(p.hourCards) ? p.hourCards : [],
+                // 對手手牌／小時卡由伺服器隱藏（null），以數量建立佔位陣列，讓 UI 張數顯示正確
+                hand: Array.isArray(p.hand)
+                    ? p.hand.map(c => ({ value: c.value, gear: c.gear ?? '' }))
+                    : Array.from({ length: Math.max(0, Number(p.handCount || 0)) }, () => ({ value: 0, gear: '', hidden: true })),
+                hourCards: Array.isArray(p.hourCards)
+                    ? p.hourCards
+                    : Array.from({ length: Math.max(0, Number(p.hourCardsCount || 0)) }, () => ({ number: 0, isPrecious: false, hidden: true })),
+                secondHandPendingCards: Array.isArray(p.secondHandPendingCards) ? p.secondHandPendingCards : [],
                 playedMinuteCards: Array.isArray(p.playedMinuteCards) ? p.playedMinuteCards : [],
                 discardPile: Array.isArray(p.discardPile) ? p.discardPile : []
             };
@@ -281,7 +287,11 @@
             ? gs.hourDeck
             : new Array(Math.max(0, Number(gs.hourDeckCount || 0))).fill({});
 
-        const gameEnded = pending.type === 'GAME_OVER' || gs.status === 'game_over';
+        const gameEnded = Boolean(gs.gameEnded) || gs.status === 'ended' || gs.status === 'game_over' || pending.type === 'GAME_OVER';
+        const me = players.find(p => p.id === mySeatId) || null;
+        const isSecondHandFinal = pending.type === 'SECOND_HAND_FINAL' && isMyTurn;
+        const minuteDiscard = (Array.isArray(gs.minuteDiscard) ? gs.minuteDiscard : [])
+            .map(d => ({ ...d, playerId: d.playerId || d.seatId }));
         const isNewRoundOrMatch = !prevGs || !prevGs.isOnlineMatch || prevGs.onlineRoomId !== gs.roomId || prevGs.gameRound !== gs.gameRound;
 
         return {
@@ -299,6 +309,10 @@
             hourDeck,
             minuteDeck: Array.isArray(gs.minuteDeck) ? gs.minuteDeck : [],
             discardPile: Array.isArray(gs.discardPile) ? gs.discardPile : [],
+            minuteDiscard,
+            abilityMarker: gs.abilityMarker ?? null,
+            phase: gs.phase || '',
+            secondHandPendingCards: me ? me.secondHandPendingCards : [],
             currentDrawnHourCards: Array.isArray(gs.currentDrawnHourCards) ? gs.currentDrawnHourCards : [],
             playedMinuteCardsHistory: Array.isArray(gs.playedMinuteCardsHistory) ? gs.playedMinuteCardsHistory : [],
             currentRoundAIChoices: (pending.type === 'PLAY_MINUTE_CARD' && isMyTurn) ? {} : null,
@@ -308,8 +322,8 @@
             waitingMinuteHandChoice: pending.type === 'MINUTE_HAND_MOVE' && isMyTurn,
             waitingAbilityChoice: pending.type === 'MINUTE_HAND_MOVE' && isMyTurn,
             waitingAbilityChoicePlayerId: (pending.type === 'MINUTE_HAND_MOVE' && isMyTurn) ? mySeatId : '',
-            waitingSecondHandFinalChoice: false,
-            waitingSecondHandFinalChoicePlayerId: '',
+            waitingSecondHandFinalChoice: isSecondHandFinal,
+            waitingSecondHandFinalChoicePlayerId: isSecondHandFinal ? mySeatId : '',
             isPlayingMinuteClash: false,
             sinTargetingMode: gs.sinTargetingMode || 'default',
             gameEnded,
@@ -337,6 +351,8 @@
 
         const adapted = adaptServerStateToLocal(gs);
         if (typeof window !== 'undefined') {
+            // 同步房間異能開關，讓異能面板與單人模式行為一致
+            if (window.GAME_CONFIG) window.GAME_CONFIG.enableAbilities = Boolean(gs.enableAbilities);
             window.globalGameState = adapted;
         }
         if (typeof globalGameState !== 'undefined') {
