@@ -67,6 +67,7 @@
         lastRoundKey: '',
         t: 0,
         textures: {},
+        fxFrames: {},
         texturesLoaded: false,
 
         // ---------- 鐘面視角自由拖拉平移 (Pan / Drag) 與動態滾輪縮放 ----------
@@ -330,12 +331,37 @@
                 });
             }));
 
+            this.loadHitSparkFrames();
             this.texturesLoaded = true;
             // 貼圖就緒後強制重新建立所有棋子精靈節點，無縫替換為角色圖形
             if (window.globalGameState) {
                 const humanId = (window.getEffectiveHumanPlayerId && window.getEffectiveHumanPlayerId()) || 'SM_1';
                 this.syncTokens(window.globalGameState, humanId, true);
             }
+        },
+
+        loadHitSparkFrames() {
+            if (!window.PIXI || !PIXI.BaseTexture || !PIXI.Texture || !PIXI.Rectangle) return;
+            if (this.fxFrames.hitSpark && this.fxFrames.hitSpark.length === 7) return;
+            try {
+                const baseTex = PIXI.BaseTexture.from('assets/fx/hit-spark-white-32.png');
+                const sliceFrames = () => {
+                    if (this.fxFrames.hitSpark && this.fxFrames.hitSpark.length === 7) return;
+                    const frameSize = 32;
+                    const frameCount = 7;
+                    if ((baseTex.width || 0) < frameSize * frameCount || (baseTex.height || 0) < frameSize) return;
+                    const frames = [];
+                    for (let i = 0; i < frameCount; i++) {
+                        frames.push(new PIXI.Texture(baseTex, new PIXI.Rectangle(i * frameSize, 0, frameSize, frameSize)));
+                    }
+                    this.fxFrames.hitSpark = frames;
+                };
+                if (baseTex.valid) {
+                    sliceFrames();
+                } else {
+                    baseTex.once('loaded', sliceFrames);
+                }
+            } catch (_) {}
         },
 
         // ---------- 初始化 ----------
@@ -975,6 +1001,8 @@
                 youTag: null,
                 isHuman,
                 key,
+                roleCard: p.roleCard,
+                playerType: p.type,
                 baseScale,
                 targetScale: 1,
                 currentScale: 1,
@@ -1067,6 +1095,14 @@
                     const isHuman = p.id === humanId;
                     const key = `${tokenKey(p)}|${p.roleCard}|${isHuman}|${this.texturesLoaded ? 'tex' : 'notex'}`;
                     let node = this.tokens.get(p.id);
+                    const prevRoleCard = node ? node.roleCard : null;
+                    const prevType = node ? node.playerType : null;
+                    const isEvolving = !forceRebuild && node && prevType === '時魔' && p.type === '時魔'
+                        && String(prevRoleCard || '').includes('幼')
+                        && (p.roleCard === '時針' || p.roleCard === '分針' || p.roleCard === '秒針');
+                    const shouldPlayEvolveFx = isEvolving || !!p.justEvolvedFx;
+                    if (p.justEvolvedFx) delete p.justEvolvedFx;
+
                     if (forceRebuild || !node || node.key !== key) {
                         if (node) node.c.destroy({ children: true });
                         node = this.makeToken(p, isHuman, key);
@@ -1075,6 +1111,9 @@
                         node.c.scale.set(layout.scale);
                         this.L.tokens.addChild(node.c);
                         this.tokens.set(p.id, node);
+                    }
+                    if (shouldPlayEvolveFx) {
+                        this.playTokenSpark(p.id, { tint: PAL.gold, scale: 2.35, speed: 0.32 });
                     }
                     node.tx = tx;
                     node.ty = ty;
@@ -1088,6 +1127,30 @@
                     this.tokens.delete(id);
                 }
             });
+        },
+
+        // ---------- 播放角色棋子序列幀火花特效 ----------
+        playTokenSpark(playerId, opts = {}) {
+            if (!window.PIXI || !PIXI.AnimatedSprite) return;
+            this.loadHitSparkFrames();
+            const frames = this.fxFrames && this.fxFrames.hitSpark;
+            if (!frames || !frames.length) return;
+            const node = this.tokens.get(playerId);
+            if (!node || !node.c || node.c.destroyed) return;
+
+            const spark = new PIXI.AnimatedSprite(frames);
+            spark.anchor.set(0.5);
+            spark.position.set(0, 0);
+            spark.scale.set(opts.scale || 2.35);
+            if (typeof opts.tint === 'number') spark.tint = opts.tint;
+            spark.blendMode = PIXI.BLEND_MODES.ADD;
+            spark.animationSpeed = opts.speed || 0.32;
+            spark.loop = false;
+            spark.onComplete = () => {
+                if (!spark.destroyed) spark.destroy();
+            };
+            node.c.addChild(spark);
+            spark.play();
         },
 
         // ---------- 取得角色棋子在螢幕視窗上的像素座標 ----------

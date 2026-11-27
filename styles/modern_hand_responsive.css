@@ -23,7 +23,6 @@
 .human-top-bar,
 .minute-card,
 .hand-action-btns button,
-.human-more-summary,
 .icon-btn,
 .action-hint {
     pointer-events: auto !important;
@@ -62,31 +61,10 @@
     color: var(--gold) !important;
     font-weight: 700 !important;
 }
-.human-more-stats-details {
-    position: relative;
-}
-.human-more-summary {
-    list-style: none;
-    cursor: pointer;
-    font-size: 0.74rem;
-    color: var(--dim);
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.03);
-    user-select: none;
-    transition: all 0.2s ease;
-}
-.human-more-summary::-webkit-details-marker { display: none; }
-.human-more-summary:hover {
-    color: var(--gold);
-    border-color: rgba(255, 210, 127, 0.35);
-}
 .human-more-body {
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
-    margin-left: 6px;
     font-size: 0.75rem;
 }
 
