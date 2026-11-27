@@ -1047,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ctx.save();
                         ctx.globalCompositeOperation = 'lighter';
                         ctx.imageSmoothingEnabled = false;
-                        ctx.drawImage(evolveSparkImg, frameIdx * 32, 0, 32, 32, 60 - 44, 60 - 44, 88, 88);
+                        ctx.drawImage(evolveSparkImg, frameIdx * 32, 0, 32, 32, 60 - 31, 60 - 31, 62, 62);
                         ctx.restore();
                     }
                 }
