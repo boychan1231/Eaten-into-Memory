@@ -671,6 +671,18 @@
 			<div id="settings-content" class="tab-content">
 				<h3 style="margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px;"><span class="material-symbols-outlined icon-inline">settings</span><span data-i18n="ui.settings.title">遊戲設定</span></h3>
 
+				<div class="settings-subtabs" role="tablist" aria-label="設定分類">
+					<button type="button" class="settings-subtab-btn active" data-settings-tab="general" role="tab" aria-selected="true">
+						<span class="material-symbols-outlined icon-inline">tune</span>
+						<span data-i18n="ui.settings.tab_general">一般設定</span>
+					</button>
+					<button type="button" class="settings-subtab-btn" data-settings-tab="fx-showcase" role="tab" aria-selected="false">
+						<span class="material-symbols-outlined icon-inline">auto_awesome</span>
+						<span data-i18n="ui.settings.tab_fx_showcase">已加入特效展示</span>
+					</button>
+				</div>
+
+				<div id="settings-panel-general" class="settings-subpanel active">
 				<div class="settings-two-column">
 					<div class="settings-column">
 						<div class="setting-item">
@@ -890,6 +902,61 @@
 								Ambient Groove 002 - striptheband, <br>
 								Clocking In Machine (1920) - PMBROWNE
 							</p>
+						</div>
+					</div>
+				</div>
+				</div>
+
+				<div id="settings-panel-fx-showcase" class="settings-subpanel">
+					<div class="fx-showcase-header">
+						<h4 data-i18n="ui.settings.fx_showcase_title">已加入特效展示</h4>
+						<p class="setting-note" data-i18n="ui.settings.fx_showcase_desc">檢視並即時預覽遊戲目前已實裝的視覺特效與序列圖資源。</p>
+					</div>
+
+					<div class="fx-showcase-grid">
+						<div class="fx-showcase-card">
+							<div class="fx-showcase-stage" id="fx-preview-evolve-stage">
+								<canvas id="fx-preview-evolve-canvas" width="120" height="120"></canvas>
+							</div>
+							<div class="fx-showcase-info">
+								<h5 data-i18n="ui.settings.fx_evolve_title">幼體時魔進化火花</h5>
+								<div class="fx-showcase-meta" data-i18n="ui.settings.fx_evolve_meta">assets/fx/hit-spark-white-32.png · 256×32 (8 格 / 前 7 格有效) · 金色疊加 (ADD)</div>
+								<p class="setting-note" data-i18n="ui.settings.fx_evolve_desc">當幼體時魔達成記憶碎片條件並進化為時針、分針或秒針時，於角色棋子中心播放的序列幀火花特效。</p>
+								<button type="button" class="btn btn-secondary fx-replay-btn" id="fx-replay-evolve-btn">
+									<span class="material-symbols-outlined icon-inline">replay</span>
+									<span data-i18n="ui.settings.fx_replay_btn">重播預覽</span>
+								</button>
+							</div>
+						</div>
+
+						<div class="fx-showcase-card">
+							<div class="fx-showcase-stage" id="fx-preview-shake-stage">
+								<img src="assets/soul_scz.png" alt="受擊棋子預覽" class="fx-preview-token-img" id="fx-preview-shake-token">
+							</div>
+							<div class="fx-showcase-info">
+								<h5 data-i18n="ui.settings.fx_shake_title">受擊畫面與棋子震動</h5>
+								<div class="fx-showcase-meta" data-i18n="ui.settings.fx_shake_meta">GSAP 時間軸補間 · 觸發條件：扣除 GP / 處決 / 侵蝕</div>
+								<p class="setting-note" data-i18n="ui.settings.fx_shake_desc">當玩家受到最高刻度處決或時之惡侵蝕扣除 GP 時，觸發短暫畫面震動與目標棋子水平抖動回饋。</p>
+								<button type="button" class="btn btn-secondary fx-replay-btn" id="fx-replay-shake-btn">
+									<span class="material-symbols-outlined icon-inline">vibration</span>
+									<span data-i18n="ui.settings.fx_replay_btn">重播預覽</span>
+								</button>
+							</div>
+						</div>
+
+						<div class="fx-showcase-card">
+							<div class="fx-showcase-stage" id="fx-preview-float-stage">
+								<img src="assets/soul_sin.png" alt="浮字目標棋子" class="fx-preview-token-img">
+							</div>
+							<div class="fx-showcase-info">
+								<h5 data-i18n="ui.settings.fx_float_title">戰鬥數值浮動跳字</h5>
+								<div class="fx-showcase-meta" data-i18n="ui.settings.fx_float_meta">ui_hud_fx.js · 護盾抵免 / GP 變動 / MP 充能</div>
+								<p class="setting-note" data-i18n="ui.settings.fx_float_desc">依序於棋子或狀態卡上方彈出帶有錯位防重疊的彩色數值提示文字。</p>
+								<button type="button" class="btn btn-secondary fx-replay-btn" id="fx-replay-float-btn">
+									<span class="material-symbols-outlined icon-inline">text_fields</span>
+									<span data-i18n="ui.settings.fx_replay_btn">重播預覽</span>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -250,6 +250,139 @@
     }
 }
 
+/* --- 設定頁子分頁與已加入特效展示頁 --- */
+.settings-subtabs {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.settings-subtab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    color: #cfd5ea;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-subtab-btn:hover {
+    background: rgba(124, 140, 255, 0.16);
+    border-color: rgba(124, 140, 255, 0.45);
+    color: #fff;
+}
+
+.settings-subtab-btn.active {
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.22), rgba(124, 140, 255, 0.22));
+    border-color: #ffd27f;
+    color: #ffeaa7;
+    box-shadow: 0 0 14px rgba(255, 210, 127, 0.2);
+}
+
+.settings-subpanel {
+    display: none;
+}
+
+.settings-subpanel.active {
+    display: block;
+}
+
+.fx-showcase-header h4 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    color: #ffeaa7;
+}
+
+.fx-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.fx-showcase-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(10, 12, 20, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.fx-showcase-stage {
+    position: relative;
+    height: 136px;
+    border-radius: 10px;
+    background: radial-gradient(circle at center, rgba(124, 140, 255, 0.16) 0%, rgba(5, 6, 10, 0.95) 75%);
+    border: 1px solid rgba(255, 210, 127, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.fx-preview-token-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(255, 210, 127, 0.35));
+}
+
+.fx-preview-float-item {
+    position: absolute;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+    animation: fxPreviewFloatUp 1.3s ease-out forwards;
+}
+
+@keyframes fxPreviewFloatUp {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.9);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.06);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-34px) scale(0.98);
+    }
+}
+
+.fx-showcase-info h5 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: #f1f2f6;
+}
+
+.fx-showcase-meta {
+    font-size: 0.78rem;
+    color: #9aa4d2;
+    margin-bottom: 8px;
+    word-break: break-word;
+}
+
+.fx-replay-btn {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 /* --- 鐘面格子可選目標高亮特效 --- */
 .clock-spot.highlight-target {
     border-color: #ffd27f;

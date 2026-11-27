@@ -987,6 +987,161 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // 設定頁子分頁與「已加入特效展示」即時預覽
+        const settingsSubtabBtns = document.querySelectorAll('.settings-subtab-btn');
+        const settingsPanelGeneral = document.getElementById('settings-panel-general');
+        const settingsPanelFx = document.getElementById('settings-panel-fx-showcase');
+        const evolveCanvas = document.getElementById('fx-preview-evolve-canvas');
+        let evolvePreviewTimer = null;
+        let evolveSparkImg = null;
+        let evolveDemonImg = null;
+        let evolveHourImg = null;
+
+        function ensureEvolvePreviewImages() {
+            const b64 = window.ROLE_SOUL_BASE64 || {};
+            if (!evolveDemonImg) {
+                evolveDemonImg = new Image();
+                evolveDemonImg.src = b64.demon || 'assets/soul_demon.png';
+            }
+            if (!evolveHourImg) {
+                evolveHourImg = new Image();
+                evolveHourImg.src = b64.hour || 'assets/soul_hour.png';
+            }
+            if (!evolveSparkImg) {
+                evolveSparkImg = new Image();
+                evolveSparkImg.src = 'assets/fx/hit-spark-white-32.png';
+            }
+        }
+
+        function drawTokenOnPreview(ctx, img, size) {
+            if (!img || !img.complete || !img.naturalWidth) return;
+            const half = size / 2;
+            ctx.drawImage(img, 60 - half, 60 - half, size, size);
+        }
+
+        function playEvolveShowcasePreview() {
+            if (!evolveCanvas) return;
+            ensureEvolvePreviewImages();
+            const ctx = evolveCanvas.getContext('2d');
+            if (!ctx) return;
+            if (evolvePreviewTimer) {
+                cancelAnimationFrame(evolvePreviewTimer);
+                evolvePreviewTimer = null;
+            }
+
+            const tintCanvas = document.createElement('canvas');
+            tintCanvas.width = 32;
+            tintCanvas.height = 32;
+            const tCtx = tintCanvas.getContext('2d');
+
+            const startTime = performance.now();
+            const preDelayMs = 260;
+            const frameDurationMs = 55;
+            const totalFrames = 7;
+
+            const renderFrame = (now) => {
+                const elapsed = now - startTime;
+                ctx.clearRect(0, 0, 120, 120);
+
+                if (elapsed < preDelayMs) {
+                    drawTokenOnPreview(ctx, evolveDemonImg, 44);
+                } else {
+                    drawTokenOnPreview(ctx, evolveHourImg, 62);
+                    const frameIdx = Math.floor((elapsed - preDelayMs) / frameDurationMs);
+                    if (frameIdx < totalFrames && evolveSparkImg && evolveSparkImg.complete && evolveSparkImg.naturalWidth >= 224) {
+                        tCtx.clearRect(0, 0, 32, 32);
+                        tCtx.globalCompositeOperation = 'source-over';
+                        tCtx.drawImage(evolveSparkImg, frameIdx * 32, 0, 32, 32, 0, 0, 32, 32);
+                        tCtx.globalCompositeOperation = 'source-in';
+                        tCtx.fillStyle = '#ffd27f';
+                        tCtx.fillRect(0, 0, 32, 32);
+
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'lighter';
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(tintCanvas, 60 - 44, 60 - 44, 88, 88);
+                        ctx.restore();
+                    }
+                }
+
+                if (elapsed < preDelayMs + totalFrames * frameDurationMs + 350) {
+                    evolvePreviewTimer = requestAnimationFrame(renderFrame);
+                } else {
+                    ctx.clearRect(0, 0, 120, 120);
+                    drawTokenOnPreview(ctx, evolveHourImg, 62);
+                    evolvePreviewTimer = null;
+                }
+            };
+            evolvePreviewTimer = requestAnimationFrame(renderFrame);
+        }
+
+        if (settingsSubtabBtns.length > 0 && settingsPanelGeneral && settingsPanelFx) {
+            settingsSubtabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.getAttribute('data-settings-tab');
+                    settingsSubtabBtns.forEach(b => {
+                        const isMatch = b === btn;
+                        b.classList.toggle('active', isMatch);
+                        b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+                    });
+                    const showFx = target === 'fx-showcase';
+                    settingsPanelGeneral.classList.toggle('active', !showFx);
+                    settingsPanelFx.classList.toggle('active', showFx);
+                    if (showFx) {
+                        playEvolveShowcasePreview();
+                    }
+                });
+            });
+        }
+
+        const replayEvolveBtn = document.getElementById('fx-replay-evolve-btn');
+        if (replayEvolveBtn) {
+            replayEvolveBtn.addEventListener('click', () => playEvolveShowcasePreview());
+        }
+
+        const replayShakeBtn = document.getElementById('fx-replay-shake-btn');
+        const shakeTokenEl = document.getElementById('fx-preview-shake-token');
+        const shakeStageEl = document.getElementById('fx-preview-shake-stage');
+        if (replayShakeBtn && shakeTokenEl && shakeStageEl) {
+            replayShakeBtn.addEventListener('click', () => {
+                if (typeof gsap !== 'undefined') {
+                    gsap.killTweensOf(shakeTokenEl);
+                    gsap.killTweensOf(shakeStageEl);
+                    gsap.timeline()
+                        .to(shakeTokenEl, { x: 9, duration: 0.045, yoyo: true, repeat: 5 })
+                        .to(shakeTokenEl, { x: 0, duration: 0.05 });
+                    gsap.timeline()
+                        .to(shakeStageEl, { x: -4, duration: 0.05, yoyo: true, repeat: 3 })
+                        .to(shakeStageEl, { x: 0, duration: 0.05 });
+                }
+            });
+        }
+
+        const replayFloatBtn = document.getElementById('fx-replay-float-btn');
+        const floatStageEl = document.getElementById('fx-preview-float-stage');
+        if (replayFloatBtn && floatStageEl) {
+            replayFloatBtn.addEventListener('click', () => {
+                const samples = [
+                    { text: '⛨ 護盾抵免!', color: '#4cd137', dx: -22, dy: -10 },
+                    { text: '-1 GP', color: '#ff4757', dx: 18, dy: -22 },
+                    { text: '+2 MP', color: '#a29bfe', dx: 0, dy: -34 }
+                ];
+                samples.forEach((s, idx) => {
+                    setTimeout(() => {
+                        const el = document.createElement('div');
+                        el.className = 'fx-preview-float-item';
+                        el.textContent = s.text;
+                        el.style.color = s.color;
+                        el.style.left = `calc(50% + ${s.dx}px)`;
+                        el.style.top = `calc(50% + ${s.dy}px)`;
+                        el.style.transform = 'translateX(-50%)';
+                        floatStageEl.appendChild(el);
+                        setTimeout(() => el.remove(), 1350);
+                    }, idx * 140);
+                });
+            });
+        }
+
         // 新增：手牌排序設定監聽
         const handSortRadios = document.querySelectorAll('input[name="hand-sort"]');
         if (handSortRadios.length > 0) {

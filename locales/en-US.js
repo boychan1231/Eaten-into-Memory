@@ -145,7 +145,21 @@
                 custom_font_status_default: 'Using default system font',
                 custom_font_status_applied: 'Live custom font applied: {name}',
                 custom_font_status_error: 'Failed to load font. Please check the file format.',
-                custom_font_preview_text: 'Eaten into Memory 0123456789 ── Gears & Clocks'
+                custom_font_preview_text: 'Eaten into Memory 0123456789 ── Gears & Clocks',
+                tab_general: 'General',
+                tab_fx_showcase: 'Added Effects',
+                fx_showcase_title: 'Added Visual Effects Showcase',
+                fx_showcase_desc: 'Inspect and preview visual effects and sprite animations currently integrated into the game.',
+                fx_evolve_title: 'Time Demon Evolution Spark',
+                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 slots / 7 active) · Gold ADD blend',
+                fx_evolve_desc: 'Plays a frame-by-frame golden spark burst on the character token when a Juvenile Time Demon evolves into Hour, Minute, or Second Hand.',
+                fx_shake_title: 'Hit Screen & Token Shake',
+                fx_shake_meta: 'GSAP Timeline · Trigger: GP Loss / Execution / Erosion',
+                fx_shake_desc: 'Triggers a brief screen shake and horizontal token jitter when a player loses GP from execution or Sin erosion.',
+                fx_float_title: 'Combat Floating Numbers',
+                fx_float_meta: 'ui_hud_fx.js · Shield Block / GP Change / MP Recharge',
+                fx_float_desc: 'Spawns staggered, color-coded floating combat text above tokens or HUD cards.',
+                fx_replay_btn: 'Replay Preview'
             },
             hints: {
                 drag_to_play: '✦ Release to play',

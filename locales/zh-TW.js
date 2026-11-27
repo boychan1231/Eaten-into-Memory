@@ -145,7 +145,21 @@
                 custom_font_status_default: '使用預設字型',
                 custom_font_status_applied: '已即時套用字型：{name}',
                 custom_font_status_error: '字型載入失敗，請確認檔案格式',
-                custom_font_preview_text: '蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針'
+                custom_font_preview_text: '蝕入記憶 Eaten into Memory 0123456789 ── 機芯齒輪與命運之針',
+                tab_general: '一般設定',
+                tab_fx_showcase: '已加入特效展示',
+                fx_showcase_title: '已加入特效展示',
+                fx_showcase_desc: '檢視並即時預覽遊戲目前已實裝的視覺特效與序列圖資源。',
+                fx_evolve_title: '幼體時魔進化火花',
+                fx_evolve_meta: 'assets/fx/hit-spark-white-32.png · 256×32 (8 格 / 前 7 格有效) · 金色疊加 (ADD)',
+                fx_evolve_desc: '當幼體時魔達成記憶碎片條件並進化為時針、分針或秒針時，於角色棋子中心播放的序列幀火花特效。',
+                fx_shake_title: '受擊畫面與棋子震動',
+                fx_shake_meta: 'GSAP 時間軸補間 · 觸發條件：扣除 GP / 處決 / 侵蝕',
+                fx_shake_desc: '當玩家受到最高刻度處決或時之惡侵蝕扣除 GP 時，觸發短暫畫面震動與目標棋子水平抖動回饋。',
+                fx_float_title: '戰鬥數值浮動跳字',
+                fx_float_meta: 'ui_hud_fx.js · 護盾抵免 / GP 變動 / MP 充能',
+                fx_float_desc: '依序於棋子或狀態卡上方彈出帶有錯位防重疊的彩色數值提示文字。',
+                fx_replay_btn: '重播預覽'
             },
             hints: {
                 drag_to_play: '✦ 放開以出牌',
