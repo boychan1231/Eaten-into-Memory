@@ -1,13 +1,16 @@
+# 部署至 Google Cloud Run 時請以「專案根目錄」作為建置上下文：
+# docker build -f server/Dockerfile -t eaten-into-memory-server .
 FROM node:22-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+COPY server/package.json server/package-lock.json* ./server/
+RUN npm install --prefix server --omit=dev
 
-COPY . .
+COPY js/core ./js/core
+COPY server ./server
 
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["node", "server/index.js"]

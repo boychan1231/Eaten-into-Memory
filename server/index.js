@@ -1,16 +1,18 @@
-import http from 'http';
+import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
+import { HeadlessGameEngine, normalizeGameMode } from './game_engine.js';
 
 const PORT = Number(process.env.PORT || 8080);
 
 // 記憶體房間表：roomId -> Room
 const rooms = new Map();
 
-function createRoom(roomId) {
+function createRoom(roomId, hostId) {
   return {
     id: roomId,
-    round: 1,
-    players: new Map(), // playerId -> { id, name, ws, playedCard: number | null }
+    hostId,
+    members: new Map(), // playerId -> { id, name, ws }
+    engine: null,       // HeadlessGameEngine | null
   };
 }
 
@@ -20,35 +22,38 @@ function sendJson(ws, payload) {
   }
 }
 
-function broadcastRoom(room, payload) {
-  for (const player of room.players.values()) {
-    sendJson(player.ws, payload);
-  }
-}
-
-function serializeRoomState(room, viewerId) {
-  const playersList = [];
-  for (const p of room.players.values()) {
-    playersList.push({
-      id: p.id,
-      name: p.name,
-      hasPlayed: p.playedCard !== null,
-      // 暗拍防作弊：未開牌前僅對本人顯示已出點數，其他玩家只看得到 hasPlayed
-      playedCard: p.id === viewerId ? p.playedCard : null,
-    });
-  }
-  return {
-    roomId: room.id,
-    round: room.round,
-    players: playersList,
+function broadcastLobbyState(room) {
+  const membersList = Array.from(room.members.values()).map((m) => ({
+    id: m.id,
+    name: m.name,
+    isHost: m.id === room.hostId,
+  }));
+  const payload = {
+    type: 'GAME_STATE',
+    state: {
+      roomId: room.id,
+      status: 'lobby',
+      hostId: room.hostId,
+      players: membersList,
+    },
+    events: [],
   };
+  for (const m of room.members.values()) {
+    sendJson(m.ws, payload);
+  }
 }
 
-function broadcastRoomState(room) {
-  for (const p of room.players.values()) {
-    sendJson(p.ws, {
-      type: 'ROOM_STATE',
-      state: serializeRoomState(room, p.id),
+function broadcastGameState(room, events = []) {
+  if (!room.engine) {
+    broadcastLobbyState(room);
+    return;
+  }
+  for (const m of room.members.values()) {
+    const filteredState = room.engine.getStateForController(room.id, m.id);
+    sendJson(m.ws, {
+      type: 'GAME_STATE',
+      state: filteredState,
+      events,
     });
   }
 }
@@ -86,7 +91,7 @@ wss.on('connection', (ws) => {
     try {
       msg = JSON.parse(raw.toString('utf-8'));
     } catch {
-      sendJson(ws, { type: 'ERROR', message: '無效的 JSON 封包格式' });
+      sendJson(ws, { type: 'ERROR', code: 'BAD_JSON', message: '無效的 JSON 封包格式' });
       return;
     }
 
@@ -100,110 +105,169 @@ wss.on('connection', (ws) => {
         const roomId = String(msg.roomId || 'TEST01').trim().toUpperCase();
         const playerName = String(msg.name || `玩家${nextSeq}`).trim().slice(0, 20);
 
-        // 若原本在別的房間，先離開
         if (currentRoom) {
-          currentRoom.players.delete(playerId);
-          if (currentRoom.players.size === 0) {
+          currentRoom.members.delete(playerId);
+          if (currentRoom.engine) {
+            currentRoom.engine.convertControllerToAI(playerId);
+            const evts = currentRoom.engine.consumeEvents();
+            broadcastGameState(currentRoom, evts);
+          } else if (currentRoom.members.size > 0) {
+            broadcastLobbyState(currentRoom);
+          }
+          if (currentRoom.members.size === 0) {
             rooms.delete(currentRoom.id);
-          } else {
-            broadcastRoomState(currentRoom);
           }
         }
 
         if (!rooms.has(roomId)) {
-          rooms.set(roomId, createRoom(roomId));
+          rooms.set(roomId, createRoom(roomId, playerId));
         }
         currentRoom = rooms.get(roomId);
-        currentRoom.players.set(playerId, {
-          id: playerId,
-          name: playerName,
-          ws,
-          playedCard: null,
-        });
 
-        console.log(`[Room ${roomId}] ${playerName} (${playerId}) 加入，目前人數: ${currentRoom.players.size}`);
-        sendJson(ws, { type: 'JOINED', roomId, playerId, name: playerName });
-        broadcastRoomState(currentRoom);
+        if (currentRoom.engine && !currentRoom.engine.gs.gameEnded) {
+          sendJson(ws, { type: 'ERROR', code: 'ROOM_IN_PROGRESS', message: '此房間對局進行中，請建立或加入其他房號' });
+          currentRoom = null;
+          return;
+        }
+
+        currentRoom.members.set(playerId, { id: playerId, name: playerName, ws });
+        if (!currentRoom.members.has(currentRoom.hostId)) {
+          currentRoom.hostId = playerId;
+        }
+
+        console.log(`[Room ${roomId}] ${playerName} (${playerId}) 加入大廳，人數: ${currentRoom.members.size}`);
+        sendJson(ws, {
+          type: 'JOINED',
+          roomId,
+          playerId,
+          name: playerName,
+          isHost: currentRoom.hostId === playerId,
+        });
+        broadcastLobbyState(currentRoom);
+        break;
+      }
+
+      case 'START_GAME': {
+        if (!currentRoom) {
+          sendJson(ws, { type: 'ERROR', code: 'NO_ROOM', message: '尚未加入房間' });
+          return;
+        }
+        const mode = normalizeGameMode(msg.mode || '5P');
+        const enableAbilities = msg.enableAbilities !== undefined ? Boolean(msg.enableAbilities) : true;
+        const aiDifficulty = msg.aiDifficulty === 'easy' ? 'easy' : 'normal';
+        const seed = Number.isInteger(msg.seed) ? msg.seed : null;
+
+        const humanPlayers = Array.from(currentRoom.members.values()).map((m) => ({
+          controllerId: m.id,
+          name: m.name,
+        }));
+
+        try {
+          currentRoom.engine = new HeadlessGameEngine({
+            mode,
+            enableAbilities,
+            aiDifficulty,
+            seed,
+            humanPlayers,
+          });
+          const events = currentRoom.engine.consumeEvents();
+          console.log(`[Room ${currentRoom.id}] 開始對局 mode=${mode} 人類=${humanPlayers.length} 補AI=${currentRoom.engine.gs.players.length - humanPlayers.length}`);
+          broadcastGameState(currentRoom, events);
+        } catch (err) {
+          console.error('[START_GAME] 初始化失敗:', err);
+          sendJson(ws, { type: 'ERROR', code: 'START_FAILED', message: err.message });
+        }
         break;
       }
 
       case 'PLAY_MINUTE_CARD': {
-        if (!currentRoom) {
-          sendJson(ws, { type: 'ERROR', message: '尚未加入房間' });
+        if (!currentRoom || !currentRoom.engine) {
+          sendJson(ws, { type: 'ERROR', code: 'NOT_PLAYING', message: '房間尚未開始對局，請先送出 START_GAME' });
           return;
         }
-        const player = currentRoom.players.get(playerId);
-        const value = Number(msg.value);
-        if (!player || !Number.isInteger(value) || value < 1 || value > 60) {
-          sendJson(ws, { type: 'ERROR', message: '無效的分鐘卡點數 (1~60)' });
+        const res = currentRoom.engine.playMinuteCard(playerId, msg);
+        if (!res.ok) {
+          sendJson(ws, { type: 'ERROR', code: 'INVALID_ACTION', message: res.message });
           return;
         }
-        if (player.playedCard !== null) {
-          sendJson(ws, { type: 'ERROR', message: '本回合已完成暗拍出牌' });
+        const events = currentRoom.engine.consumeEvents();
+        broadcastGameState(currentRoom, events);
+        break;
+      }
+
+      case 'PICK_HOUR_CARD': {
+        if (!currentRoom || !currentRoom.engine) {
+          sendJson(ws, { type: 'ERROR', code: 'NOT_PLAYING', message: '房間尚未開始對局' });
           return;
         }
-
-        player.playedCard = value;
-        console.log(`[Room ${currentRoom.id}] ${player.name} 暗拍出牌（已隱藏）`);
-
-        // 通知房內所有人此玩家已完成蓋牌（不洩漏點數）
-        broadcastRoom(currentRoom, {
-          type: 'PLAYER_BID_LOCKED',
-          playerId: player.id,
-          playerName: player.name,
-        });
-        broadcastRoomState(currentRoom);
-
-        // 檢查是否房內所有玩家都已出牌
-        const allPlayed = Array.from(currentRoom.players.values()).every(
-          (p) => p.playedCard !== null
-        );
-        if (allPlayed) {
-          const bids = Array.from(currentRoom.players.values())
-            .map((p) => ({
-              playerId: p.id,
-              playerName: p.name,
-              value: p.playedCard,
-            }))
-            .sort((a, b) => b.value - a.value);
-
-          console.log(`[Room ${currentRoom.id}] 第 ${currentRoom.round} 回合開牌:`, bids);
-          broadcastRoom(currentRoom, {
-            type: 'REVEAL_BIDS',
-            round: currentRoom.round,
-            bids,
-            winner: bids[0] || null,
-          });
-
-          // 推進至下一回合並重置蓋牌狀態
-          currentRoom.round += 1;
-          for (const p of currentRoom.players.values()) {
-            p.playedCard = null;
-          }
-          broadcastRoomState(currentRoom);
+        const res = currentRoom.engine.pickHourCard(playerId, msg.cardIndex);
+        if (!res.ok) {
+          sendJson(ws, { type: 'ERROR', code: 'INVALID_ACTION', message: res.message });
+          return;
         }
+        const events = currentRoom.engine.consumeEvents();
+        broadcastGameState(currentRoom, events);
+        break;
+      }
+
+      case 'USE_ABILITY': {
+        if (!currentRoom || !currentRoom.engine) {
+          sendJson(ws, { type: 'ERROR', code: 'NOT_PLAYING', message: '房間尚未開始對局' });
+          return;
+        }
+        const res = currentRoom.engine.useAbility(playerId, msg);
+        if (!res.ok) {
+          sendJson(ws, { type: 'ERROR', code: 'INVALID_ACTION', message: res.message });
+          return;
+        }
+        const events = currentRoom.engine.consumeEvents();
+        broadcastGameState(currentRoom, events);
+        break;
+      }
+
+      case 'NEXT_ROUND': {
+        if (!currentRoom || !currentRoom.engine) {
+          sendJson(ws, { type: 'ERROR', code: 'NOT_PLAYING', message: '房間尚未開始對局' });
+          return;
+        }
+        const res = currentRoom.engine.advanceNextRound();
+        if (!res.ok) {
+          sendJson(ws, { type: 'ERROR', code: 'INVALID_ACTION', message: res.message });
+          return;
+        }
+        const events = currentRoom.engine.consumeEvents();
+        broadcastGameState(currentRoom, events);
         break;
       }
 
       default:
-        sendJson(ws, { type: 'ERROR', message: `未知指令: ${msg.type}` });
+        sendJson(ws, { type: 'ERROR', code: 'UNKNOWN_TYPE', message: `未知指令: ${msg.type}` });
     }
   });
 
   ws.on('close', () => {
     console.log(`[WS] 玩家離線: ${playerId}`);
-    if (currentRoom) {
-      currentRoom.players.delete(playerId);
-      if (currentRoom.players.size === 0) {
-        rooms.delete(currentRoom.id);
-      } else {
-        broadcastRoomState(currentRoom);
+    if (!currentRoom) return;
+
+    currentRoom.members.delete(playerId);
+    if (currentRoom.members.size === 0) {
+      rooms.delete(currentRoom.id);
+    } else {
+      if (currentRoom.hostId === playerId) {
+        currentRoom.hostId = currentRoom.members.keys().next().value;
       }
-      currentRoom = null;
+      if (currentRoom.engine) {
+        currentRoom.engine.convertControllerToAI(playerId);
+        const events = currentRoom.engine.consumeEvents();
+        broadcastGameState(currentRoom, events);
+      } else {
+        broadcastLobbyState(currentRoom);
+      }
     }
+    currentRoom = null;
   });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`《蝕入記憶》多人伺服器已啟動：ws://0.0.0.0:${PORT}`);
+  console.log(`《蝕入記憶》權威多人伺服器已啟動：ws://0.0.0.0:${PORT}`);
 });
