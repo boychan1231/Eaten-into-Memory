@@ -40,6 +40,22 @@ function checkEvolutionCondition(player) {
 
 // --- 特殊能力函式 ---
 
+// 計算鐘面上目前所有小時卡總張數
+function countHourCardsOnClockFace(gameState) {
+    if (!gameState || !Array.isArray(gameState.clockFace)) return 0;
+    return gameState.clockFace.reduce((sum, spot) => {
+        return sum + (spot && Array.isArray(spot.cards) ? spot.cards.length : 0);
+    }, 0);
+}
+
+// 分針發動門檻：鐘面上至少要有等同「玩家/角色人數」的小時卡（例：4P 需 >= 4 張）
+function hasEnoughClockCardsForMinuteHand(gameState) {
+    if (!gameState || !Array.isArray(gameState.players)) return false;
+    const requiredCount = gameState.players.length;
+    if (requiredCount <= 0) return false;
+    return countHourCardsOnClockFace(gameState) >= requiredCount;
+}
+
 // 分針能力
 function findMinuteHandTargetPosition(gameState, startPos, direction) {
     if (!gameState || !Array.isArray(gameState.clockFace) || typeof startPos !== 'number' || !Number.isFinite(startPos)) {
@@ -73,6 +89,12 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
     // 基本檢查
     if (gameState.abilityMarker) {
         appLogger.log("【分針】能力被封鎖，無法發動。");
+        return false;
+    }
+    const clockCardCount = countHourCardsOnClockFace(gameState);
+    const requiredCount = Array.isArray(gameState.players) ? gameState.players.length : 0;
+    if (!hasEnoughClockCardsForMinuteHand(gameState)) {
+        appLogger.log(`【分針】鐘面小時卡不足（目前 ${clockCardCount} / 需要 ${requiredCount} 張），無法發動。`);
         return false;
     }
     const is3PMode = gameState.gameMode === '3P';
@@ -111,6 +133,8 @@ function activateMinuteHandAbility(gameState, playerId, direction) {
 
 // 確保掛載到 window
 if (typeof window !== 'undefined') {
+    window.countHourCardsOnClockFace = countHourCardsOnClockFace;
+    window.hasEnoughClockCardsForMinuteHand = hasEnoughClockCardsForMinuteHand;
     window.findMinuteHandTargetPosition = findMinuteHandTargetPosition;
     window.activateMinuteHandAbility = activateMinuteHandAbility;
 }

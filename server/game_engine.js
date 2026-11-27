@@ -288,18 +288,26 @@ export class HeadlessGameEngine {
         return;
       }
 
+      const minuteCost = engine.mode === '3P' ? 3 : 2;
+      const hasEnoughClockCards =
+        typeof ctx.hasEnoughClockCardsForMinuteHand === 'function'
+          ? ctx.hasEnoughClockCardsForMinuteHand(gs)
+          : true;
+
       // 先檢查是否有真實人類分針符合觸發條件
-      const humanMinutePlayer = gs.players.find(
-        (p) =>
-          engine.humanSeatIds.has(p.id) &&
-          p.roleCard === '分針' &&
-          !p.isEjected &&
-          p.mana >= 2 &&
-          !gs.abilityMarker &&
-          !p.specialAbilityUsed &&
-          p.pickedHourThisTurn === true &&
-          typeof p.pickedHourCardThisTurnNumber === 'number'
-      );
+      const humanMinutePlayer = hasEnoughClockCards
+        ? gs.players.find(
+            (p) =>
+              engine.humanSeatIds.has(p.id) &&
+              p.roleCard === '分針' &&
+              !p.isEjected &&
+              p.mana >= minuteCost &&
+              !gs.abilityMarker &&
+              !p.specialAbilityUsed &&
+              p.pickedHourThisTurn === true &&
+              typeof p.pickedHourCardThisTurnNumber === 'number'
+          )
+        : null;
 
       if (ctx.GAME_CONFIG.enableAbilities && humanMinutePlayer) {
         if (typeof ctx.setHumanPlayerId === 'function') {

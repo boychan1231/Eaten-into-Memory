@@ -826,18 +826,24 @@ function finishHourSelection(gameState) {
     // 定義基礎條件
     const isMinuteHand = humanPlayer && humanPlayer.roleCard === '分針';
     const isAlive = humanPlayer && !humanPlayer.isEjected;
-    const hasMP = humanPlayer && humanPlayer.mana >= 2;
+    const minuteCost = (gameState.gameMode === '3P')
+        ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+        : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
+    const hasMP = humanPlayer && humanPlayer.mana >= minuteCost;
     const notBlocked = !gameState.abilityMarker;
     const notUsed = humanPlayer && !humanPlayer.specialAbilityUsed;
+    const hasEnoughClockCards = (typeof hasEnoughClockCardsForMinuteHand === 'function')
+        ? hasEnoughClockCardsForMinuteHand(gameState)
+        : true;
     
-    // ✅ 修改重點：只要「本回合有取得小時卡」即可 (移除 roundMinHourNumber 的比對)
+    // ✅ 修改重點：只要「本回合有取得小時卡」且鐘面上小時卡張數 >= 玩家人數即可觸發
     const gotCard = 
         humanPlayer &&
         humanPlayer.pickedHourThisTurn === true &&
         typeof humanPlayer.pickedHourCardThisTurnNumber === 'number';
 
     // 綜合判斷
-    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMP && notBlocked && notUsed && gotCard) {
+    if (GAME_CONFIG.enableAbilities && isMinuteHand && isAlive && hasMP && notBlocked && notUsed && gotCard && hasEnoughClockCards) {
         
         // 設定專屬等待狀態
         gameState.waitingMinuteHandChoice = true;
