@@ -539,7 +539,7 @@
         document.querySelectorAll('[data-online-start-mode]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const mode = btn.getAttribute('data-online-start-mode') || '5P';
-                const enableAbilities = mode !== '4P';
+                const enableAbilities = mode !== '4P' && !mode.startsWith('PURE');
                 sendJson({ type: 'START_GAME', mode, enableAbilities });
             });
         });
