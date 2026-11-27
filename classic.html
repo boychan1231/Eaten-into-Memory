@@ -694,6 +694,8 @@
 								aria-checked="false" aria-pressed="false">3P 模式</button>
 							<button class="selection-btn" type="button" data-value="PURE" role="radio"
 								aria-checked="false" aria-pressed="false">純競標模式</button>
+							<button class="selection-btn" type="button" data-value="ONLINE" role="radio"
+								aria-checked="false" aria-pressed="false">連線對戰大廳</button>
 						</div>
 						<div id="pure-count-section" class="modal-section is-hidden" style="margin-top: 12px;">
 							<h4>選擇純競標人數</h4>
@@ -705,6 +707,49 @@
 									aria-checked="true" aria-pressed="true">4P（4 人）</button>
 								<button class="selection-btn" type="button" data-value="5" role="radio"
 									aria-checked="false" aria-pressed="false">5P（5 人）</button>
+							</div>
+						</div>
+						<div id="online-lobby-section" class="online-lobby-section is-hidden">
+							<div class="online-lobby-form">
+								<label class="online-field">
+									<span>多人伺服器網址 (ws:// 或 wss://)</span>
+									<input id="online-server-url" type="text" value="ws://127.0.0.1:8080"
+										placeholder="wss://eaten-into-memory-server-xxxx.run.app" autocomplete="off">
+								</label>
+								<div class="online-field-row">
+									<label class="online-field">
+										<span>玩家暱稱</span>
+										<input id="online-player-name" type="text" maxlength="20" placeholder="輸入你的暱稱" autocomplete="off">
+									</label>
+									<label class="online-field">
+										<span>房間代碼</span>
+										<div class="online-room-input-wrap">
+											<input id="online-room-id" type="text" maxlength="12" value="TEST01" placeholder="TEST01" autocomplete="off">
+											<button id="online-random-room-btn" class="selection-btn" type="button">隨機房號</button>
+										</div>
+									</label>
+								</div>
+								<div class="online-btn-row">
+									<button id="online-connect-btn" class="primary" type="button">建立 / 加入房間</button>
+									<button id="online-disconnect-btn" class="selection-btn is-hidden" type="button">中斷連線</button>
+								</div>
+								<p id="online-lobby-status" class="online-lobby-status">可與網頁版或 Android 手機版跨平台輸入相同房號開房（缺人自動補 AI）。</p>
+							</div>
+							<div id="online-room-panel" class="online-room-panel is-hidden">
+								<h4 id="online-room-title">房間大廳</h4>
+								<ul id="online-lobby-members" class="online-member-list"></ul>
+								<div class="online-btn-row">
+									<button class="primary" type="button" data-online-start-mode="5P">開始 5P 陣營對局</button>
+									<button class="selection-btn" type="button" data-online-start-mode="4P">開始 4P 純粹模式</button>
+									<button class="selection-btn" type="button" data-online-start-mode="3P">開始 3P 指針模式</button>
+								</div>
+							</div>
+							<div id="online-match-panel" class="online-match-panel is-hidden">
+								<div id="online-match-summary" class="online-match-summary"></div>
+								<div id="online-match-players" class="online-match-players"></div>
+								<div id="online-match-actions" class="online-match-actions"></div>
+								<div id="online-match-hand" class="online-match-hand"></div>
+								<div id="online-match-logs" class="online-match-logs"></div>
 							</div>
 						</div>
 						<p id="start-mode-note-3p" class="setting-note">3P 模式： 3 局/13張手牌，24張小時卡</p>
@@ -864,6 +909,7 @@
 	<script src="js/ui/ui_hud_fx.js"></script>
 	<script src="js/ui/tutorial_mode.js"></script>
 	<script src="js/ui/ui.js"></script>
+	<script src="js/ui/ui_online_lobby.js"></script>
 </body>
 
 </html>

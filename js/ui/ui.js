@@ -260,14 +260,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const startModeNote5P = document.getElementById('start-mode-note-5p');
         const startModeNotePure = document.getElementById('start-mode-note-pure');
         const pureCountSection = document.getElementById('pure-count-section');
+        const onlineLobbySection = document.getElementById('online-lobby-section');
         const confirmBtn = document.getElementById('game-mode-confirm');
         const mode = getSelectionValue('start-game-mode', '5P');
         const isPureSel = mode === 'PURE';
+        const isOnlineSel = mode === 'ONLINE';
         if (startModeNote3P) startModeNote3P.style.display = (mode === '3P') ? 'block' : 'none';
         if (startModeNote5P) startModeNote5P.style.display = (mode === '5P') ? 'block' : 'none';
         if (startModeNotePure) startModeNotePure.style.display = isPureSel ? 'block' : 'none';
         if (pureCountSection) pureCountSection.classList.toggle('is-hidden', !isPureSel);
-        if (confirmBtn) confirmBtn.textContent = isPureSel ? '開始遊戲' : '下一步';
+        if (onlineLobbySection) onlineLobbySection.classList.toggle('is-hidden', !isOnlineSel);
+        if (confirmBtn) {
+            confirmBtn.style.display = isOnlineSel ? 'none' : '';
+            confirmBtn.textContent = isPureSel ? '開始遊戲' : '下一步';
+        }
     };
     const getFivePRoleMechanicsHtml = (roleValue) => {
         if (roleValue === 'sin') {

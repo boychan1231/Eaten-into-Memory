@@ -1997,3 +1997,200 @@ body.reduced-motion *::after {
 }
 
 
+
+/* =========================================================
+ * 網頁版「開始新遊戲」內嵌線上多人對戰大廳樣式
+ * ========================================================= */
+.online-lobby-section {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(200, 168, 90, 0.45);
+    background: rgba(14, 20, 38, 0.88);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 54vh;
+    overflow-y: auto;
+}
+
+.online-lobby-section.is-hidden,
+.online-room-panel.is-hidden,
+.online-match-panel.is-hidden {
+    display: none !important;
+}
+
+.online-lobby-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.online-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .online-field-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.online-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #c8d3eb;
+}
+
+.online-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(157, 180, 232, 0.35);
+    background: rgba(8, 12, 24, 0.85);
+    color: #f4f7ff;
+    font-size: 0.92rem;
+}
+
+.online-field input:focus {
+    outline: none;
+    border-color: #ffd166;
+}
+
+.online-room-input-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.online-room-input-wrap input {
+    flex: 1;
+}
+
+.online-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.online-lobby-status {
+    margin: 2px 0 0;
+    font-size: 0.86rem;
+    color: #9db4e8;
+}
+
+.online-lobby-status.is-error {
+    color: #ff7b7b;
+}
+
+.online-room-panel,
+.online-match-panel {
+    padding-top: 10px;
+    border-top: 1px solid rgba(200, 168, 90, 0.28);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.online-room-panel h4 {
+    margin: 0;
+    color: #ffd166;
+    font-size: 0.96rem;
+}
+
+.online-member-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.online-member-item {
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(34, 48, 86, 0.85);
+    border: 1px solid rgba(200, 168, 90, 0.4);
+    color: #eef3ff;
+    font-size: 0.86rem;
+}
+
+.online-match-summary {
+    font-weight: 700;
+    color: #ffd166;
+    font-size: 0.95rem;
+}
+
+.online-match-players {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.online-player-row {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(20, 29, 54, 0.85);
+    border: 1px solid rgba(110, 130, 180, 0.35);
+    font-size: 0.85rem;
+    color: #dce5fa;
+}
+
+.online-player-row.is-me {
+    border-color: #ffd166;
+    background: rgba(36, 52, 92, 0.9);
+}
+
+.online-player-row.is-ejected {
+    opacity: 0.6;
+    border-color: rgba(224, 82, 82, 0.5);
+    color: #f3a6a6;
+}
+
+.online-sub-label {
+    font-size: 0.84rem;
+    color: #ffd166;
+    margin-bottom: 6px;
+}
+
+.online-hand-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.online-minute-btn {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #c8a85a;
+    background: rgba(26, 36, 68, 0.95);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.15s ease;
+}
+
+.online-minute-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: #ffd166;
+    background: rgba(45, 62, 112, 0.95);
+}
+
+.online-minute-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.online-match-logs {
+    font-size: 0.8rem;
+    color: #9db4e8;
+    line-height: 1.4;
+}
