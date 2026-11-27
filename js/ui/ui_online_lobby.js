@@ -1,5 +1,7 @@
 // js/ui/ui_online_lobby.js — 網頁版「開始新遊戲」內嵌線上多人對戰大廳與跨平台實戰面板
 (function () {
+    const DEFAULT_SERVER_URL = 'wss://eaten-into-memory-server-952146793317.asia-east1.run.app';
+
     const STORAGE_KEYS = {
         SERVER_URL: 'eaten_online_server_url',
         PLAYER_NAME: 'eaten_online_player_name',
@@ -20,8 +22,8 @@
     }
 
     function normalizeWsUrl(raw) {
-        const trimmed = String(raw || '').trim();
-        if (!trimmed) return 'ws://127.0.0.1:8080';
+        let trimmed = String(raw || '').trim().replace(/\/+$/, '');
+        if (!trimmed) return DEFAULT_SERVER_URL;
         if (/^https:\/\//i.test(trimmed)) return trimmed.replace(/^https:\/\//i, 'wss://');
         if (/^http:\/\//i.test(trimmed)) return trimmed.replace(/^http:\/\//i, 'ws://');
         if (!/^wss?:\/\//i.test(trimmed)) return 'wss://' + trimmed;
@@ -382,7 +384,9 @@
             const savedUrl = localStorage.getItem(STORAGE_KEYS.SERVER_URL);
             const savedName = localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
             const savedRoom = localStorage.getItem(STORAGE_KEYS.ROOM_ID);
-            if (urlInput && savedUrl) urlInput.value = savedUrl;
+            if (urlInput && savedUrl && savedUrl !== 'ws://127.0.0.1:8080') {
+                urlInput.value = normalizeWsUrl(savedUrl);
+            }
             if (nameInput && savedName) nameInput.value = savedName;
             if (roomInput && savedRoom) roomInput.value = savedRoom;
         } catch (_) {}
