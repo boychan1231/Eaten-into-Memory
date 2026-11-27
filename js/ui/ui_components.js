@@ -342,6 +342,9 @@ function initRoundPhaseTrackerToggle() {
     toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const willCollapse = !trackerEl.classList.contains('is-collapsed');
+        if (!willCollapse && window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+            window.gameAudio.playClick();
+        }
         updateTrackerState(willCollapse);
         try {
             localStorage.setItem(STORAGE_KEY, willCollapse ? 'true' : 'false');
@@ -351,6 +354,9 @@ function initRoundPhaseTrackerToggle() {
     // 若處於收合狀態，點擊流程提示本體亦可快速展開
     trackerEl.addEventListener('click', (e) => {
         if (trackerEl.classList.contains('is-collapsed') && !e.target.closest('#phase-tracker-toggle-btn')) {
+            if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
+                window.gameAudio.playClick();
+            }
             updateTrackerState(false);
             try {
                 localStorage.setItem(STORAGE_KEY, 'false');

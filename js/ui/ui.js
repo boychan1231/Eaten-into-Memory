@@ -1155,11 +1155,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 全域按鈕點擊音效 ---
-    // 這樣不用幫每個按鈕加監聽器，只要是 button 標籤被點擊就會有聲音
+    // 全域按鈕與收摺頁點擊音效 ---
+    // 這樣不用幫每個按鈕加監聽器，只要是 button 標籤、分鐘卡被點擊，或打開 <details> 收摺頁時就會有聲音
     document.body.addEventListener('click', (e) => {
-        // 如果點擊的是按鈕，或按鈕內部的元素
-        if (e.target.closest('button') || e.target.classList.contains('minute-card')) {
+        const summaryEl = e.target.closest('summary');
+        const detailsEl = summaryEl ? summaryEl.closest('details') : null;
+        const isOpeningDetails = Boolean(detailsEl && !detailsEl.open);
+        // 如果點擊的是按鈕、按鈕內部的元素、分鐘卡，或正在展開收摺頁
+        if (e.target.closest('button') || e.target.classList.contains('minute-card') || isOpeningDetails) {
             if (window.gameAudio) {
                 window.gameAudio.playClick();
             }
