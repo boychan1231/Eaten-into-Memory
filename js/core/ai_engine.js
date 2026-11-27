@@ -200,6 +200,31 @@ if (typeof window !== 'undefined') {
     window.hourHandPreMinuteAI = hourHandPreMinuteAI;
 }
 
+function tryApplySecondHandSwapAI(player, gameState, chosenCard) {
+    if (!chosenCard || typeof chosenCard.value !== 'number') return chosenCard;
+    if (!GAME_CONFIG.enableAbilities || !player || player.roleCard !== '秒針') return chosenCard;
+    if (!gameState || gameState.abilityMarker || player.specialAbilityUsed) return chosenCard;
+    const SWAP_COST = (typeof window !== 'undefined' && window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SWAP) || 1;
+    if ((player.mana || 0) < SWAP_COST) return chosenCard;
+    if (typeof isMinuteCardPlayedInRound !== 'function') return chosenCard;
+
+    if (chosenCard.value === 60 && isMinuteCardPlayedInRound(gameState, 1) && checkChance(0.65)) {
+        player.mana -= SWAP_COST;
+        player.specialAbilityUsed = true;
+        if (window.gameAudio) window.gameAudio.playAbility();
+        appLogger.log(`⧖【秒針】${player.name} (AI) 耗用 ${SWAP_COST} MP，將 [60] 當成 [1] 打出！`);
+        return { ...chosenCard, value: 1, originalValue: 60, isSecondHandSwapped: true };
+    }
+    if (chosenCard.value === 1 && isMinuteCardPlayedInRound(gameState, 60) && checkChance(0.65)) {
+        player.mana -= SWAP_COST;
+        player.specialAbilityUsed = true;
+        if (window.gameAudio) window.gameAudio.playAbility();
+        appLogger.log(`⧖【秒針】${player.name} (AI) 耗用 ${SWAP_COST} MP，將 [1] 當成 [60] 打出！`);
+        return { ...chosenCard, value: 60, originalValue: 1, isSecondHandSwapped: true };
+    }
+    return chosenCard;
+}
+
 // =========================================================
 // ⏱️ 3P 競速對抗模式專屬 AI 決策系統 (Dedicated 3P Mode AI)
 // =========================================================
@@ -354,7 +379,7 @@ function makeAIChoice3P(player, gameState) {
         }
     }
 
-    return chosenCard;
+    return tryApplySecondHandSwapAI(player, gameState, chosenCard);
 }
 
 function makeAIChoice(player, gameState) {
@@ -625,7 +650,7 @@ function makeAIChoice(player, gameState) {
 			}
 		}
 	}
-    return chosenCard;
+    return tryApplySecondHandSwapAI(player, gameState, chosenCard);
 }
 
 // =========================================================

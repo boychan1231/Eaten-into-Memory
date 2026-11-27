@@ -116,6 +116,7 @@ window.GAME_DATA = {
         MINUTE_HAND_MOVE_3P: 3,     // 分針：移動一格 (3P 平衡：降低過強逃生頻率)
         SECOND_HAND_SELECT: 3,      // 秒針：二選一 (5P)
         SECOND_HAND_SELECT_3P: 2,   // 秒針：二選一 (3P 平衡：提昇雙牌伏擊可用性)
+        SECOND_HAND_SWAP: 1,        // 秒針：1/60 互換打出
         SIN_PULL: 2,                // 時之惡：惡之牽引
         SIN_SEAL: 3,                // 時之惡：全場封印
         YOUNG_SHIELD: 3             // 幼體：護盾

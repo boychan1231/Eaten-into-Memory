@@ -378,7 +378,31 @@ function activateSinSealAbility(gameState, playerId) {
     return true;
 }
 
+// ============================================================================
+// 5. 秒針能力：1 / 60 互換打出判斷
+// ============================================================================
+function isMinuteCardPlayedInRound(gameState, targetValue) {
+    if (!gameState || !Array.isArray(gameState.minuteDiscard)) return false;
+    return gameState.minuteDiscard.some(d => d && ((d.originalValue ?? d.value) === targetValue));
+}
+
+function canUseSecondHandSwap(gameState, player, fromValue, toValue) {
+    if (!((fromValue === 60 && toValue === 1) || (fromValue === 1 && toValue === 60))) return false;
+    if (!gameState || !player || player.isEjected) return false;
+    const abilitiesEnabled = typeof GAME_CONFIG !== 'undefined'
+        ? Boolean(GAME_CONFIG.enableAbilities)
+        : Boolean(window?.GAME_CONFIG?.enableAbilities);
+    if (!abilitiesEnabled || player.roleCard !== '秒針') return false;
+    if (gameState.abilityMarker || player.specialAbilityUsed) return false;
+    const cost = (typeof window !== 'undefined' && window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SWAP) || 1;
+    if ((player.mana || 0) < cost) return false;
+    if (!Array.isArray(player.hand) || !player.hand.some(c => c && c.value === fromValue)) return false;
+    return isMinuteCardPlayedInRound(gameState, toValue);
+}
+
 // 掛載到 window
 if (typeof window !== 'undefined') {
     window.activateSinSealAbility = activateSinSealAbility;
+    window.isMinuteCardPlayedInRound = isMinuteCardPlayedInRound;
+    window.canUseSecondHandSwap = canUseSecondHandSwap;
 }

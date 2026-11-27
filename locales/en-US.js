@@ -274,6 +274,8 @@
             sec_btn_cancel: 'Cancel',
             sec_pick_one_prompt: 'Select 1 card...',
             sec_pick_two_hint: '▲ Select 2 cards from your hand',
+            sec_btn_swap: '{cost} MP: Play [{from}] as [{to}]',
+            sec_swap_hint: 'Play 60 as 1 if 1 was played; play 1 as 60 if 60 was played.',
             sin_mode_near: 'Penalty Target: Nearest (Modified)',
             sin_mode_max: 'Penalty Target: Highest Value (Default)',
             sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">Sin Pull</span>',

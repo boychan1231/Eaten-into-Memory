@@ -355,6 +355,49 @@ function renderEvolvedAbilityPanel(gameState, humanPlayer, parent) {
                 hint.textContent = window.i18n ? window.i18n.t('abilities.sec_pick_two_hint') : '▲ 請點擊上方 2 張手牌';
                 container.appendChild(hint);
             }
+
+            // 秒針 1 MP 互換能力（1 已打出時 60→1；60 已打出時 1→60）
+            if (!isAbilityLocked) {
+                const swapCost = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SWAP || 1;
+                const canSwap60To1 = isWaitingMinute && typeof canUseSecondHandSwap === 'function' && canUseSecondHandSwap(gameState, humanPlayer, 60, 1);
+                const canSwap1To60 = isWaitingMinute && typeof canUseSecondHandSwap === 'function' && canUseSecondHandSwap(gameState, humanPlayer, 1, 60);
+
+                const swapWrap = document.createElement('div');
+                swapWrap.style.cssText = 'display:flex; flex-direction:column; gap:6px; margin-top:8px;';
+
+                const makeSwapBtn = (fromVal, toVal, enabled) => {
+                    const sBtn = document.createElement('button');
+                    sBtn.className = 'evo-btn';
+                    sBtn.style.backgroundColor = '#00a8a8';
+                    sBtn.style.fontSize = '0.82rem';
+                    sBtn.innerHTML = window.i18n
+                        ? window.i18n.t('abilities.sec_btn_swap', { cost: swapCost, from: fromVal, to: toVal })
+                        : `${swapCost} MP：將 [${fromVal}] 當成 [${toVal}] 打出`;
+                    sBtn.disabled = !enabled;
+                    sBtn.onclick = () => {
+                        if (typeof handleHumanSecondHandSwap === 'function') {
+                            uiState.isSecondHandSelectingTwo = false;
+                            uiState.selectedCardValue = null;
+                            uiState.selectedCardValues = [];
+                            handleHumanSecondHandSwap(globalGameState, fromVal, toVal);
+                            updateUI(globalGameState);
+                        }
+                    };
+                    return sBtn;
+                };
+
+                swapWrap.appendChild(makeSwapBtn(60, 1, canSwap60To1));
+                swapWrap.appendChild(makeSwapBtn(1, 60, canSwap1To60));
+
+                const swapDesc = document.createElement('div');
+                swapDesc.className = 'evo-desc';
+                swapDesc.style.fontSize = '0.75rem';
+                swapDesc.textContent = window.i18n
+                    ? window.i18n.t('abilities.sec_swap_hint')
+                    : '本局 1 已打出時可將 60 當 1；60 已打出時可將 1 當 60。';
+                swapWrap.appendChild(swapDesc);
+                container.appendChild(swapWrap);
+            }
         }
     }
     parent.appendChild(container);

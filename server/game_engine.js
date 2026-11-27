@@ -543,13 +543,47 @@ export class HeadlessGameEngine {
     }
 
     const value = Number(msg.value);
+    const swapTo = msg.swapTo !== undefined ? Number(msg.swapTo) : null;
+    const isSwap = (value === 60 && swapTo === 1) || (value === 1 && swapTo === 60);
+    if (msg.swapTo !== undefined && !isSwap) {
+      return { ok: false, message: '無效的秒針 1/60 互換參數' };
+    }
+
+    if (isSwap) {
+      if (!this.enableAbilities || player.roleCard !== '秒針') {
+        return { ok: false, message: '目前不能使用秒針 1/60 互換能力' };
+      }
+      if (this.gs.abilityMarker || player.specialAbilityUsed) {
+        return { ok: false, message: '本回合異能被封印或已使用過' };
+      }
+      if (player.mana < 1) {
+        return { ok: false, message: 'MP 不足（需要 1 MP）' };
+      }
+      const targetPlayed = Array.isArray(this.gs.minuteDiscard)
+        && this.gs.minuteDiscard.some((d) => d && (d.originalValue ?? d.value) === swapTo);
+      if (!targetPlayed) {
+        return { ok: false, message: `本局尚未打出分鐘卡 ${swapTo}，無法互換` };
+      }
+    }
+
     const idx = player.hand.findIndex((c) => c.value === value);
     if (idx === -1) {
       return { ok: false, message: `手牌中沒有點數 ${value} 的分鐘卡` };
     }
 
     this._runWithDiff(() => {
-      const card = player.hand.splice(idx, 1)[0];
+      const origCard = player.hand.splice(idx, 1)[0];
+      let card = origCard;
+      if (isSwap) {
+        player.mana -= 1;
+        player.specialAbilityUsed = true;
+        card = {
+          ...origCard,
+          value: swapTo,
+          originalValue: value,
+          isSecondHandSwapped: true,
+        };
+      }
       this.submittedMinuteChoices.set(seatId, {
         playerId: player.id,
         playerName: player.name,
@@ -896,6 +930,7 @@ export class HeadlessGameEngine {
     const minuteDiscard = Array.isArray(this.gs.minuteDiscard)
       ? this.gs.minuteDiscard.map((d) => ({
           value: d.value,
+          originalValue: d.originalValue ?? d.value,
           gear: d.gear ?? 0,
           seatId: d.playerId,
           playerName: d.playerName,

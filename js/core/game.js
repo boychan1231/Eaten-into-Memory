@@ -392,6 +392,72 @@ function handleHumanSecondHandFinalChoice(gameState, chosenValue) {
     return true;
 }
 
+function handleHumanSecondHandSwap(gameState, fromValue, toValue) {
+    const fromVal = Number(fromValue);
+    const toVal = Number(toValue);
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        const ok = window.OnlineLobbyClient.sendAction({ type: 'PLAY_MINUTE_CARD', value: fromVal, swapTo: toVal });
+        if (ok) gameState.currentRoundAIChoices = null;
+        return ok;
+    }
+
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const humanPlayer = (gameState && Array.isArray(gameState.players))
+        ? (gameState.players.find(p => p.id === humanId) || gameState.players[0])
+        : null;
+    if (!humanPlayer || humanPlayer.isEjected) return false;
+    if (gameState.currentRoundAIChoices === null) {
+        console.warn("目前不處於出分鐘卡階段。");
+        return false;
+    }
+    if (typeof canUseSecondHandSwap !== 'function' || !canUseSecondHandSwap(gameState, humanPlayer, fromVal, toVal)) {
+        console.warn("目前不符合秒針 1/60 互換打出條件。");
+        return false;
+    }
+
+    const idx = humanPlayer.hand.findIndex(c => c && c.value === fromVal);
+    if (idx === -1) return false;
+
+    const COST = window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SWAP || 1;
+    const origCard = humanPlayer.hand.splice(idx, 1)[0];
+    const swappedCard = {
+        ...origCard,
+        value: toVal,
+        originalValue: fromVal,
+        isSecondHandSwapped: true
+    };
+
+    humanPlayer.mana -= COST;
+    humanPlayer.specialAbilityUsed = true;
+    if (window.gameAudio) window.gameAudio.playAbility();
+
+    gameState.lastPlayedCard = {
+        value: swappedCard.value,
+        originalValue: fromVal,
+        gear: swappedCard.gear,
+        card: swappedCard,
+        playerId: humanPlayer.id,
+        playerName: humanPlayer.name,
+        roleType: humanPlayer.type,
+        gameRound: gameState.gameRound,
+        roundMarker: gameState.roundMarker,
+        isHuman: true
+    };
+
+    const allChoices = gameState.currentRoundAIChoices || [];
+    allChoices.push({
+        playerId: humanPlayer.id,
+        playerName: humanPlayer.name,
+        card: swappedCard,
+        roleType: humanPlayer.type
+    });
+
+    appLogger.log(`⧖【秒針】您耗用 ${COST} MP，將手中的 [${fromVal}] 當成 [${toVal}] 打出！`);
+
+    gameState.currentRoundAIChoices = null;
+    resolveMinuteCardSelection(gameState, allChoices);
+    return true;
+}
 
 function handleHumanChoice(gameState, chosenCardValue) {
     if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
@@ -792,6 +858,7 @@ function recordMinuteDiscard(gameState, choices) {
     sortedChoices.forEach(c => {
         const entry = {
             value: c.card.value,
+            originalValue: c.card.originalValue ?? c.card.value,
             gear: c.card.gear,
             card: c.card,
             playerId: c.playerId,
@@ -1240,6 +1307,7 @@ try {
         window.handleHumanAbilityChoice = handleHumanAbilityChoice;
         window.handleHumanSecondHandCommit = handleHumanSecondHandCommit;
         window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
+        window.handleHumanSecondHandSwap = handleHumanSecondHandSwap;
         window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
 		
 		if (typeof updateUI !== 'undefined') {

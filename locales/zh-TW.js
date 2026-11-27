@@ -274,6 +274,8 @@
             sec_btn_cancel: '取消選擇',
             sec_pick_one_prompt: '請選擇一張牌',
             sec_pick_two_hint: '▲ 請點擊上方 2 張手牌',
+            sec_btn_swap: '{cost} MP：將 [{from}] 當成 [{to}] 打出',
+            sec_swap_hint: '本局 1 已打出時可將 60 當 1；60 已打出時可將 1 當 60。',
             sin_mode_near: '扣滅目標：距離最近 (已變更)',
             sin_mode_max: '扣滅目標：數值最大 (預設)',
             sin_btn_pull: '{cost} MP<br><span style="font-size:0.8rem; font-weight:normal;">惡之牽引</span>',
