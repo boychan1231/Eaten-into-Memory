@@ -100,6 +100,23 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
         const cond3Text = window.i18n ? window.i18n.t('abilities.cond_total', { total: totalCount, precious: preciousCount }) : `3. 總數 ${totalCount}/5, 珍貴 ${preciousCount}/2`;
         const cond4Text = window.i18n ? window.i18n.t('abilities.cond_precious', { precious: preciousCount }) : `4. 珍貴 ${preciousCount}/3 (任意)`;
 
+        // 計算距離最近的進化配方提示
+        let closestTipHtml = '';
+        if (!isReady) {
+            const needPrecious = (gameState.gameMode === '5P');
+            const candidates = [
+                { name: '久遠一生', missing: Math.max(0, 3 - uniqueAges) + (needPrecious ? Math.max(0, 1 - preciousCount) : 0), desc: `時代 ${uniqueAges}/3${needPrecious && preciousCount < 1 ? '（缺珍貴）' : ''}` },
+                { name: '命途節錄', missing: Math.max(0, 4 - uniqueNumbers) + (needPrecious ? Math.max(0, 1 - preciousCount) : 0), desc: `數字 ${uniqueNumbers}/4${needPrecious && preciousCount < 1 ? '（缺珍貴）' : ''}` },
+                { name: '漫長生涯', missing: Math.max(0, 5 - totalCount) + (needPrecious ? Math.max(0, 2 - preciousCount) : 0), desc: `總數 ${totalCount}/5${needPrecious && preciousCount < 2 ? `（缺${2 - preciousCount}珍貴）` : ''}` }
+            ];
+            if (needPrecious) {
+                candidates.push({ name: '銘記珍重', missing: Math.max(0, 3 - preciousCount), desc: `珍貴 ${preciousCount}/3` });
+            }
+            candidates.sort((a, b) => a.missing - b.missing);
+            const best = candidates[0];
+            closestTipHtml = `<div style="margin-top:8px; padding:5px 8px; border-radius:6px; background:rgba(124,140,255,0.14); border:1px solid rgba(124,140,255,0.35); color:#c7d2fe; font-size:0.78rem;">✦ 最近目標：<strong>${best.name}</strong>（${best.desc}）</div>`;
+        }
+
         // 將 optionsHtml 放入 select 中
         let html = `
             <div class="target-role-header">
@@ -109,6 +126,7 @@ function renderYoungTimeDemonProgress(gameState, humanPlayer, container) {
                 </select>
                 <div style="font-size:0.8rem; line-height:1.4; color:#ddd;">${roleDescriptions[currentTarget] || ''}</div>
             </div>
+            ${closestTipHtml}
             <div style="margin-top:10px;">
                 ${renderConditionRow(cond1, cond1Text)}
                 ${renderConditionRow(cond2, cond2Text)}

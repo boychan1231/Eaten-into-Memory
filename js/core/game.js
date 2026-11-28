@@ -1307,6 +1307,7 @@ function endGameRound(gameState) {
     gameState.sinTargetingMode = 'default';
     gameState.minuteDiscard = [];
     gameState.lastPlayedCard = null;
+    gameState.lastCatchUpInfo = null;
 
     // 7. 落後追趕機制：3P 第 3 局 / 4P 第 4 局，唯一最低分時魔從未使用分鐘卡隨機獲得 1 張額外分鐘卡
     const isCatchUpRound = !isPure && (
@@ -1325,9 +1326,21 @@ function endGameRound(gameState) {
                 const bonusCard = gameState.minuteDeck.splice(randIdx, 1)[0];
                 if (bonusCard) {
                     lowestDemons[0].hand.push({ ...bonusCard });
+                    gameState.lastCatchUpInfo = {
+                        round: gameState.gameRound,
+                        awarded: true,
+                        playerName: lowestDemons[0].name,
+                        minScore
+                    };
                     appLogger.log(`✦【落後追趕】第 ${gameState.gameRound} 局開始，目前積分最低的 ${lowestDemons[0].name}（${minScore} 分）從未使用分鐘卡中額外獲得 1 張分鐘卡！`);
                 }
             } else if (lowestDemons.length > 1) {
+                gameState.lastCatchUpInfo = {
+                    round: gameState.gameRound,
+                    awarded: false,
+                    tiedCount: lowestDemons.length,
+                    minScore
+                };
                 appLogger.log(`◈ 第 ${gameState.gameRound} 局開始，有 ${lowestDemons.length} 位時魔同為最低分（${minScore} 分），不發放額外分鐘卡。`);
             }
         }

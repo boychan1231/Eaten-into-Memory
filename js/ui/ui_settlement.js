@@ -106,6 +106,14 @@ function renderSpecialVictoryProgress(gameState, container) {
             ? (t('ui.special_victory.time_demon_status_achieved') || '✦ 達成 (時之惡已被吞噬)')
             : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} GP)`);
 
+        const curRound = Number(gameState.gameRound) || 1;
+        const huntBonusTip = isHuntComplete
+            ? '已完成完全狩獵'
+            : (curRound <= 2 ? '本局達成 +6｜第 3 局 +4｜第 4 局 +2' : (curRound === 3 ? '本局達成 +4｜第 4 局 +2' : (curRound === 4 ? '本局達成 +2' : '已過獎勵分門檻')));
+        const lockBonusTip = isLockComplete
+            ? '已完成記憶之鎖'
+            : (curRound <= 2 ? '本局達成 +9｜第 3 局 +5｜第 4 局 +2（第 5 局未滿 -999）' : (curRound === 3 ? '本局達成 +5｜第 4 局 +2（第 5 局未滿 -999）' : (curRound === 4 ? '本局達成 +2（第 5 局未滿 -999）' : '終局判定：未滿 12 張 -999 分')));
+
         const sczPlayer = gameState.players.find(p => p.type === '受詛者');
         const showHuntCard = gameState.players.length === 5;
         const huntCardHtml = showHuntCard ? `
@@ -117,7 +125,8 @@ function renderSpecialVictoryProgress(gameState, container) {
                     </div>
                     <span class="sv-card-status ${isHuntComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${huntStatusText}</span>
                 </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${huntDesc}</div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:2px;">${huntDesc}</div>
+                <div style="font-size:0.75rem; color:#feca57; margin-bottom:4px;">${huntBonusTip}</div>
                 <div class="sv-progress-bar-bg">
                     <div class="sv-progress-bar-fill sv-fill-gold" style="width: ${huntPercent}%;"></div>
                 </div>
@@ -135,7 +144,8 @@ function renderSpecialVictoryProgress(gameState, container) {
                     </div>
                     <span class="sv-card-status ${isLockComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${lockStatusText}</span>
                 </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${lockDesc}</div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:2px;">${lockDesc}</div>
+                <div style="font-size:0.75rem; color:#7ef9ff; margin-bottom:4px;">${lockBonusTip}</div>
                 <div class="sv-progress-bar-bg">
                     <div class="sv-progress-bar-fill sv-fill-cyan" style="width: ${lockPercent}%;"></div>
                 </div>
@@ -590,7 +600,18 @@ window.showRoundReadyModal = function (titleText, subtitleText, callback, gameSt
             const colRoundScore = window.i18n ? window.i18n.t('ui.round_ready.col_round_score') : '本局得分';
             const colTotalScore = window.i18n ? window.i18n.t('ui.round_ready.col_total_score') : '累計總分';
 
+            let catchUpBannerHtml = '';
+            if (gs.lastCatchUpInfo) {
+                const info = gs.lastCatchUpInfo;
+                if (info.awarded) {
+                    catchUpBannerHtml = `<div style="margin:0 0 12px; padding:10px 12px; border-radius:8px; background:rgba(0,210,211,0.14); border:1px solid rgba(0,210,211,0.45); color:#7ef9ff; font-size:0.88rem; font-weight:700;">✦ 第 ${info.round} 局落後追趕：積分最低的 <strong>${info.playerName}</strong>（${info.minScore} 分）額外獲得 1 張未使用分鐘卡！</div>`;
+                } else {
+                    catchUpBannerHtml = `<div style="margin:0 0 12px; padding:10px 12px; border-radius:8px; background:rgba(255,210,127,0.12); border:1px solid rgba(255,210,127,0.4); color:#ffeaa7; font-size:0.86rem;">◈ 第 ${info.round} 局落後追趕：有 ${info.tiedCount} 位時魔同為最低分（${info.minScore} 分），本局不發放額外分鐘卡。</div>`;
+                }
+            }
+
             let html = `
+                ${catchUpBannerHtml}
                 <table class="round-score-table">
                     <thead>
                         <tr>

@@ -177,6 +177,7 @@ function updateUI(gameState) {
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
     // 頂部模式徽章更新
+    const isPureMode = typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
     const modeBadgeEl = document.getElementById('hud-mode-badge');
     if (modeBadgeEl) {
         const gm = gameState.gameMode || '5P';
@@ -186,6 +187,10 @@ function updateUI(gameState) {
         else if (gm === '3P') modeLabel = '3P 競速';
         else if (String(gm).startsWith('PURE_')) modeLabel = `純競標 ${gm.replace('PURE_', '')}`;
         modeBadgeEl.textContent = gameState.isOnlineMatch ? `連線 · ${modeLabel}` : modeLabel;
+    }
+    const rightDrawerEl = document.querySelector('.hud-drawer-right');
+    if (rightDrawerEl) {
+        rightDrawerEl.style.display = isPureMode ? 'none' : '';
     }
 
     // 2. 計算等待狀態 (Flags)
@@ -868,9 +873,9 @@ function renderAIPlayers(gameState, humanId) {
             </div>
 
             <div class="player-stats-grid">
-                <div class="resource-chip resource-chip--mana has-mech-gauge" title="目前法力值：${player.mana}">
+                ${(typeof gameState.gameMode === 'string' && gameState.gameMode.startsWith('PURE')) ? '' : `<div class="resource-chip resource-chip--mana has-mech-gauge" title="目前法力值：${player.mana}">
                     ${createManaGaugeHtml(player.mana, player.gearCards, true)}
-                </div>
+                </div>`}
                 <div class="resource-chip resource-chip--gear has-mech-gauge" title="齒輪生命數：${gearCount}">
                     ${createGearChainHtml(gearCount, true)}
                 </div>

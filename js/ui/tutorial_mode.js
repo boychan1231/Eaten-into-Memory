@@ -476,17 +476,24 @@
 
     // 取得角色專屬得分與目標說明預設文本 (若 i18n 尚未載入時備用)
     function getDefaultRoleScoringText(roleKey) {
+        const is3P = (window.globalGameState?.gameMode === '3P');
+        const minCost = is3P
+            ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+            : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
+        const secCost = is3P
+            ? (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2)
+            : (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3);
         switch (roleKey) {
             case 'sin':
-                return '<strong>【◆ 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>☠ 特殊大勝：</strong>在 5 局內成功將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊大勝！<br>• <strong>▲ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 GP（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
+                return '<strong>【◆ 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>▲ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 GP（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
             case 'scz':
                 return '<strong>【◈ 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>★ 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！';
             case 'hour':
                 return '<strong>【◈ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>⧖ 預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身 GP！';
             case 'minute':
-                return '<strong>【◈ 分針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 躍遷避險：</strong>取得小時卡落子後，可消耗 2 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！';
+                return `<strong>【◈ 分針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 躍遷避險：</strong>取得小時卡落子後，可消耗 ${minCost} MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點處決厄運，把受罰丟給對手！`;
             case 'second':
-                return '<strong>【◈ 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！精準搶下低刻度安全格或故意落入第 3 名避險！';
+                return `<strong>【◈ 秒針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>◈ 後手雙牌伏擊：</strong>關鍵回合消耗 ${secCost} MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出！亦可在「1」或「60」已打出時消耗 1 MP 互換打出！`;
             case 'young':
             default:
                 return '<strong>【◈ 時魔幼體 · 得分與勝負指南】</strong><br>• <strong>基礎得分：</strong>每局結束時存活保留的 GP 將 1:1 轉換為總分！<br>• <strong>★ 成長目標：</strong>爭奪小時卡湊齊 4 大配方進化為時、分、秒針！第 5 局結束時，已進化的時魔享有 <strong>+3 分</strong> 陣營加成！<br>• <strong>✦ 吞噬大勝：</strong>若合力將「時之惡」GP 扣盡吞噬，時魔全體直接獲勝！<br>• <strong>⛨ 保命防禦：</strong>MP ≥ 3 且即將受罰時，可消耗全部 MP 抵免傷害一次。';
@@ -712,21 +719,25 @@
                     return;
                 }
 
+                const secAbilityCost = (gameState.gameMode === '3P')
+                    ? (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2)
+                    : (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3);
                 if (
                     roleKey === 'second' &&
                     abilitiesEnabled &&
                     !gameState.abilityMarker &&
                     !humanPlayer.specialAbilityUsed &&
-                    humanPlayer.mana >= (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3) &&
+                    humanPlayer.mana >= secAbilityCost &&
                     Array.isArray(humanPlayer.hand) &&
                     humanPlayer.hand.length >= 2 &&
                     !shownSteps.has('step_sec_ability_intro')
                 ) {
                     shownSteps.add('step_sec_ability_intro');
                     openEvoDrawerIfCollapsed();
-                    const msg = window.i18n
+                    const rawMsg = window.i18n
                         ? window.i18n.t('tutorial.step_sec_ability_intro')
-                        : '<strong>秒針能力（出牌前可用）：</strong>MP 足夠時可點擊按鈕消耗 3 MP 改蓋 2 張分鐘卡，等全場翻牌後再二選一；亦可直接出 1 張分鐘卡。';
+                        : `<strong>秒針能力（出牌前可用）：</strong>MP 足夠時可點擊按鈕消耗 ${secAbilityCost} MP 改蓋 2 張分鐘卡，等全場翻牌後再二選一；亦可直接出 1 張分鐘卡。`;
+                    const msg = String(rawMsg).replace(/\b3\s*MP\b/g, `${secAbilityCost} MP`);
                     const target = document.querySelector('#evolution-progress-area .evo-btn')
                         || document.getElementById('evolution-progress-area')
                         || '#human-hand';
