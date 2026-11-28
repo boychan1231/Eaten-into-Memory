@@ -401,7 +401,7 @@
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>Victory</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">Highest Gear Score wins</td>
-									<td style="padding: 10px; border: 1px solid #555;">Gear Score + bonuses/special victory (Cursed One: +9/+5/+2 for locking 12; Time Sin Total Hunt: +6/+4/+2 in 5P by R2/3/4, +6/+3 in 4P by R2/3; Devour Time Sin)</td>
+									<td style="padding: 10px; border: 1px solid #555;">Gear Score + bonuses/special victory (Cursed One: +9/+5/+2 for locking 12; Time Sin Total Hunt: +6/+4/+2 in 5P by R2/3/4; Devour Time Sin)</td>
 								</tr>
 							</tbody>
 						</table>

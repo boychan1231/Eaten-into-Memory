@@ -1228,7 +1228,32 @@ function endGameRound(gameState) {
     gameState.sinTargetingMode = 'default';
     gameState.minuteDiscard = [];
     gameState.lastPlayedCard = null;
-    
+
+    // 7. 落後追趕機制：3P 第 3 局 / 4P 第 4 局，唯一最低分時魔從未使用分鐘卡隨機獲得 1 張額外分鐘卡
+    const isCatchUpRound = !isPure && (
+        (gameState.gameMode === '4P' && gameState.gameRound === 4) ||
+        (gameState.gameMode === '3P' && gameState.gameRound === 3)
+    );
+    if (isCatchUpRound) {
+        const timeDemons = gameState.players.filter(p => p.type === '時魔');
+        if (timeDemons.length > 0) {
+            const minScore = Math.min(...timeDemons.map(p => Number(p.score) || 0));
+            const lowestDemons = timeDemons.filter(p => (Number(p.score) || 0) === minScore);
+            if (lowestDemons.length === 1 && Array.isArray(gameState.minuteDeck) && gameState.minuteDeck.length > 0) {
+                const randIdx = (typeof getRandomInt === 'function')
+                    ? getRandomInt(gameState.minuteDeck.length)
+                    : Math.floor(Math.random() * gameState.minuteDeck.length);
+                const bonusCard = gameState.minuteDeck.splice(randIdx, 1)[0];
+                if (bonusCard) {
+                    lowestDemons[0].hand.push({ ...bonusCard });
+                    appLogger.log(`✦【落後追趕】第 ${gameState.gameRound} 局開始，目前積分最低的 ${lowestDemons[0].name}（${minScore} 分）從未使用分鐘卡中額外獲得 1 張分鐘卡！`);
+                }
+            } else if (lowestDemons.length > 1) {
+                appLogger.log(`◈ 第 ${gameState.gameRound} 局開始，有 ${lowestDemons.length} 位時魔同為最低分（${minScore} 分），不發放額外分鐘卡。`);
+            }
+        }
+    }
+
     appLogger.log(`--- 準備開始第 ${gameState.gameRound} 局遊戲 ---`);
 	
 	if (typeof window.showRoundReadyModal === 'function') {
@@ -1268,9 +1293,6 @@ function applySinFullHuntBonus(gameState) {
         if (round <= 2) bonus = 6;
         else if (round === 3) bonus = 4;
         else if (round === 4) bonus = 2;
-    } else if (numPlayers === 4) {
-        if (round <= 2) bonus = 6;
-        else if (round === 3) bonus = 3;
     }
 
     gameState.sinHuntBonusAwarded = true;

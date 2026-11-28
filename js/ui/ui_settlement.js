@@ -107,8 +107,25 @@ function renderSpecialVictoryProgress(gameState, container) {
             : (t('ui.special_victory.time_demon_status_in_progress', { gears: sinPlayer ? sinPlayer.gearCards : 0 }) || `未達成 (時之惡存活，剩餘 ${sinPlayer ? sinPlayer.gearCards : 0} GP)`);
 
         const sczPlayer = gameState.players.find(p => p.type === '受詛者');
-        const huntDesc4P = '第 2 / 3 局結束前將所有時魔各吞噬一次，依序獲得 +6 / +3 獎勵分';
-        const effectiveHuntDesc = (!sczPlayer && gameState.players.length === 4) ? huntDesc4P : huntDesc;
+        const showHuntCard = gameState.players.length === 5;
+        const huntCardHtml = showHuntCard ? `
+            <!-- 時之惡：完全狩獵 -->
+            <div class="special-victory-card demon-hunt ${isHuntComplete ? 'achieved' : ''}">
+                <div class="sv-card-head">
+                    <div class="sv-card-title" style="color: #feca57;">
+                        <span>${huntTitle}</span>
+                    </div>
+                    <span class="sv-card-status ${isHuntComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${huntStatusText}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${huntDesc}</div>
+                <div class="sv-progress-bar-bg">
+                    <div class="sv-progress-bar-fill sv-fill-gold" style="width: ${huntPercent}%;"></div>
+                </div>
+                <div class="sv-card-details">
+                    ${demonBadges}
+                </div>
+            </div>
+        ` : '';
         const sczCardHtml = sczPlayer ? `
             <!-- 受詛者：記憶之鎖 -->
             <div class="special-victory-card curse-lock ${isLockComplete ? 'achieved' : ''}">
@@ -130,22 +147,7 @@ function renderSpecialVictoryProgress(gameState, container) {
         ` : '';
 
         cardsHtml = `
-            <!-- 時之惡：完全狩獵 -->
-            <div class="special-victory-card demon-hunt ${isHuntComplete ? 'achieved' : ''}">
-                <div class="sv-card-head">
-                    <div class="sv-card-title" style="color: #feca57;">
-                        <span>${huntTitle}</span>
-                    </div>
-                    <span class="sv-card-status ${isHuntComplete ? 'sv-status-achieved' : 'sv-status-progress'}">${huntStatusText}</span>
-                </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">${effectiveHuntDesc}</div>
-                <div class="sv-progress-bar-bg">
-                    <div class="sv-progress-bar-fill sv-fill-gold" style="width: ${huntPercent}%;"></div>
-                </div>
-                <div class="sv-card-details">
-                    ${demonBadges}
-                </div>
-            </div>
+            ${huntCardHtml}
 
             ${sczCardHtml}
 
