@@ -257,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const syncStartModeNote = () => {
         const startModeNote3P = document.getElementById('start-mode-note-3p');
+        const startModeNote4P = document.getElementById('start-mode-note-4p');
         const startModeNote5P = document.getElementById('start-mode-note-5p');
         const startModeNotePure = document.getElementById('start-mode-note-pure');
         const pureCountSection = document.getElementById('pure-count-section');
@@ -266,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isPureSel = mode === 'PURE';
         const isOnlineSel = mode === 'ONLINE';
         if (startModeNote3P) startModeNote3P.style.display = (mode === '3P') ? 'block' : 'none';
+        if (startModeNote4P) startModeNote4P.style.display = (mode === '4P') ? 'block' : 'none';
         if (startModeNote5P) startModeNote5P.style.display = (mode === '5P') ? 'block' : 'none';
         if (startModeNotePure) startModeNotePure.style.display = isPureSel ? 'block' : 'none';
         if (pureCountSection) pureCountSection.classList.toggle('is-hidden', !isPureSel);
@@ -666,13 +668,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const syncRoleChoiceModal = (selectedMode) => {
         const isThreeP = selectedMode === '3P';
+        const isFourP = selectedMode === '4P';
         if (roleChoiceTitle) roleChoiceTitle.textContent = isThreeP ? '選擇時魔身份' : '選擇角色';
         if (roleChoiceHint) {
             roleChoiceHint.textContent = isThreeP
                 ? '請選擇 3P 模式下的時魔身份。'
-                : '請選擇 5P 模式要扮演的角色。';
+                : (isFourP ? '請選擇 4P 模式要扮演的角色（時魔 ×3、時之惡 ×1）。' : '請選擇 5P 模式要扮演的角色。');
         }
-        if (roleChoiceSection5p) roleChoiceSection5p.classList.toggle('is-hidden', isThreeP);
+        if (roleChoiceSection5p) {
+            roleChoiceSection5p.classList.toggle('is-hidden', isThreeP);
+            const sczBtn = roleChoiceSection5p.querySelector('[data-value="SCZ"]');
+            if (sczBtn) sczBtn.style.display = isFourP ? 'none' : '';
+            if (isFourP && getSelectionValue('start-five-player-role', 'SM_1') === 'SCZ') {
+                setSelectionValue('start-five-player-role', 'SM_1');
+            }
+        }
         if (roleChoiceSection3p) roleChoiceSection3p.classList.toggle('is-hidden', !isThreeP);
         if (!isThreeP) syncFivePRoleNote();
     };

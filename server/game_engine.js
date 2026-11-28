@@ -24,8 +24,7 @@ const CORE_SOURCES = CORE_FILES.map((rel) => ({
 
 export function normalizeGameMode(rawMode) {
   const m = String(rawMode || '5P').trim().toUpperCase();
-  if (m === '4P') return 'PURE_4P';
-  if (['5P', '3P', 'PURE_3P', 'PURE_4P', 'PURE_5P'].includes(m)) return m;
+  if (['5P', '4P', '3P', 'PURE_3P', 'PURE_4P', 'PURE_5P'].includes(m)) return m;
   return '5P';
 }
 

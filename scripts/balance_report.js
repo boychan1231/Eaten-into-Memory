@@ -15,7 +15,7 @@ function parseArgs(argv) {
     const opts = {
         games: 50,
         seed: 20261121,
-        modes: ['5P', '3P'],
+        modes: ['5P', '4P', '3P'],
         abilities: true,
         difficulty: 'normal'
     };
@@ -166,11 +166,14 @@ function summarizeMode(mode, opts) {
     const stats = new Map();
     const specialWinCounts = new Map();
     const rolePool5P = ['SM_1', 'SM_2', 'SM_3', 'sin', 'SCZ'];
+    const rolePool4P = ['SM_1', 'SM_2', 'SM_3', 'sin'];
     const threePRoles = ['時針', '分針', '秒針'];
 
     for (let i = 0; i < opts.games; i++) {
         const matchSeed = (opts.seed + i * 7919 + mode.charCodeAt(0) * 131) >>> 0;
-        const humanId = mode === '5P' ? rolePool5P[i % rolePool5P.length] : 'SM_1';
+        const humanId = mode === '5P'
+            ? rolePool5P[i % rolePool5P.length]
+            : (mode === '4P' ? rolePool4P[i % rolePool4P.length] : 'SM_1');
         const threePRole = threePRoles[i % threePRoles.length];
         const gs = runSingleMatch({
             mode,
@@ -205,7 +208,7 @@ function summarizeMode(mode, opts) {
         }
 
         for (const p of gs.players) {
-            const key = mode === '5P' ? `${p.id} (${p.type})` : (p.roleCard || p.id);
+            const key = (mode === '5P' || mode === '4P') ? `${p.id} (${p.type})` : (p.roleCard || p.id);
             if (!stats.has(key)) {
                 stats.set(key, { key, games: 0, wins: 0, totalScore: 0, totalEjections: 0 });
             }

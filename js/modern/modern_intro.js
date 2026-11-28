@@ -726,7 +726,7 @@
             const modeLabel = this.selectedMode === 'PURE' ? '純競標' : this.selectedMode;
             const roleLabel = this.selectedMode === 'PURE'
                 ? `${this.selectedPureCount || 4}P`
-                : (this.selectedMode === '5P' ? (roleMap5P[this.selectedRole5P] || '時魔') : this.selectedRole3P);
+                : ((this.selectedMode === '5P' || this.selectedMode === '4P') ? (roleMap5P[this.selectedRole5P] || '時魔') : this.selectedRole3P);
 
             if (summaryEl) {
                 summaryEl.textContent = `⚙ 變更模式、角色與輔助選項（當前：${modeLabel} · ${roleLabel}）`;
@@ -736,7 +736,7 @@
             }
             const intro5pNote = document.getElementById('intro-5p-role-note');
             if (intro5pNote) {
-                if (this.selectedMode === '5P') {
+                if (this.selectedMode === '5P' || this.selectedMode === '4P') {
                     intro5pNote.classList.remove('is-hidden');
                     if (typeof window.getFivePRoleMechanicsHtml === 'function') {
                         intro5pNote.innerHTML = window.getFivePRoleMechanicsHtml(this.selectedRole5P);
@@ -760,7 +760,7 @@
                 if (modeConfirmBtn) modeConfirmBtn.click();
                 return;
             }
-            if (this.selectedMode === '5P') {
+            if (this.selectedMode === '5P' || this.selectedMode === '4P') {
                 pickHiddenOption('start-five-player-role', this.selectedRole5P);
             } else {
                 pickHiddenOption('start-time-demon-role', this.selectedRole3P);
@@ -777,7 +777,7 @@
                 this.skipBtn.addEventListener('click', () => this.skipToMenu());
             }
 
-            // 模式切換按鈕 (5P / 3P / PURE)
+            // 模式切換按鈕 (5P / 4P / 3P / PURE)
             const modeBtns = document.querySelectorAll('.intro-mode-btn');
             const roleGroup5P = document.getElementById('intro-roles-5p');
             const roleGroup3P = document.getElementById('intro-roles-3p');
@@ -788,7 +788,18 @@
                     const mode = btn.getAttribute('data-mode') || '5P';
                     this.selectedMode = mode;
                     modeBtns.forEach(b => b.classList.toggle('active', b === btn));
-                    if (roleGroup5P) roleGroup5P.classList.toggle('is-hidden', mode !== '5P');
+                    const showFactionRoles = (mode === '5P' || mode === '4P');
+                    if (roleGroup5P) {
+                        roleGroup5P.classList.toggle('is-hidden', !showFactionRoles);
+                        const sczCard = roleGroup5P.querySelector('[data-role="SCZ"]');
+                        if (sczCard) sczCard.style.display = (mode === '4P') ? 'none' : '';
+                        if (mode === '4P' && this.selectedRole5P === 'SCZ') {
+                            this.selectedRole5P = 'SM_1';
+                            roleGroup5P.querySelectorAll('.intro-role-card').forEach(c => {
+                                c.classList.toggle('active', c.getAttribute('data-role') === 'SM_1');
+                            });
+                        }
+                    }
                     if (roleGroup3P) roleGroup3P.classList.toggle('is-hidden', mode !== '3P');
                     if (roleGroupPure) roleGroupPure.classList.toggle('is-hidden', mode !== 'PURE');
                     this.updateDrawerSummary();
@@ -901,7 +912,7 @@
                 const modeConfirmBtn = document.getElementById('game-mode-confirm');
                 if (modeConfirmBtn) modeConfirmBtn.click();
             } else {
-                if (this.selectedMode === '5P') {
+                if (this.selectedMode === '5P' || this.selectedMode === '4P') {
                     pickHiddenOption('start-five-player-role', this.selectedRole5P);
                 } else {
                     pickHiddenOption('start-time-demon-role', this.selectedRole3P);

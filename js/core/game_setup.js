@@ -202,6 +202,7 @@ function getGameMode() {
     const mode = GAME_CONFIG?.gameMode || (typeof window !== 'undefined' ? window.GAME_CONFIG?.gameMode : null);
     if (mode === 'PURE_3P' || mode === 'PURE_4P' || mode === 'PURE_5P') return mode;
     if (mode === 'PURE') return `PURE_${getPurePlayerCountLocal(mode)}P`;
+    if (mode === '4P') return '4P';
     return mode === '3P' ? '3P' : '5P';
 }
 
@@ -216,6 +217,9 @@ function getRolesForMode(mode) {
     }
     if (mode === '3P') {
         return PLAYER_ROLES.filter(role => role.type === '時魔');
+    }
+    if (mode === '4P') {
+        return PLAYER_ROLES.filter(role => role.type !== '受詛者');
     }
     return PLAYER_ROLES;
 }
@@ -405,9 +409,9 @@ function initializeGame(roles = null) {
     let resolvedRoles;
 
     if (Array.isArray(roles)) {
-        resolvedGameMode = roles.length === 3 ? '3P' : '5P';
+        resolvedGameMode = roles.length === 3 ? '3P' : (roles.length === 4 ? '4P' : '5P');
         resolvedRoles = roles;
-    } else if (typeof roles === 'string' && (roles === '3P' || roles === '5P' || isPureModeLocal(roles))) {
+    } else if (typeof roles === 'string' && (roles === '3P' || roles === '4P' || roles === '5P' || isPureModeLocal(roles))) {
         resolvedGameMode = (roles === 'PURE') ? `PURE_${getPurePlayerCountLocal(roles)}P` : roles;
         resolvedRoles = getRolesForMode(resolvedGameMode);
     } else if (typeof roles === 'boolean') {
@@ -424,10 +428,10 @@ function initializeGame(roles = null) {
     const minuteDeckCopy = [...DECK_MINUTE_CARDS];
 	shuffle(minuteDeckCopy);
 
-	// 生成「本局」小時牌庫（含隨機珍貴配置）
+	// 生成「本局」小時牌庫（含隨機珍貴配置；3P / 4P 無受詛者，不使用珍貴小時卡）
 	const { deck: hourDeckCopy, config: hourConfig } = isPure
         ? buildHourDeckForPureMode()
-        : ((resolvedGameMode === '3P')
+        : ((resolvedGameMode === '3P' || resolvedGameMode === '4P')
             ? buildHourDeckForThreePlayer()
             : buildHourDeckWithRandomPrecious());
 	shuffle(hourDeckCopy);
@@ -444,13 +448,13 @@ function initializeGame(roles = null) {
 	} else if (isPure) {
 	    appLogger.log(`【純競標模式】${pureCount}P 模式：無角色能力與珍貴卡，純小時卡競標。`);
 	} else {
-	    appLogger.log("【小時卡設定】3P 模式：不使用珍貴小時卡。");
+	    appLogger.log(`【小時卡設定】${resolvedGameMode} 模式：不使用珍貴小時卡。`);
 	}
 
 
     const numCards = isPure
         ? (pureCount === 5 ? 12 : 13)
-        : ((resolvedGameMode === '3P') ? 13 : 12);
+        : ((resolvedGameMode === '3P' || resolvedGameMode === '4P') ? 13 : 12);
     const numPlayers = gameState.players.length;
 	
 	// --- 測試模式：固定人類玩家第 1 局起始手牌 ---

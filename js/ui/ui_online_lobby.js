@@ -244,7 +244,7 @@
         const waitingIds = Array.isArray(pending.waitingSeatIds) ? pending.waitingSeatIds : [];
         const isMyTurn = waitingIds.includes(mySeatId);
         const gameMode = gs.gameMode || '5P';
-        const isPureMode = gameMode === '4P' || String(gameMode).startsWith('PURE');
+        const isPureMode = String(gameMode).startsWith('PURE');
 
         const players = (Array.isArray(gs.players) ? gs.players : []).map((p) => {
             const pType = p.type || (isPureMode ? 'pure' : '時魔');
@@ -302,7 +302,7 @@
             gameMode: gameMode,
             enableAbilities: Boolean(gs.enableAbilities),
             gameRound: gs.gameRound || 1,
-            totalGameRounds: gs.totalGameRounds || (gameMode === '3P' ? 3 : 5),
+            totalGameRounds: gs.totalGameRounds || (gameMode === '3P' ? 3 : (gameMode === '4P' ? 4 : 5)),
             roundMarker: gs.roundMarker || 1,
             players,
             clockFace,
@@ -555,7 +555,7 @@
         document.querySelectorAll('[data-online-start-mode]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const mode = btn.getAttribute('data-online-start-mode') || '5P';
-                const enableAbilities = mode !== '4P' && !mode.startsWith('PURE');
+                const enableAbilities = !mode.startsWith('PURE');
                 sendJson({ type: 'START_GAME', mode, enableAbilities });
             });
         });

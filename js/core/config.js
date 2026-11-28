@@ -58,7 +58,7 @@ window.GAME_CONFIG = {
     testMode: false,        // 預設是否開啟測試模式 (可被 UI 開關覆蓋)
     tutorialMode: true,     // 預設是否開啟新手教學引導模式
     defaultHumanId: 'SM_1',  // 預設人類玩家 ID
-    gameMode: '5P',          // 遊戲模式: '5P' (預設)、'3P' 或 'PURE_3P' / 'PURE_4P' / 'PURE_5P'
+    gameMode: '5P',          // 遊戲模式: '5P' (預設)、'4P' (時魔×3+時之惡×1)、'3P' 或 'PURE_3P' / 'PURE_4P' / 'PURE_5P'
     threePStartingRole: '時針', // 3P 模式下人類玩家初始身份
     purePlayerCount: 4,      // 純競標模式預設人數 (3 / 4 / 5)
     aiDifficulty: 'normal'   // AI 對戰難度: 'normal' (一般，新改良演算法) 或 'easy' (簡單，原始基礎行為)

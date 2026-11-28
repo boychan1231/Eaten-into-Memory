@@ -55,15 +55,15 @@ async function runFullGameTest(mode, roomId, seed) {
   await waitFor(() => p2.latestState?.status === 'lobby' && p2.latestState.players.length === 2);
 
   // 非房主不得開局
-  send(p2, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
+  send(p2, { type: 'START_GAME', mode, enableAbilities: !mode.startsWith('PURE'), seed });
   await waitFor(() => p2.errors.some((e) => e.code === 'NOT_HOST'));
   p2.errors.length = 0;
 
-  send(p1, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
+  send(p1, { type: 'START_GAME', mode, enableAbilities: !mode.startsWith('PURE'), seed });
   await waitFor(() => p1.latestState?.status === 'playing' && p2.latestState?.status === 'playing');
 
   // 對局進行中不得重開
-  send(p1, { type: 'START_GAME', mode, enableAbilities: mode !== '4P', seed });
+  send(p1, { type: 'START_GAME', mode, enableAbilities: !mode.startsWith('PURE'), seed });
   await waitFor(() => p1.errors.some((e) => e.code === 'GAME_IN_PROGRESS'));
   p1.errors.length = 0;
 

@@ -29,6 +29,10 @@ export function stage4HeadlessStressTest() {
     for (let i = 0; i < 5; i++) {
         scenarios.push({ mode: '3P', enableAbilities: false, aiDifficulty: 'easy', humanId: 'SM_1', threePRole: '時針' });
     }
+    const fourPRoles = ['SM_1', 'SM_2', 'SM_3', 'sin'];
+    for (let i = 0; i < 6; i++) {
+        scenarios.push({ mode: '4P', enableAbilities: true, aiDifficulty: 'normal', humanId: fourPRoles[i % fourPRoles.length], threePRole: '時針' });
+    }
     for (const pureMode of ['PURE_3P', 'PURE_4P', 'PURE_5P']) {
         scenarios.push({ mode: pureMode, enableAbilities: false, aiDifficulty: 'normal', humanId: 'SM_1', threePRole: '時針' });
         scenarios.push({ mode: pureMode, enableAbilities: false, aiDifficulty: 'easy', humanId: 'SM_1', threePRole: '時針' });
