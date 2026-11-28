@@ -784,9 +784,12 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
     const sHint = document.getElementById('seconds-ability-hint');
     const overlay = document.getElementById('seconds-choice-overlay');
 
+    const secCost = (gameState && gameState.gameMode === '3P')
+        ? (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT_3P || 2)
+        : (window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SELECT || 3);
     const canUseSecondHand = window.GAME_CONFIG.enableAbilities && humanPlayer && humanPlayer.roleCard === '秒針' &&
         flags.isWaitingMinuteInput && !flags.isWaitingSecondFinalChoice && !gameState.gameEnded && !gameState.abilityMarker &&
-        !humanPlayer.specialAbilityUsed && humanPlayer.mana >= 3 && humanPlayer.hand.length >= 2;
+        !humanPlayer.specialAbilityUsed && humanPlayer.mana >= secCost && humanPlayer.hand.length >= 2;
 
     if (sWrap) sWrap.style.display = (canUseSecondHand || uiState.isSecondHandSelectingTwo) ? 'block' : 'none';
     if (sBtn) {
