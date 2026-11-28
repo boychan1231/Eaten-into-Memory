@@ -847,6 +847,33 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
             else { sinOverlay.classList.add('hidden'); sinOverlay.style.display = 'none'; }
         }
     }
+
+    // 分針挑卡後主畫面浮動跳格操作列（方便手機版無需打開右側抽屜）
+    const minBar = document.getElementById('minute-hand-float-bar');
+    if (minBar) {
+        const showMinBar = Boolean(
+            gameState &&
+            !gameState.gameEnded &&
+            flags?.isWaitingAbilityChoice &&
+            humanPlayer &&
+            humanPlayer.roleCard === '分針'
+        );
+        if (showMinBar) {
+            const minCost = (gameState.gameMode === '3P')
+                ? (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE_3P || 3)
+                : (window.GAME_DATA?.ABILITY_COSTS?.MINUTE_HAND_MOVE || 2);
+            const canJump = Boolean(window.GAME_CONFIG?.enableAbilities) && !gameState.abilityMarker && (humanPlayer.mana || 0) >= minCost;
+            const lbl = document.getElementById('minute-hand-float-label');
+            const ccwBtn = document.getElementById('minute-float-ccw-btn');
+            const cwBtn = document.getElementById('minute-float-cw-btn');
+            if (lbl) lbl.textContent = gameState.abilityMarker ? '分針能力（本回合已封鎖）：' : `分針跳格 (${minCost} MP)：`;
+            if (ccwBtn) ccwBtn.disabled = !canJump;
+            if (cwBtn) cwBtn.disabled = !canJump;
+            minBar.style.display = 'flex';
+        } else {
+            minBar.style.display = 'none';
+        }
+    }
 }
 
 function syncOneSixtyStatusAndSwapBtn(gameState, humanPlayer, flags) {

@@ -889,6 +889,7 @@ export class HeadlessGameEngine {
         currentClockPosition: p.currentClockPosition ?? null,
         isEjected: Boolean(p.isEjected),
         hasPlayedMinute,
+        isWaitingAction: Array.isArray(pendingAction.waitingSeatIds) && pendingAction.waitingSeatIds.includes(p.id),
         specialAbilityUsed: Boolean(p.specialAbilityUsed),
         hourHandMoveCount: Number(p.hourHandMoveCount || 0),
         targetRoleName: isMe ? (p.targetRoleName || '時針') : null,

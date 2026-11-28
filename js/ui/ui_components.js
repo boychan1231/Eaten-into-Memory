@@ -858,12 +858,22 @@ function renderAIPlayers(gameState, humanId) {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'player-card-inner';
 
+        let onlineStatusPill = '';
+        if (gameState.isOnlineMatch && !player.isEjected && !gameState.gameEnded) {
+            if (gameState.pendingOnlineActionType === 'PLAY_MINUTE_CARD' && player.hasPlayedMinute) {
+                onlineStatusPill = '<span class="online-status-pill is-locked">已鎖定</span>';
+            } else if (player.isWaitingAction) {
+                onlineStatusPill = '<span class="online-status-pill is-waiting">思考中</span>';
+            }
+        }
+
         contentDiv.innerHTML = `
             <div class="player-card-header">
                 <div class="player-card-name-group">
                     <h4 style="color:${color}; margin:0;" class="player-card-name">
                         ${player.name}
                         ${isHuman ? '<span class="player-you-pill">你</span>' : ''}
+                        ${onlineStatusPill}
                     </h4>
                 </div>
                 <div class="player-card-pos ${player.isEjected ? 'is-ejected' : ''}">

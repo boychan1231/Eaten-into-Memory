@@ -542,6 +542,75 @@
     filter: brightness(1.12);
 }
 
+/* --- P2: 連線狀態徽章與分針主畫面浮動跳格列 --- */
+.online-status-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.online-status-pill.is-locked {
+    background: rgba(76, 209, 55, 0.16);
+    border: 1px solid rgba(76, 209, 55, 0.5);
+    color: #7bed9f;
+}
+
+.online-status-pill.is-waiting {
+    background: rgba(254, 202, 87, 0.16);
+    border: 1px solid rgba(254, 202, 87, 0.5);
+    color: #ffeaa7;
+}
+
+.minute-hand-float-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(243, 104, 224, 0.14);
+    border: 1px solid rgba(243, 104, 224, 0.5);
+}
+
+.minute-hand-float-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ff9ff3;
+}
+
+.minute-hand-float-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.minute-float-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(243, 104, 224, 0.6);
+    background: rgba(243, 104, 224, 0.25);
+    color: #fff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.minute-float-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.minute-float-btn.is-skip {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
 .fx-showcase-info h5 {
     margin: 0 0 6px;
     font-size: 1rem;

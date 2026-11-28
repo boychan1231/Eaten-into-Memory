@@ -441,6 +441,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 分針主畫面浮動跳格按鈕
+    const minFloatCcw = document.getElementById('minute-float-ccw-btn');
+    const minFloatCw = document.getElementById('minute-float-cw-btn');
+    const minFloatSkip = document.getElementById('minute-float-skip-btn');
+    if (minFloatCcw) {
+        minFloatCcw.addEventListener('click', () => {
+            if (globalGameState && typeof handleHumanAbilityChoice === 'function') {
+                handleHumanAbilityChoice(globalGameState, 'ccw');
+            }
+        });
+    }
+    if (minFloatCw) {
+        minFloatCw.addEventListener('click', () => {
+            if (globalGameState && typeof handleHumanAbilityChoice === 'function') {
+                handleHumanAbilityChoice(globalGameState, 'cw');
+            }
+        });
+    }
+    if (minFloatSkip) {
+        minFloatSkip.addEventListener('click', () => {
+            if (globalGameState && typeof handleHumanAbilityChoice === 'function') {
+                handleHumanAbilityChoice(globalGameState, 'skip');
+            }
+        });
+    }
+
     // 人類分頁
     const humanTabButtons = document.querySelectorAll('.human-tab-btn');
     const humanTabPanels = document.querySelectorAll('.human-tab-panel');
