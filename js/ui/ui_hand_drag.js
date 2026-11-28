@@ -308,7 +308,17 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
             }
             cardEl.className = `minute-card ${tierClass}`;
             cardEl.setAttribute('data-value', card.value);
-            cardEl.innerHTML = `<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
+            let swapBadgeHtml = '';
+            if (flags.isWaitingMinuteInput && !uiState.isSecondHandSelectingTwo && typeof canUseSecondHandSwap === 'function') {
+                if (card.value === 60 && canUseSecondHandSwap(gameState, humanPlayer, 60, 1)) {
+                    cardEl.classList.add('can-swap-card');
+                    swapBadgeHtml = '<div class="card-swap-badge">1 MP → 1</div>';
+                } else if (card.value === 1 && canUseSecondHandSwap(gameState, humanPlayer, 1, 60)) {
+                    cardEl.classList.add('can-swap-card');
+                    swapBadgeHtml = '<div class="card-swap-badge">1 MP → 60</div>';
+                }
+            }
+            cardEl.innerHTML = `${swapBadgeHtml}<div class="card-num">${card.value}</div><div class="card-gear">${card.gear}</div>`;
 
             if (flags.isWaitingMinuteInput) {
                 if (uiState.isSecondHandSelectingTwo) {
@@ -414,6 +424,7 @@ function renderHumanPlayerArea(gameState, humanPlayer, flags) {
                 confirmBtn.disabled = true;
             }
         }
+        syncOneSixtyStatusAndSwapBtn(gameState, humanPlayer, flags);
 
         if (actionHint) {
             let hintText = '';
@@ -697,6 +708,8 @@ function bindMinuteCardDragToPlay(cardEl, cardValue, gameState) {
                 confirmBtn.style.display = 'inline-block';
                 confirmBtn.disabled = (uiState.selectedCardValue === null);
             }
+            const curHuman = gameState?.players?.find(p => p.id === (typeof getEffectiveHumanPlayerId === 'function' ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID));
+            syncOneSixtyStatusAndSwapBtn(gameState, curHuman, { isWaitingMinuteInput: gameState?.currentRoundAIChoices !== null });
 
             if (window.gameAudio && typeof window.gameAudio.playClick === 'function') {
                 window.gameAudio.playClick();
@@ -803,6 +816,84 @@ function updateSecondHandControls(gameState, humanPlayer, flags) {
             if (typeof closeModal === 'function') closeModal(overlay);
             else if (typeof window !== 'undefined' && typeof window.closeModal === 'function') window.closeModal(overlay);
             else if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; }
+        }
+    }
+
+    // 4P 時之惡開局強制棄牌中央彈窗
+    const sinOverlay = document.getElementById('sin-discard-overlay');
+    if (sinOverlay) {
+        const shouldOpenSinDiscard = Boolean(
+            gameState &&
+            gameState.waitingSinPreRoundDiscard &&
+            humanPlayer &&
+            gameState.waitingSinPreRoundDiscardPlayerId === humanPlayer.id &&
+            gameState.sinPreRoundDiscardOptions &&
+            !gameState.gameEnded
+        );
+        if (shouldOpenSinDiscard) {
+            const { minValue, maxValue } = gameState.sinPreRoundDiscardOptions;
+            const minBtn = document.getElementById('sin-discard-min-btn');
+            const maxBtn = document.getElementById('sin-discard-max-btn');
+            if (minBtn) minBtn.textContent = `棄掉最低 [${minValue}]`;
+            if (maxBtn) maxBtn.textContent = `棄掉最高 [${maxValue}]`;
+            if (sinOverlay.classList.contains('hidden')) {
+                if (typeof openModal === 'function') openModal(sinOverlay, minBtn || undefined);
+                else if (typeof window !== 'undefined' && typeof window.openModal === 'function') window.openModal(sinOverlay, minBtn || undefined);
+                else { sinOverlay.classList.remove('hidden'); sinOverlay.style.display = 'block'; }
+            }
+        } else if (!sinOverlay.classList.contains('hidden')) {
+            if (typeof closeModal === 'function') closeModal(sinOverlay);
+            else if (typeof window !== 'undefined' && typeof window.closeModal === 'function') window.closeModal(sinOverlay);
+            else { sinOverlay.classList.add('hidden'); sinOverlay.style.display = 'none'; }
+        }
+    }
+}
+
+function syncOneSixtyStatusAndSwapBtn(gameState, humanPlayer, flags) {
+    const pillEl = document.getElementById('one-sixty-status-pill');
+    if (pillEl) {
+        const isPure = typeof gameState?.gameMode === 'string' && gameState.gameMode.startsWith('PURE');
+        const abilitiesOn = typeof window !== 'undefined' && window.GAME_CONFIG?.enableAbilities;
+        if (!isPure && abilitiesOn && typeof isMinuteCardPlayedInRound === 'function') {
+            const p1 = isMinuteCardPlayedInRound(gameState, 1);
+            const p60 = isMinuteCardPlayedInRound(gameState, 60);
+            const tags = [];
+            if (p1) tags.push('<span class="one-sixty-tag">1 已出</span>');
+            if (p60) tags.push('<span class="one-sixty-tag">60 已出</span>');
+            if (tags.length > 0) {
+                pillEl.innerHTML = tags.join('');
+                pillEl.style.display = 'inline-flex';
+            } else {
+                pillEl.style.display = 'none';
+            }
+        } else {
+            pillEl.style.display = 'none';
+        }
+    }
+
+    const swapBtn = document.getElementById('second-hand-swap-inline-btn');
+    if (swapBtn) {
+        const sel = uiState.selectedCardValue;
+        let targetTo = null;
+        if (
+            flags?.isWaitingMinuteInput &&
+            !uiState.isSecondHandSelectingTwo &&
+            humanPlayer &&
+            typeof canUseSecondHandSwap === 'function'
+        ) {
+            if (sel === 60 && canUseSecondHandSwap(gameState, humanPlayer, 60, 1)) targetTo = 1;
+            else if (sel === 1 && canUseSecondHandSwap(gameState, humanPlayer, 1, 60)) targetTo = 60;
+        }
+        if (targetTo !== null) {
+            const cost = (typeof window !== 'undefined' && window.GAME_DATA?.ABILITY_COSTS?.SECOND_HAND_SWAP) || 1;
+            swapBtn.textContent = `${cost} MP 當成 [${targetTo}] 打出`;
+            swapBtn.dataset.fromValue = String(sel);
+            swapBtn.dataset.toValue = String(targetTo);
+            swapBtn.style.display = 'inline-block';
+        } else {
+            swapBtn.style.display = 'none';
+            delete swapBtn.dataset.fromValue;
+            delete swapBtn.dataset.toValue;
         }
     }
 }

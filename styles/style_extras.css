@@ -474,6 +474,74 @@
     color: #ffeaa7;
 }
 
+/* --- P0: 頂部模式徽章與 1/60 互換手牌聯動 --- */
+.hud-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: #ffeaa7;
+    background: rgba(255, 210, 127, 0.16);
+    border: 1px solid rgba(255, 210, 127, 0.45);
+}
+
+.one-sixty-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.one-sixty-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0, 210, 211, 0.14);
+    border: 1px solid rgba(0, 210, 211, 0.45);
+    color: #7ef9ff;
+}
+
+.minute-card.can-swap-card {
+    box-shadow: 0 0 12px rgba(0, 210, 211, 0.55);
+    border-color: #00d2d3;
+}
+
+.card-swap-badge {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #00a8a8;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.second-hand-swap-inline-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #00d2d3;
+    background: linear-gradient(135deg, #00a8a8, #008080);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(0, 210, 211, 0.35);
+}
+
+.second-hand-swap-inline-btn:hover {
+    filter: brightness(1.12);
+}
+
 .fx-showcase-info h5 {
     margin: 0 0 6px;
     font-size: 1rem;

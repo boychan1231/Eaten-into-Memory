@@ -407,6 +407,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (secChoiceA) secChoiceA.addEventListener('click', onPickSeconds);
     if (secChoiceB) secChoiceB.addEventListener('click', onPickSeconds);
 
+    // 4P 時之惡開局棄牌彈窗按鈕
+    const sinDiscardMinBtn = document.getElementById('sin-discard-min-btn');
+    const sinDiscardMaxBtn = document.getElementById('sin-discard-max-btn');
+    if (sinDiscardMinBtn) {
+        sinDiscardMinBtn.addEventListener('click', () => {
+            if (globalGameState && typeof handleHumanSinPreRoundDiscard === 'function') {
+                handleHumanSinPreRoundDiscard(globalGameState, 'min');
+            }
+        });
+    }
+    if (sinDiscardMaxBtn) {
+        sinDiscardMaxBtn.addEventListener('click', () => {
+            if (globalGameState && typeof handleHumanSinPreRoundDiscard === 'function') {
+                handleHumanSinPreRoundDiscard(globalGameState, 'max');
+            }
+        });
+    }
+
+    // 秒針手牌旁 1/60 互換打出按鈕
+    const swapInlineBtn = document.getElementById('second-hand-swap-inline-btn');
+    if (swapInlineBtn) {
+        swapInlineBtn.addEventListener('click', () => {
+            if (!globalGameState || typeof handleHumanSecondHandSwap !== 'function') return;
+            const fromVal = Number(swapInlineBtn.dataset.fromValue);
+            const toVal = Number(swapInlineBtn.dataset.toValue);
+            if (!fromVal || !toVal) return;
+            uiState.selectedCardValue = null;
+            uiState.selectedCardValues = [];
+            uiState.isSecondHandSelectingTwo = false;
+            handleHumanSecondHandSwap(globalGameState, fromVal, toVal);
+            updateUI(globalGameState);
+        });
+    }
+
     // 人類分頁
     const humanTabButtons = document.querySelectorAll('.human-tab-btn');
     const humanTabPanels = document.querySelectorAll('.human-tab-panel');

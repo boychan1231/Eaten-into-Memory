@@ -176,6 +176,18 @@ function updateUI(gameState) {
 
     const humanPlayer = gameState.players.find(p => p.id === humanId);
 
+    // 頂部模式徽章更新
+    const modeBadgeEl = document.getElementById('hud-mode-badge');
+    if (modeBadgeEl) {
+        const gm = gameState.gameMode || '5P';
+        let modeLabel = gm;
+        if (gm === '5P') modeLabel = '5P 完整';
+        else if (gm === '4P') modeLabel = '4P 狩獵';
+        else if (gm === '3P') modeLabel = '3P 競速';
+        else if (String(gm).startsWith('PURE_')) modeLabel = `純競標 ${gm.replace('PURE_', '')}`;
+        modeBadgeEl.textContent = gameState.isOnlineMatch ? `連線 · ${modeLabel}` : modeLabel;
+    }
+
     // 2. 計算等待狀態 (Flags)
     const isHourSelectionActive = !!(
         gameState.waitingHourChoice ||

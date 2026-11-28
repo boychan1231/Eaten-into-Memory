@@ -177,6 +177,10 @@
 			</div>
 
 			<div id="deck-info" class="hud-top-status-pill no-click">
+				<div class="hud-stat-item" id="hud-mode-badge-wrap">
+					<span class="hud-mode-badge" id="hud-mode-badge">5P</span>
+				</div>
+				<span class="hud-stat-sep">｜</span>
 				<div class="hud-stat-item">
 					<span class="hud-stat-label"><span class="material-symbols-outlined icon-inline">hourglass_empty</span> 局次</span>
 					<span class="deck-count" id="game-round-num">--</span>
@@ -492,9 +496,11 @@
 									<div id="human-hand" class="hand-display"></div>
 
 									<div id="human-controls" class="hand-controls">
+										<div id="one-sixty-status-pill" class="one-sixty-status-pill" style="display:none;"></div>
 										<div id="action-hint" class="action-hint" role="status" aria-live="polite">
 										</div>
 										<div class="hand-action-btns">
+											<button id="second-hand-swap-inline-btn" class="second-hand-swap-inline-btn" type="button" style="display:none;"></button>
 											<button id="confirm-move-btn" disabled data-i18n="ui.buttons.confirm_move">確認出牌</button>
 											<button id="next-step-btn" disabled data-i18n="ui.buttons.next_round">下一回合</button>
 										</div>
@@ -1145,6 +1151,17 @@
 					<div class="modal-actions">
 						<button id="seconds-choice-a" class="primary seconds-choice-btn">A</button>
 						<button id="seconds-choice-b" class="primary seconds-choice-btn">B</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="sin-discard-overlay" class="modal-overlay hidden" aria-hidden="true">
+				<div class="modal">
+					<h2 class="modal-title" style="color:#feca57;"><span class="material-symbols-outlined icon-inline">delete_sweep</span> 4P 開局強制棄牌</h2>
+					<p class="modal-desc">時之惡每局開始前必須棄掉 1 張數值最低或最高的分鐘卡</p>
+					<div class="modal-actions">
+						<button id="sin-discard-min-btn" class="primary seconds-choice-btn" type="button" style="background:#e17055;">棄掉最低 [--]</button>
+						<button id="sin-discard-max-btn" class="primary seconds-choice-btn" type="button" style="background:#d63031;">棄掉最高 [--]</button>
 					</div>
 				</div>
 			</div>
