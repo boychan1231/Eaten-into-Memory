@@ -1073,15 +1073,21 @@ function moveRoundMarker(gameState) {
     }
 }
 
-// 檢查受詛者任務
-function checkSCZMissionSuccess(gameState) {
+// 計算受詛者已鎖定珍貴卡數量 & 檢查任務
+function getSCZLockedPreciousCount(gameState) {
     let lockedPreciousCount = 0;
-    gameState.clockFace.forEach(spot => {
-        // ✅ 修正：必須只計算「已鎖定 (isLocked)」的珍貴卡
-        // 否則回合結束前(尚未清理鐘面時)，暫留在場上的未鎖定珍貴卡會被誤算
-        lockedPreciousCount += spot.cards.filter(c => c.isPrecious && c.isLocked).length;
-    });
-    return (lockedPreciousCount >= 12); 
+    if (gameState && Array.isArray(gameState.clockFace)) {
+        gameState.clockFace.forEach(spot => {
+            // ✅ 修正：必須只計算「已鎖定 (isLocked)」的珍貴卡
+            // 否則回合結束前(尚未清理鐘面時)，暫留在場上的未鎖定珍貴卡會被誤算
+            lockedPreciousCount += (spot.cards || []).filter(c => c.isPrecious && c.isLocked).length;
+        });
+    }
+    return lockedPreciousCount;
+}
+
+function checkSCZMissionSuccess(gameState) {
+    return getSCZLockedPreciousCount(gameState) >= 12;
 }
 
 function endGameRound(gameState) {
@@ -1144,18 +1150,18 @@ function endGameRound(gameState) {
 	// 受詛者任務檢查
 	const sczPlayer = !isPure ? gameState.players.find(p => p.type === '受詛者') : null;
     if (sczPlayer && !sczPlayer.isEjected) {
-        const isMissionSuccess = checkSCZMissionSuccess(gameState);
+        const lockedCount = getSCZLockedPreciousCount(gameState);
+        const isMissionSuccess = lockedCount >= 12;
         
-        if (isMissionSuccess) {
-            if (gameState.gameRound === 2) {
-                sczPlayer.score += 9;
-                appLogger.log("✦【受詛者】第 2 局任務達成！獲得額外 9 分！");
-            } else if (gameState.gameRound === 3) {
-                sczPlayer.score += 5;
-                appLogger.log("✦【受詛者】第 3 局任務達成！獲得額外 5 分！");
-            } else if (gameState.gameRound === 4) {
-                sczPlayer.score += 2;
-                appLogger.log("✦【受詛者】第 4 局任務達成！獲得額外 2 分！");
+        if (isMissionSuccess && !gameState.sczMissionBonusAwarded) {
+            let bonus = 0;
+            if (gameState.gameRound <= 2) bonus = 6;
+            else if (gameState.gameRound === 3) bonus = 4;
+            else if (gameState.gameRound === 4) bonus = 2;
+            gameState.sczMissionBonusAwarded = true;
+            if (bonus > 0) {
+                sczPlayer.score += bonus;
+                appLogger.log(`✦【受詛者】第 ${gameState.gameRound} 局任務達成！獲得額外 ${bonus} 分！`);
             }
         }
 	
@@ -1164,8 +1170,10 @@ function endGameRound(gameState) {
             if (isMissionSuccess) {
                 appLogger.log("✦【受詛者】最終任務達成！");
             } else {
-                appLogger.log("※【受詛者】最終任務失敗。");
-                sczPlayer.score -= 999;
+                const missing = Math.max(0, 12 - lockedCount);
+                const penalty = missing * 2;
+                sczPlayer.score -= penalty;
+                appLogger.log(`※【受詛者】最終任務未滿 12 張（已鎖定 ${lockedCount}/12，缺少 ${missing} 張），扣除 ${penalty} 分！`);
             }
         }
     }

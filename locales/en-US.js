@@ -318,9 +318,9 @@
             role_scoring_minute: '<strong>【◈ Minute Hand: Scoring & Tactics】</strong><br>• <strong>GP = Score:</strong> Retain GP until game end to convert to maximum total points!<br>• <strong>Leap Evasion:</strong> After claiming an Hour Card, once the clock face holds at least as many Hour Cards as total players, spend MP to jump clockwise or counter-clockwise to the next card space, escaping lethal position 12 and forcing penalties onto rivals!',
             role_scoring_second: '<strong>【◈ Second Hand: Scoring & Tactics】</strong><br>• <strong>GP = Score:</strong> Retain GP until game end to convert to maximum total points!<br>• <strong>Dual-Card Ambush:</strong> Spend 3 MP on crucial turns to commit 2 face-down Minute Cards. After all others reveal, choose the ideal card to seize safe spots or intentionally take 3rd place to avoid penalties!',
             role_scoring_sin: '<strong>【◆ Time Evil: Hunting & Scoring Guide】</strong><br>• <strong>Shield & GP Mechanic:</strong> Starts and resets to 1–5 Shield (<code>GP + 1</code>, max 5). Penalties hit Shield first; losing your last Shield deducts 1 GP and refills Shield.<br>• <strong>Base Score:</strong> Remaining GP at game end convert to score.<br>• <strong>☠ Special Win:</strong> Devour each of the 3 Time Demons <strong>at least once</strong> across 5 games to achieve an instant Special Victory!<br>• <strong>◆ Evil Recharge:</strong> If penalty resolution applies solely to Time Evil itself, Time Evil still deducts Shield / GP normally and then <strong>recovers 1 MP</strong> (up to current GP count)!<br>• <strong>▲ Starvation:</strong> If no demon is devoured in a game, lose 2 GP from that game\'s score to hunger! (If GP drops below 0, Time Evil is devoured and loses!)<br>• <strong>Abilities:</strong> Before playing card, activate 【Sin\'s Pull (2 MP)】to penalize whoever is closest to you; 【Seal (3 MP)】blocks all demon abilities!',
-            role_scoring_scz: '<strong>【◈ Cursed One: Memory Lock & Scoring Guide】</strong><br>• <strong>Shield & GP Mechanic:</strong> Starts and resets to 1–3 Shield (based on current GP, max 3). Penalties hit Shield first; losing your last Shield deducts 1 GP and refills Shield.<br>• <strong>Base Score:</strong> Remaining GP at game end convert to score.<br>• <strong>◈ Core Mission:</strong> Land on 【★ Precious Hour Cards】to lock them permanently onto the clock face!<br>• <strong>★ Huge Bonus Points:</strong> Locking 12 cards by end of Game 2 / 3 / 4 grants <strong>+9 / +5 / +2 huge bonus points</strong>!<br>• <strong>☠ Lethal Deadline:</strong> If fewer than 12 cards are locked by the end of Game 5, suffer a devastating <strong>-999 pts penalty</strong>! Prioritize Precious Cards!',
+            role_scoring_scz: '<strong>【◈ Cursed One: Memory Lock & Scoring Guide】</strong><br>• <strong>Shield & GP Mechanic:</strong> Starts and resets to 1–3 Shield (based on current GP, max 3). Penalties hit Shield first; losing your last Shield deducts 1 GP and refills Shield.<br>• <strong>Base Score:</strong> Remaining GP at game end convert to score.<br>• <strong>◈ Core Mission:</strong> Land on 【★ Precious Hour Cards】to lock them permanently onto the clock face!<br>• <strong>★ Early Bonus Points:</strong> Locking 12 cards by end of Game 2 / 3 / 4 grants <strong>+6 / +4 / +2 bonus points</strong>!<br>• <strong>☠ Final Penalty:</strong> If fewer than 12 cards are locked by the end of Game 5, lose <strong>2 pts per missing card</strong>! Prioritize Precious Cards!',
             role_evolved_notice: '<strong>✦【Evolved into {roleName}!】</strong><br>You have evolved! You will earn a <strong>+3 pts</strong> faction bonus at game end! Use your new powers to safeguard GP and maximize your score!',
-            role_scz_hour_hint: '<br><span style="color:#00d2d3;">◈ <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for huge bonus points and escaping the -999 penalty!</span>',
+            role_scz_hour_hint: '<br><span style="color:#00d2d3;">◈ <strong>Cursed One Tip:</strong> Prioritize 【★ Precious Cards】! Stepping on one permanently locks it, rushing towards 12 cards for bonus points and avoiding the -2 pts per missing card penalty!</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">◈ <strong>Time Evil Tip:</strong> Before playing cards, activate 【Sin\'s Pull (2 MP)】to penalize adjacent demons and work towards your 3-demon devouring Special Victory!</span>',
             role_progress_scz: 'Clock Face Locked Precious Cards: {count}/12 (Game {round})',
             role_progress_sin: 'Special Victory Progress: Not yet devoured: [{targets}] ({count}/3 devoured)',
@@ -401,7 +401,7 @@
 								<tr>
 									<td style="padding: 10px; border: 1px solid #555;"><strong>Victory</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">Highest Gear Score wins</td>
-									<td style="padding: 10px; border: 1px solid #555;">Gear Score + bonuses/special victory (Cursed One: +9/+5/+2 for locking 12; Time Sin Total Hunt: +6/+4/+2 in 5P by R2/3/4; Devour Time Sin)</td>
+									<td style="padding: 10px; border: 1px solid #555;">Gear Score + bonuses/special victory (Cursed One: +6/+4/+2 for locking 12, or -2 per missing card; Time Sin Total Hunt: +6/+4/+2 in 5P by R2/3/4; Devour Time Sin)</td>
 								</tr>
 							</tbody>
 						</table>
@@ -471,7 +471,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Mode Specials</strong></td>
-                                <td>Total Hunt bonus (+6/+4/+2); Cursed One (+9/+5/+2 or -999)</td>
+                                <td>Total Hunt bonus (+6/+4/+2); Cursed One (+6/+4/+2 or -2 per missing card)</td>
                                 <td><strong>No Total Hunt bonus</strong>; Time Sin discards lowest/highest card each game; sole lowest-scoring Time Demon gets 1 extra unused card in Game 4</td>
                                 <td>Sole lowest-scoring Time Demon gets 1 extra unused card in Game 3</td>
                                 <td>Pure GP survival; game ends early if 1 or fewer survive</td>
@@ -517,7 +517,7 @@
                     <div class="rules-detail-card" style="border-left:4px solid #7bed9f;">
                         <h3 style="color:#7bed9f;">The Cursed One (5P Only)</h3>
                         <p><strong>Contact Lock:</strong> Stepping on Precious Cards permanently locks them. Shield resets to <code>clamp(GP, 1, 3)</code>.</p>
-                        <p><strong>Mission:</strong> Lock 12 Precious Cards by Game 2/3/4 for <strong>+9/+5/+2</strong> bonus; failing by Game 5 incurs <strong>-999</strong>.</p>
+                        <p><strong>Mission:</strong> Lock 12 Precious Cards by Game 2/3/4 for <strong>+6/+4/+2</strong> bonus; failing by Game 5 incurs <strong>-2 pts per missing card</strong>.</p>
                     </div>
                 </div>
             `,

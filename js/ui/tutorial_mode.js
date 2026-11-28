@@ -487,7 +487,7 @@
             case 'sin':
                 return '<strong>【◆ 時之惡 · 獵殺與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>▲ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 GP（如扣至負數則達成吞噬時之惡）！<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變處決規則為「處決距離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能！';
             case 'scz':
-                return '<strong>【◈ 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>★ 巨額階段分：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong>！<br>• <strong>☠ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>！務必全力搶奪珍貴卡！';
+                return '<strong>【◈ 受詛者 · 鎖定與得分指南】</strong><br>• <strong>基礎得分：</strong>局末保留的 GP 轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面！<br>• <strong>★ 階段獎勵：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+6 / +4 / +2 獎勵分</strong>！<br>• <strong>☠ 終局懲罰：</strong>第 5 局結束若<strong>未滿 12 張</strong>，每缺少 1 張扣除 <strong>2 分</strong>！務必全力搶奪珍貴卡！';
             case 'hour':
                 return '<strong>【◈ 時針時魔 · 得分與勝負指南】</strong><br>• <strong>GP 即積分：</strong>局末存活保留的 GP 轉換為最高總分！<br>• <strong>⧖ 預知未來：</strong>每回合自動預覽小時牌庫頂牌數值。<br>• <strong>移底操弄：</strong>主動消耗 MP 將 11、12 點高危毒牌移至底部，確保翻出的都是安全的小數字小時卡，保全自身 GP！';
             case 'minute':
@@ -821,7 +821,7 @@
             if (roleKey === 'scz') {
                 roleHourHint = window.i18n
                     ? window.i18n.t('tutorial.role_scz_hour_hint')
-                    : '<br><span style="color:#00d2d3;">◈ <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得巨額加分並免受 -999 分懲罰！</span>';
+                    : '<br><span style="color:#00d2d3;">◈ <strong>受詛者專屬提示：</strong>請優先挑選【★ 珍貴卡】！踩上即可永久鎖定，衝刺 12 張任務目標以獲得額外獎勵並免受每缺 1 張扣 2 分懲罰！</span>';
             } else if (roleKey === 'sin') {
                 roleHourHint = window.i18n
                     ? window.i18n.t('tutorial.role_sin_hour_hint')

@@ -318,9 +318,9 @@
             role_scoring_minute: '<strong>【分針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>每局結束時存活保留的齒輪會轉換為分數<br>• <strong>躍遷避險：</strong>取得小時卡落子後，若鐘面上小時卡張數已達玩家人數，可消耗 MP 順時針或逆時針跳躍至下一個有牌的刻度，甩開 12 點懲罰厄運',
             role_scoring_second: '<strong>【秒針時魔 · 得分與勝負指南】</strong><br>• <strong>齒輪即積分：</strong>每局結束時存活保留的齒輪會轉換為分數<br>• <strong>後手雙牌伏擊：</strong>關鍵回合消耗 3 MP 暗蓋 2 張分鐘卡，看清全場牌後再二選一打出精準搶下低刻度安全格或故意落入第 3 名避險',
             role_scoring_sin: '<strong>【時之惡 · 獵殺與得分指南】</strong><br>• <strong>護盾與 GP 機制：</strong>起始與護盾歸零重置為 1～5 點（<code>GP + 1</code> 上限 5）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並重新補充。<br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>✦ 特殊加分：</strong>在 5 局內將全場 3 位時魔<strong>各吞噬一次</strong>，即可直接奪得特殊加分<br>• <strong>◆ 惡念充能：</strong>若懲罰結算僅適用至時之惡自身（全場無其他角色受罰），時之惡如常先扣盾／GP 並重置，若仍存活再<strong>恢復 1 點 MP</strong>（上限為當前齒輪數）<br>• <strong>※ 飢餓懲罰：</strong>若該局無時魔被吞噬，將因飢餓從該局得分中扣除 2 GP（如扣至負數則達成吞噬時之惡）<br>• <strong>專屬異能：</strong>出牌前可發動【惡之牽引 (2 MP)】改變懲罰規則為「懲罰離自己最近者」；【虛無封鎖 (3 MP)】封印全場技能',
-            role_scoring_scz: '<strong>【受詛者 · 鎖定與得分指南】</strong><br>• <strong>護盾與 GP 機制：</strong>起始與護盾歸零重置為 1～3 點（依當前 GP，上限 3）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並依新 GP 重新補充護盾。<br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面<br>• <strong>★超前完成獎勵：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+9 / +5 / +2 巨額獎勵分</strong><br>• <strong>☠ 終局生死線：</strong>第 5 局結束若<strong>未滿 12 張</strong>，總分將被重扣 <strong>-999 分</strong>務必全力搶奪珍貴卡',
+            role_scoring_scz: '<strong>【受詛者 · 鎖定與得分指南】</strong><br>• <strong>護盾與 GP 機制：</strong>起始與護盾歸零重置為 1～3 點（依當前 GP，上限 3）。受罰先扣 1 點護盾抵消，護盾歸零才扣 1 GP 並依新 GP 重新補充護盾。<br>• <strong>基礎得分：</strong>局末保留的齒輪轉為總分。<br>• <strong>◈ 核心任務：</strong>踩中帶有【★】的珍貴小時卡將其永久鎖定在鐘面<br>• <strong>★超前完成獎勵：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張，依序額外獲得 <strong>+6 / +4 / +2 獎勵分</strong><br>• <strong>☠ 終局懲罰：</strong>第 5 局結束若<strong>未滿 12 張</strong>，每缺少 1 張扣除 <strong>2 分</strong>務必全力搶奪珍貴卡',
             role_evolved_notice: '<strong>✦【恭喜進化為 {roleName}！】</strong><br>您已成功變身！終局將享有 <strong>+3 分</strong> 陣營額外加分，請善用全新的專屬異能保護齒輪！',
-            role_scz_hour_hint: '<br><span style="color:#00d2d3;">※ <strong>受詛者提示：</strong>優先挑選【★ 珍貴卡】，永久鎖定 12 張珍貴小時卡以避免受到 -999 分懲罰</span>',
+            role_scz_hour_hint: '<br><span style="color:#00d2d3;">※ <strong>受詛者提示：</strong>優先挑選【★ 珍貴卡】，永久鎖定 12 張珍貴小時卡以獲得額外獎勵並避免每缺 1 張扣 2 分懲罰</span>',
             role_sin_hour_hint: '<br><span style="color:#feca57;">※ <strong>時之惡提示：</strong>出牌前可發動【惡之牽引 (2 MP)】攻擊身邊獵物，加速達成「吞噬 3 位時魔各一次」的特殊加分</span>',
             role_progress_scz: '當前鐘面鎖定珍貴卡：{count}/12 張（第 {round} 局）',
             role_progress_sin: '特殊加分：未吞噬【{targets}】（已吞噬 {count}/3 位）',
@@ -405,7 +405,7 @@
 									<td style="padding: 10px; border: 1px solid #555;"><strong>勝利條件</strong></td>
 									<td style="padding: 10px; border: 1px solid #555;">遊戲結束時 GP 積分最高者勝</td>
 									<td style="padding: 10px; border: 1px solid #555;"><u><strong>GP 積分 ＋ 特殊勝利條件</strong></u><br>
-										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+9 / +5 / +2</strong> 巨額獎勵分第 5 局結束若未滿 12 張則重扣 <strong>-999 分</strong><br>
+										• <strong>受詛者：</strong>第 2 / 3 / 4 局結束前累積鎖定 12 張珍貴卡，依序額外獲得 <strong>+6 / +4 / +2</strong> 獎勵分第 5 局結束若未滿 12 張，每缺少 1 張扣除 <strong>2 分</strong><br>
 										• <strong>時魔 特殊勝利：</strong>合力將時之惡 GP 耗盡達成「吞噬時之惡」<br>
 										• <strong>時之惡 完全狩獵（5P 獎勵分）：</strong>第 2 / 3 / 4 局結束前將所有時魔「各吞噬一次」，依序獲得 <strong>+6 / +4 / +2</strong> 獎勵分
 									</td>
@@ -487,7 +487,7 @@
                             </tr>
                             <tr>
                                 <td><strong>模式專屬規則</strong></td>
-                                <td>完全狩獵獎勵（+6/+4/+2）；受詛者任務（+9/+5/+2 / -999）</td>
+                                <td>完全狩獵獎勵（+6/+4/+2）；受詛者任務（+6/+4/+2 / 每缺 1 張 -2）</td>
                                 <td><strong>無完全狩獵加分</strong>；時之惡每局開局棄最低或最高 1 張；第 4 局唯一最低分時魔額外抽 1 張未使用分鐘卡</td>
                                 <td>第 3 局唯一最低分時魔額外抽 1 張未使用分鐘卡</td>
                                 <td>僅靠存活保留 GP 決勝負，場上剩 1 人以下提前結束該局</td>
@@ -533,7 +533,7 @@
                     <div class="rules-detail-card" style="border-left:4px solid #7bed9f;">
                         <h3 style="color:#7bed9f;">受詛者（僅 5P）</h3>
                         <p><strong>接觸鎖定：</strong>踏上含珍貴卡的刻度時將其永久鎖定。護盾為 <code>clamp(GP, 1, 3)</code>。</p>
-                        <p><strong>任務與懲罰：</strong>第 2/3/4 局鎖滿 12 張珍貴卡額外獲 <strong>+9/+5/+2</strong> 分；第 5 局結束仍未滿 12 張則重扣 <strong>-999 分</strong>。</p>
+                        <p><strong>任務與懲罰：</strong>第 2/3/4 局鎖滿 12 張珍貴卡額外獲 <strong>+6/+4/+2</strong> 分；第 5 局結束若仍未滿 12 張，每缺少 1 張扣除 <strong>2 分</strong>。</p>
                     </div>
                 </div>
             `,

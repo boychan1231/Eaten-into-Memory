@@ -112,7 +112,7 @@ function renderSpecialVictoryProgress(gameState, container) {
             : (curRound <= 2 ? '本局達成 +6｜第 3 局 +4｜第 4 局 +2' : (curRound === 3 ? '本局達成 +4｜第 4 局 +2' : (curRound === 4 ? '本局達成 +2' : '已過獎勵分門檻')));
         const lockBonusTip = isLockComplete
             ? '已完成記憶之鎖'
-            : (curRound <= 2 ? '本局達成 +9｜第 3 局 +5｜第 4 局 +2（第 5 局未滿 -999）' : (curRound === 3 ? '本局達成 +5｜第 4 局 +2（第 5 局未滿 -999）' : (curRound === 4 ? '本局達成 +2（第 5 局未滿 -999）' : '終局判定：未滿 12 張 -999 分')));
+            : (curRound <= 2 ? '本局達成 +6｜第 3 局 +4｜第 4 局 +2（第 5 局缺 1 張 -2 分）' : (curRound === 3 ? '本局達成 +4｜第 4 局 +2（第 5 局缺 1 張 -2 分）' : (curRound === 4 ? '本局達成 +2（第 5 局缺 1 張 -2 分）' : `終局判定：目前缺少 ${Math.max(0, 12 - lockedCount)} 張（每缺 1 張 -2 分）`)));
 
         const sczPlayer = gameState.players.find(p => p.type === '受詛者');
         const showHuntCard = gameState.players.length === 5;

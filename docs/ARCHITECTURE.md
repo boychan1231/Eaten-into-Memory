@@ -187,7 +187,7 @@ stateDiagram-v2
    - **`nearSin`（時之惡指定）**：在鐘面上與時之惡所在刻度距離最近者受罰。
 4. **受詛者 (Cursed One / `SCZ`) 專屬機制**：
    - 收集珍貴小時卡並跨局鎖定於 `lockedPreciousCards`。
-   - 集滿指定階段張數獲得額外積分獎勵；若至終局未達門檻則觸發 `-999` 懲罰。
+   - 集滿指定階段張數獲得額外積分獎勵（+6/+4/+2）；若至終局未達門檻則每缺少 1 張扣除 `2` 分。
    - 受罰時若持有護盾可將珍貴小時卡移至鐘面底部保護。
 5. **幼體時魔 (Young Demon / `SM_Y`) 4 大進化配方 ([`checkEvolutionCondition()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js#L10-L39))**：
    - 滿足以下任一條件即可透過 [`attemptRoleUpgrade()`](file:///home/antigravity/boychan1231/Eaten-into-Memory/js/core/abilities.js#L117) 進化為場上尚未被佔用的指針身份（`時針` / `分針` / `秒針`），並**嚴格維護指針全域唯一性**：
