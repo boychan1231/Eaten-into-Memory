@@ -422,6 +422,149 @@
 						<li><strong>漫長生涯：</strong>5 張任意卡 + 當中至少 2 張珍貴。</li>
 						<li><strong>銘記珍重：</strong>3 張珍貴。</li>
 					</ul>
+            `,
+            btn_detailed: '詳細說明',
+            detailed_title: '詳細遊戲規則說明',
+            btn_back_basic: '返回簡明規則',
+            tab_flow: '核心流程',
+            tab_modes: '四大模式',
+            tab_roles: '角色與進化',
+            tab_scoring: '處決與計分',
+            tab_faq: '常見問答',
+            detailed_flow: `
+                <div class="rules-detail-card">
+                    <h3>核心資源：GP（生命齒輪）與 MP</h3>
+                    <ul>
+                        <li><strong>GP（生命齒輪）：</strong>等同玩家的生命值與局末積分來源。受到懲罰會先扣護盾，無護盾則扣 1 GP；若 GP 扣至 <strong>小於 0（負數）</strong>，該玩家即「被吞噬」出局（本局不再行動，下一局輪替手牌後復活）。</li>
+                        <li><strong>MP：</strong>用於發動角色主動／被動異能的能量。每局開始時補充為起始 GP 數量（純競標模式無 MP）。</li>
+                        <li><strong>鐘面刻度（1～12）：</strong>鐘面共有 12 個位置，越接近 <strong>12</strong> 的刻度越危險；未進入鐘面的玩家完全免受回合末處決。</li>
+                    </ul>
+                </div>
+                <div class="rules-detail-card">
+                    <h3>單回合 4 步驟詳細流程（每局共 12 回合）</h3>
+                    <ol>
+                        <li><strong>開局與翻牌：</strong>每回合從小時牌庫翻出 2 張小時卡。若為 <strong>4P 模式第 1 回合</strong>，時之惡必須先從手牌棄掉 1 張數值最低或最高的分鐘卡。</li>
+                        <li><strong>暗拍出牌：</strong>所有存活玩家從手牌蓋放 1 張分鐘卡。出牌前，時針可發動「頂牌移底」、時之惡可發動「封鎖」或「惡之牽引」；出牌時，秒針可消耗 MP 發動「蓋 2 選 1」或「1 / 60 互換打出」。</li>
+                        <li><strong>翻牌移動與挑卡：</strong>公開所有分鐘卡，由 <strong>數值最大者</strong> 先挑 1 張小時卡並移至對應刻度，<strong>次大者</strong> 取餘下 1 張並移動；第 3 名及以後不進鐘面且絕對免傷。分針挑卡後可消耗 MP 跳格。</li>
+                        <li><strong>處決與局末結算：</strong>依本回合處決規則判定受罰者並扣減護盾／GP；第 12 回合結束（或場上僅剩 1 名以下純競標玩家／牌庫耗盡）時進入局末結算，剩餘 GP 1:1 轉為積分並輪替下一位玩家的手牌。</li>
+                    </ol>
+                </div>
+            `,
+            detailed_modes: `
+                <div class="rules-detail-card" style="overflow-x:auto;">
+                    <h3>四大遊戲模式完整對照</h3>
+                    <table class="rules-detail-table">
+                        <thead>
+                            <tr>
+                                <th>項目</th>
+                                <th>5P 完整模式</th>
+                                <th>4P 狩獵模式</th>
+                                <th>3P 競速模式</th>
+                                <th>純競標（3P / 4P / 5P）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>陣容與局數</strong></td>
+                                <td>時魔 ×3、時之惡 ×1、受詛者 ×1｜5 局</td>
+                                <td>時魔 ×3、時之惡 ×1｜4 局</td>
+                                <td>時針、分針、秒針各 1｜3 局</td>
+                                <td>全體無身份純競標｜3 / 4 / 5 局</td>
+                            </tr>
+                            <tr>
+                                <td><strong>起始手牌 / 小時卡</strong></td>
+                                <td>12 張分鐘卡｜36 張（含 12 張珍貴卡）</td>
+                                <td>13 張分鐘卡｜24 張（無珍貴卡）</td>
+                                <td>13 張分鐘卡｜24 張（無珍貴卡）</td>
+                                <td>5P 為 12 張，3P/4P 為 13 張｜24 張</td>
+                            </tr>
+                            <tr>
+                                <td><strong>異能 MP 差異</strong></td>
+                                <td>分針 2 MP / 秒針二選一 3 MP</td>
+                                <td>分針 2 MP / 秒針二選一 3 MP</td>
+                                <td>分針 3 MP / 秒針二選一 2 MP</td>
+                                <td>無角色與特殊能力</td>
+                            </tr>
+                            <tr>
+                                <td><strong>模式專屬規則</strong></td>
+                                <td>完全狩獵獎勵（+6/+4/+2）；受詛者任務（+9/+5/+2 / -999）</td>
+                                <td><strong>無完全狩獵加分</strong>；時之惡每局開局棄最低或最高 1 張；第 4 局唯一最低分時魔額外抽 1 張未使用分鐘卡</td>
+                                <td>第 3 局唯一最低分時魔額外抽 1 張未使用分鐘卡</td>
+                                <td>僅靠存活保留 GP 決勝負，場上剩 1 人以下提前結束該局</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            detailed_roles: `
+                <div class="rules-detail-grid">
+                    <div class="rules-detail-card" style="border-left:4px solid #54a0ff;">
+                        <h3 style="color:#54a0ff;">幼體時魔（5P / 4P）</h3>
+                        <p><strong>被動防禦：</strong>整場遊戲一次，若 MP ≥ 3 且即將受罰，自動消耗全部 MP 抵免該次傷害。</p>
+                        <p><strong>4 大進化配方（收集小時卡達成）：</strong></p>
+                        <ul>
+                            <li>久遠一生：3 張不同時代（至少 1 張珍貴／或 4P 任意 3 不同時代）。</li>
+                            <li>命途節錄：4 張不同數字（5P 需至少 1 張珍貴）。</li>
+                            <li>漫長生涯：5 張任意卡（5P 需至少 2 張珍貴）。</li>
+                            <li>銘記珍重：3 張珍貴卡（僅 5P）。</li>
+                        </ul>
+                        <p>已進化時魔在終局結束時額外獲得 <strong>+3 分</strong> 陣營加成。</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #ff9ff3;">
+                        <h3 style="color:#ff9ff3;">時針（Time Hand）</h3>
+                        <p><strong>被動：</strong>每回合自動預知小時牌庫頂牌數值。</p>
+                        <p><strong>主動（1 MP）：</strong>出牌前將小時牌庫頂牌移至牌庫底，同回合可再消耗 2 MP 執行第 2 次。</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #f368e0;">
+                        <h3 style="color:#f368e0;">分針（Minute Hand）</h3>
+                        <p><strong>主動（2 MP｜3P 為 3 MP）：</strong>取得小時卡後，可選擇順時針或逆時針跳躍至下一個已有卡片的鐘面刻度。</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #00d2d3;">
+                        <h3 style="color:#00d2d3;">秒針（Second Hand）</h3>
+                        <p><strong>雙牌伏擊（3 MP｜3P 為 2 MP）：</strong>出牌時改蓋 2 張分鐘卡，待其他玩家翻牌後再二選一打出（未選卡退回手牌）。</p>
+                        <p><strong>1 / 60 互換打出（1 MP）：</strong>若本局「1」已打出，可消耗 1 MP 將手中「60」當成「1」打出；若「60」已打出，可將手中「1」當成「60」打出。</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #feca57;">
+                        <h3 style="color:#feca57;">時之惡（5P / 4P）</h3>
+                        <p><strong>惡之牽引（2 MP）：</strong>本回合改為處決距離時之惡最近的鐘面角色。</p>
+                        <p><strong>封鎖（3 MP）：</strong>封印本回合所有時魔特殊能力。</p>
+                        <p><strong>護盾與飢餓：</strong>開局與破盾補充為 <code>clamp(GP + 1, 1, 5)</code>；若全場僅自己受罰可回復 1 MP；局末若無時魔被吞噬扣 2 GP。5P 於第 2/3/4 局結束前將所有時魔各吞噬一次額外獲 <strong>+6/+4/+2</strong> 分；4P 每局開局須棄最低或最高分鐘卡 1 張。</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #7bed9f;">
+                        <h3 style="color:#7bed9f;">受詛者（僅 5P）</h3>
+                        <p><strong>接觸鎖定：</strong>踏上含珍貴卡的刻度時將其永久鎖定。護盾為 <code>clamp(GP, 1, 3)</code>。</p>
+                        <p><strong>任務與懲罰：</strong>第 2/3/4 局鎖滿 12 張珍貴卡額外獲 <strong>+9/+5/+2</strong> 分；第 5 局結束仍未滿 12 張則重扣 <strong>-999 分</strong>。</p>
+                    </div>
+                </div>
+            `,
+            detailed_scoring: `
+                <div class="rules-detail-card">
+                    <h3>處決判定與護盾結算</h3>
+                    <ul>
+                        <li><strong>預設處決：</strong>場上（鐘面內）位置數值最大的玩家受罰（若同格則全員一起受罰）。</li>
+                        <li><strong>惡之牽引處決：</strong>改為鐘面上圓周距離時之惡最近的玩家受罰。</li>
+                        <li><strong>護盾機制：</strong>時之惡與受詛者受罰時先扣 1 點護盾；護盾歸零後的下一次受罰才扣 1 GP 並依新 GP 重補護盾。</li>
+                    </ul>
+                </div>
+                <div class="rules-detail-card">
+                    <h3>局末輪替、落後追趕與終局勝負</h3>
+                    <ul>
+                        <li><strong>手牌輪替：</strong>每局結束後，所有玩家會依座位順時針輪替接手下一副原始手牌與起始 GP，確保整場對局牌運公平。</li>
+                        <li><strong>落後追趕（3P 第 3 局 / 4P 第 4 局）：</strong>開局發牌時，若時魔陣營中有唯一 1 位累積分數最低者，會從本局未使用的分鐘卡中隨機額外獲得 1 張分鐘卡；若有 2 位以上同分最低則不發放。</li>
+                        <li><strong>平手順位：</strong>純競標模式若總分相同，依「整場被吞噬次數較少 → 單局最高保留 GP 較高」分出勝負。</li>
+                    </ul>
+                </div>
+            `,
+            detailed_faq: `
+                <div class="rules-detail-card">
+                    <h3>常見問題與實戰速查</h3>
+                    <ul>
+                        <li><strong>Q：GP 扣到 0 會立刻被吞噬嗎？</strong><br>不會。GP 歸 0 仍存活；必須在 GP 為 0 且沒有護盾時再次受傷（扣至負數）才會被吞噬出局。</li>
+                        <li><strong>Q：秒針的「1 / 60 互換打出」為什麼有時候不能按？</strong><br>必須同時滿足：本局棄牌堆中已經出現過目標點數（1 或 60）、手牌持有另一張、MP ≥ 1、本回合尚未使用過特殊能力且未被時之惡「封鎖」。</li>
+                        <li><strong>Q：4P / 3P 落後追趕機制會比較時之惡的分數嗎？</strong><br>不會。4P 僅比較 3 位時魔的累積分數，由唯一最低分的時魔獲得額外 1 張分鐘卡。</li>
+                        <li><strong>Q：4P 模式中時之惡為什麼每局開局會少 1 張牌？</strong><br>4P 每人發 13 張牌、每局打 12 回合；時之惡開局必須先棄掉最低或最高點數 1 張牌，因此每局剛好以 12 張手牌應戰。</li>
+                    </ul>
+                </div>
             `
         }
     };

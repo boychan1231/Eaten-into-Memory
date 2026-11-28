@@ -363,6 +363,117 @@
     }
 }
 
+/* --- 簡明 / 詳細遊戲規則說明切換與版面 --- */
+.rules-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 840px;
+    margin: 0 auto 12px;
+    padding: 12px 20px 0;
+    flex-wrap: wrap;
+}
+
+.rules-topbar-basic {
+    justify-content: flex-end;
+    margin-bottom: 0;
+}
+
+.rules-topbar h2 {
+    margin: 0;
+    color: var(--accent-color, #ffd27f);
+    font-size: 1.35rem;
+}
+
+.rules-detail-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 210, 127, 0.55);
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.2), rgba(124, 140, 255, 0.2));
+    color: #ffeaa7;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.rules-detail-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255, 210, 127, 0.28);
+    background: linear-gradient(135deg, rgba(255, 210, 127, 0.32), rgba(124, 140, 255, 0.3));
+}
+
+.rules-back-btn {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+}
+
+.rules-back-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: none;
+}
+
+.rules-detailed-container {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 0 20px 28px;
+    color: #dde3f0;
+    line-height: 1.65;
+}
+
+.rules-subpanel {
+    display: none;
+}
+
+.rules-subpanel.active {
+    display: block;
+}
+
+.rules-detail-card {
+    background: rgba(15, 20, 34, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.rules-detail-card h3 {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    color: #ffd27f;
+}
+
+.rules-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.rules-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.rules-detail-table th,
+.rules-detail-table td {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    vertical-align: top;
+    text-align: left;
+}
+
+.rules-detail-table th {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffeaa7;
+}
+
 .fx-showcase-info h5 {
     margin: 0 0 6px;
     font-size: 1rem;

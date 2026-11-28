@@ -1101,6 +1101,44 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // 簡明 / 詳細遊戲規則切換與分頁控制
+        const rulesBasicView = document.getElementById('rules-basic-view');
+        const rulesDetailedView = document.getElementById('rules-detailed-view');
+        const openDetailedRulesBtn = document.getElementById('open-detailed-rules-btn');
+        const backBasicRulesBtn = document.getElementById('back-basic-rules-btn');
+        const rulesTabBtns = document.querySelectorAll('[data-rules-tab]');
+        const rulesContentEl = document.getElementById('rules-content');
+
+        if (openDetailedRulesBtn && rulesBasicView && rulesDetailedView) {
+            openDetailedRulesBtn.addEventListener('click', () => {
+                rulesBasicView.classList.add('is-hidden');
+                rulesDetailedView.classList.remove('is-hidden');
+                if (rulesContentEl) rulesContentEl.scrollTop = 0;
+            });
+        }
+        if (backBasicRulesBtn && rulesBasicView && rulesDetailedView) {
+            backBasicRulesBtn.addEventListener('click', () => {
+                rulesDetailedView.classList.add('is-hidden');
+                rulesBasicView.classList.remove('is-hidden');
+                if (rulesContentEl) rulesContentEl.scrollTop = 0;
+            });
+        }
+        if (rulesTabBtns.length > 0) {
+            rulesTabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.getAttribute('data-rules-tab');
+                    rulesTabBtns.forEach(b => {
+                        const isMatch = b === btn;
+                        b.classList.toggle('active', isMatch);
+                        b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+                    });
+                    document.querySelectorAll('.rules-subpanel').forEach(panel => {
+                        panel.classList.toggle('active', panel.id === `rules-panel-${target}`);
+                    });
+                });
+            });
+        }
+
         const replayEvolveBtn = document.getElementById('fx-replay-evolve-btn');
         if (replayEvolveBtn) {
             replayEvolveBtn.addEventListener('click', () => playEvolveShowcasePreview());

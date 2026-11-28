@@ -508,6 +508,13 @@
 			</div>
 
 			<div id="rules-content" class="tab-content">
+				<div id="rules-basic-view">
+					<div class="rules-topbar rules-topbar-basic">
+						<button id="open-detailed-rules-btn" class="rules-detail-btn" type="button">
+							<span class="material-symbols-outlined icon-inline">menu_book</span>
+							<span data-i18n="rules.btn_detailed">詳細說明</span>
+						</button>
+					</div>
 
 				<div class="rules-container" data-i18n-html="rules.manual_html"
 					style="padding: 20px; line-height: 1.6; color: #ddd; max-width: 800px; margin: 0 auto;">
@@ -665,6 +672,31 @@
 								<strong>被動 (MP ≥ 3)：整場遊戲一次，如果 MP ≥ 3 ，可以消耗所有 MP 抵免一次懲罰。</strong>
 							</p>
 						</div>
+					</div>
+				</div>
+				</div>
+
+				<div id="rules-detailed-view" class="is-hidden">
+					<div class="rules-topbar">
+						<h2 data-i18n="rules.detailed_title">詳細遊戲規則說明</h2>
+						<button id="back-basic-rules-btn" class="rules-detail-btn rules-back-btn" type="button">
+							<span class="material-symbols-outlined icon-inline">arrow_back</span>
+							<span data-i18n="rules.btn_back_basic">返回簡明規則</span>
+						</button>
+					</div>
+					<div class="rules-detailed-container">
+						<div class="settings-subtabs" role="tablist" aria-label="詳細規則分類">
+							<button type="button" class="settings-subtab-btn active" data-rules-tab="flow" role="tab" aria-selected="true" data-i18n="rules.tab_flow">核心流程</button>
+							<button type="button" class="settings-subtab-btn" data-rules-tab="modes" role="tab" aria-selected="false" data-i18n="rules.tab_modes">四大模式</button>
+							<button type="button" class="settings-subtab-btn" data-rules-tab="roles" role="tab" aria-selected="false" data-i18n="rules.tab_roles">角色與進化</button>
+							<button type="button" class="settings-subtab-btn" data-rules-tab="scoring" role="tab" aria-selected="false" data-i18n="rules.tab_scoring">處決與計分</button>
+							<button type="button" class="settings-subtab-btn" data-rules-tab="faq" role="tab" aria-selected="false" data-i18n="rules.tab_faq">常見問答</button>
+						</div>
+						<div id="rules-panel-flow" class="rules-subpanel active" data-i18n-html="rules.detailed_flow"></div>
+						<div id="rules-panel-modes" class="rules-subpanel" data-i18n-html="rules.detailed_modes"></div>
+						<div id="rules-panel-roles" class="rules-subpanel" data-i18n-html="rules.detailed_roles"></div>
+						<div id="rules-panel-scoring" class="rules-subpanel" data-i18n-html="rules.detailed_scoring"></div>
+						<div id="rules-panel-faq" class="rules-subpanel" data-i18n-html="rules.detailed_faq"></div>
 					</div>
 				</div>
 			</div>

@@ -406,6 +406,148 @@
 							</tbody>
 						</table>
 					</div>
+            `,
+            btn_detailed: 'Detailed Rules',
+            detailed_title: 'Detailed Game Rules',
+            btn_back_basic: 'Back to Summary',
+            tab_flow: 'Core Flow',
+            tab_modes: 'Game Modes',
+            tab_roles: 'Roles & Evolution',
+            tab_scoring: 'Penalty & Scoring',
+            tab_faq: 'FAQ',
+            detailed_flow: `
+                <div class="rules-detail-card">
+                    <h3>Core Resources: GP (Gears) &amp; MP</h3>
+                    <ul>
+                        <li><strong>GP (Gear Points):</strong> Represents both your health and end-of-round score. Penalties remove 1 Shield first, or 1 GP if unshielded. Dropping below <strong>0 (negative)</strong> devours the player for the current game (revives next game with rotated hand).</li>
+                        <li><strong>MP:</strong> Energy used for active/passive abilities and Young Demon defense. Refills to starting GP each game (unused in Pure Bidding).</li>
+                        <li><strong>Clock Positions (1-12):</strong> Higher numbers near <strong>12</strong> carry the highest penalty risk. Players who do not enter the clock face are completely immune to end-of-turn penalties.</li>
+                    </ul>
+                </div>
+                <div class="rules-detail-card">
+                    <h3>4-Step Turn Flow (12 Turns per Game)</h3>
+                    <ol>
+                        <li><strong>Turn Start &amp; Reveal:</strong> Draw 2 Hour Cards. In <strong>4P Mode Turn 1</strong>, Time Sin must discard either its lowest or highest Minute Card before play.</li>
+                        <li><strong>Simultaneous Bid:</strong> Surviving players commit 1 Minute Card face-down. Time Hand / Time Sin may trigger pre-bid abilities; Second Hand may spend MP for Double Bid or 1 / 60 Swap.</li>
+                        <li><strong>Reveal &amp; Draft:</strong> Highest Minute Card picks 1 Hour Card and moves to that position; 2nd highest takes the remaining card. 3rd+ stay off the clock safely. Minute Hand may jump spaces after drafting.</li>
+                        <li><strong>Penalty &amp; Settlement:</strong> Resolve penalties and shields/GP. After Turn 12 (or early termination), remaining GP converts 1:1 into score and hands rotate for the next game.</li>
+                    </ol>
+                </div>
+            `,
+            detailed_modes: `
+                <div class="rules-detail-card" style="overflow-x:auto;">
+                    <h3>4 Game Modes Comparison</h3>
+                    <table class="rules-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>5P Full Mode</th>
+                                <th>4P Hunt Mode</th>
+                                <th>3P Speed Mode</th>
+                                <th>Pure Bidding (3P/4P/5P)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Roster &amp; Games</strong></td>
+                                <td>3 Time Demons, 1 Time Sin, 1 Cursed One | 5 Games</td>
+                                <td>3 Time Demons, 1 Time Sin | 4 Games</td>
+                                <td>Hour, Minute, Second Hand | 3 Games</td>
+                                <td>No Roles/Abilities | 3 / 4 / 5 Games</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hand / Hour Deck</strong></td>
+                                <td>12 Minute Cards | 36 Hour (12 Precious)</td>
+                                <td>13 Minute Cards | 24 Hour (No Precious)</td>
+                                <td>13 Minute Cards | 24 Hour (No Precious)</td>
+                                <td>12 (5P) / 13 (3P/4P) | 24 Hour</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ability MP Costs</strong></td>
+                                <td>Minute 2 MP / Second 3 MP</td>
+                                <td>Minute 2 MP / Second 3 MP</td>
+                                <td>Minute 3 MP / Second 2 MP</td>
+                                <td>Disabled</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mode Specials</strong></td>
+                                <td>Total Hunt bonus (+6/+4/+2); Cursed One (+9/+5/+2 or -999)</td>
+                                <td><strong>No Total Hunt bonus</strong>; Time Sin discards lowest/highest card each game; sole lowest-scoring Time Demon gets 1 extra unused card in Game 4</td>
+                                <td>Sole lowest-scoring Time Demon gets 1 extra unused card in Game 3</td>
+                                <td>Pure GP survival; game ends early if 1 or fewer survive</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            detailed_roles: `
+                <div class="rules-detail-grid">
+                    <div class="rules-detail-card" style="border-left:4px solid #54a0ff;">
+                        <h3 style="color:#54a0ff;">Young Time Demon (5P / 4P)</h3>
+                        <p><strong>Passive Shield:</strong> Once per match, if MP &ge; 3 when penalized, automatically spend all MP to negate the damage.</p>
+                        <p><strong>4 Evolution Recipes:</strong></p>
+                        <ul>
+                            <li>Long Life: 3 different ages (at least 1 Precious in 5P).</li>
+                            <li>Fate Excerpt: 4 distinct numbers (1 Precious in 5P).</li>
+                            <li>Grand Career: 5 cards (2 Precious in 5P).</li>
+                            <li>Cherished Memory: 3 Precious cards (5P only).</li>
+                        </ul>
+                        <p>Evolved Time Demons earn <strong>+3 bonus</strong> at match end.</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #ff9ff3;">
+                        <h3 style="color:#ff9ff3;">Time Hand</h3>
+                        <p><strong>Passive:</strong> Automatically peeks the top Hour Card of the deck each turn.</p>
+                        <p><strong>Active (1 MP):</strong> Move the top Hour Card to the bottom before bidding (may repeat once for 2 MP).</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #f368e0;">
+                        <h3 style="color:#f368e0;">Minute Hand</h3>
+                        <p><strong>Active (2 MP | 3 MP in 3P):</strong> After drafting an Hour Card, jump clockwise or counter-clockwise to the next occupied space.</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #00d2d3;">
+                        <h3 style="color:#00d2d3;">Second Hand</h3>
+                        <p><strong>Double Bid (3 MP | 2 MP in 3P):</strong> Commit 2 Minute Cards face-down and choose 1 after others reveal (the other returns to hand).</p>
+                        <p><strong>1 / 60 Swap (1 MP):</strong> If 1 was already played this game, play 60 as 1 for 1 MP; if 60 was played, play 1 as 60 for 1 MP.</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #feca57;">
+                        <h3 style="color:#feca57;">Time Sin (5P / 4P)</h3>
+                        <p><strong>Sin Pull (2 MP):</strong> Change penalty target to the player nearest to Time Sin.</p>
+                        <p><strong>Seal (3 MP):</strong> Lock all Time Demon abilities this turn.</p>
+                        <p><strong>Shield &amp; Hunger:</strong> Shield resets to <code>clamp(GP + 1, 1, 5)</code>; recovers 1 MP if penalized alone; loses 2 GP at game end if no Demon was devoured. 5P Total Hunt grants <strong>+6/+4/+2</strong> by Game 2/3/4; 4P discards 1 lowest/highest card before each game.</p>
+                    </div>
+                    <div class="rules-detail-card" style="border-left:4px solid #7bed9f;">
+                        <h3 style="color:#7bed9f;">The Cursed One (5P Only)</h3>
+                        <p><strong>Contact Lock:</strong> Stepping on Precious Cards permanently locks them. Shield resets to <code>clamp(GP, 1, 3)</code>.</p>
+                        <p><strong>Mission:</strong> Lock 12 Precious Cards by Game 2/3/4 for <strong>+9/+5/+2</strong> bonus; failing by Game 5 incurs <strong>-999</strong>.</p>
+                    </div>
+                </div>
+            `,
+            detailed_scoring: `
+                <div class="rules-detail-card">
+                    <h3>Penalty Resolution &amp; Shields</h3>
+                    <ul>
+                        <li><strong>Default Target:</strong> The player on the highest-numbered clock position takes the penalty (all tied players suffer together).</li>
+                        <li><strong>Sin Pull Target:</strong> The player at the shortest circular distance from Time Sin takes the penalty.</li>
+                        <li><strong>Shields:</strong> Time Sin and Cursed One absorb 1 penalty per Shield point; once depleted, the next hit reduces 1 GP and refills Shields based on the new GP.</li>
+                    </ul>
+                </div>
+                <div class="rules-detail-card">
+                    <h3>Hand Rotation, Catch-up &amp; Tiebreakers</h3>
+                    <ul>
+                        <li><strong>Hand Rotation:</strong> Each game rotates the initial Minute Card hands and starting GP clockwise for fairness.</li>
+                        <li><strong>Catch-up Card (3P Game 3 / 4P Game 4):</strong> If there is a single lowest-scoring Time Demon, they draw 1 random extra card from the unused Minute Deck. Tied lowest scores receive nothing.</li>
+                        <li><strong>Tiebreakers:</strong> Pure Bidding breaks ties by fewer devourings, then highest single-game GP.</li>
+                    </ul>
+                </div>
+            `,
+            detailed_faq: `
+                <div class="rules-detail-card">
+                    <h3>Quick FAQ</h3>
+                    <ul>
+                        <li><strong>Q: Am I devoured immediately at 0 GP?</strong><br>No. At 0 GP you are still alive; you are devoured only when taking another unshielded hit (dropping below 0).</li>
+                        <li><strong>Q: Why is Second Hand 1 / 60 Swap disabled?</strong><br>The target card (1 or 60) must already be in this game's discard pile, you must hold the opposite card, have &ge; 1 MP, and not be Sealed.</li>
+                        <li><strong>Q: Does Time Sin's score count for the 4P Catch-up Card?</strong><br>No. Only the 3 Time Demons are compared for the sole lowest score.</li>
+                    </ul>
+                </div>
             `
         }
     };
