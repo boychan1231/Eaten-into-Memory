@@ -189,10 +189,89 @@ function startRound(gameState) {
     if (gameState.roundMarker === 1) {
         if (window.gameAudio) window.gameAudio.playChime();
     }
-        
+
+    // 4P 模式：每局開始前，時之惡必須棄掉 1 張數值最低或最高的分鐘卡
+    if (gameState.gameMode === '4P' && gameState.roundMarker === 1) {
+        if (maybeTriggerSinPreRoundDiscard(gameState)) {
+            return;
+        }
+    }
+
     appLogger.log(`抽出的小時卡：[${drawnCards.map(c => c?.number ?? 'X').join(', ')}]`);
     appLogger.log("等待玩家打出分鐘卡...");
     processMinuteCardSelection(gameState); 
+}
+
+function maybeTriggerSinPreRoundDiscard(gameState) {
+    if (!gameState || gameState.gameMode !== '4P') return false;
+    if (gameState.sinPreRoundDiscardDoneRound === gameState.gameRound) return false;
+    const sinPlayer = Array.isArray(gameState.players) ? gameState.players.find(p => p.type === '時之惡') : null;
+    if (!sinPlayer || sinPlayer.isEjected || !Array.isArray(sinPlayer.hand) || sinPlayer.hand.length <= 1) return false;
+
+    const sorted = [...sinPlayer.hand].sort((a, b) => a.value - b.value);
+    const minCard = sorted[0];
+    const maxCard = sorted[sorted.length - 1];
+
+    const isServerHuman = Array.isArray(gameState.__serverHumanSeatIds)
+        ? gameState.__serverHumanSeatIds.includes(sinPlayer.id)
+        : null;
+    const humanId = (typeof getEffectiveHumanPlayerId === 'function') ? getEffectiveHumanPlayerId() : HUMAN_PLAYER_ID;
+    const isHumanSin = (isServerHuman !== null) ? isServerHuman : (sinPlayer.id === humanId);
+
+    if (!isHumanSin) {
+        const pickMax = (maxCard.value >= 50 && typeof checkChance === 'function')
+            ? checkChance(0.7)
+            : (typeof checkChance === 'function' ? checkChance(0.5) : false);
+        const chosen = pickMax ? maxCard : minCard;
+        const idx = sinPlayer.hand.findIndex(c => c && c.value === chosen.value);
+        if (idx !== -1) {
+            sinPlayer.hand.splice(idx, 1);
+            gameState.sinPreRoundDiscardDoneRound = gameState.gameRound;
+            appLogger.log(`◆【時之惡】第 ${gameState.gameRound} 局開局棄牌：${sinPlayer.name} 棄掉 [${chosen.value}]。`);
+        }
+        return false;
+    }
+
+    gameState.waitingSinPreRoundDiscard = true;
+    gameState.waitingSinPreRoundDiscardPlayerId = sinPlayer.id;
+    gameState.sinPreRoundDiscardOptions = { minValue: minCard.value, maxValue: maxCard.value };
+    gameState.phase = 'preMinute';
+    appLogger.log(`◆【時之惡】第 ${gameState.gameRound} 局開始前，請選擇棄掉最低 [${minCard.value}] 或最高 [${maxCard.value}] 分鐘卡！`);
+    if (typeof updateUI === 'function') updateUI(gameState);
+    return true;
+}
+
+function handleHumanSinPreRoundDiscard(gameState, choice) {
+    if (gameState && gameState.isOnlineMatch && window.OnlineLobbyClient && typeof window.OnlineLobbyClient.sendAction === 'function') {
+        const ok = window.OnlineLobbyClient.sendAction({ type: 'USE_ABILITY', ability: 'SIN_PRE_ROUND_DISCARD', choice });
+        if (ok) gameState.waitingSinPreRoundDiscard = false;
+        return ok;
+    }
+    if (!gameState || !gameState.waitingSinPreRoundDiscard) return false;
+    const sinPlayer = gameState.players.find(p => p.id === gameState.waitingSinPreRoundDiscardPlayerId);
+    if (!sinPlayer || !Array.isArray(sinPlayer.hand) || sinPlayer.hand.length <= 1) return false;
+
+    const sorted = [...sinPlayer.hand].sort((a, b) => a.value - b.value);
+    const minCard = sorted[0];
+    const maxCard = sorted[sorted.length - 1];
+    const targetCard = (choice === 'min' || Number(choice) === minCard.value) ? minCard : maxCard;
+
+    const idx = sinPlayer.hand.findIndex(c => c && c.value === targetCard.value);
+    if (idx === -1) return false;
+
+    sinPlayer.hand.splice(idx, 1);
+    gameState.sinPreRoundDiscardDoneRound = gameState.gameRound;
+    gameState.waitingSinPreRoundDiscard = false;
+    gameState.waitingSinPreRoundDiscardPlayerId = null;
+    gameState.sinPreRoundDiscardOptions = null;
+
+    appLogger.log(`◆【時之惡】第 ${gameState.gameRound} 局開局棄牌：您棄掉了 [${targetCard.value}]。`);
+    const nums = (gameState.currentDrawnHourCards || []).map(c => c?.number).filter(n => typeof n === 'number');
+    appLogger.log(`抽出的小時卡：[${nums.length ? nums.join(', ') : 'X'}]`);
+    appLogger.log("等待玩家打出分鐘卡...");
+    processMinuteCardSelection(gameState);
+    if (typeof updateUI === 'function') updateUI(gameState);
+    return true;
 }
 
 
@@ -1367,6 +1446,7 @@ try {
         window.handleHumanSecondHandCommit = handleHumanSecondHandCommit;
         window.handleHumanSecondHandFinalChoice = handleHumanSecondHandFinalChoice;
         window.handleHumanSecondHandSwap = handleHumanSecondHandSwap;
+        window.handleHumanSinPreRoundDiscard = handleHumanSinPreRoundDiscard;
         window.getEffectiveHumanPlayerId = getEffectiveHumanPlayerId;
 		
 		if (typeof updateUI !== 'undefined') {

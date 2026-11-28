@@ -413,6 +413,34 @@ function renderSinAbilityPanel(gameState, humanPlayer, parent) {
     const localizedSinName = window.i18n ? window.i18n.getRoleName('時之惡') : '時之惡';
     container.innerHTML = `<div class="evo-role-title" style="color:#feca57">${localizedSinName}</div>`;
 
+    if (gameState.waitingSinPreRoundDiscard && gameState.waitingSinPreRoundDiscardPlayerId === humanPlayer.id && gameState.sinPreRoundDiscardOptions) {
+        const { minValue, maxValue } = gameState.sinPreRoundDiscardOptions;
+        const promptDiv = document.createElement('div');
+        promptDiv.style.cssText = 'font-size:0.85rem; color:#feca57; font-weight:bold; margin-bottom:8px;';
+        promptDiv.textContent = '4P 開局強制棄牌：請選擇棄掉最低或最高分鐘卡';
+        container.appendChild(promptDiv);
+
+        const discardRow = document.createElement('div');
+        discardRow.style.cssText = 'display:flex; gap:8px; width:100%; margin-bottom:10px;';
+
+        const makeDiscardBtn = (label, choice) => {
+            const dBtn = document.createElement('button');
+            dBtn.className = 'evo-btn';
+            dBtn.style.cssText = 'flex:1; background:#e17055; color:#fff; padding:8px 6px;';
+            dBtn.textContent = label;
+            dBtn.onclick = () => {
+                if (typeof handleHumanSinPreRoundDiscard === 'function') {
+                    handleHumanSinPreRoundDiscard(globalGameState, choice);
+                }
+            };
+            return dBtn;
+        };
+
+        discardRow.appendChild(makeDiscardBtn(`棄掉最低 [${minValue}]`, 'min'));
+        discardRow.appendChild(makeDiscardBtn(`棄掉最高 [${maxValue}]`, 'max'));
+        container.appendChild(discardRow);
+    }
+
     // 1. 顯示當前規則狀態
     const modeNear = window.i18n ? window.i18n.t('abilities.sin_mode_near') : '扣滅目標：距離最近 (已變更)';
     const modeMax = window.i18n ? window.i18n.t('abilities.sin_mode_max') : '扣滅目標：數值最大 (預設)';

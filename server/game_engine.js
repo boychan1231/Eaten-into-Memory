@@ -157,6 +157,7 @@ export class HeadlessGameEngine {
 
     // 1. 記錄新回合開始與翻出的小時卡
     ctx.startRound = function (gs) {
+      gs.__serverHumanSeatIds = Array.from(engine.humanSeatIds);
       const prevRound = gs.gameRound;
       const prevMarker = gs.roundMarker;
       origStartRound(gs);
@@ -672,6 +673,18 @@ export class HeadlessGameEngine {
 
     const ability = String(msg.ability || '').trim().toUpperCase();
 
+    if (ability === 'SIN_PRE_ROUND_DISCARD') {
+      if (!this.gs.waitingSinPreRoundDiscard || this.gs.waitingSinPreRoundDiscardPlayerId !== seatId) {
+        return { ok: false, message: '目前不處於你的開局棄牌階段' };
+      }
+      let ok = false;
+      this._runWithDiff(() => {
+        ok = Boolean(this.ctx.handleHumanSinPreRoundDiscard(this.gs, msg.choice));
+        this._flushTimers();
+      });
+      return ok ? { ok: true } : { ok: false, message: '無效的開局棄牌選擇' };
+    }
+
     if (ability === 'SECOND_HAND_FINAL') {
       if (
         !this.gs.waitingSecondHandFinalChoice ||
@@ -814,6 +827,13 @@ export class HeadlessGameEngine {
   getPendingAction() {
     if (this.gs.gameEnded) {
       return { type: 'GAME_OVER', waitingSeatIds: [] };
+    }
+    if (this.gs.waitingSinPreRoundDiscard && this.gs.waitingSinPreRoundDiscardPlayerId) {
+      return {
+        type: 'SIN_PRE_ROUND_DISCARD',
+        waitingSeatIds: [this.gs.waitingSinPreRoundDiscardPlayerId],
+        options: this.gs.sinPreRoundDiscardOptions || null,
+      };
     }
     if (this.gs.waitingSecondHandFinalChoice && this.gs.waitingSecondHandFinalChoicePlayerId) {
       return {

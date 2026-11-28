@@ -267,7 +267,10 @@ function updateNextStepButton(gameState, flags) {
         return; // 直接返回，不執行下方的 disable 邏輯
     }
 
-    if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isHourSelectionActive || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
+    if (gameState.waitingSinPreRoundDiscard) {
+        nextStepBtn.disabled = true;
+        nextStepBtn.textContent = '請選擇開局棄牌（最低或最高）...';
+    } else if (flags.isWaitingMinuteInput || flags.isWaitingHourInput || flags.isHourSelectionActive || flags.isWaitingAbilityChoice || flags.isWaitingSecondFinalChoice || flags.isPlayingMinuteClash) {
         nextStepBtn.disabled = true;
         if (flags.isPlayingMinuteClash) {
             nextStepBtn.textContent = window.i18n ? window.i18n.t('ui.hints.comparing_minute') : "比較分鐘數值中...";

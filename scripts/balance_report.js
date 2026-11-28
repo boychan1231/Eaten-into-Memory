@@ -111,7 +111,9 @@ function runSingleMatch({ mode, seed, enableAbilities, aiDifficulty, humanId, th
         const effectiveHumanId = typeof ctx.getEffectiveHumanPlayerId === 'function' ? ctx.getEffectiveHumanPlayerId() : humanId;
         const human = gs.players.find(p => p.id === effectiveHumanId) || gs.players[0];
 
-        if (gs.waitingSecondHandFinalChoice && Array.isArray(gs.secondHandPendingCards) && gs.secondHandPendingCards.length > 0) {
+        if (gs.waitingSinPreRoundDiscard) {
+            ctx.handleHumanSinPreRoundDiscard(gs, 'max');
+        } else if (gs.waitingSecondHandFinalChoice && Array.isArray(gs.secondHandPendingCards) && gs.secondHandPendingCards.length > 0) {
             ctx.handleHumanSecondHandFinalChoice(gs, gs.secondHandPendingCards[0].value);
         } else if (gs.currentRoundAIChoices !== null) {
             // 讓代打人類也使用 AI 出牌邏輯（傳入淺拷貝避免 makeAIChoice 直接 splice 原手牌）

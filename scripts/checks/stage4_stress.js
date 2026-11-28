@@ -131,7 +131,9 @@ export function stage4HeadlessStressTest() {
             const humanId = typeof ctx.getEffectiveHumanPlayerId === 'function' ? ctx.getEffectiveHumanPlayerId() : sc.humanId;
             const human = gs.players.find(p => p.id === humanId) || gs.players[0];
 
-            if (gs.waitingSecondHandFinalChoice && Array.isArray(gs.secondHandPendingCards) && gs.secondHandPendingCards.length > 0) {
+            if (gs.waitingSinPreRoundDiscard) {
+                ctx.handleHumanSinPreRoundDiscard(gs, 'max');
+            } else if (gs.waitingSecondHandFinalChoice && Array.isArray(gs.secondHandPendingCards) && gs.secondHandPendingCards.length > 0) {
                 ctx.handleHumanSecondHandFinalChoice(gs, gs.secondHandPendingCards[0].value);
             } else if (gs.currentRoundAIChoices !== null) {
                 assert(human && Array.isArray(human.hand) && human.hand.length > 0, `場次 #${idx + 1} 等待人類出牌但手牌為空`);
